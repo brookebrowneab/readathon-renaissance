@@ -70,7 +70,7 @@ const HowItWorksPage = () => {
       <section className="bg-background-warm py-16">
         <div className="container">
           <div className="mx-auto max-w-3xl text-center">
-            <h1 className="mb-4 text-4xl font-bold text-foreground md:text-5xl">
+            <h1 className="mb-4 font-serif text-4xl font-normal text-foreground md:text-5xl">
               How Read-a-thon Works
             </h1>
             <p className="text-lg text-muted-foreground">
@@ -97,7 +97,7 @@ const HowItWorksPage = () => {
                       <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-brand-blue text-white">
                         <step.icon className="h-8 w-8" />
                       </div>
-                      <h2 className="mb-2 text-2xl font-bold text-foreground">{step.title}</h2>
+                      <h2 className="mb-2 font-serif text-2xl font-normal text-foreground">{step.title}</h2>
                       <p className="text-muted-foreground">{step.description}</p>
                     </div>
                   </BookContainer>
@@ -124,7 +124,7 @@ const HowItWorksPage = () => {
       {/* FAQ Preview */}
       <section className="bg-background-warm py-16">
         <div className="container">
-          <h2 className="mb-8 text-center text-3xl font-bold text-foreground">
+          <h2 className="mb-8 text-center font-serif text-3xl font-normal text-foreground">
             Frequently Asked Questions
           </h2>
 
@@ -164,7 +164,7 @@ const HowItWorksPage = () => {
       <section className="bg-brand-blue py-16 text-white">
         <div className="container text-center">
           <BookIcon size="large" variant="white" className="mx-auto mb-6" />
-          <h2 className="mb-4 text-3xl font-bold">Ready to Get Started?</h2>
+          <h2 className="mb-4 font-serif text-3xl font-normal">Ready to Get Started?</h2>
           <p className="mx-auto mb-8 max-w-xl text-white/80">
             Join thousands of families already participating in Read-a-thon events.
           </p>
