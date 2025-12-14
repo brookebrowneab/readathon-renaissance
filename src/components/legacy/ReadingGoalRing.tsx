@@ -101,7 +101,7 @@ const ReadingGoalRing = ({
             zIndex: circles.length + 1,
           }}
         >
-          <span className="text-3xl font-bold text-brand-blue">{Math.round(percentage)}%</span>
+          <span className="font-handwritten text-4xl text-brand-blue">{Math.round(percentage)}%</span>
           <span className="text-sm text-muted-foreground">
             {progress}/{goal} min
           </span>
