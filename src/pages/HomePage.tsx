@@ -53,15 +53,15 @@ const HomePage = () => {
               {/* Stats */}
               <div className="flex flex-wrap gap-8 pt-4">
                 <div>
-                  <p className="text-3xl font-bold text-brand-blue">50K+</p>
+                  <p className="font-handwritten text-4xl text-brand-blue">50K+</p>
                   <p className="text-sm text-muted-foreground">Students</p>
                 </div>
                 <div>
-                  <p className="text-3xl font-bold text-brand-blue">2M+</p>
+                  <p className="font-handwritten text-4xl text-brand-blue">2M+</p>
                   <p className="text-sm text-muted-foreground">Minutes Read</p>
                 </div>
                 <div>
-                  <p className="text-3xl font-bold text-brand-blue">$500K+</p>
+                  <p className="font-handwritten text-4xl text-brand-blue">$500K+</p>
                   <p className="text-sm text-muted-foreground">Raised</p>
                 </div>
               </div>
@@ -198,7 +198,7 @@ const HomePage = () => {
                       </div>
                       <div className="flex-1">
                         <p className="font-medium text-foreground">{student.name}</p>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="font-handwritten text-lg text-muted-foreground">
                           {student.progress} / {student.goal} min
                         </p>
                       </div>
