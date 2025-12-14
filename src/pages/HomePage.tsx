@@ -25,15 +25,13 @@ const HomePage = () => {
                 <span>Supporting readers since 2010</span>
               </div>
 
-              <h1 className="text-4xl font-bold tracking-tight text-foreground md:text-5xl lg:text-6xl">
-                Every Page{" "}
-                <span className="relative">
-                  <span className="text-brand-blue">Counts</span>
-                  <span className="absolute -bottom-2 left-0 h-1.5 w-full bg-brand-yellow" />
-                </span>
+              <h1 className="font-serif text-4xl font-normal tracking-tight text-foreground md:text-5xl lg:text-6xl">
+                <span className="text-muted-foreground">Every Page </span>
+                <span className="text-foreground">Counts</span>
+                <span className="text-muted-foreground">.</span>
               </h1>
 
-              <p className="max-w-lg text-lg text-muted-foreground md:text-xl">
+              <p className="max-w-lg text-lg text-muted-foreground">
                 Join thousands of students, families, and sponsors in our community reading 
                 challenge. Track progress, earn pledges, and make reading a celebration.
               </p>
@@ -73,7 +71,7 @@ const HomePage = () => {
             <div className="relative animate-scale-in">
               <BookContainer variant="default" className="min-h-[400px]">
                 <div className="flex flex-col items-center gap-6 py-8">
-                  <h2 className="font-handwritten text-3xl text-brand-blue">Your Reading Journey</h2>
+                  <h2 className="font-serif text-2xl text-brand-blue">Your Reading Journey</h2>
                   <ReadingGoalRing progress={450} goal={600} size={180} />
                   <div className="text-center">
                     <p className="text-lg font-semibold text-foreground">Great progress!</p>
@@ -92,7 +90,7 @@ const HomePage = () => {
       <section className="bg-background py-16 md:py-24">
         <div className="container">
           <div className="mb-12 text-center">
-            <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">
+            <h2 className="mb-4 font-serif text-3xl font-normal text-foreground md:text-4xl">
               How Read-a-thon Works
             </h2>
             <p className="mx-auto max-w-2xl text-muted-foreground">
@@ -145,7 +143,7 @@ const HomePage = () => {
         <div className="container">
           <div className="grid items-center gap-12 lg:grid-cols-2">
             <div className="space-y-6">
-              <h2 className="text-3xl font-bold text-foreground md:text-4xl">
+              <h2 className="font-serif text-3xl font-normal text-foreground md:text-4xl">
                 Built for Students, Parents & Schools
               </h2>
               <p className="text-muted-foreground">
@@ -187,7 +185,7 @@ const HomePage = () => {
             <div className="relative">
               <BookContainer variant="warm" className="p-8">
                 <div className="space-y-6">
-                  <h3 className="font-handwritten text-2xl text-brand-blue">Class Leaderboard</h3>
+                  <h3 className="font-serif text-xl text-brand-blue">Class Leaderboard</h3>
                   
                   {[
                     { name: "Emma S.", progress: 720, goal: 600 },
@@ -223,7 +221,7 @@ const HomePage = () => {
       <section className="bg-brand-blue py-16 text-white md:py-24">
         <div className="container text-center">
           <BookIcon size="large" variant="white" className="mx-auto mb-6" />
-          <h2 className="mb-4 text-3xl font-bold md:text-4xl">Ready to Start Your Read-a-thon?</h2>
+          <h2 className="mb-4 font-serif text-3xl font-normal md:text-4xl">Ready to Start Your Read-a-thon?</h2>
           <p className="mx-auto mb-8 max-w-xl text-lg text-white/80">
             Join our community of readers and make every page count. Registration is free for students.
           </p>

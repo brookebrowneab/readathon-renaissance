@@ -11,7 +11,7 @@ const AboutPage = () => {
         <div className="container">
           <div className="mx-auto max-w-3xl text-center">
             <Logo size="large" className="mx-auto mb-6" />
-            <h1 className="mb-4 text-4xl font-bold text-foreground md:text-5xl">
+            <h1 className="mb-4 font-serif text-4xl font-normal text-foreground md:text-5xl">
               About Read-a-thon
             </h1>
             <p className="text-lg text-muted-foreground md:text-xl">
@@ -27,7 +27,7 @@ const AboutPage = () => {
           <div className="grid items-center gap-12 lg:grid-cols-2">
             <BookContainer variant="warm" className="p-8">
               <div className="space-y-4">
-                <h2 className="font-handwritten text-3xl text-brand-blue">Our Mission</h2>
+                <h2 className="font-serif text-2xl text-brand-blue">Our Mission</h2>
                 <p className="text-muted-foreground">
                   Read-a-thon was founded with a simple belief: every child deserves the opportunity 
                   to discover the joy of reading. We combine the excitement of friendly competition 
@@ -64,7 +64,7 @@ const AboutPage = () => {
       {/* Values */}
       <section className="bg-background-warm py-16">
         <div className="container">
-          <h2 className="mb-12 text-center text-3xl font-bold text-foreground">Our Values</h2>
+          <h2 className="mb-12 text-center font-serif text-3xl font-normal text-foreground">Our Values</h2>
 
           <div className="grid gap-8 md:grid-cols-3">
             {[
@@ -110,7 +110,7 @@ const AboutPage = () => {
             <BookContainer variant="default" className="p-8">
               <div className="space-y-6 text-center">
                 <BookIcon size="large" variant="primary" className="mx-auto" />
-                <h2 className="text-2xl font-bold text-foreground">
+                <h2 className="font-serif text-2xl font-normal text-foreground">
                   Privacy & Child Safety
                 </h2>
                 <p className="text-muted-foreground">
