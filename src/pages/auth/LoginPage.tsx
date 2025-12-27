@@ -103,6 +103,13 @@ const LoginPage = () => {
                 </div>
               </div>
 
+              {/* Demo Mode */}
+              <Link to="/dashboard">
+                <Button variant="secondary" className="w-full">
+                  Enter Demo Mode
+                </Button>
+              </Link>
+
               {/* Student Login Link */}
               <Link to="/student-login">
                 <Button variant="outline" className="w-full">
