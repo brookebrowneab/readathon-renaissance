@@ -36,6 +36,7 @@ export default {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
           hover: "hsl(var(--primary-hover))",
+          active: "hsl(var(--primary-active))",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
@@ -44,6 +45,8 @@ export default {
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
+          hover: "hsl(var(--destructive-hover))",
+          active: "hsl(var(--destructive-active))",
         },
         muted: {
           DEFAULT: "hsl(var(--muted))",
@@ -52,6 +55,8 @@ export default {
         accent: {
           DEFAULT: "hsl(var(--accent))",
           foreground: "hsl(var(--accent-foreground))",
+          hover: "hsl(var(--accent-hover))",
+          active: "hsl(var(--accent-active))",
           orange: "hsl(var(--accent-orange))",
           teal: "hsl(var(--accent-teal))",
           coral: "hsl(var(--accent-coral))",

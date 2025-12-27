@@ -34,10 +34,15 @@
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 15%;
 
-    /* Primary - Brand Blue */
+    /* Primary - Brand Blue #3760AC */
     --primary: 220 50% 45%;
     --primary-foreground: 0 0% 100%;
     --primary-hover: 220 55% 35%;
+    --primary-active: 220 55% 30%;
+
+    /* Accent hover/active states */
+    --accent-hover: 58 67% 43%;
+    --accent-active: 58 67% 38%;
 
     /* Secondary - Warm neutral */
     --secondary: 30 27% 97%;
@@ -51,9 +56,11 @@
     --accent: 58 67% 48%;
     --accent-foreground: 0 0% 15%;
 
-    /* Destructive */
-    --destructive: 0 84% 60%;
+    /* Destructive - Danger Red #FF4D4F */
+    --destructive: 359 100% 65%;
     --destructive-foreground: 0 0% 100%;
+    --destructive-hover: 359 100% 55%;
+    --destructive-active: 359 100% 50%;
 
     /* Success - Brand Yellow */
     --success: 58 67% 48%;
