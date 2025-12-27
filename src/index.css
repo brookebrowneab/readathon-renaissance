@@ -88,7 +88,7 @@
     /* Text Colors */
     --text-primary: 0 0% 15%;         /* #262626 */
     --text-secondary: 0 0% 35%;       /* #595959 */
-    --text-tertiary: 0 0% 55%;        /* #8C8C8C */
+    --text-tertiary: 0 0% 55%;        /* #8C8C8C - Used for input borders */
     --text-inverse: 0 0% 100%;        /* #FFFFFF */
 
     /* Border and Input */

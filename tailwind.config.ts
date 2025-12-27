@@ -27,6 +27,9 @@ export default {
         foreground: "hsl(var(--foreground))",
         "background-warm": "hsl(var(--background-warm))",
         "background-warmer": "hsl(var(--background-warmer))",
+        "text-primary": "hsl(var(--text-primary))",
+        "text-secondary": "hsl(var(--text-secondary))",
+        "text-tertiary": "hsl(var(--text-tertiary))",
         brand: {
           blue: "hsl(var(--brand-blue))",
           "blue-dark": "hsl(var(--brand-blue-dark))",
