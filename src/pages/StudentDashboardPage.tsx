@@ -180,7 +180,7 @@ const StudentDashboardPage = () => {
 
                 {/* Log Reading Button */}
                 <Button className="w-full mt-4 h-14 text-lg bg-brand-blue text-white hover:bg-brand-blue/90" asChild>
-                  <Link to="/log-reading">
+                  <Link to="/student-log-reading">
                     <Plus className="h-5 w-5 mr-2" />
                     Log My Reading
                   </Link>
@@ -268,7 +268,7 @@ const StudentDashboardPage = () => {
         {/* Mobile Quick Action */}
         <div className="fixed bottom-0 left-0 right-0 p-4 bg-card border-t border-border lg:hidden z-40">
           <Button className="w-full h-14 text-lg bg-brand-blue text-white hover:bg-brand-blue/90" asChild>
-            <Link to="/log-reading">
+            <Link to="/student-log-reading">
               <Plus className="h-5 w-5 mr-2" />
               Log My Reading
             </Link>
