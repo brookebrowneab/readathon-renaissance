@@ -92,9 +92,9 @@ const HomePage = () => {
 
             {/* Hero Visual - Book Container with Progress Ring */}
             <div className="relative animate-scale-in">
-              <h2 className="mb-4 text-center font-serif text-2xl text-brand-blue">Emma's Reading Journey</h2>
-              <BookContainer variant="default" className="min-h-[450px] w-full max-w-lg">
+              <BookContainer variant="default" className="min-h-[500px] w-full max-w-lg">
                 <div className="flex flex-col items-center gap-4 py-6">
+                  <h2 className="w-full px-4 text-left font-serif text-3xl font-normal tracking-tight text-brand-blue md:text-4xl">Emma's Reading Journey</h2>
                   <ReadingGoalRing progress={1890} goal={600} size={140} />
                   
                   {/* Stats Grid */}
