@@ -7,7 +7,7 @@ import { FormField } from "@/components/ui/form-field";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
-import { Eye, EyeOff, Mail, Lock, BookOpen, Users } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, BookOpen, Users, Heart } from "lucide-react";
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -141,7 +141,7 @@ const LoginPage = () => {
                   >
                     Parent Demo
                   </Button>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-4 gap-2">
                     <Link to="/student-login" className="block">
                       <Button variant="outline" className="w-full text-xs px-2">
                         <BookIcon size="small" variant="primary" className="mr-1" />
@@ -152,6 +152,12 @@ const LoginPage = () => {
                       <Button variant="outline" className="w-full text-xs px-2">
                         <Users className="h-4 w-4 mr-1" />
                         Teacher
+                      </Button>
+                    </Link>
+                    <Link to="/sponsor-dashboard" className="block">
+                      <Button variant="outline" className="w-full text-xs px-2">
+                        <Heart className="h-4 w-4 mr-1" />
+                        Sponsor
                       </Button>
                     </Link>
                     <Link to="/admin-dashboard" className="block">

@@ -13,6 +13,7 @@ import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
 import DashboardPage from "./pages/DashboardPage";
 import LogReadingPage from "./pages/LogReadingPage";
 import SponsorPage from "./pages/SponsorPage";
+import SponsorDashboardPage from "./pages/SponsorDashboardPage";
 import StudentDashboardPage from "./pages/StudentDashboardPage";
 import StudentLogReadingPage from "./pages/StudentLogReadingPage";
 import TeacherDashboardPage from "./pages/TeacherDashboardPage";
@@ -46,6 +47,9 @@ const App = () => (
           {/* Parent Dashboard */}
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/log-reading" element={<LogReadingPage />} />
+          
+          {/* Sponsor Dashboard */}
+          <Route path="/sponsor-dashboard" element={<SponsorDashboardPage />} />
           
           {/* Student Dashboard */}
           <Route path="/student-dashboard" element={<StudentDashboardPage />} />
