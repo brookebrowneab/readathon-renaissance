@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { PublicLayout } from "@/components/layout";
 import { BookContainer, BookIcon } from "@/components/legacy";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import { useState } from "react";
 import { KeyRound, Mail, ArrowLeft, Sparkles, Star } from "lucide-react";
 
 const StudentLoginPage = () => {
+  const navigate = useNavigate();
   const [loginMethod, setLoginMethod] = useState<"code" | "email">("code");
   const [studentCode, setStudentCode] = useState("");
   const [email, setEmail] = useState("");
@@ -133,6 +134,16 @@ const StudentLoginPage = () => {
                   🚀 Let's Read!
                 </Button>
               </form>
+
+              {/* Demo Mode Button */}
+              <Button
+                variant="secondary"
+                size="lg"
+                className="w-full h-12"
+                onClick={() => navigate("/student-dashboard")}
+              >
+                ✨ Try Demo Mode
+              </Button>
 
               {/* Fun illustration */}
               <div className="flex justify-center py-4">

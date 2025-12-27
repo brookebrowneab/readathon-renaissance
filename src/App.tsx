@@ -13,6 +13,7 @@ import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
 import DashboardPage from "./pages/DashboardPage";
 import LogReadingPage from "./pages/LogReadingPage";
 import SponsorPage from "./pages/SponsorPage";
+import StudentDashboardPage from "./pages/StudentDashboardPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,9 +37,12 @@ const App = () => (
           <Route path="/student-login" element={<StudentLoginPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           
-          {/* Dashboard */}
+          {/* Parent Dashboard */}
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/log-reading" element={<LogReadingPage />} />
+          
+          {/* Student Dashboard */}
+          <Route path="/student-dashboard" element={<StudentDashboardPage />} />
           
           {/* Catch-all */}
           <Route path="*" element={<NotFound />} />
