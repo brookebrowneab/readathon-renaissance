@@ -100,9 +100,13 @@ const HomePage = () => {
                       <span className="text-xs text-muted-foreground">Money I've Raised</span>
                       <span className="font-handwritten text-2xl text-brand-green">$127.50</span>
                     </div>
-                    <div className="col-span-2 flex flex-col items-center rounded-lg bg-muted/50 p-3">
+                    <div className="flex flex-col items-center rounded-lg bg-muted/50 p-3">
                       <span className="text-xs text-muted-foreground">My Sponsors</span>
-                      <span className="font-handwritten text-2xl text-brand-blue">8 sponsors</span>
+                      <span className="font-handwritten text-2xl text-brand-blue">8</span>
+                    </div>
+                    <div className="flex flex-col items-center rounded-lg bg-muted/50 p-3">
+                      <span className="text-xs text-muted-foreground">Books I've Read</span>
+                      <span className="font-handwritten text-2xl text-brand-blue">12</span>
                     </div>
                   </div>
                 </div>
