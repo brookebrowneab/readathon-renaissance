@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { PublicLayout } from "@/components/layout";
 import { BookContainer, ReadingGoalRing, BookIcon } from "@/components/legacy";
@@ -5,7 +6,29 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { BookOpen, Users, Trophy, Heart, ArrowRight, Sparkles } from "lucide-react";
 
+type TimeUnit = "minutes" | "hours" | "days";
+
+const formatTime = (minutes: number, unit: TimeUnit): string => {
+  switch (unit) {
+    case "hours":
+      return `${(minutes / 60).toFixed(1)} hrs`;
+    case "days":
+      return `${(minutes / 60 / 24).toFixed(1)} days`;
+    default:
+      return `${minutes.toLocaleString()} min`;
+  }
+};
+
+const cycleUnit = (current: TimeUnit): TimeUnit => {
+  const order: TimeUnit[] = ["minutes", "hours", "days"];
+  const idx = order.indexOf(current);
+  return order[(idx + 1) % order.length];
+};
+
 const HomePage = () => {
+  const [totalTimeUnit, setTotalTimeUnit] = useState<TimeUnit>("minutes");
+  const [classUnit, setClassUnit] = useState<TimeUnit>("minutes");
+  const [gradeUnit, setGradeUnit] = useState<TimeUnit>("minutes");
   return (
     <PublicLayout>
       {/* Hero Section */}
@@ -80,21 +103,30 @@ const HomePage = () => {
                       <span className="text-xs text-muted-foreground">Reading Goal</span>
                       <span className="font-handwritten text-2xl text-brand-blue">600 min</span>
                     </div>
-                    <div className="flex flex-col items-center rounded-lg bg-muted/50 p-3">
+                    <div 
+                      className="flex cursor-pointer flex-col items-center rounded-lg bg-muted/50 p-3 transition-colors hover:bg-muted"
+                      onClick={() => setTotalTimeUnit(cycleUnit(totalTimeUnit))}
+                    >
                       <span className="text-xs text-muted-foreground">Total Time Read</span>
-                      <span className="font-handwritten text-2xl text-brand-blue">1,890 min</span>
+                      <span className="font-handwritten text-2xl text-brand-blue">{formatTime(1890, totalTimeUnit)}</span>
                     </div>
                     <div className="flex flex-col items-center rounded-lg bg-muted/50 p-3">
                       <span className="text-xs text-muted-foreground">Minutes Today</span>
                       <span className="font-handwritten text-2xl text-brand-blue">45 min</span>
                     </div>
-                    <div className="flex flex-col items-center rounded-lg bg-muted/50 p-3">
+                    <div 
+                      className="flex cursor-pointer flex-col items-center rounded-lg bg-muted/50 p-3 transition-colors hover:bg-muted"
+                      onClick={() => setClassUnit(cycleUnit(classUnit))}
+                    >
                       <span className="text-xs text-muted-foreground">My Class Has Read</span>
-                      <span className="font-handwritten text-2xl text-brand-blue">12,450 min</span>
+                      <span className="font-handwritten text-2xl text-brand-blue">{formatTime(12450, classUnit)}</span>
                     </div>
-                    <div className="flex flex-col items-center rounded-lg bg-muted/50 p-3">
+                    <div 
+                      className="flex cursor-pointer flex-col items-center rounded-lg bg-muted/50 p-3 transition-colors hover:bg-muted"
+                      onClick={() => setGradeUnit(cycleUnit(gradeUnit))}
+                    >
                       <span className="text-xs text-muted-foreground">My Grade Has Read</span>
-                      <span className="font-handwritten text-2xl text-brand-blue">48,200 min</span>
+                      <span className="font-handwritten text-2xl text-brand-blue">{formatTime(48200, gradeUnit)}</span>
                     </div>
                     <div className="flex flex-col items-center rounded-lg bg-muted/50 p-3">
                       <span className="text-xs text-muted-foreground">Money I've Raised</span>
