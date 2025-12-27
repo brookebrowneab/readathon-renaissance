@@ -15,6 +15,7 @@ import LogReadingPage from "./pages/LogReadingPage";
 import SponsorPage from "./pages/SponsorPage";
 import StudentDashboardPage from "./pages/StudentDashboardPage";
 import StudentLogReadingPage from "./pages/StudentLogReadingPage";
+import TeacherDashboardPage from "./pages/TeacherDashboardPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -45,6 +46,9 @@ const App = () => (
           {/* Student Dashboard */}
           <Route path="/student-dashboard" element={<StudentDashboardPage />} />
           <Route path="/student-log-reading" element={<StudentLogReadingPage />} />
+          
+          {/* Teacher Dashboard */}
+          <Route path="/teacher-dashboard" element={<TeacherDashboardPage />} />
           
           {/* Catch-all */}
           <Route path="*" element={<NotFound />} />

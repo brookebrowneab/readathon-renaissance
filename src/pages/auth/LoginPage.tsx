@@ -7,7 +7,7 @@ import { FormField } from "@/components/ui/form-field";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
-import { Eye, EyeOff, Mail, Lock, BookOpen } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, BookOpen, Users } from "lucide-react";
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -132,22 +132,30 @@ const LoginPage = () => {
                   </div>
                 </div>
 
-                {/* Demo Mode */}
-                <Button
-                  variant="secondary"
-                  className="w-full"
-                  onClick={handleDemoMode}
-                >
-                  Enter Demo Mode
-                </Button>
-
-                {/* Student Login Link */}
-                <Link to="/student-login" className="block">
-                  <Button variant="outline" className="w-full">
-                    <BookIcon size="small" variant="primary" className="mr-2" />
-                    Sign in as Student
+                {/* Demo Modes */}
+                <div className="space-y-2">
+                  <Button
+                    variant="secondary"
+                    className="w-full"
+                    onClick={handleDemoMode}
+                  >
+                    Parent Demo
                   </Button>
-                </Link>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Link to="/student-login" className="block">
+                      <Button variant="outline" className="w-full">
+                        <BookIcon size="small" variant="primary" className="mr-2" />
+                        Student
+                      </Button>
+                    </Link>
+                    <Link to="/teacher-dashboard" className="block">
+                      <Button variant="outline" className="w-full">
+                        <Users className="h-4 w-4 mr-2" />
+                        Teacher
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
 
                 {/* Register Link */}
                 <p className="text-center text-sm text-muted-foreground">
