@@ -169,12 +169,31 @@
     @apply border-border;
   }
 
+  /* Prevent iOS zoom on input focus */
+  html {
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+  }
+
   body {
     @apply bg-background text-foreground font-sans antialiased;
+    -webkit-tap-highlight-color: transparent;
   }
 
   h1, h2, h3, h4, h5, h6 {
     @apply font-semibold tracking-tight;
+  }
+
+  /* Mobile touch target minimum */
+  button, a, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Exception for inline links and small buttons */
+  .inline-link, .touch-target-small {
+    min-height: auto;
+    min-width: auto;
   }
 }
 
@@ -238,6 +257,36 @@
 
   .hover-scale:hover {
     @apply scale-105;
+  }
+
+  /* Mobile Container Padding */
+  .mobile-container {
+    @apply px-4 md:px-6 lg:px-8;
+  }
+
+  /* Mobile Card - Full width on mobile */
+  .mobile-card {
+    @apply w-full md:w-auto;
+  }
+
+  /* Mobile Form Input */
+  .mobile-input {
+    @apply h-12 text-base;
+  }
+
+  /* Mobile Form - Single column */
+  .mobile-form {
+    @apply space-y-4;
+  }
+
+  /* Sticky Submit Button */
+  .mobile-sticky-submit {
+    @apply fixed bottom-0 left-0 right-0 p-4 bg-background border-t z-40 md:static md:p-0 md:bg-transparent md:border-0;
+  }
+
+  /* Bottom Tab Bar Safe Area */
+  .bottom-tab-spacer {
+    @apply h-20 md:h-0;
   }
 }
 

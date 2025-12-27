@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { MainNav, Footer } from "@/components/layout";
+import { MainNav, Footer, BottomTabBar } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { BookContainer, ReadingGoalRing } from "@/components/legacy";
 import { Badge } from "@/components/ui/badge";
@@ -298,25 +298,14 @@ const DashboardPage = () => {
           </div>
         </div>
 
-        {/* Mobile Quick Actions */}
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-card border-t border-border lg:hidden z-40">
-          <div className="flex gap-3">
-            <Button className="flex-1 bg-brand-blue text-white hover:bg-brand-blue/90" asChild>
-              <Link to="/log-reading">
-                <Plus className="h-4 w-4 mr-2" />
-                Log Reading
-              </Link>
-            </Button>
-            <Button variant="outline" size="icon" asChild>
-              <Link to="/invite">
-                <UserPlus className="h-5 w-5" />
-              </Link>
-            </Button>
-          </div>
-        </div>
+        {/* Spacer for Bottom Tab Bar */}
+        <div className="h-20 md:hidden" />
       </main>
       
       <Footer />
+      
+      {/* Bottom Tab Bar for Mobile */}
+      <BottomTabBar role="parent" />
     </div>
   );
 };
