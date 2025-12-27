@@ -1,58 +1,39 @@
 import { cn } from "@/lib/utils";
 import { forwardRef, SVGAttributes } from "react";
 
-type BookIconSize = "small" | "medium" | "large" | number;
-
-interface BookIconProps extends Omit<SVGAttributes<SVGSVGElement>, 'color'> {
-  size?: BookIconSize;
-  color?: string;
+interface BookIconProps extends SVGAttributes<SVGSVGElement> {
+  size?: "small" | "medium" | "large";
   variant?: "white" | "primary" | "accent";
-  ariaLabel?: string;
+  animated?: boolean;
 }
 
-const sizeMap: Record<string, number> = {
-  small: 24,
-  medium: 32,
-  large: 48,
-};
-
 const BookIcon = forwardRef<SVGSVGElement, BookIconProps>(
-  ({ 
-    className, 
-    size = "medium", 
-    color, 
-    variant = "white", 
-    ariaLabel = "Open book icon", 
-    ...props 
-  }, ref) => {
-    const computedWidth = typeof size === "number" ? size : (sizeMap[size] ?? 32);
-    const computedHeight = (computedWidth * 24) / 32;
-
-    // Determine fill color: explicit color prop takes precedence over variant
-    const getFillColor = () => {
-      if (color) return color;
-      switch (variant) {
-        case "primary":
-          return "#3760AC";
-        case "accent":
-          return "#C8C42D";
-        case "white":
-        default:
-          return "#FFFFFF";
-      }
+  ({ className, size = "medium", variant = "white", animated = false, ...props }, ref) => {
+    const sizeMap = {
+      small: { width: 24, height: 18 },
+      medium: { width: 32, height: 24 },
+      large: { width: 48, height: 36 },
     };
+
+    const { width, height } = sizeMap[size];
 
     return (
       <svg
         ref={ref}
-        width={computedWidth}
-        height={computedHeight}
+        width={width}
+        height={height}
         viewBox="0 0 32 24"
-        fill={getFillColor()}
+        fill="currentColor"
         xmlns="http://www.w3.org/2000/svg"
-        className={cn("transition-opacity duration-150", className)}
-        aria-label={ariaLabel}
-        role="img"
+        className={cn(
+          "transition-opacity duration-150",
+          variant === "white" && "text-white",
+          variant === "primary" && "text-brand-blue",
+          variant === "accent" && "text-brand-yellow",
+          animated && "hover:opacity-80",
+          className
+        )}
+        aria-label="Open book icon"
         {...props}
       >
         {/* Left page */}
@@ -71,4 +52,3 @@ const BookIcon = forwardRef<SVGSVGElement, BookIconProps>(
 BookIcon.displayName = "BookIcon";
 
 export { BookIcon };
-export type { BookIconSize, BookIconProps };
