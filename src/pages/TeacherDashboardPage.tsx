@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { MainNav, Footer } from "@/components/layout";
+import { MainNav, Footer, BottomTabBar } from "@/components/layout";
 import { BookContainer, ReadingGoalRing } from "@/components/legacy";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -489,9 +489,13 @@ const TeacherDashboardPage = () => {
             </div>
           </div>
         </div>
+        
+        {/* Spacer for bottom tab bar */}
+        <div className="h-20 md:hidden" />
       </main>
       
       <Footer />
+      <BottomTabBar role="teacher" />
     </div>
   );
 };
