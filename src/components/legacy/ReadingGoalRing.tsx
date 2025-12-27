@@ -48,7 +48,7 @@ const ReadingGoalRing = ({
   return (
     <div
       className={cn("relative", className)}
-      style={{ width: containerWidth, height: size + 6 }}
+      style={{ width: containerWidth, height: size + 70 }}
       role="progressbar"
       aria-valuenow={progress}
       aria-valuemin={0}
@@ -89,15 +89,14 @@ const ReadingGoalRing = ({
         </div>
       ))}
 
-      {/* Center label */}
+      {/* Label below circle */}
       {showLabel && (
         <div
-          className="absolute flex flex-col items-center justify-center text-center"
+          className="absolute flex flex-col items-center text-center"
           style={{
             left: 0,
-            top: 3,
+            top: size + 12,
             width: size,
-            height: size,
             zIndex: circles.length + 1,
           }}
         >
