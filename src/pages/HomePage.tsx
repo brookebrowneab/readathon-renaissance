@@ -69,13 +69,41 @@ const HomePage = () => {
 
             {/* Hero Visual - Book Container with Progress Ring */}
             <div className="relative animate-scale-in">
-              <BookContainer variant="default" className="min-h-[400px]">
-                <div className="flex flex-col items-center gap-6 py-8">
+              <BookContainer variant="default" className="min-h-[500px] w-full max-w-lg">
+                <div className="flex flex-col items-center gap-4 py-6">
                   <h2 className="font-serif text-2xl text-brand-blue">Your Reading Journey</h2>
-                  <ReadingGoalRing progress={1890} goal={600} size={180} />
-                  <div className="text-center">
-                    <p className="text-lg font-semibold text-foreground">Great progress!</p>
-                    <p className="text-muted-foreground">150 minutes to go</p>
+                  <ReadingGoalRing progress={1890} goal={600} size={140} />
+                  
+                  {/* Stats Grid */}
+                  <div className="mt-2 grid w-full grid-cols-2 gap-4 px-4">
+                    <div className="flex flex-col items-center rounded-lg bg-muted/50 p-3">
+                      <span className="text-xs text-muted-foreground">Reading Goal</span>
+                      <span className="font-handwritten text-2xl text-brand-blue">600 min</span>
+                    </div>
+                    <div className="flex flex-col items-center rounded-lg bg-muted/50 p-3">
+                      <span className="text-xs text-muted-foreground">Total Time Read</span>
+                      <span className="font-handwritten text-2xl text-brand-blue">1,890 min</span>
+                    </div>
+                    <div className="flex flex-col items-center rounded-lg bg-muted/50 p-3">
+                      <span className="text-xs text-muted-foreground">Minutes Today</span>
+                      <span className="font-handwritten text-2xl text-brand-blue">45 min</span>
+                    </div>
+                    <div className="flex flex-col items-center rounded-lg bg-muted/50 p-3">
+                      <span className="text-xs text-muted-foreground">My Class Has Read</span>
+                      <span className="font-handwritten text-2xl text-brand-blue">12,450 min</span>
+                    </div>
+                    <div className="flex flex-col items-center rounded-lg bg-muted/50 p-3">
+                      <span className="text-xs text-muted-foreground">My Grade Has Read</span>
+                      <span className="font-handwritten text-2xl text-brand-blue">48,200 min</span>
+                    </div>
+                    <div className="flex flex-col items-center rounded-lg bg-muted/50 p-3">
+                      <span className="text-xs text-muted-foreground">Money I've Raised</span>
+                      <span className="font-handwritten text-2xl text-brand-green">$127.50</span>
+                    </div>
+                    <div className="col-span-2 flex flex-col items-center rounded-lg bg-muted/50 p-3">
+                      <span className="text-xs text-muted-foreground">My Sponsors</span>
+                      <span className="font-handwritten text-2xl text-brand-blue">8 sponsors</span>
+                    </div>
                   </div>
                 </div>
               </BookContainer>
