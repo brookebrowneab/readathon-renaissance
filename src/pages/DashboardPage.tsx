@@ -1,10 +1,9 @@
 import { Link } from "react-router-dom";
+import { MainNav, Footer } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { DataCard } from "@/components/ui/data-card";
 import { StatCard } from "@/components/ui/stat-card";
-import { TopHeader } from "@/components/layout/TopHeader";
-import { BookContainer, Logo } from "@/components/legacy";
-import { ReadingGoalRing } from "@/components/legacy/ReadingGoalRing";
+import { BookContainer } from "@/components/legacy";
 import { Badge } from "@/components/ui/badge";
 import {
   BookOpen,
@@ -15,6 +14,7 @@ import {
   Calendar,
   Clock,
   Eye,
+  LogOut,
 } from "lucide-react";
 
 // Mock data
@@ -83,36 +83,35 @@ const mockSponsorshipData = {
 
 const DashboardPage = () => {
   return (
-    <div className="min-h-screen bg-background-warm">
-      {/* Header */}
-      <TopHeader
-        user={mockUser}
-        onLogout={() => console.log("Logout")}
-        navItems={[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "Children", href: "/children" },
-          { label: "Pledges", href: "/pledges" },
-        ]}
-      />
-
+    <div className="flex min-h-screen flex-col">
+      <MainNav />
+      
       {/* Main Content */}
-      <main className="pt-14 md:pt-16">
+      <main className="flex-1 bg-background-warm">
         <div className="container py-8">
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Main Content Area */}
             <div className="flex-1 space-y-8">
               {/* Header Section */}
               <div className="space-y-4">
-                <div>
-                  <h1 className="text-3xl font-bold text-foreground">
-                    <span className="font-handwritten text-4xl text-primary">
-                      Welcome,
-                    </span>{" "}
-                    {mockUser.name.split(" ")[0]}!
-                  </h1>
-                  <p className="text-muted-foreground mt-1">
-                    Here's how your readers are doing this week
-                  </p>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h1 className="text-3xl font-bold text-foreground">
+                      <span className="font-handwritten text-4xl text-primary">
+                        Welcome,
+                      </span>{" "}
+                      {mockUser.name.split(" ")[0]}!
+                    </h1>
+                    <p className="text-muted-foreground mt-1">
+                      Here's how your readers are doing this week
+                    </p>
+                  </div>
+                  <Link to="/login">
+                    <Button variant="ghost" size="sm">
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Exit Demo
+                    </Button>
+                  </Link>
                 </div>
 
                 {/* Event Banner */}
@@ -311,24 +310,26 @@ const DashboardPage = () => {
             </aside>
           </div>
         </div>
-      </main>
 
-      {/* Mobile Quick Actions */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-card border-t border-border lg:hidden">
-        <div className="flex gap-3">
-          <Button className="flex-1" asChild>
-            <Link to="/log-reading">
-              <Plus className="h-4 w-4 mr-2" />
-              Log Reading
-            </Link>
-          </Button>
-          <Button variant="secondary" size="icon" asChild>
-            <Link to="/invite">
-              <UserPlus className="h-5 w-5" />
-            </Link>
-          </Button>
+        {/* Mobile Quick Actions */}
+        <div className="fixed bottom-0 left-0 right-0 p-4 bg-card border-t border-border lg:hidden z-40">
+          <div className="flex gap-3">
+            <Button className="flex-1" asChild>
+              <Link to="/log-reading">
+                <Plus className="h-4 w-4 mr-2" />
+                Log Reading
+              </Link>
+            </Button>
+            <Button variant="secondary" size="icon" asChild>
+              <Link to="/invite">
+                <UserPlus className="h-5 w-5" />
+              </Link>
+            </Button>
+          </div>
         </div>
-      </div>
+      </main>
+      
+      <Footer />
     </div>
   );
 };
