@@ -1,7 +1,6 @@
 import { useState, useMemo } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { TopHeader } from "@/components/layout/TopHeader";
-import { AppBreadcrumbs } from "@/components/layout/AppBreadcrumbs";
+import { MainNav, Footer, AppBreadcrumbs } from "@/components/layout";
 import { BookContainer } from "@/components/legacy";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,11 +34,6 @@ import {
 } from "lucide-react";
 
 // Mock data
-const mockUser = {
-  name: "Sarah Johnson",
-  email: "sarah@example.com",
-};
-
 const mockChildren = [
   {
     id: "1",
@@ -173,18 +167,10 @@ const LogReadingPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background-warm">
-      <TopHeader
-        user={mockUser}
-        onLogout={() => console.log("Logout")}
-        navItems={[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "Children", href: "/children" },
-          { label: "Pledges", href: "/pledges" },
-        ]}
-      />
+    <div className="flex min-h-screen flex-col">
+      <MainNav />
 
-      <main className="pt-14 md:pt-16">
+      <main className="flex-1 bg-background-warm">
         <div className="container py-8 max-w-2xl">
           {/* Breadcrumbs */}
           <AppBreadcrumbs
@@ -593,6 +579,8 @@ const LogReadingPage = () => {
           </Collapsible>
         </div>
       </main>
+
+      <Footer />
     </div>
   );
 };
