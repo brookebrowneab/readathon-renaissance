@@ -72,7 +72,7 @@ const HomePage = () => {
               <BookContainer variant="default" className="min-h-[400px]">
                 <div className="flex flex-col items-center gap-6 py-8">
                   <h2 className="font-serif text-2xl text-brand-blue">Your Reading Journey</h2>
-                  <ReadingGoalRing progress={450} goal={600} size={180} />
+                  <ReadingGoalRing progress={780} goal={600} size={180} />
                   <div className="text-center">
                     <p className="text-lg font-semibold text-foreground">Great progress!</p>
                     <p className="text-muted-foreground">150 minutes to go</p>
