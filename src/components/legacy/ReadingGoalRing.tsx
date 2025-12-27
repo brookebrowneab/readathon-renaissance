@@ -12,16 +12,6 @@ interface ReadingGoalRingProps {
 const CIRCUMFERENCE = 28.27; // radius 4.5 × 2π
 const CIRCLE_OFFSET = 5; // px offset for overlapping circles
 
-// Color tiers: blue (0-100%), green (100-200%), gold (200-300%), rainbow (300%+)
-const getTierColor = (tierIndex: number): string => {
-  const colors = [
-    "hsl(var(--brand-blue))",    // 0-100%
-    "hsl(142 76% 45%)",          // 100-200% (green)
-    "hsl(45 93% 55%)",           // 200-300% (gold)
-    "url(#rainbow-gradient)",     // 300%+ (rainbow)
-  ];
-  return colors[Math.min(tierIndex, colors.length - 1)];
-};
 
 const ReadingGoalRing = ({
   progress,
@@ -135,7 +125,7 @@ const ReadingGoalRing = ({
               cx="10"
               cy="10"
               fill="transparent"
-              stroke={getTierColor(circle.tierIndex)}
+              stroke="hsl(var(--brand-blue))"
               strokeWidth="9"
               strokeDasharray={`${circle.dashArray} ${CIRCUMFERENCE}`}
               transform="rotate(-90) translate(-20)"
@@ -159,10 +149,7 @@ const ReadingGoalRing = ({
             zIndex: circles.length + 1,
           }}
         >
-          <span 
-            className="font-handwritten text-4xl"
-            style={{ color: getTierColor(Math.min(circles.length - 1, 2)) === "url(#rainbow-gradient)" ? "#A855F7" : getTierColor(circles.length - 1) }}
-          >
+          <span className="font-handwritten text-4xl text-brand-blue">
             {Math.round(percentage)}%
           </span>
           <span className="text-sm text-muted-foreground">
