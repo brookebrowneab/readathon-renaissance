@@ -5,6 +5,7 @@ interface ReadingGoalRingProps {
   progress: number;
   goal: number;
   size?: number;
+  mobileSize?: number;
   showLabel?: boolean;
   className?: string;
 }
@@ -17,10 +18,23 @@ const ReadingGoalRing = ({
   progress,
   goal,
   size = 220,
+  mobileSize,
   showLabel = true,
   className,
 }: ReadingGoalRingProps) => {
   const percentage = useMemo(() => (progress / goal) * 100, [progress, goal]);
+  
+  // Responsive size: use mobileSize on small screens
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+  
+  const effectiveSize = isMobile && mobileSize ? mobileSize : size;
   const [showConfetti, setShowConfetti] = useState(false);
   const [lastMilestone, setLastMilestone] = useState(0);
 
@@ -61,12 +75,12 @@ const ReadingGoalRing = ({
     return result;
   }, [percentage]);
 
-  const containerWidth = circles.length * CIRCLE_OFFSET + size - CIRCLE_OFFSET + 6;
+  const containerWidth = circles.length * CIRCLE_OFFSET + effectiveSize - CIRCLE_OFFSET + 6;
 
   return (
     <div
       className={cn("relative", className)}
-      style={{ width: containerWidth, height: size + 70 }}
+      style={{ width: containerWidth, height: effectiveSize + 70 }}
       role="progressbar"
       aria-valuenow={progress}
       aria-valuemin={0}
@@ -99,14 +113,14 @@ const ReadingGoalRing = ({
           key={index}
           className="progress-ring-container"
           style={{
-            width: size,
-            height: size,
+            width: effectiveSize,
+            height: effectiveSize,
             left: index * CIRCLE_OFFSET,
             zIndex: index + 1,
             top: 3,
           }}
         >
-          <svg width={size} height={size} viewBox="0 0 20 20">
+          <svg width={effectiveSize} height={effectiveSize} viewBox="0 0 20 20">
             {/* Rainbow gradient definition */}
             <defs>
               <linearGradient id="rainbow-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -144,12 +158,15 @@ const ReadingGoalRing = ({
           className="absolute flex flex-col items-center text-center"
           style={{
             left: 0,
-            top: size + 12,
-            width: size,
+            top: effectiveSize + 12,
+            width: effectiveSize,
             zIndex: circles.length + 1,
           }}
         >
-          <span className="font-handwritten text-4xl text-brand-blue">
+          <span className={cn(
+            "font-handwritten text-brand-blue",
+            effectiveSize < 180 ? "text-3xl" : "text-4xl"
+          )}>
             {Math.round(percentage)}%
           </span>
           <span className="text-sm text-muted-foreground">
