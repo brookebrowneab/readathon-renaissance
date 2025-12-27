@@ -141,17 +141,23 @@ const LoginPage = () => {
                   >
                     Parent Demo
                   </Button>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-3 gap-2">
                     <Link to="/student-login" className="block">
-                      <Button variant="outline" className="w-full">
-                        <BookIcon size="small" variant="primary" className="mr-2" />
+                      <Button variant="outline" className="w-full text-xs px-2">
+                        <BookIcon size="small" variant="primary" className="mr-1" />
                         Student
                       </Button>
                     </Link>
                     <Link to="/teacher-dashboard" className="block">
-                      <Button variant="outline" className="w-full">
-                        <Users className="h-4 w-4 mr-2" />
+                      <Button variant="outline" className="w-full text-xs px-2">
+                        <Users className="h-4 w-4 mr-1" />
                         Teacher
+                      </Button>
+                    </Link>
+                    <Link to="/admin-dashboard" className="block">
+                      <Button variant="outline" className="w-full text-xs px-2">
+                        <Users className="h-4 w-4 mr-1" />
+                        Admin
                       </Button>
                     </Link>
                   </div>
