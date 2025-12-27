@@ -9,7 +9,7 @@ interface ReadingGoalRingProps {
   className?: string;
 }
 
-const CIRCUMFERENCE = 31.42; // radius 5 × 2π
+const CIRCUMFERENCE = 28.27; // radius 4.5 × 2π
 const CIRCLE_OFFSET = 5; // px offset for overlapping circles
 
 const ReadingGoalRing = ({
@@ -72,7 +72,7 @@ const ReadingGoalRing = ({
             <circle r="10" cx="10" cy="10" fill="transparent" />
             {/* Progress arc */}
             <circle
-              r="5"
+              r="4.5"
               cx="10"
               cy="10"
               fill="transparent"
