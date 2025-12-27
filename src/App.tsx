@@ -11,6 +11,7 @@ import RegisterPage from "./pages/auth/RegisterPage";
 import StudentLoginPage from "./pages/auth/StudentLoginPage";
 import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
 import DashboardPage from "./pages/DashboardPage";
+import LogReadingPage from "./pages/LogReadingPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -35,6 +36,7 @@ const App = () => (
           
           {/* Dashboard */}
           <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/log-reading" element={<LogReadingPage />} />
           
           {/* Catch-all */}
           <Route path="*" element={<NotFound />} />
