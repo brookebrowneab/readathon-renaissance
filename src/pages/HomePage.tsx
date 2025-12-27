@@ -99,50 +99,50 @@ const HomePage = () => {
                   
                   {/* Stats Grid */}
                   <div className="mt-2 grid w-full grid-cols-2 gap-4 px-4">
-                    <div className="flex flex-col items-center rounded-lg bg-muted/50 p-3">
-                      <span className="text-xs text-muted-foreground">Reading Goal</span>
+                    <div className="flex flex-col items-center rounded-lg bg-card p-3 shadow-sm">
+                      <span className="text-xs font-medium text-foreground/70">Reading Goal</span>
                       <span className="font-handwritten text-2xl text-brand-blue">600 min</span>
                     </div>
                     <div 
-                      className="relative flex cursor-pointer flex-col items-center rounded-lg bg-muted/50 p-3 transition-colors hover:bg-muted"
+                      className="relative flex cursor-pointer flex-col items-center rounded-lg bg-card p-3 shadow-sm transition-colors hover:bg-muted"
                       onClick={() => setTotalTimeUnit(cycleUnit(totalTimeUnit))}
                     >
                       <Star className="absolute -right-1 -top-1 h-4 w-4 fill-brand-yellow text-brand-yellow" />
-                      <span className="text-xs text-muted-foreground">Total Time Read</span>
+                      <span className="text-xs font-medium text-foreground/70">Total Time Read</span>
                       <span className="font-handwritten text-2xl text-brand-blue">{formatTime(1890, totalTimeUnit)}</span>
                     </div>
-                    <div className="flex flex-col items-center rounded-lg bg-muted/50 p-3">
-                      <span className="text-xs text-muted-foreground">Minutes Today</span>
+                    <div className="flex flex-col items-center rounded-lg bg-card p-3 shadow-sm">
+                      <span className="text-xs font-medium text-foreground/70">Minutes Today</span>
                       <span className="font-handwritten text-2xl text-brand-blue">45 min</span>
                     </div>
                     <div 
-                      className="relative flex cursor-pointer flex-col items-center rounded-lg bg-muted/50 p-3 transition-colors hover:bg-muted"
+                      className="relative flex cursor-pointer flex-col items-center rounded-lg bg-card p-3 shadow-sm transition-colors hover:bg-muted"
                       onClick={() => setClassUnit(cycleUnit(classUnit))}
                     >
                       <Star className="absolute -right-1 -top-1 h-4 w-4 fill-brand-yellow text-brand-yellow" />
-                      <span className="text-xs text-muted-foreground">My Class Has Read</span>
+                      <span className="text-xs font-medium text-foreground/70">My Class Has Read</span>
                       <span className="font-handwritten text-2xl text-brand-blue">{formatTime(12450, classUnit)}</span>
                     </div>
                     <div 
-                      className="relative flex cursor-pointer flex-col items-center rounded-lg bg-muted/50 p-3 transition-colors hover:bg-muted"
+                      className="relative flex cursor-pointer flex-col items-center rounded-lg bg-card p-3 shadow-sm transition-colors hover:bg-muted"
                       onClick={() => setGradeUnit(cycleUnit(gradeUnit))}
                     >
                       <Star className="absolute -right-1 -top-1 h-4 w-4 fill-brand-yellow text-brand-yellow" />
-                      <span className="text-xs text-muted-foreground">My Grade Has Read</span>
+                      <span className="text-xs font-medium text-foreground/70">My Grade Has Read</span>
                       <span className="font-handwritten text-2xl text-brand-blue">{formatTime(48200, gradeUnit)}</span>
                     </div>
-                    <div className="relative flex flex-col items-center rounded-lg bg-muted/50 p-3">
+                    <div className="relative flex flex-col items-center rounded-lg bg-card p-3 shadow-sm">
                       <Star className="absolute -right-1 -top-1 h-4 w-4 fill-brand-yellow text-brand-yellow" />
-                      <span className="text-xs text-muted-foreground">Money I've Raised</span>
+                      <span className="text-xs font-medium text-foreground/70">Money I've Raised</span>
                       <span className="font-handwritten text-2xl text-brand-green">$127.50</span>
                     </div>
-                    <div className="flex flex-col items-center rounded-lg bg-muted/50 p-3">
-                      <span className="text-xs text-muted-foreground">My Sponsors</span>
+                    <div className="flex flex-col items-center rounded-lg bg-card p-3 shadow-sm">
+                      <span className="text-xs font-medium text-foreground/70">My Sponsors</span>
                       <span className="font-handwritten text-2xl text-brand-blue">8</span>
                     </div>
-                    <div className="relative flex flex-col items-center rounded-lg bg-muted/50 p-3">
+                    <div className="relative flex flex-col items-center rounded-lg bg-card p-3 shadow-sm">
                       <Star className="absolute -right-1 -top-1 h-4 w-4 fill-brand-yellow text-brand-yellow" />
-                      <span className="text-xs text-muted-foreground">Books I've Read</span>
+                      <span className="text-xs font-medium text-foreground/70">Books I've Read</span>
                       <span className="font-handwritten text-2xl text-brand-blue">12</span>
                     </div>
                   </div>
