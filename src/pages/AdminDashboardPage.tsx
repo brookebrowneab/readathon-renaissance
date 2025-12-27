@@ -503,9 +503,17 @@ const AdminDashboardPage = () => {
                 </div>
               </BookContainer>
 
+              {/* Admin Actions */}
+              <Link to="/admin-users">
+                <Button variant="outline" className="w-full">
+                  <Users className="h-4 w-4 mr-2" />
+                  Manage Users
+                </Button>
+              </Link>
+
               {/* Exit Demo */}
               <Link to="/login">
-                <Button variant="outline" className="w-full">
+                <Button variant="ghost" className="w-full">
                   <LogOut className="h-4 w-4 mr-2" />
                   Exit Demo
                 </Button>
