@@ -12,6 +12,7 @@ import StudentLoginPage from "./pages/auth/StudentLoginPage";
 import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
 import DashboardPage from "./pages/DashboardPage";
 import LogReadingPage from "./pages/LogReadingPage";
+import SponsorPage from "./pages/SponsorPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,6 +28,7 @@ const App = () => (
           <Route path="/" element={<HomePage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/how-it-works" element={<HowItWorksPage />} />
+          <Route path="/sponsor/:childId" element={<SponsorPage />} />
           
           {/* Auth Routes */}
           <Route path="/login" element={<LoginPage />} />
