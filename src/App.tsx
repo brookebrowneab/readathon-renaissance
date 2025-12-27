@@ -16,6 +16,7 @@ import SponsorPage from "./pages/SponsorPage";
 import StudentDashboardPage from "./pages/StudentDashboardPage";
 import StudentLogReadingPage from "./pages/StudentLogReadingPage";
 import TeacherDashboardPage from "./pages/TeacherDashboardPage";
+import TeacherLogReadingPage from "./pages/TeacherLogReadingPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -49,6 +50,7 @@ const App = () => (
           
           {/* Teacher Dashboard */}
           <Route path="/teacher-dashboard" element={<TeacherDashboardPage />} />
+          <Route path="/teacher-log-reading" element={<TeacherLogReadingPage />} />
           
           {/* Catch-all */}
           <Route path="*" element={<NotFound />} />
