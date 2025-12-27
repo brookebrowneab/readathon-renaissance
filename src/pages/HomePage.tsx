@@ -4,7 +4,7 @@ import { PublicLayout } from "@/components/layout";
 import { BookContainer, ReadingGoalRing, BookIcon } from "@/components/legacy";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BookOpen, Users, Trophy, Heart, ArrowRight, Sparkles } from "lucide-react";
+import { BookOpen, Users, Trophy, Heart, ArrowRight, Sparkles, Star } from "lucide-react";
 
 type TimeUnit = "minutes" | "hours" | "days";
 
@@ -104,9 +104,10 @@ const HomePage = () => {
                       <span className="font-handwritten text-2xl text-brand-blue">600 min</span>
                     </div>
                     <div 
-                      className="flex cursor-pointer flex-col items-center rounded-lg bg-muted/50 p-3 transition-colors hover:bg-muted"
+                      className="relative flex cursor-pointer flex-col items-center rounded-lg bg-muted/50 p-3 transition-colors hover:bg-muted"
                       onClick={() => setTotalTimeUnit(cycleUnit(totalTimeUnit))}
                     >
+                      <Star className="absolute -right-1 -top-1 h-4 w-4 fill-brand-yellow text-brand-yellow" />
                       <span className="text-xs text-muted-foreground">Total Time Read</span>
                       <span className="font-handwritten text-2xl text-brand-blue">{formatTime(1890, totalTimeUnit)}</span>
                     </div>
@@ -115,20 +116,23 @@ const HomePage = () => {
                       <span className="font-handwritten text-2xl text-brand-blue">45 min</span>
                     </div>
                     <div 
-                      className="flex cursor-pointer flex-col items-center rounded-lg bg-muted/50 p-3 transition-colors hover:bg-muted"
+                      className="relative flex cursor-pointer flex-col items-center rounded-lg bg-muted/50 p-3 transition-colors hover:bg-muted"
                       onClick={() => setClassUnit(cycleUnit(classUnit))}
                     >
+                      <Star className="absolute -right-1 -top-1 h-4 w-4 fill-brand-yellow text-brand-yellow" />
                       <span className="text-xs text-muted-foreground">My Class Has Read</span>
                       <span className="font-handwritten text-2xl text-brand-blue">{formatTime(12450, classUnit)}</span>
                     </div>
                     <div 
-                      className="flex cursor-pointer flex-col items-center rounded-lg bg-muted/50 p-3 transition-colors hover:bg-muted"
+                      className="relative flex cursor-pointer flex-col items-center rounded-lg bg-muted/50 p-3 transition-colors hover:bg-muted"
                       onClick={() => setGradeUnit(cycleUnit(gradeUnit))}
                     >
+                      <Star className="absolute -right-1 -top-1 h-4 w-4 fill-brand-yellow text-brand-yellow" />
                       <span className="text-xs text-muted-foreground">My Grade Has Read</span>
                       <span className="font-handwritten text-2xl text-brand-blue">{formatTime(48200, gradeUnit)}</span>
                     </div>
-                    <div className="flex flex-col items-center rounded-lg bg-muted/50 p-3">
+                    <div className="relative flex flex-col items-center rounded-lg bg-muted/50 p-3">
+                      <Star className="absolute -right-1 -top-1 h-4 w-4 fill-brand-yellow text-brand-yellow" />
                       <span className="text-xs text-muted-foreground">Money I've Raised</span>
                       <span className="font-handwritten text-2xl text-brand-green">$127.50</span>
                     </div>
@@ -136,7 +140,8 @@ const HomePage = () => {
                       <span className="text-xs text-muted-foreground">My Sponsors</span>
                       <span className="font-handwritten text-2xl text-brand-blue">8</span>
                     </div>
-                    <div className="flex flex-col items-center rounded-lg bg-muted/50 p-3">
+                    <div className="relative flex flex-col items-center rounded-lg bg-muted/50 p-3">
+                      <Star className="absolute -right-1 -top-1 h-4 w-4 fill-brand-yellow text-brand-yellow" />
                       <span className="text-xs text-muted-foreground">Books I've Read</span>
                       <span className="font-handwritten text-2xl text-brand-blue">12</span>
                     </div>
