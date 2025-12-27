@@ -9,6 +9,7 @@ import HowItWorksPage from "./pages/HowItWorksPage";
 import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
 import StudentLoginPage from "./pages/auth/StudentLoginPage";
+import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
 import DashboardPage from "./pages/DashboardPage";
 import NotFound from "./pages/NotFound";
 
@@ -30,6 +31,7 @@ const App = () => (
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/student-login" element={<StudentLoginPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           
           {/* Dashboard */}
           <Route path="/dashboard" element={<DashboardPage />} />
