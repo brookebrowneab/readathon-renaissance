@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { PublicLayout } from "@/components/layout";
-import { BookContainer, ReadingGoalRing, BookIcon } from "@/components/legacy";
+import { BookContainer, ReadingGoalRing, BookIcon, Logo } from "@/components/legacy";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { BookOpen, Users, Trophy, Heart, ArrowRight, Sparkles, Star } from "lucide-react";
@@ -43,6 +43,8 @@ const HomePage = () => {
           <div className="grid items-center gap-12 lg:grid-cols-2">
             {/* Hero Content */}
             <div className="animate-fade-in space-y-6">
+              <Logo size="large" className="mb-2" />
+              
               <div className="inline-flex items-center gap-2 rounded-full bg-brand-yellow/20 px-4 py-2 text-sm font-medium text-foreground">
                 <Sparkles className="h-4 w-4 text-brand-yellow" />
                 <span>Supporting readers since 2010</span>
