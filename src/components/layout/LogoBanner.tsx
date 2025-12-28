@@ -3,14 +3,13 @@ import { Logo } from "@/components/legacy";
 
 const LogoBanner = () => {
   return (
-    <div className="relative z-40 -mt-4 hidden md:block">
-      <div className="flex justify-center">
-        <Link 
-          to="/" 
-          className="relative bg-card rounded-b-2xl px-8 py-4 shadow-md hover:shadow-lg transition-shadow"
-        >
-          <Logo size="header" />
-        </Link>
+    <div className="relative z-40 hidden md:block">
+      <div className="w-full bg-card pt-6 pb-4 shadow-md">
+        <div className="flex justify-center">
+          <Link to="/" className="hover:opacity-90 transition-opacity">
+            <Logo size="hero" />
+          </Link>
+        </div>
       </div>
     </div>
   );
