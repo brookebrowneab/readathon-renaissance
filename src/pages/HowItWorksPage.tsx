@@ -1,5 +1,5 @@
 import { PublicLayout } from "@/components/layout";
-import { BookContainer, BookIcon, Logo } from "@/components/legacy";
+import { BookContainer, BookIcon } from "@/components/legacy";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
@@ -70,7 +70,6 @@ const HowItWorksPage = () => {
       <section className="bg-background-warm py-16">
         <div className="container">
           <div className="mx-auto max-w-3xl text-center">
-            <Logo size="large" className="mx-auto mb-6" />
             <h1 className="mb-4 font-serif text-4xl font-normal text-foreground md:text-5xl">
               How Read-a-thon Works
             </h1>

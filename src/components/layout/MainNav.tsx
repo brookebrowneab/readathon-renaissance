@@ -1,5 +1,4 @@
 import { Link, useLocation } from "react-router-dom";
-import { Logo } from "@/components/legacy";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Menu, User, LogOut } from "lucide-react";
@@ -37,17 +36,10 @@ const MainNav = () => {
     <>
       {/* Desktop Header */}
       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-primary backdrop-blur supports-[backdrop-filter]:bg-primary/95 hidden md:block">
-        <div className="container flex h-16 items-center justify-between">
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-3 hover-scale">
-            <Logo size="small" />
-            <span className="text-lg font-semibold text-primary-foreground">
-              Read-a-thon
-            </span>
-          </Link>
+        <div className="container flex h-14 items-center justify-center">
 
-          {/* Desktop Nav */}
-          <nav className="flex items-center gap-6">
+          {/* Desktop Nav - Left */}
+          <nav className="flex items-center gap-8">
             {publicNav.map((item) => (
               <Link
                 key={item.href}
@@ -62,7 +54,10 @@ const MainNav = () => {
             ))}
           </nav>
 
-          {/* Auth Buttons */}
+          {/* Spacer */}
+          <div className="w-8" />
+
+          {/* Auth Buttons - Right */}
           <div className="flex items-center gap-3">
             {isAuthenticated ? (
               <>
@@ -102,12 +97,9 @@ const MainNav = () => {
 
       {/* Mobile Header */}
       <header className="sticky top-0 z-40 flex items-center justify-between h-14 px-4 border-b bg-primary md:hidden">
-        <Link to="/" className="flex items-center gap-2">
-          <Logo size="small" className="h-8 w-8" />
-          <span className="text-base font-semibold text-primary-foreground">
-            Read-a-thon
-          </span>
-        </Link>
+        <span className="text-base font-semibold text-primary-foreground">
+          Read-a-thon
+        </span>
         <button
           onClick={() => setMobileOpen(true)}
           className="flex items-center justify-center w-11 h-11 rounded-lg text-primary-foreground hover:bg-white/10 transition-colors"

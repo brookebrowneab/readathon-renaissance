@@ -1,5 +1,5 @@
 import { PublicLayout } from "@/components/layout";
-import { BookContainer, Logo, BookIcon } from "@/components/legacy";
+import { BookContainer, BookIcon } from "@/components/legacy";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, School, Heart, Target, Award, BookOpen } from "lucide-react";
 
@@ -10,7 +10,6 @@ const AboutPage = () => {
       <section className="bg-background-warm py-16 md:py-24">
         <div className="container">
           <div className="mx-auto max-w-3xl text-center">
-            <Logo size="large" className="mx-auto mb-6" />
             <h1 className="mb-4 font-serif text-4xl font-normal text-foreground md:text-5xl">
               About Read-a-thon
             </h1>
