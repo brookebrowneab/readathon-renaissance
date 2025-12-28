@@ -18,8 +18,8 @@ const LogoBanner = () => {
       <div 
         className="hidden md:block absolute z-50 pointer-events-none"
         style={{
-          width: '432px',
-          height: '559px',
+          width: '419px',
+          height: '542px',
           right: '0',
           bottom: '0',
           transform: 'translateY(39%)',
