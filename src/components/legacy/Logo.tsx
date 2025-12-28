@@ -3,7 +3,7 @@ import { forwardRef, HTMLAttributes } from "react";
 import logoSvg from "@/assets/logo.svg";
 
 interface LogoProps extends HTMLAttributes<HTMLImageElement> {
-  size?: "favicon" | "small" | "medium" | "large" | "header";
+  size?: "favicon" | "small" | "medium" | "large" | "header" | "hero";
 }
 
 const sizeMap = {
@@ -12,6 +12,7 @@ const sizeMap = {
   medium: 64,
   large: 128,
   header: 180,
+  hero: 540,
 };
 
 const Logo = forwardRef<HTMLImageElement, LogoProps>(
