@@ -4,8 +4,8 @@ import { Logo } from "@/components/legacy";
 const LogoBanner = () => {
   return (
     <div className="relative z-40 hidden md:block">
-      <div className="w-full bg-card pt-6 pb-4 shadow-md">
-        <div className="flex justify-center">
+      <div className="w-full bg-card py-3 shadow-md">
+        <div className="container flex items-center">
           <Link to="/" className="hover:opacity-90 transition-opacity">
             <Logo size="hero" />
           </Link>
