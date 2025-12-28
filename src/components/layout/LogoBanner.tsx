@@ -22,7 +22,7 @@ const LogoBanner = () => {
           height: '582px',
           right: '0',
           bottom: '0',
-          transform: 'translateY(50%)',
+          transform: 'translateY(45%)',
         }}
       >
         <svg viewBox="0 0 612 792" className="w-full h-full">
