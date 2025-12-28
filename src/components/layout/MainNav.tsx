@@ -12,7 +12,6 @@ interface NavItem {
 }
 
 const publicNav: NavItem[] = [
-  { label: "Home", href: "/" },
   { label: "About", href: "/about" },
   { label: "How It Works", href: "/how-it-works" },
 ];
@@ -36,7 +35,7 @@ const MainNav = () => {
     <>
       {/* Desktop Header */}
       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-primary backdrop-blur supports-[backdrop-filter]:bg-primary/95 hidden md:block">
-        <div className="container flex h-14 items-center justify-center">
+        <div className="container flex h-14 items-center justify-between">
 
           {/* Desktop Nav - Left */}
           <nav className="flex items-center gap-8">
@@ -53,9 +52,6 @@ const MainNav = () => {
               </Link>
             ))}
           </nav>
-
-          {/* Spacer */}
-          <div className="w-8" />
 
           {/* Auth Buttons - Right */}
           <div className="flex items-center gap-3">
