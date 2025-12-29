@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Logo, BookIcon } from "@/components/legacy";
+import { BookIcon } from "@/components/legacy";
 
 const Footer = () => {
   return (
@@ -9,7 +9,6 @@ const Footer = () => {
           {/* Brand */}
           <div className="space-y-4">
             <Link to="/" className="flex items-center gap-3">
-              <Logo size="small" />
               <span className="text-lg font-semibold text-foreground">
                 Read-a-thon
               </span>
