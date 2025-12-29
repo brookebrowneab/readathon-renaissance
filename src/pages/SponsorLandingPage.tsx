@@ -28,11 +28,14 @@ const getMockData = (code: string) => ({
   daysLeft: 12,
   sponsorCount: 4,
   inviteeName: code.includes("grandma") ? "Grandma Betty" : "",
-  // Grade-level stats from last year
+  // TODO: Calculate from historical reading event data
+  // These stats should be fetched from the database based on:
+  // - Previous year(s) reading logs for this grade level
+  // - Could aggregate across all past events or just most recent year
   gradeStats: {
-    avgMinutes: 412,
-    maxMinutes: 687,
-    participantCount: 48,
+    avgMinutes: 412,      // TODO: AVG(total_minutes) WHERE grade = student.grade
+    maxMinutes: 687,      // TODO: MAX(total_minutes) WHERE grade = student.grade
+    participantCount: 48, // TODO: COUNT(*) WHERE grade = student.grade
   },
 });
 
