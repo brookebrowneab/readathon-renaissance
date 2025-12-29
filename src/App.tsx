@@ -18,6 +18,7 @@ import LogReadingPage from "./pages/LogReadingPage";
 import SponsorPage from "./pages/SponsorPage";
 import SponsorLandingPage from "./pages/SponsorLandingPage";
 import { 
+  SponsorGatewayPage,
   SponsorThankYouPage, 
   SponsorPledgedPage, 
   SponsorCheckInstructionsPage,
@@ -52,6 +53,7 @@ const App = () => (
           <Route path="/" element={<HomePage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/how-it-works" element={<HowItWorksPage />} />
+          <Route path="/sponsor" element={<SponsorGatewayPage />} />
           <Route path="/sponsor/:childId" element={<SponsorPage />} />
           <Route path="/invite/:token" element={<SponsorLandingPage />} />
           <Route path="/s/:code" element={<SponsorLandingPage />} />
