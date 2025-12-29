@@ -125,46 +125,47 @@ const HomePage = () => {
       {/* Pledge Types */}
       <section className="bg-background-warm py-16 md:py-24">
         <div className="container">
-          <div className="mb-12 text-left max-w-2xl">
-            <h2 className="mb-4 font-serif text-3xl font-normal text-foreground md:text-4xl">
-              Two Ways to Pledge
-            </h2>
-            <p className="text-muted-foreground">
-              Students ask friends, family, and neighbors to support them by pledging:
-            </p>
+          <div className="grid items-center gap-12 lg:grid-cols-2">
+            <div className="space-y-4">
+              <h2 className="font-serif text-3xl font-normal text-foreground md:text-4xl">
+                Two Ways to Pledge
+              </h2>
+              <p className="text-muted-foreground">
+                Students ask friends, family, and neighbors to support them by pledging:
+              </p>
+              <p className="text-lg font-medium text-brand-blue">
+                Every page helps strengthen our school community.
+              </p>
+            </div>
+
+            <div className="grid gap-6 sm:grid-cols-2">
+              <Card className="group relative overflow-hidden border-0 bg-card shadow-md transition-all hover:shadow-lg">
+                <CardHeader>
+                  <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-brand-blue/10 text-brand-blue transition-colors group-hover:bg-brand-blue group-hover:text-white">
+                    <DollarSign className="h-6 w-6" />
+                  </div>
+                  <CardTitle className="text-xl">Flat Donation</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">A one-time gift to support your reader.</p>
+                  <p className="font-handwritten text-2xl text-brand-blue mt-2">$20, $40, or more</p>
+                </CardContent>
+              </Card>
+
+              <Card className="group relative overflow-hidden border-0 bg-card shadow-md transition-all hover:shadow-lg">
+                <CardHeader>
+                  <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-brand-blue/10 text-brand-blue transition-colors group-hover:bg-brand-blue group-hover:text-white">
+                    <BookOpen className="h-6 w-6" />
+                  </div>
+                  <CardTitle className="text-xl">Per-Minute Pledge</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">The more they read, the more they raise!</p>
+                  <p className="font-handwritten text-2xl text-brand-blue mt-2">$0.05, $0.10/min</p>
+                </CardContent>
+              </Card>
+            </div>
           </div>
-
-          <div className="grid gap-8 md:grid-cols-2 max-w-3xl">
-            <Card className="group relative overflow-hidden border-0 bg-card shadow-md transition-all hover:shadow-lg">
-              <CardHeader>
-                <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-brand-blue/10 text-brand-blue transition-colors group-hover:bg-brand-blue group-hover:text-white">
-                  <DollarSign className="h-6 w-6" />
-                </div>
-                <CardTitle className="text-xl">Flat Donation</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">A one-time gift to support your reader.</p>
-                <p className="font-handwritten text-2xl text-brand-blue mt-2">$20, $40, or more</p>
-              </CardContent>
-            </Card>
-
-            <Card className="group relative overflow-hidden border-0 bg-card shadow-md transition-all hover:shadow-lg">
-              <CardHeader>
-                <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-brand-blue/10 text-brand-blue transition-colors group-hover:bg-brand-blue group-hover:text-white">
-                  <BookOpen className="h-6 w-6" />
-                </div>
-                <CardTitle className="text-xl">Per-Minute Pledge</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">The more they read, the more they raise!</p>
-                <p className="font-handwritten text-2xl text-brand-blue mt-2">$0.05, $0.10/min</p>
-              </CardContent>
-            </Card>
-          </div>
-
-          <p className="mt-8 text-lg font-medium text-brand-blue">
-            Every page helps strengthen our school community.
-          </p>
         </div>
       </section>
 
@@ -217,77 +218,78 @@ const HomePage = () => {
       {/* What Your Donations Support */}
       <section className="bg-background-warm py-16 md:py-24">
         <div className="container">
-          <div className="mb-8 max-w-2xl">
-            <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-brand-green/10 text-brand-green">
-              <School className="h-6 w-6" />
-            </div>
-            <h2 className="font-serif text-3xl font-normal text-foreground md:text-4xl mb-4">
-              What Your Donations Support
-            </h2>
-            <p className="text-muted-foreground">
-              Funds raised through the Read-A-Thon help pay for:
-            </p>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 max-w-4xl">
-            {[
-              "Technology materials and support",
-              "Classroom supplies and textbooks",
-              "Instructional materials",
-              "Teacher professional development",
-              "Custodial equipment and supplies",
-              "Facilities repairs",
-            ].map((item, index) => (
-              <div key={index} className="flex items-start gap-3 rounded-lg bg-card p-4 shadow-sm">
-                <span className="mt-1 h-2 w-2 rounded-full bg-brand-green shrink-0" />
-                <span className="text-muted-foreground">{item}</span>
+          <div className="grid items-start gap-12 lg:grid-cols-2">
+            <div className="space-y-4">
+              <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-brand-green/10 text-brand-green">
+                <School className="h-6 w-6" />
               </div>
-            ))}
-            <div className="flex items-start gap-3 rounded-lg bg-card p-4 shadow-sm sm:col-span-2 lg:col-span-1">
-              <span className="mt-1 h-2 w-2 rounded-full bg-brand-green shrink-0" />
-              <span className="text-muted-foreground">Salaries for <span className="font-handwritten text-xl text-brand-green">10</span> teacher and support staff positions</span>
+              <h2 className="font-serif text-3xl font-normal text-foreground md:text-4xl">
+                What Your Donations Support
+              </h2>
+              <p className="text-muted-foreground">
+                Funds raised through the Read-A-Thon help pay for:
+              </p>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              {[
+                "Technology materials and support",
+                "Classroom supplies and textbooks",
+                "Instructional materials",
+                "Teacher professional development",
+                "Custodial equipment and supplies",
+                "Facilities repairs",
+              ].map((item, index) => (
+                <div key={index} className="flex items-start gap-3 rounded-lg bg-card p-4 shadow-sm">
+                  <span className="mt-1 h-2 w-2 rounded-full bg-brand-green shrink-0" />
+                  <span className="text-muted-foreground">{item}</span>
+                </div>
+              ))}
+              <div className="flex items-start gap-3 rounded-lg bg-card p-4 shadow-sm sm:col-span-2">
+                <span className="mt-1 h-2 w-2 rounded-full bg-brand-green shrink-0" />
+                <span className="text-muted-foreground">Salaries for <span className="font-handwritten text-xl text-brand-green">10</span> teacher and support staff positions</span>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Prizes */}
+      {/* Prizes & Questions */}
       <section className="bg-background py-16 md:py-24">
         <div className="container">
-          <div className="max-w-2xl">
-            <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-brand-yellow/20 text-brand-yellow">
-              <Gift className="h-6 w-6" />
+          <div className="grid gap-12 lg:grid-cols-2">
+            {/* Prizes */}
+            <div className="space-y-4">
+              <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-brand-yellow/20 text-brand-yellow">
+                <Gift className="h-6 w-6" />
+              </div>
+              <h2 className="font-serif text-3xl font-normal text-foreground md:text-4xl">
+                Prizes 🎉
+              </h2>
+              <p className="text-lg text-muted-foreground">
+                The top reader in each grade will receive a gift card to Politics and Prose.
+              </p>
             </div>
-            <h2 className="font-serif text-3xl font-normal text-foreground md:text-4xl mb-4">
-              Prizes 🎉
-            </h2>
-            <p className="text-lg text-muted-foreground">
-              The top reader in each grade will receive a gift card to Politics and Prose.
-            </p>
-          </div>
-        </div>
-      </section>
 
-      {/* Questions */}
-      <section className="bg-background-warm py-16 md:py-24">
-        <div className="container">
-          <div className="max-w-2xl">
-            <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-brand-blue/10 text-brand-blue">
-              <HelpCircle className="h-6 w-6" />
+            {/* Questions */}
+            <div className="space-y-4">
+              <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-brand-blue/10 text-brand-blue">
+                <HelpCircle className="h-6 w-6" />
+              </div>
+              <h2 className="font-serif text-3xl font-normal text-foreground md:text-4xl">
+                Questions?
+              </h2>
+              <p className="text-muted-foreground">
+                We're here to help with anything you need.
+              </p>
+              <a 
+                href="mailto:janneyreadathon@janneyschool.org" 
+                className="inline-flex items-center gap-2 text-brand-blue hover:underline font-medium"
+              >
+                <Mail className="h-5 w-5" />
+                janneyreadathon@janneyschool.org
+              </a>
             </div>
-            <h2 className="font-serif text-3xl font-normal text-foreground md:text-4xl mb-4">
-              Questions?
-            </h2>
-            <p className="text-muted-foreground mb-6">
-              We're here to help with anything you need.
-            </p>
-            <a 
-              href="mailto:janneyreadathon@janneyschool.org" 
-              className="inline-flex items-center gap-2 text-brand-blue hover:underline font-medium"
-            >
-              <Mail className="h-5 w-5" />
-              janneyreadathon@janneyschool.org
-            </a>
           </div>
         </div>
       </section>
