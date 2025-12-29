@@ -5,3 +5,4 @@ export { default as SponsorLoginPage } from "./SponsorLoginPage";
 export { default as SponsorCheckEmailPage } from "./SponsorCheckEmailPage";
 export { default as SponsorDashboardPage } from "./SponsorDashboardPage";
 export { default as SponsorPaymentPage } from "./SponsorPaymentPage";
+export { default as ReturningSponsorPage } from "./ReturningSponsorPage";
