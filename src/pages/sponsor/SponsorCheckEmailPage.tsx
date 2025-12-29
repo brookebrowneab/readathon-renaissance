@@ -48,38 +48,38 @@ const SponsorCheckEmailPage = () => {
         <div className="container max-w-md">
           <BookContainer variant="default" className="p-8 text-center">
             {/* Envelope Illustration */}
-            <div className="relative w-24 h-24 mx-auto mb-6">
+            <div className="relative w-28 h-28 mx-auto mb-6">
               <div className="absolute inset-0 bg-brand-blue/10 rounded-full" />
               <div className="absolute inset-0 flex items-center justify-center">
-                <Mail className="h-12 w-12 text-brand-blue" />
+                <Mail className="h-14 w-14 text-brand-blue" />
               </div>
-              <div className="absolute -top-1 -right-1 w-8 h-8 bg-success rounded-full flex items-center justify-center">
-                <CheckCircle className="h-5 w-5 text-success-foreground" />
+              <div className="absolute -top-1 -right-1 w-10 h-10 bg-success rounded-full flex items-center justify-center">
+                <CheckCircle className="h-6 w-6 text-success-foreground" />
               </div>
             </div>
 
-            <h1 className="font-serif text-3xl font-normal tracking-tight text-foreground mb-2">
+            <h1 className="font-serif text-4xl font-normal tracking-tight text-foreground mb-3">
               Check your email!
             </h1>
 
-            <p className="text-muted-foreground mb-2">
+            <p className="text-lg text-muted-foreground mb-2">
               We sent a login link to
             </p>
-            <p className="font-medium text-foreground text-lg mb-6">
+            <p className="font-medium text-foreground text-xl mb-6">
               {email}
             </p>
 
-            <p className="text-muted-foreground">
-              Click the link in the email to continue.
+            <p className="text-lg text-muted-foreground">
+              Click the link in the email to sign in.
             </p>
 
             {/* Didn't get it section */}
             <div className="mt-8 pt-6 border-t border-border space-y-4">
-              <p className="text-sm font-medium text-foreground">
+              <p className="text-lg font-medium text-foreground">
                 Didn't get it?
               </p>
 
-              <ul className="text-sm text-muted-foreground space-y-2">
+              <ul className="text-lg text-muted-foreground space-y-2">
                 <li className="flex items-center justify-center gap-2">
                   <span className="text-muted-foreground/60">•</span>
                   Check your spam folder
@@ -91,9 +91,10 @@ const SponsorCheckEmailPage = () => {
                 onClick={handleResend}
                 disabled={resendCooldown > 0 || isResending}
                 loading={isResending}
-                className="w-full"
+                className="w-full h-14 text-lg"
+                size="lg"
               >
-                <RefreshCw className="h-4 w-4 mr-2" />
+                <RefreshCw className="h-5 w-5 mr-2" />
                 {resendCooldown > 0 
                   ? `Resend in ${resendCooldown}s` 
                   : "Resend email"
@@ -102,9 +103,9 @@ const SponsorCheckEmailPage = () => {
 
               <Link
                 to="/sponsor/login"
-                className="inline-flex items-center gap-2 text-sm text-primary hover:underline"
+                className="inline-flex items-center gap-2 text-lg text-primary hover:underline"
               >
-                <ArrowLeft className="h-4 w-4" />
+                <ArrowLeft className="h-5 w-5" />
                 Try a different email
               </Link>
             </div>
