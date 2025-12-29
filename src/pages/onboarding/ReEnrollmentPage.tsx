@@ -190,7 +190,7 @@ const ReEnrollmentPage = () => {
             <div className="space-y-6">
               {/* Header */}
               <div className="text-center">
-                <Logo size="small" className="mx-auto mb-4" />
+                <Logo size="large" className="mx-auto mb-4" />
                 <h1 className="text-2xl font-bold text-foreground">
                   Welcome back, {MOCK_PARENT.firstName}!
                 </h1>

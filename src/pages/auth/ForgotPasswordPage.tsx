@@ -24,7 +24,7 @@ const ForgotPasswordPage = () => {
           <div className="bg-card rounded-xl shadow-md p-8 animate-fade-in">
             {/* Logo */}
             <div className="text-center mb-8">
-              <Logo size="medium" className="mx-auto mb-6" />
+              <Logo size="large" className="mx-auto mb-6" />
             </div>
 
             {isSubmitted ? (
