@@ -20,8 +20,9 @@ import SponsorLandingPage from "./pages/SponsorLandingPage";
 import { SponsorThankYouPage, SponsorPledgedPage, SponsorCheckInstructionsPage } from "./pages/sponsor";
 import SponsorDashboardPage from "./pages/SponsorDashboardPage";
 import { StudentLoginPage, StudentDashboardPage as StudentDashboard, StudentLogReadingPage as StudentLogReading } from "./pages/student";
-import TeacherDashboardPage from "./pages/TeacherDashboardPage";
-import TeacherLogReadingPage from "./pages/TeacherLogReadingPage";
+import { TeacherDashboard, TeacherLogReading } from "./pages/teacher";
+import OldTeacherDashboardPage from "./pages/TeacherDashboardPage";
+import OldTeacherLogReadingPage from "./pages/TeacherLogReadingPage";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
 import AdminUsersPage from "./pages/AdminUsersPage";
 import AdminFinancePage from "./pages/AdminFinancePage";
@@ -75,8 +76,10 @@ const App = () => (
           <Route path="/student-log-reading" element={<StudentLogReading />} />
           
           {/* Teacher Dashboard */}
-          <Route path="/teacher-dashboard" element={<TeacherDashboardPage />} />
-          <Route path="/teacher-log-reading" element={<TeacherLogReadingPage />} />
+          <Route path="/teacher" element={<TeacherDashboard />} />
+          <Route path="/teacher/log" element={<TeacherLogReading />} />
+          <Route path="/teacher-dashboard" element={<OldTeacherDashboardPage />} />
+          <Route path="/teacher-log-reading" element={<OldTeacherLogReadingPage />} />
           
           {/* Admin Dashboard */}
           <Route path="/admin-dashboard" element={<AdminDashboardPage />} />
