@@ -17,8 +17,16 @@ import AddSponsorPage from "./pages/AddSponsorPage";
 import LogReadingPage from "./pages/LogReadingPage";
 import SponsorPage from "./pages/SponsorPage";
 import SponsorLandingPage from "./pages/SponsorLandingPage";
-import { SponsorThankYouPage, SponsorPledgedPage, SponsorCheckInstructionsPage } from "./pages/sponsor";
-import SponsorDashboardPage from "./pages/SponsorDashboardPage";
+import { 
+  SponsorThankYouPage, 
+  SponsorPledgedPage, 
+  SponsorCheckInstructionsPage,
+  SponsorLoginPage,
+  SponsorCheckEmailPage,
+  SponsorDashboardPage,
+  SponsorPaymentPage,
+} from "./pages/sponsor";
+import OldSponsorDashboardPage from "./pages/SponsorDashboardPage";
 import { StudentLoginPage, StudentDashboardPage as StudentDashboard, StudentLogReadingPage as StudentLogReading } from "./pages/student";
 import { TeacherDashboard, TeacherLogReading } from "./pages/teacher";
 import OldTeacherDashboardPage from "./pages/TeacherDashboardPage";
@@ -66,7 +74,11 @@ const App = () => (
           <Route path="/log-reading" element={<LogReadingPage />} />
           
           {/* Sponsor Dashboard */}
-          <Route path="/sponsor-dashboard" element={<SponsorDashboardPage />} />
+          <Route path="/sponsor/login" element={<SponsorLoginPage />} />
+          <Route path="/sponsor/check-email" element={<SponsorCheckEmailPage />} />
+          <Route path="/sponsor/dashboard" element={<SponsorDashboardPage />} />
+          <Route path="/sponsor/pay" element={<SponsorPaymentPage />} />
+          <Route path="/sponsor-dashboard" element={<OldSponsorDashboardPage />} />
           
           {/* Student Dashboard */}
           <Route path="/student/login" element={<StudentLoginPage />} />
