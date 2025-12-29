@@ -57,11 +57,11 @@ const LogoBanner = () => {
         image={kidsReadingImage}
         className="hidden md:block absolute z-50 pointer-events-none"
         style={{
-          width: '480px',
-          height: '620px',
-          right: '-20px',
+          width: '419px',
+          height: '542px',
+          right: '0',
           bottom: '0',
-          transform: 'translateY(calc(45% - 7px))',
+          transform: 'translateY(calc(39% - 7px))',
         }}
       />
       
