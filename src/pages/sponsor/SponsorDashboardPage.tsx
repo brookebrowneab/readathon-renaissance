@@ -5,6 +5,7 @@ import { BookContainer } from "@/components/legacy";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { toast } from "@/components/ui/sonner";
 import {
   Card,
   CardContent,
@@ -90,10 +91,18 @@ const SponsorDashboardPage = () => {
 
   const handleRequestAccess = async () => {
     setIsRequestingAccess(true);
+    
+    // Simulate API call to send notification email
     await new Promise((resolve) => setTimeout(resolve, 1500));
+    
+    // Simulate successful email sent
     setIsRequestingAccess(false);
     setAccessRequested(true);
     setShowRequestConfirm(false);
+    
+    toast.success("Request sent to the family!", {
+      description: "They'll receive an email and you'll be notified when they respond.",
+    });
   };
 
   const handleSubmitCode = (e: React.FormEvent) => {
