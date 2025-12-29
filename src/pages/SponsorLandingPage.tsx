@@ -9,12 +9,9 @@ import {
   CreditCard, 
   Mail, 
   FileText, 
-  Calculator, 
-  ChevronDown,
-  ChevronUp,
   Check,
-  Heart,
-  Users
+  Users,
+  Heart
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -43,11 +40,10 @@ const SponsorLandingPage = () => {
   
   const [data] = useState(() => getMockData(identifier));
   const [sponsorName, setSponsorName] = useState(data.inviteeName);
-  const [selectedAmount, setSelectedAmount] = useState<number | null>(50);
+  const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
   const [customAmount, setCustomAmount] = useState("");
-  const [showPerMinute, setShowPerMinute] = useState(false);
-  const [perMinuteRate, setPerMinuteRate] = useState("0.05");
-  const [usePerMinute, setUsePerMinute] = useState(false);
+  const [perMinuteRate, setPerMinuteRate] = useState("0.10");
+  const [usePerMinute, setUsePerMinute] = useState(true); // Default to per-minute
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -157,128 +153,182 @@ const SponsorLandingPage = () => {
                 />
               </FormField>
 
-              {/* Pledge Amount */}
+              {/* Pledge Type Selection */}
               <div className="space-y-4">
                 <label className="block font-serif text-xl text-foreground">
-                  How much would you like to pledge?
+                  Choose how you'd like to pledge
                 </label>
                 
-                {/* Amount Buttons */}
-                <div className="grid grid-cols-4 gap-3">
-                  {AMOUNT_OPTIONS.map((amount) => (
-                    <button
-                      key={amount}
-                      type="button"
-                      onClick={() => {
-                        setSelectedAmount(amount);
-                        setCustomAmount("");
-                        setUsePerMinute(false);
-                      }}
-                      className={cn(
-                        "h-16 rounded-xl font-handwritten text-3xl transition-all border-2",
-                        selectedAmount === amount && !customAmount && !usePerMinute
-                          ? "bg-primary text-primary-foreground border-primary"
-                          : "bg-card text-foreground border-border hover:border-primary/50"
-                      )}
-                    >
-                      ${amount}
-                    </button>
-                  ))}
+                <div className="grid md:grid-cols-2 gap-4">
+                  {/* Per Minute Option - First/Prominent */}
                   <button
                     type="button"
                     onClick={() => {
+                      setUsePerMinute(true);
                       setSelectedAmount(null);
-                      setUsePerMinute(false);
-                      // Focus the custom input
+                      setCustomAmount("");
                     }}
                     className={cn(
-                      "h-16 rounded-xl text-lg font-medium transition-all border-2",
-                      customAmount && !usePerMinute
-                        ? "bg-primary text-primary-foreground border-primary"
-                        : "bg-card text-foreground border-border hover:border-primary/50"
+                      "p-5 rounded-xl border-2 text-left transition-all",
+                      usePerMinute
+                        ? "border-primary bg-primary/5 ring-2 ring-primary/20"
+                        : "border-border hover:border-primary/50"
                     )}
                   >
-                    Other
+                    <div className="flex items-start gap-3">
+                      <div className={cn(
+                        "w-5 h-5 mt-0.5 rounded-full border-2 flex items-center justify-center shrink-0",
+                        usePerMinute ? "border-primary" : "border-muted-foreground"
+                      )}>
+                        {usePerMinute && <div className="w-2.5 h-2.5 rounded-full bg-primary" />}
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-serif text-lg text-foreground mb-1">Per minute read</p>
+                        <p className="text-muted-foreground text-sm mb-3">
+                          The more they read, the more they earn!
+                        </p>
+                        <p className="font-handwritten text-2xl text-brand-blue">
+                          e.g. $0.10/min → ${(0.10 * data.readingGoal).toFixed(0)} if goal met
+                        </p>
+                      </div>
+                    </div>
                   </button>
-                </div>
 
-                {/* Custom Amount Input */}
-                {(selectedAmount === null || customAmount) && !usePerMinute && (
-                  <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl text-muted-foreground">$</span>
-                    <Input
-                      type="number"
-                      min={1}
-                      value={customAmount}
-                      onChange={(e) => {
-                        setCustomAmount(e.target.value);
-                        setSelectedAmount(null);
-                      }}
-                      placeholder="Enter amount"
-                      className="h-14 text-xl pl-10"
-                      autoFocus
-                    />
-                  </div>
-                )}
-
-                {/* Per Minute Option */}
-                <div className="pt-2">
+                  {/* Flat Amount Option */}
                   <button
                     type="button"
-                    onClick={() => setShowPerMinute(!showPerMinute)}
-                    className="flex items-center gap-2 text-primary hover:underline text-lg"
+                    onClick={() => {
+                      setUsePerMinute(false);
+                      if (!selectedAmount && !customAmount) {
+                        setSelectedAmount(50);
+                      }
+                    }}
+                    className={cn(
+                      "p-5 rounded-xl border-2 text-left transition-all",
+                      !usePerMinute
+                        ? "border-primary bg-primary/5 ring-2 ring-primary/20"
+                        : "border-border hover:border-primary/50"
+                    )}
                   >
-                    {showPerMinute ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
-                    More options
-                  </button>
-
-                  {showPerMinute && (
-                    <div className="mt-4 p-4 bg-muted/30 rounded-xl space-y-4">
-                      <button
-                        type="button"
-                        onClick={() => setUsePerMinute(!usePerMinute)}
-                        className={cn(
-                          "w-full p-4 rounded-lg border-2 text-left transition-all flex items-center gap-3",
-                          usePerMinute
-                            ? "border-primary bg-primary/5"
-                            : "border-border hover:border-primary/50"
-                        )}
-                      >
-                        <div className={cn(
-                          "w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0",
-                          usePerMinute ? "border-primary" : "border-muted-foreground"
-                        )}>
-                          {usePerMinute && <div className="w-3 h-3 rounded-full bg-primary" />}
-                        </div>
-                        <span className="text-lg">Pledge per minute read</span>
-                      </button>
-
-                      {usePerMinute && (
-                        <div className="space-y-4 pl-9">
-                          <div className="flex items-center gap-3">
-                            <span className="text-lg text-muted-foreground">$</span>
-                            <Input
-                              type="number"
-                              step="0.01"
-                              min={0.01}
-                              value={perMinuteRate}
-                              onChange={(e) => setPerMinuteRate(e.target.value)}
-                              className="h-12 text-lg w-24"
-                            />
-                            <span className="text-lg text-muted-foreground">per minute</span>
-                          </div>
-                          
-                          <div className="flex items-center gap-2 text-lg text-muted-foreground">
-                            <Calculator className="h-5 w-5" />
-                            <span>
-                              At {data.readingGoal} minutes = <span className="font-handwritten text-2xl text-brand-blue">${calculatedPerMinute.toFixed(2)}</span>
-                            </span>
-                          </div>
-                        </div>
-                      )}
+                    <div className="flex items-start gap-3">
+                      <div className={cn(
+                        "w-5 h-5 mt-0.5 rounded-full border-2 flex items-center justify-center shrink-0",
+                        !usePerMinute ? "border-primary" : "border-muted-foreground"
+                      )}>
+                        {!usePerMinute && <div className="w-2.5 h-2.5 rounded-full bg-primary" />}
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-serif text-lg text-foreground mb-1">Flat amount</p>
+                        <p className="text-muted-foreground text-sm mb-3">
+                          A simple, one-time gift
+                        </p>
+                        <p className="font-handwritten text-2xl text-brand-blue">
+                          e.g. $25, $50, $100
+                        </p>
+                      </div>
                     </div>
-                  )}
+                  </button>
                 </div>
+              </div>
+
+              {/* Amount Configuration */}
+              <div className="space-y-4">
+                <label className="block font-serif text-xl text-foreground">
+                  {usePerMinute ? "Set your per-minute rate" : "Choose your amount"}
+                </label>
+
+                {usePerMinute ? (
+                  /* Per Minute Rate Selection */
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-4 gap-3">
+                      {[0.05, 0.10, 0.15, 0.25].map((rate) => (
+                        <button
+                          key={rate}
+                          type="button"
+                          onClick={() => setPerMinuteRate(rate.toString())}
+                          className={cn(
+                            "h-16 rounded-xl font-handwritten text-2xl transition-all border-2",
+                            parseFloat(perMinuteRate) === rate
+                              ? "bg-primary text-primary-foreground border-primary"
+                              : "bg-card text-foreground border-border hover:border-primary/50"
+                          )}
+                        >
+                          ${rate.toFixed(2)}
+                        </button>
+                      ))}
+                    </div>
+                    
+                    <div className="flex items-center gap-3">
+                      <span className="text-lg text-muted-foreground">Or enter custom:</span>
+                      <div className="relative w-28">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-lg text-muted-foreground">$</span>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          min={0.01}
+                          value={perMinuteRate}
+                          onChange={(e) => setPerMinuteRate(e.target.value)}
+                          className="h-12 text-lg pl-8"
+                        />
+                      </div>
+                      <span className="text-lg text-muted-foreground">/min</span>
+                    </div>
+
+                    {/* Calculation Display */}
+                    <div className="bg-muted/30 rounded-xl p-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-lg text-muted-foreground">
+                          If {data.childFirstName} reaches their {data.readingGoal} min goal:
+                        </span>
+                        <span className="font-handwritten text-3xl text-brand-blue">
+                          ${calculatedPerMinute.toFixed(2)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  /* Flat Amount Selection */
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-4 gap-3">
+                      {AMOUNT_OPTIONS.map((amount) => (
+                        <button
+                          key={amount}
+                          type="button"
+                          onClick={() => {
+                            setSelectedAmount(amount);
+                            setCustomAmount("");
+                          }}
+                          className={cn(
+                            "h-16 rounded-xl font-handwritten text-3xl transition-all border-2",
+                            selectedAmount === amount && !customAmount
+                              ? "bg-primary text-primary-foreground border-primary"
+                              : "bg-card text-foreground border-border hover:border-primary/50"
+                          )}
+                        >
+                          ${amount}
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <span className="text-lg text-muted-foreground">Or enter custom:</span>
+                      <div className="relative flex-1 max-w-[160px]">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xl text-muted-foreground">$</span>
+                        <Input
+                          type="number"
+                          min={1}
+                          value={customAmount}
+                          onChange={(e) => {
+                            setCustomAmount(e.target.value);
+                            setSelectedAmount(null);
+                          }}
+                          placeholder="Amount"
+                          className="h-12 text-lg pl-8"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Payment Method */}
