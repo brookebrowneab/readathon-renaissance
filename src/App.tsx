@@ -14,6 +14,7 @@ import { OnboardingAddChild, OnboardingPledge, OnboardingComplete } from "./page
 import DashboardPage from "./pages/DashboardPage";
 import LogReadingPage from "./pages/LogReadingPage";
 import SponsorPage from "./pages/SponsorPage";
+import SponsorLandingPage from "./pages/SponsorLandingPage";
 import SponsorDashboardPage from "./pages/SponsorDashboardPage";
 import StudentDashboardPage from "./pages/StudentDashboardPage";
 import StudentLogReadingPage from "./pages/StudentLogReadingPage";
@@ -38,6 +39,8 @@ const App = () => (
           <Route path="/about" element={<AboutPage />} />
           <Route path="/how-it-works" element={<HowItWorksPage />} />
           <Route path="/sponsor/:childId" element={<SponsorPage />} />
+          <Route path="/invite/:token" element={<SponsorLandingPage />} />
+          <Route path="/s/:code" element={<SponsorLandingPage />} />
           
           {/* Auth Routes */}
           <Route path="/login" element={<LoginPage />} />
