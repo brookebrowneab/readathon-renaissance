@@ -25,6 +25,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  Card,
+  CardContent,
+} from "@/components/ui/card";
+import {
   Mail,
   Copy,
   MessageSquare,
@@ -36,6 +40,10 @@ import {
   RotateCcw,
   X,
   ExternalLink,
+  UserCheck,
+  Users,
+  Calendar,
+  DollarSign,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -82,6 +90,46 @@ const mockInvitations = [
   },
 ];
 
+// Mock previous sponsors from past events
+const mockPreviousSponsors = [
+  {
+    id: "prev-1",
+    name: "Grandma Betty",
+    email: "grandma.betty@email.com",
+    lastPledgeAmount: 75,
+    lastPledgeType: "flat" as const,
+    lastEventYear: "2024",
+    lastEventName: "Fall Read-a-thon 2024",
+  },
+  {
+    id: "prev-2",
+    name: "Uncle Mike",
+    email: "mike@email.com",
+    lastPledgeAmount: 0.25,
+    lastPledgeType: "per-minute" as const,
+    lastEventYear: "2024",
+    lastEventName: "Fall Read-a-thon 2024",
+  },
+  {
+    id: "prev-3",
+    name: "Aunt Susan",
+    email: "susan@email.com",
+    lastPledgeAmount: 50,
+    lastPledgeType: "flat" as const,
+    lastEventYear: "2023",
+    lastEventName: "Spring Read-a-thon 2023",
+  },
+  {
+    id: "prev-4",
+    name: "Neighbor Dave",
+    email: "dave@email.com",
+    lastPledgeAmount: 25,
+    lastPledgeType: "flat" as const,
+    lastEventYear: "2024",
+    lastEventName: "Fall Read-a-thon 2024",
+  },
+];
+
 type InvitationStatus = "sent" | "opened" | "pledged";
 
 interface Invitation {
@@ -93,13 +141,26 @@ interface Invitation {
   amount?: number;
 }
 
+interface PreviousSponsor {
+  id: string;
+  name: string;
+  email: string;
+  lastPledgeAmount: number;
+  lastPledgeType: "flat" | "per-minute";
+  lastEventYear: string;
+  lastEventName: string;
+}
+
 const InviteSponsorsPage = () => {
   const { id } = useParams<{ id: string }>();
   const [childData] = useState(() => getMockChildData(id || "1"));
   const [invitations, setInvitations] = useState<Invitation[]>(mockInvitations);
+  const [previousSponsors, setPreviousSponsors] = useState<PreviousSponsor[]>(mockPreviousSponsors);
+  const [invitedPreviousIds, setInvitedPreviousIds] = useState<Set<string>>(new Set());
   const [copied, setCopied] = useState(false);
   const [publicLinkEnabled, setPublicLinkEnabled] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isInvitingAll, setIsInvitingAll] = useState(false);
 
   const [formData, setFormData] = useState({
     email: "",
@@ -115,6 +176,54 @@ const InviteSponsorsPage = () => {
   };
 
   const isFormValid = formData.email.trim() && formData.name.trim();
+
+  // Previous sponsor invite handlers
+  const handleInvitePreviousSponsor = async (sponsor: PreviousSponsor) => {
+    setInvitedPreviousIds((prev) => new Set([...prev, sponsor.id]));
+    
+    // Add to invitations list
+    const newInvitation: Invitation = {
+      id: `returning-${Date.now()}`,
+      name: sponsor.name,
+      email: sponsor.email,
+      sentDate: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+      status: "sent",
+    };
+    
+    setInvitations((prev) => [newInvitation, ...prev]);
+    toast.success(`Returning sponsor invitation sent to ${sponsor.name}!`);
+  };
+
+  const handleInviteAllPrevious = async () => {
+    const uninvited = previousSponsors.filter((s) => !invitedPreviousIds.has(s.id));
+    if (uninvited.length === 0) return;
+    
+    setIsInvitingAll(true);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    
+    const newIds = new Set(invitedPreviousIds);
+    const newInvitations: Invitation[] = [];
+    
+    uninvited.forEach((sponsor) => {
+      newIds.add(sponsor.id);
+      newInvitations.push({
+        id: `returning-${Date.now()}-${sponsor.id}`,
+        name: sponsor.name,
+        email: sponsor.email,
+        sentDate: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+        status: "sent",
+      });
+    });
+    
+    setInvitedPreviousIds(newIds);
+    setInvitations((prev) => [...newInvitations, ...prev]);
+    setIsInvitingAll(false);
+    toast.success(`Sent invitations to ${uninvited.length} returning sponsors!`);
+  };
+
+  const uninvitedPreviousSponsors = previousSponsors.filter(
+    (s) => !invitedPreviousIds.has(s.id)
+  );
 
   const handleCopyLink = async () => {
     try {
@@ -219,7 +328,127 @@ const InviteSponsorsPage = () => {
               </p>
             </div>
 
-            {/* Section 1: Email Invitation Form */}
+            {/* Section 1: Previous Sponsors */}
+            {previousSponsors.length > 0 && (
+              <BookContainer variant="warm" className="p-6">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-full bg-primary/10">
+                        <Users className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <h2 className="font-serif text-xl text-brand-blue">
+                          Previous Sponsors
+                        </h2>
+                        <p className="text-sm text-muted-foreground">
+                          These people sponsored {childData.firstName} before
+                        </p>
+                      </div>
+                    </div>
+                    {uninvitedPreviousSponsors.length > 1 && (
+                      <Button
+                        onClick={handleInviteAllPrevious}
+                        loading={isInvitingAll}
+                        size="sm"
+                      >
+                        <Mail className="h-4 w-4 mr-2" />
+                        Invite All ({uninvitedPreviousSponsors.length})
+                      </Button>
+                    )}
+                  </div>
+
+                  <div className="grid gap-3">
+                    {previousSponsors.map((sponsor) => {
+                      const isInvited = invitedPreviousIds.has(sponsor.id);
+                      return (
+                        <Card
+                          key={sponsor.id}
+                          className={cn(
+                            "transition-all",
+                            isInvited && "opacity-60 bg-muted/30"
+                          )}
+                        >
+                          <CardContent className="p-4">
+                            <div className="flex items-center justify-between gap-4">
+                              <div className="flex items-center gap-3 min-w-0 flex-1">
+                                <div className="p-2 rounded-full bg-muted shrink-0">
+                                  <UserCheck className="h-4 w-4 text-muted-foreground" />
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="font-medium truncate">{sponsor.name}</p>
+                                  <p className="text-sm text-muted-foreground truncate">
+                                    {sponsor.email}
+                                  </p>
+                                </div>
+                              </div>
+                              
+                              <div className="hidden sm:flex items-center gap-4 shrink-0">
+                                <div className="text-right">
+                                  <div className="flex items-center gap-1 text-sm font-medium">
+                                    <DollarSign className="h-3.5 w-3.5 text-muted-foreground" />
+                                    {sponsor.lastPledgeType === "per-minute" 
+                                      ? `${sponsor.lastPledgeAmount}/min`
+                                      : `${sponsor.lastPledgeAmount} flat`
+                                    }
+                                  </div>
+                                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                    <Calendar className="h-3 w-3" />
+                                    {sponsor.lastEventYear}
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              <div className="shrink-0">
+                                {isInvited ? (
+                                  <Badge variant="success" className="gap-1">
+                                    <Check className="h-3 w-3" />
+                                    Invited
+                                  </Badge>
+                                ) : (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleInvitePreviousSponsor(sponsor)}
+                                  >
+                                    <Send className="h-3.5 w-3.5 mr-1.5" />
+                                    Invite
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+                            
+                            {/* Mobile: Show pledge info below */}
+                            <div className="sm:hidden mt-3 pt-3 border-t border-border flex items-center gap-4 text-sm text-muted-foreground">
+                              <span className="flex items-center gap-1">
+                                <DollarSign className="h-3.5 w-3.5" />
+                                {sponsor.lastPledgeType === "per-minute" 
+                                  ? `${sponsor.lastPledgeAmount}/min`
+                                  : `$${sponsor.lastPledgeAmount} flat`
+                                }
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <Calendar className="h-3.5 w-3.5" />
+                                {sponsor.lastEventName}
+                              </span>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+
+                  {uninvitedPreviousSponsors.length === 0 && (
+                    <div className="text-center py-3 text-sm text-muted-foreground">
+                      <Check className="h-5 w-5 mx-auto mb-1 text-success" />
+                      All previous sponsors have been invited!
+                    </div>
+                  )}
+                </div>
+              </BookContainer>
+            )}
+
+            {/* Section 2: Email Invitation Form */}
             <BookContainer variant="default" className="p-6">
               <div className="space-y-6">
                 <div>
