@@ -25,6 +25,7 @@ import {
   SponsorCheckEmailPage,
   SponsorDashboardPage,
   SponsorPaymentPage,
+  ReturningSponsorPage,
 } from "./pages/sponsor";
 import OldSponsorDashboardPage from "./pages/SponsorDashboardPage";
 import { StudentLoginPage, StudentDashboardPage as StudentDashboard, StudentLogReadingPage as StudentLogReading } from "./pages/student";
@@ -53,6 +54,7 @@ const App = () => (
           <Route path="/sponsor/:childId" element={<SponsorPage />} />
           <Route path="/invite/:token" element={<SponsorLandingPage />} />
           <Route path="/s/:code" element={<SponsorLandingPage />} />
+          <Route path="/returning/:code" element={<ReturningSponsorPage />} />
           <Route path="/sponsor/thank-you" element={<SponsorThankYouPage />} />
           <Route path="/sponsor/pledged" element={<SponsorPledgedPage />} />
           <Route path="/sponsor/check-instructions" element={<SponsorCheckInstructionsPage />} />
