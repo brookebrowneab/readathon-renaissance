@@ -10,7 +10,7 @@ import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
 import OldStudentLoginPage from "./pages/auth/StudentLoginPage";
 import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
-import { OnboardingAddChild, OnboardingPledge, OnboardingComplete } from "./pages/onboarding";
+import { OnboardingAddChild, OnboardingPledge, OnboardingComplete, ReEnrollmentPage } from "./pages/onboarding";
 import DashboardPage from "./pages/DashboardPage";
 import InviteSponsorsPage from "./pages/InviteSponsorsPage";
 import AddSponsorPage from "./pages/AddSponsorPage";
@@ -67,6 +67,7 @@ const App = () => (
           <Route path="/onboarding/add-child" element={<OnboardingAddChild />} />
           <Route path="/onboarding/pledge" element={<OnboardingPledge />} />
           <Route path="/onboarding/complete" element={<OnboardingComplete />} />
+          <Route path="/onboarding/re-enroll" element={<ReEnrollmentPage />} />
           
           {/* Parent Dashboard */}
           <Route path="/dashboard" element={<DashboardPage />} />
