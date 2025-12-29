@@ -254,10 +254,10 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Prizes & Questions */}
+      {/* Prizes & Questions & CTA teaser */}
       <section className="bg-background py-16 md:py-24">
         <div className="container">
-          <div className="grid gap-12 lg:grid-cols-2">
+          <div className="grid gap-12 lg:grid-cols-2 xl:grid-cols-3">
             {/* Prizes */}
             <div className="space-y-4">
               <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-brand-yellow/20 text-brand-yellow">
@@ -289,6 +289,25 @@ const HomePage = () => {
                 <Mail className="h-5 w-5" />
                 janneyreadathon@janneyschool.org
               </a>
+            </div>
+
+            {/* Get Started teaser */}
+            <div className="space-y-4 lg:col-span-2 xl:col-span-1">
+              <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-brand-blue text-white">
+                <BookOpen className="h-6 w-6" />
+              </div>
+              <h2 className="font-serif text-3xl font-normal text-foreground md:text-4xl">
+                Ready to Start?
+              </h2>
+              <p className="text-muted-foreground">
+                Register your student and start logging reading minutes today.
+              </p>
+              <Link to="/register">
+                <Button className="bg-brand-blue text-white hover:bg-brand-blue/90">
+                  Get Started
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
