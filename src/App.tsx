@@ -10,6 +10,7 @@ import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
 import StudentLoginPage from "./pages/auth/StudentLoginPage";
 import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
+import { OnboardingAddChild, OnboardingPledge, OnboardingComplete } from "./pages/onboarding";
 import DashboardPage from "./pages/DashboardPage";
 import LogReadingPage from "./pages/LogReadingPage";
 import SponsorPage from "./pages/SponsorPage";
@@ -43,6 +44,11 @@ const App = () => (
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/student-login" element={<StudentLoginPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          
+          {/* Onboarding Routes */}
+          <Route path="/onboarding/add-child" element={<OnboardingAddChild />} />
+          <Route path="/onboarding/pledge" element={<OnboardingPledge />} />
+          <Route path="/onboarding/complete" element={<OnboardingComplete />} />
           
           {/* Parent Dashboard */}
           <Route path="/dashboard" element={<DashboardPage />} />
