@@ -31,7 +31,8 @@ import { StudentLoginPage, StudentDashboardPage as StudentDashboard, StudentLogR
 import { TeacherDashboard, TeacherLogReading } from "./pages/teacher";
 import OldTeacherDashboardPage from "./pages/TeacherDashboardPage";
 import OldTeacherLogReadingPage from "./pages/TeacherLogReadingPage";
-import AdminDashboardPage from "./pages/AdminDashboardPage";
+import { AdminDashboard } from "./pages/admin";
+import OldAdminDashboardPage from "./pages/AdminDashboardPage";
 import AdminUsersPage from "./pages/AdminUsersPage";
 import AdminFinancePage from "./pages/AdminFinancePage";
 import NotFound from "./pages/NotFound";
@@ -94,7 +95,8 @@ const App = () => (
           <Route path="/teacher-log-reading" element={<OldTeacherLogReadingPage />} />
           
           {/* Admin Dashboard */}
-          <Route path="/admin-dashboard" element={<AdminDashboardPage />} />
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin-dashboard" element={<OldAdminDashboardPage />} />
           <Route path="/admin-users" element={<AdminUsersPage />} />
           <Route path="/admin-finance" element={<AdminFinancePage />} />
           
