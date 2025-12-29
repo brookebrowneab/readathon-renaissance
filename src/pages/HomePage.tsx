@@ -3,7 +3,7 @@ import { PublicLayout } from "@/components/layout";
 import { BookIcon } from "@/components/legacy";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BookOpen, Users, Trophy, Heart, ArrowRight, Sparkles, Gift, HelpCircle, DollarSign, School, Mail } from "lucide-react";
+import { BookOpen, Users, Trophy, Heart, ArrowRight, Sparkles, Gift, HelpCircle, DollarSign, School, Mail, UserPlus, HandHeart } from "lucide-react";
 
 const HomePage = () => {
   return (
@@ -36,16 +36,20 @@ const HomePage = () => {
               Reading minutes count from 12:00 a.m. EST on 2/24 through 11:59 p.m. EST on 3/9.
             </p>
 
-            <div className="flex flex-col gap-4 sm:flex-row">
-              <Link to="/register">
-                <Button size="lg" className="w-full bg-brand-blue text-white hover:bg-brand-blue/90 sm:w-auto">
-                  Get Started
-                  <ArrowRight className="ml-2 h-4 w-4" />
+            {/* Dual pathway CTAs */}
+            <div className="grid gap-4 sm:grid-cols-2 max-w-md">
+              <Link to="/register" className="block">
+                <Button size="lg" className="w-full bg-brand-blue text-white hover:bg-brand-blue/90 h-auto py-4 flex-col gap-1">
+                  <UserPlus className="h-5 w-5" />
+                  <span className="font-semibold">I'm a Parent</span>
+                  <span className="text-xs opacity-80">Register my child</span>
                 </Button>
               </Link>
-              <Link to="/how-it-works">
-                <Button size="lg" variant="outline" className="w-full sm:w-auto">
-                  Learn How It Works
+              <Link to="/sponsor" className="block">
+                <Button size="lg" variant="outline" className="w-full h-auto py-4 flex-col gap-1 border-brand-blue text-brand-blue hover:bg-brand-blue/5">
+                  <HandHeart className="h-5 w-5" />
+                  <span className="font-semibold">I'm a Sponsor</span>
+                  <span className="text-xs opacity-80">Make a pledge</span>
                 </Button>
               </Link>
             </div>
@@ -70,68 +74,20 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* How It Works - 3 Steps */}
+      {/* Two Ways to Pledge - FIRST for sponsors */}
       <section className="bg-background py-16 md:py-24">
-        <div className="container">
-          <div className="mb-12 text-center">
-            <h2 className="mb-4 font-serif text-3xl font-normal text-foreground md:text-4xl">
-              How the Read-A-Thon Works
-            </h2>
-            <p className="mx-auto max-w-2xl text-muted-foreground">
-              A simple, fun way to encourage reading while raising funds for Janney.
-            </p>
-          </div>
-
-          <div className="grid gap-8 md:grid-cols-3">
-            {[
-              {
-                icon: BookOpen,
-                title: "1. Register & Read",
-                description:
-                  "Students sign up and start logging their reading minutes daily throughout the event.",
-              },
-              {
-                icon: Users,
-                title: "2. Get Sponsors",
-                description:
-                  "Share your unique sponsor link with family and friends who pledge per minute or a flat amount.",
-              },
-              {
-                icon: Trophy,
-                title: "3. Celebrate Success",
-                description:
-                  "Track your progress, exceed goals, and celebrate achievements with our school community.",
-              },
-            ].map((step, index) => (
-              <Card
-                key={index}
-                className="group relative overflow-hidden border-0 bg-card shadow-md transition-all hover:shadow-lg"
-              >
-                <CardHeader>
-                  <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-brand-blue/10 text-brand-blue transition-colors group-hover:bg-brand-blue group-hover:text-white">
-                    <step.icon className="h-6 w-6" />
-                  </div>
-                  <CardTitle className="text-xl">{step.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-base">{step.description}</CardDescription>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Pledge Types */}
-      <section className="bg-background-warm py-16 md:py-24">
         <div className="container">
           <div className="grid items-center gap-12 lg:grid-cols-2">
             <div className="space-y-4">
+              <div className="inline-flex items-center gap-2 rounded-full bg-brand-green/20 px-3 py-1 text-sm font-medium text-brand-green">
+                <HandHeart className="h-4 w-4" />
+                For Sponsors
+              </div>
               <h2 className="font-serif text-3xl font-normal text-foreground md:text-4xl">
                 Two Ways to Pledge
               </h2>
               <p className="text-muted-foreground">
-                Students ask friends, family, and neighbors to support them by pledging:
+                Support a student by pledging a flat donation or per-minute amount. You'll receive a unique link from the family to make your pledge.
               </p>
               <p className="text-lg font-medium text-brand-blue">
                 Every page helps strengthen our school community.
@@ -165,6 +121,71 @@ const HomePage = () => {
                 </CardContent>
               </Card>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works - For Parents */}
+      <section className="bg-background-warm py-16 md:py-24">
+        <div className="container">
+          <div className="mb-12">
+            <div className="inline-flex items-center gap-2 rounded-full bg-brand-blue/20 px-3 py-1 text-sm font-medium text-brand-blue mb-4">
+              <UserPlus className="h-4 w-4" />
+              For Parents
+            </div>
+            <h2 className="mb-4 font-serif text-3xl font-normal text-foreground md:text-4xl">
+              How the Read-A-Thon Works
+            </h2>
+            <p className="max-w-2xl text-muted-foreground">
+              A simple, fun way to encourage reading while raising funds for Janney.
+            </p>
+          </div>
+
+          <div className="grid gap-8 md:grid-cols-3">
+            {[
+              {
+                icon: BookOpen,
+                title: "1. Register & Read",
+                description:
+                  "Sign up your child and help them log reading minutes daily throughout the event.",
+              },
+              {
+                icon: Users,
+                title: "2. Share with Sponsors",
+                description:
+                  "Send your unique sponsor link to family and friends who can pledge per minute or a flat amount.",
+              },
+              {
+                icon: Trophy,
+                title: "3. Celebrate Success",
+                description:
+                  "Track progress, exceed goals, and celebrate achievements with our school community.",
+              },
+            ].map((step, index) => (
+              <Card
+                key={index}
+                className="group relative overflow-hidden border-0 bg-card shadow-md transition-all hover:shadow-lg"
+              >
+                <CardHeader>
+                  <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-brand-blue/10 text-brand-blue transition-colors group-hover:bg-brand-blue group-hover:text-white">
+                    <step.icon className="h-6 w-6" />
+                  </div>
+                  <CardTitle className="text-xl">{step.title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-base">{step.description}</CardDescription>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <div className="mt-8 text-center">
+            <Link to="/register">
+              <Button size="lg" className="bg-brand-blue text-white hover:bg-brand-blue/90">
+                Register Your Child
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
