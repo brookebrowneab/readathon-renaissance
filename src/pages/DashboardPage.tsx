@@ -14,6 +14,8 @@ import {
   Eye,
   LogOut,
   Star,
+  Bell,
+  Mail,
 } from "lucide-react";
 
 // Mock data
@@ -80,6 +82,9 @@ const mockSponsorshipData = {
   ],
 };
 
+// Mock pending sponsor requests
+const mockPendingSponsorRequests = 2;
+
 const DashboardPage = () => {
   return (
     <div className="flex min-h-screen flex-col">
@@ -130,6 +135,31 @@ const DashboardPage = () => {
                   </div>
                   <Badge variant="info">Active</Badge>
                 </div>
+
+                {/* Pending Sponsor Requests Alert */}
+                {mockPendingSponsorRequests > 0 && (
+                  <Link to="/family/sponsor-requests">
+                    <div className="bg-accent-gold/10 border border-accent-gold/30 rounded-xl p-4 flex items-center justify-between hover:bg-accent-gold/20 transition-colors cursor-pointer">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-full bg-accent-gold/20 flex items-center justify-center relative">
+                          <Mail className="h-5 w-5 text-accent-gold" />
+                          <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-destructive text-destructive-foreground text-xs font-bold flex items-center justify-center">
+                            {mockPendingSponsorRequests}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="font-medium text-foreground">
+                            {mockPendingSponsorRequests} sponsor request{mockPendingSponsorRequests > 1 ? 's' : ''} waiting
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            Review and approve sponsors who want to support your children
+                          </p>
+                        </div>
+                      </div>
+                      <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                  </Link>
+                )}
               </div>
 
               {/* Children Overview */}
@@ -273,6 +303,21 @@ const DashboardPage = () => {
                       <Link to="/pledges">
                         <DollarSign className="h-4 w-4 mr-2" />
                         View All Pledges
+                      </Link>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start relative"
+                      asChild
+                    >
+                      <Link to="/family/sponsor-requests">
+                        <Bell className="h-4 w-4 mr-2" />
+                        Sponsor Requests
+                        {mockPendingSponsorRequests > 0 && (
+                          <Badge variant="destructive" className="ml-auto h-5 w-5 p-0 flex items-center justify-center text-xs">
+                            {mockPendingSponsorRequests}
+                          </Badge>
+                        )}
                       </Link>
                     </Button>
                   </div>
