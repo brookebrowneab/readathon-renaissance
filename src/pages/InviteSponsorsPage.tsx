@@ -296,15 +296,21 @@ const InviteSponsorsPage = () => {
                     />
                   </FormField>
 
-                  <Button
-                    type="submit"
-                    disabled={!isFormValid || isSubmitting}
-                    loading={isSubmitting}
-                    className="w-full sm:w-auto"
-                  >
-                    <Send className="h-4 w-4 mr-2" />
-                    Send Invitation
-                  </Button>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <Button
+                      type="submit"
+                      disabled={!isFormValid || isSubmitting}
+                      loading={isSubmitting}
+                    >
+                      <Send className="h-4 w-4 mr-2" />
+                      Send Invitation
+                    </Button>
+                    <Button variant="outline" asChild>
+                      <Link to={`/children/${id}/add-sponsor`}>
+                        Record a pledge manually
+                      </Link>
+                    </Button>
+                  </div>
                 </form>
               </div>
             </BookContainer>
