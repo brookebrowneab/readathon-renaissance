@@ -16,6 +16,7 @@ import InviteSponsorsPage from "./pages/InviteSponsorsPage";
 import LogReadingPage from "./pages/LogReadingPage";
 import SponsorPage from "./pages/SponsorPage";
 import SponsorLandingPage from "./pages/SponsorLandingPage";
+import { SponsorThankYouPage, SponsorPledgedPage, SponsorCheckInstructionsPage } from "./pages/sponsor";
 import SponsorDashboardPage from "./pages/SponsorDashboardPage";
 import StudentDashboardPage from "./pages/StudentDashboardPage";
 import StudentLogReadingPage from "./pages/StudentLogReadingPage";
@@ -42,6 +43,9 @@ const App = () => (
           <Route path="/sponsor/:childId" element={<SponsorPage />} />
           <Route path="/invite/:token" element={<SponsorLandingPage />} />
           <Route path="/s/:code" element={<SponsorLandingPage />} />
+          <Route path="/sponsor/thank-you" element={<SponsorThankYouPage />} />
+          <Route path="/sponsor/pledged" element={<SponsorPledgedPage />} />
+          <Route path="/sponsor/check-instructions" element={<SponsorCheckInstructionsPage />} />
           
           {/* Auth Routes */}
           <Route path="/login" element={<LoginPage />} />
