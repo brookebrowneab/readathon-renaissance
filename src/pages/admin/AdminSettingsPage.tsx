@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import AdminLayout from "@/components/layout/AdminLayout";
@@ -11,6 +11,13 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { FormField } from "@/components/ui/form-field";
 import { Calendar } from "@/components/ui/calendar";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Popover,
   PopoverContent,
@@ -25,6 +32,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
   ArrowLeft,
   Calendar as CalendarIcon,
   Save,
@@ -33,9 +48,22 @@ import {
   Play,
   Pause,
   CheckCircle,
+  Upload,
+  Plus,
+  X,
+  FileText,
+  Download,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+
+interface Teacher {
+  id: string;
+  name: string;
+  grade: string;
+}
+
+const GRADES = ["Pre-K", "Kindergarten", "1st", "2nd", "3rd", "4th", "5th"];
 
 const AdminSettingsPage = () => {
   // Event details
@@ -57,9 +85,24 @@ const AdminSettingsPage = () => {
   const [sendReminders, setSendReminders] = useState(true);
   const [reminderDays, setReminderDays] = useState("7");
 
+  // Teachers & Grades
+  const [teachers, setTeachers] = useState<Teacher[]>([
+    { id: "1", name: "Mrs. Johnson", grade: "Kindergarten" },
+    { id: "2", name: "Mr. Smith", grade: "1st" },
+    { id: "3", name: "Ms. Davis", grade: "2nd" },
+    { id: "4", name: "Mrs. Wilson", grade: "3rd" },
+    { id: "5", name: "Mr. Brown", grade: "4th" },
+  ]);
+  const [newTeacherName, setNewTeacherName] = useState("");
+  const [newTeacherGrade, setNewTeacherGrade] = useState("");
+  const [showAddTeacher, setShowAddTeacher] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   // Dialogs
   const [showEndEventDialog, setShowEndEventDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showUploadPreview, setShowUploadPreview] = useState(false);
+  const [pendingUpload, setPendingUpload] = useState<Teacher[]>([]);
   const [isSaving, setIsSaving] = useState(false);
 
   const handleSave = async () => {
@@ -95,6 +138,102 @@ const AdminSettingsPage = () => {
         return <Badge variant="secondary">Ended</Badge>;
     }
   };
+
+  // Teacher management functions
+  const handleAddTeacher = () => {
+    if (!newTeacherName.trim() || !newTeacherGrade) {
+      toast.error("Please enter teacher name and select a grade");
+      return;
+    }
+    const newTeacher: Teacher = {
+      id: Date.now().toString(),
+      name: newTeacherName.trim(),
+      grade: newTeacherGrade,
+    };
+    setTeachers([...teachers, newTeacher]);
+    setNewTeacherName("");
+    setNewTeacherGrade("");
+    setShowAddTeacher(false);
+    toast.success(`Added ${newTeacher.name}`);
+  };
+
+  const handleRemoveTeacher = (id: string) => {
+    const teacher = teachers.find((t) => t.id === id);
+    setTeachers(teachers.filter((t) => t.id !== id));
+    toast.success(`Removed ${teacher?.name}`);
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const text = event.target?.result as string;
+      const lines = text.split("\n").filter((line) => line.trim());
+      
+      // Skip header row if present
+      const startIndex = lines[0]?.toLowerCase().includes("teacher") || 
+                         lines[0]?.toLowerCase().includes("name") ? 1 : 0;
+      
+      const parsed: Teacher[] = [];
+      for (let i = startIndex; i < lines.length; i++) {
+        const parts = lines[i].split(",").map((p) => p.trim().replace(/"/g, ""));
+        if (parts.length >= 2) {
+          const [name, grade] = parts;
+          if (name && GRADES.includes(grade)) {
+            parsed.push({
+              id: Date.now().toString() + i,
+              name,
+              grade,
+            });
+          }
+        }
+      }
+
+      if (parsed.length === 0) {
+        toast.error("No valid teacher data found. Please check the CSV format.");
+        return;
+      }
+
+      setPendingUpload(parsed);
+      setShowUploadPreview(true);
+    };
+    reader.readAsText(file);
+    
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleConfirmUpload = (replace: boolean) => {
+    if (replace) {
+      setTeachers(pendingUpload);
+      toast.success(`Replaced with ${pendingUpload.length} teachers`);
+    } else {
+      setTeachers([...teachers, ...pendingUpload]);
+      toast.success(`Added ${pendingUpload.length} teachers`);
+    }
+    setPendingUpload([]);
+    setShowUploadPreview(false);
+  };
+
+  const downloadTemplate = () => {
+    const csv = "Teacher Name,Grade\nMrs. Smith,Kindergarten\nMr. Johnson,1st\nMs. Davis,2nd";
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "teachers_template.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const teachersByGrade = GRADES.reduce((acc, grade) => {
+    acc[grade] = teachers.filter((t) => t.grade === grade);
+    return acc;
+  }, {} as Record<string, Teacher[]>);
 
   return (
     <AdminLayout>
@@ -290,6 +429,128 @@ const AdminSettingsPage = () => {
               </div>
             </BookContainer>
 
+            {/* Teachers & Grades */}
+            <BookContainer variant="default" className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="font-medium text-foreground">Teachers & Grades</h2>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {teachers.length} teacher{teachers.length !== 1 ? "s" : ""} configured
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={downloadTemplate}>
+                    <Download className="h-4 w-4 mr-2" />
+                    Template
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    Upload CSV
+                  </Button>
+                  <Button size="sm" onClick={() => setShowAddTeacher(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Teacher
+                  </Button>
+                </div>
+              </div>
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".csv"
+                className="hidden"
+                onChange={handleFileUpload}
+              />
+
+              {/* Add Teacher Form */}
+              {showAddTeacher && (
+                <div className="mb-6 p-4 border border-border rounded-lg bg-muted/30">
+                  <div className="flex items-end gap-3">
+                    <FormField label="Teacher Name" htmlFor="newTeacherName" className="flex-1">
+                      <Input
+                        id="newTeacherName"
+                        value={newTeacherName}
+                        onChange={(e) => setNewTeacherName(e.target.value)}
+                        placeholder="e.g., Mrs. Smith"
+                      />
+                    </FormField>
+                    <FormField label="Grade" htmlFor="newTeacherGrade" className="w-40">
+                      <Select value={newTeacherGrade} onValueChange={setNewTeacherGrade}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select grade" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {GRADES.map((grade) => (
+                            <SelectItem key={grade} value={grade}>
+                              {grade}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </FormField>
+                    <Button onClick={handleAddTeacher}>Add</Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        setShowAddTeacher(false);
+                        setNewTeacherName("");
+                        setNewTeacherGrade("");
+                      }}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* Teachers by Grade */}
+              {teachers.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <FileText className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                  <p>No teachers configured yet.</p>
+                  <p className="text-sm mt-1">Upload a CSV or add teachers manually.</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {GRADES.map((grade) => {
+                    const gradeTeachers = teachersByGrade[grade];
+                    if (gradeTeachers.length === 0) return null;
+                    return (
+                      <div key={grade}>
+                        <div className="flex items-center gap-2 mb-2">
+                          <Badge variant="outline">{grade}</Badge>
+                          <span className="text-sm text-muted-foreground">
+                            {gradeTeachers.length} teacher{gradeTeachers.length !== 1 ? "s" : ""}
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {gradeTeachers.map((teacher) => (
+                            <div
+                              key={teacher.id}
+                              className="flex items-center gap-2 px-3 py-1.5 bg-muted rounded-full text-sm"
+                            >
+                              <span>{teacher.name}</span>
+                              <button
+                                onClick={() => handleRemoveTeacher(teacher.id)}
+                                className="text-muted-foreground hover:text-destructive transition-colors"
+                              >
+                                <X className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </BookContainer>
+
             {/* Event Controls */}
             <BookContainer variant="default" className="p-6">
               <h2 className="font-medium text-foreground mb-6">Event Controls</h2>
@@ -425,6 +686,70 @@ const AdminSettingsPage = () => {
             <Button variant="destructive">
               <Trash2 className="h-4 w-4 mr-2" />
               Delete Event
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Upload Preview Dialog */}
+      <Dialog open={showUploadPreview} onOpenChange={setShowUploadPreview}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Import Teachers</DialogTitle>
+            <DialogDescription>
+              Found {pendingUpload.length} teachers in the uploaded file. Choose how to import them.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="max-h-[300px] overflow-auto border border-border rounded-lg">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Teacher Name</TableHead>
+                  <TableHead>Grade</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {pendingUpload.map((teacher) => (
+                  <TableRow key={teacher.id}>
+                    <TableCell>{teacher.name}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{teacher.grade}</Badge>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+
+          {teachers.length > 0 && (
+            <div className="py-3 px-4 bg-muted/50 rounded-lg">
+              <p className="text-sm text-muted-foreground">
+                You currently have {teachers.length} teacher{teachers.length !== 1 ? "s" : ""} configured.
+                Choose whether to add to the existing list or replace it entirely.
+              </p>
+            </div>
+          )}
+
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setPendingUpload([]);
+                setShowUploadPreview(false);
+              }}
+            >
+              Cancel
+            </Button>
+            {teachers.length > 0 && (
+              <Button variant="outline" onClick={() => handleConfirmUpload(false)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add to Existing
+              </Button>
+            )}
+            <Button onClick={() => handleConfirmUpload(true)}>
+              <Upload className="h-4 w-4 mr-2" />
+              {teachers.length > 0 ? "Replace All" : "Import Teachers"}
             </Button>
           </DialogFooter>
         </DialogContent>
