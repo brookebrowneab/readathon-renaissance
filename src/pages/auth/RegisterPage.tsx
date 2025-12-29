@@ -157,6 +157,7 @@ const RegisterPage = () => {
           {/* Decorative blobs */}
           <DecorativeBlob position="top-left" size={500} opacity={4} />
           <DecorativeBlob position="bottom-left" size={400} opacity={3} colorClass="text-accent" />
+          <DecorativeBlob position="bottom-right" size={350} opacity={5} className="rotate-45 translate-y-1/4" />
           
           <div className="w-full max-w-md relative z-10">
             <BookContainer variant="default" className="animate-fade-in">
