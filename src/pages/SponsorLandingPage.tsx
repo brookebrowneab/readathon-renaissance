@@ -108,7 +108,7 @@ const SponsorLandingPage = () => {
           
           {/* Hero Section */}
           <section className="text-center space-y-6">
-            <h1 className="text-3xl md:text-4xl font-bold text-foreground">
+            <h1 className="font-serif text-3xl md:text-4xl font-normal tracking-tight text-foreground">
               Support {data.childFirstName}'s Reading!
             </h1>
             
@@ -126,13 +126,13 @@ const SponsorLandingPage = () => {
                 <span className="font-medium">{data.childFirstName}</span> is a {data.grade} grader at {data.schoolName}
               </p>
               <div className="flex flex-wrap items-center justify-center gap-4 text-lg text-muted-foreground">
-                <span>Goal: <strong className="text-foreground">{data.readingGoal} minutes</strong></span>
+                <span>Goal: <span className="font-handwritten text-2xl text-brand-blue">{data.readingGoal} min</span></span>
                 <span className="hidden sm:inline">•</span>
-                <span><strong className="text-foreground">{data.daysLeft}</strong> days left</span>
+                <span><span className="font-handwritten text-2xl text-brand-blue">{data.daysLeft}</span> days left</span>
               </div>
               <div className="flex items-center justify-center gap-2 text-lg text-brand-blue">
                 <Users className="h-5 w-5" />
-                <span><strong>{data.sponsorCount}</strong> sponsors cheering them on!</span>
+                <span><span className="font-handwritten text-2xl">{data.sponsorCount}</span> sponsors cheering them on!</span>
               </div>
             </div>
           </section>
@@ -159,7 +159,7 @@ const SponsorLandingPage = () => {
 
               {/* Pledge Amount */}
               <div className="space-y-4">
-                <label className="block text-lg font-medium text-foreground">
+                <label className="block font-serif text-xl text-foreground">
                   How much would you like to pledge?
                 </label>
                 
@@ -175,7 +175,7 @@ const SponsorLandingPage = () => {
                         setUsePerMinute(false);
                       }}
                       className={cn(
-                        "h-16 rounded-xl text-2xl font-bold transition-all border-2",
+                        "h-16 rounded-xl font-handwritten text-3xl transition-all border-2",
                         selectedAmount === amount && !customAmount && !usePerMinute
                           ? "bg-primary text-primary-foreground border-primary"
                           : "bg-card text-foreground border-border hover:border-primary/50"
@@ -271,7 +271,7 @@ const SponsorLandingPage = () => {
                           <div className="flex items-center gap-2 text-lg text-muted-foreground">
                             <Calculator className="h-5 w-5" />
                             <span>
-                              At {data.readingGoal} minutes = <strong className="text-foreground">${calculatedPerMinute.toFixed(2)}</strong>
+                              At {data.readingGoal} minutes = <span className="font-handwritten text-2xl text-brand-blue">${calculatedPerMinute.toFixed(2)}</span>
                             </span>
                           </div>
                         </div>
@@ -284,7 +284,7 @@ const SponsorLandingPage = () => {
               {/* Payment Method */}
               {effectiveAmount && effectiveAmount > 0 && (
                 <div className="space-y-4">
-                  <label className="block text-lg font-medium text-foreground">
+                  <label className="block font-serif text-xl text-foreground">
                     How would you like to pay?
                   </label>
 
