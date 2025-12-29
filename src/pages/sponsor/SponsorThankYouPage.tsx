@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { BookContainer, ReadingGoalRing } from "@/components/legacy";
+import { PageHeader } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { 
   PartyPopper, 
@@ -11,7 +12,6 @@ import {
   ExternalLink,
   X
 } from "lucide-react";
-import logoSvg from "@/assets/logo.svg";
 import Confetti from "@/components/ui/confetti";
 
 // Mock data - in real app would come from session/API
@@ -50,15 +50,13 @@ const SponsorThankYouPage = () => {
     <div className="min-h-screen bg-background-warm flex flex-col">
       {showConfetti && <Confetti />}
       
-      {/* Header */}
-      <header className="bg-card border-b py-4 px-6">
-        <div className="max-w-2xl mx-auto flex items-center justify-between">
-          <img src={logoSvg} alt="Read-a-thon" className="h-10" />
+      <PageHeader 
+        rightContent={
           <Link to="/" className="text-muted-foreground hover:text-foreground">
             <X className="h-6 w-6" />
           </Link>
-        </div>
-      </header>
+        }
+      />
 
       <main className="flex-1 flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-lg">

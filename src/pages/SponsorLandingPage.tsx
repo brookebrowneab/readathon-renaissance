@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { BookContainer, ReadingGoalRing, Logo } from "@/components/legacy";
+import { BookContainer, ReadingGoalRing } from "@/components/legacy";
+import { PageHeader } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormField } from "@/components/ui/form-field";
@@ -94,15 +95,13 @@ const SponsorLandingPage = () => {
 
   return (
     <div className="min-h-screen bg-background-warm">
-      {/* Header */}
-      <header className="bg-card border-b py-4">
-        <div className="container flex items-center justify-between gap-4 pl-4 md:pl-6">
-          <Logo size="hero" className="w-[405px]" />
+      <PageHeader 
+        rightContent={
           <p className="text-lg text-muted-foreground">
             Invited by <span className="text-foreground font-medium">{data.parentFirstName}</span>
           </p>
-        </div>
-      </header>
+        }
+      />
 
       <main className="px-4 py-8 md:py-12">
         <div className="max-w-2xl mx-auto space-y-8">

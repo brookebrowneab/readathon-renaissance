@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { BookContainer, ReadingGoalRing } from "@/components/legacy";
+import { PageHeader } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormField } from "@/components/ui/form-field";
 import { Minus, Plus, ArrowLeft, Check, BookOpen, RotateCcw } from "lucide-react";
-import logoSvg from "@/assets/logo.svg";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import Confetti from "@/components/ui/confetti";
@@ -102,17 +102,17 @@ const StudentLogReadingPage = () => {
     <div className="min-h-screen bg-gradient-to-b from-brand-yellow/20 to-background-warm">
       {showConfetti && <Confetti />}
 
-      {/* Header */}
-      <header className="p-4 flex items-center justify-between">
-        <Link
-          to="/student"
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="h-6 w-6" />
-          <span className="text-lg">Back</span>
-        </Link>
-        <img src={logoSvg} alt="Read-a-thon" className="h-10" />
-      </header>
+      <PageHeader 
+        rightContent={
+          <Link
+            to="/student"
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="h-6 w-6" />
+            <span className="text-lg">Back</span>
+          </Link>
+        }
+      />
 
       <main className="px-4 pb-8 max-w-lg mx-auto">
         {!isSuccess ? (

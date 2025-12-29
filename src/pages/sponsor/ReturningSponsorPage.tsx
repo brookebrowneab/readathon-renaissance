@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { BookContainer, ReadingGoalRing } from "@/components/legacy";
+import { PageHeader } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormField } from "@/components/ui/form-field";
@@ -21,7 +22,6 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import logoSvg from "@/assets/logo.svg";
 
 type PledgeType = "flat" | "per-minute";
 type PaymentMethod = "card" | "later" | "check" | null;
@@ -117,16 +117,14 @@ const ReturningSponsorPage = () => {
 
   return (
     <div className="min-h-screen bg-background-warm">
-      {/* Header */}
-      <header className="bg-card border-b py-4 px-6">
-        <div className="max-w-2xl mx-auto flex items-center justify-between">
-          <img src={logoSvg} alt="Read-a-thon" className="h-10" />
+      <PageHeader 
+        rightContent={
           <Badge variant="outline" className="gap-1">
             <Sparkles className="h-3 w-3" />
             Returning Sponsor
           </Badge>
-        </div>
-      </header>
+        }
+      />
 
       <main className="px-4 py-8 md:py-12">
         <div className="max-w-2xl mx-auto space-y-8">

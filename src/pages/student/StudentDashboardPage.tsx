@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { BookContainer, ReadingGoalRing } from "@/components/legacy";
+import { PageHeader } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Heart, BookOpen, LogOut, Sparkles } from "lucide-react";
-import logoSvg from "@/assets/logo.svg";
 import Confetti from "@/components/ui/confetti";
 
 interface StudentData {
@@ -78,14 +78,14 @@ const StudentDashboardPage = () => {
     <div className="min-h-screen bg-gradient-to-b from-brand-yellow/20 to-background-warm">
       {showConfetti && <Confetti />}
       
-      {/* Header */}
-      <header className="p-4 flex items-center justify-between">
-        <img src={logoSvg} alt="Read-a-thon" className="h-10" />
-        <Button variant="ghost" size="sm" onClick={handleLogout}>
-          <LogOut className="h-5 w-5 mr-2" />
-          Exit
-        </Button>
-      </header>
+      <PageHeader 
+        rightContent={
+          <Button variant="ghost" size="sm" onClick={handleLogout}>
+            <LogOut className="h-5 w-5 mr-2" />
+            Exit
+          </Button>
+        }
+      />
 
       <main className="px-4 pb-8 space-y-6 max-w-lg mx-auto">
         {/* Welcome */}
