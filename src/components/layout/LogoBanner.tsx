@@ -52,28 +52,28 @@ const LogoBanner = () => {
         </div>
       </div>
       
-      {/* Primary masked photo - left side */}
+      {/* Primary masked photo - right side */}
       <MaskedImage
         image={kidsReadingImage}
-        flipX
         className="hidden md:block absolute z-50 pointer-events-none"
         style={{
           width: '480px',
           height: '620px',
-          left: '-20px',
+          right: '-20px',
           bottom: '0',
           transform: 'translateY(calc(45% - 7px))',
         }}
       />
       
-      {/* Secondary masked photo - right side */}
+      {/* Secondary masked photo - left side, flipped */}
       <MaskedImage
         image={kidsReadingImage}
+        flipX
         className="hidden lg:block absolute z-40 pointer-events-none opacity-60"
         style={{
           width: '320px',
           height: '414px',
-          right: '-40px',
+          left: '-40px',
           bottom: '0',
           transform: 'translateY(calc(70%))',
         }}
@@ -87,7 +87,7 @@ const LogoBanner = () => {
         style={{
           width: '200px',
           height: '259px',
-          left: '380px',
+          right: '380px',
           bottom: '0',
           transform: 'translateY(calc(90%))',
         }}

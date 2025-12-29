@@ -155,7 +155,7 @@ const RegisterPage = () => {
         {/* Right Side - Form */}
         <div className="flex-1 flex items-center justify-center bg-background-warm p-6 lg:p-12 relative overflow-hidden">
           {/* Decorative blobs */}
-          <DecorativeBlob position="top-right" size={500} opacity={4} />
+          <DecorativeBlob position="top-left" size={500} opacity={4} />
           <DecorativeBlob position="bottom-left" size={400} opacity={3} colorClass="text-accent" />
           
           <div className="w-full max-w-md relative z-10">
