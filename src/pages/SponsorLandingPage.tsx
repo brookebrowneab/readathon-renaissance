@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { BookContainer, ReadingGoalRing } from "@/components/legacy";
+import { BookContainer, ReadingGoalRing, Logo } from "@/components/legacy";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormField } from "@/components/ui/form-field";
@@ -17,7 +17,6 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import logoSvg from "@/assets/logo.svg";
 
 // Mock data - in real app this would come from API based on token/code
 const getMockData = (code: string) => ({
@@ -98,7 +97,7 @@ const SponsorLandingPage = () => {
       {/* Header */}
       <header className="bg-card border-b py-4 px-6">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
-          <img src={logoSvg} alt="Read-a-thon" className="h-10" />
+          <Logo size="header" />
           <p className="text-lg text-muted-foreground">
             Invited by <span className="text-foreground font-medium">{data.parentFirstName}</span>
           </p>
