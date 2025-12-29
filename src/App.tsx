@@ -13,6 +13,7 @@ import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
 import { OnboardingAddChild, OnboardingPledge, OnboardingComplete } from "./pages/onboarding";
 import DashboardPage from "./pages/DashboardPage";
 import InviteSponsorsPage from "./pages/InviteSponsorsPage";
+import AddSponsorPage from "./pages/AddSponsorPage";
 import LogReadingPage from "./pages/LogReadingPage";
 import SponsorPage from "./pages/SponsorPage";
 import SponsorLandingPage from "./pages/SponsorLandingPage";
@@ -61,6 +62,7 @@ const App = () => (
           {/* Parent Dashboard */}
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/children/:id/invite" element={<InviteSponsorsPage />} />
+          <Route path="/children/:id/add-sponsor" element={<AddSponsorPage />} />
           <Route path="/log-reading" element={<LogReadingPage />} />
           
           {/* Sponsor Dashboard */}
