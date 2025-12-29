@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { MainNav, Footer } from "@/components/layout";
+import AdminLayout from "@/components/layout/AdminLayout";
 import { BookContainer } from "@/components/legacy";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -145,11 +145,8 @@ const AdminDashboard = () => {
   };
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <MainNav />
-
-      <main className="flex-1 bg-background-warm">
-        <div className="container py-8">
+    <AdminLayout>
+      <div className="container py-8">
           {/* Header */}
           <div className="mb-8">
             <h1 className="font-serif text-3xl font-normal tracking-tight text-foreground">
@@ -401,11 +398,8 @@ const AdminDashboard = () => {
             </BookContainer>
           </div>
         </div>
-      </main>
 
-      <Footer />
-
-      {/* Send Reminders Modal */}
+        {/* Send Reminders Modal */}
       <Dialog open={showReminderModal} onOpenChange={setShowReminderModal}>
         <DialogContent>
           <DialogHeader>
@@ -432,7 +426,7 @@ const AdminDashboard = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </AdminLayout>
   );
 };
 

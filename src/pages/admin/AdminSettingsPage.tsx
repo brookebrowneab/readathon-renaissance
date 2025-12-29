@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
-import { MainNav, Footer } from "@/components/layout";
+import AdminLayout from "@/components/layout/AdminLayout";
 import { BookContainer } from "@/components/legacy";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -97,21 +97,9 @@ const AdminSettingsPage = () => {
   };
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <MainNav />
-
-      <main className="flex-1 bg-background-warm">
-        <div className="container py-8 max-w-3xl">
-          {/* Back Link */}
-          <Link
-            to="/admin"
-            className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Dashboard
-          </Link>
-
-          {/* Header */}
+    <AdminLayout>
+      <div className="container py-8 max-w-3xl">
+        {/* Header */}
           <div className="flex items-center justify-between mb-8">
             <div>
               <h1 className="font-serif text-3xl font-normal tracking-tight text-foreground">
@@ -373,11 +361,8 @@ const AdminSettingsPage = () => {
             </BookContainer>
           </div>
         </div>
-      </main>
 
-      <Footer />
-
-      {/* End Event Dialog */}
+        {/* End Event Dialog */}
       <Dialog open={showEndEventDialog} onOpenChange={setShowEndEventDialog}>
         <DialogContent>
           <DialogHeader>
@@ -444,7 +429,7 @@ const AdminSettingsPage = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </AdminLayout>
   );
 };
 

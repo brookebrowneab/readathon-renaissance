@@ -31,7 +31,7 @@ import { StudentLoginPage, StudentDashboardPage as StudentDashboard, StudentLogR
 import { TeacherDashboard, TeacherLogReading } from "./pages/teacher";
 import OldTeacherDashboardPage from "./pages/TeacherDashboardPage";
 import OldTeacherLogReadingPage from "./pages/TeacherLogReadingPage";
-import { AdminDashboard, AdminOutstandingPage, AdminChecksPage, AdminSettingsPage } from "./pages/admin";
+import { AdminDashboard, AdminOutstandingPage, AdminChecksPage, AdminSettingsPage, AdminEmailPage } from "./pages/admin";
 import OldAdminDashboardPage from "./pages/AdminDashboardPage";
 import AdminUsersPage from "./pages/AdminUsersPage";
 import AdminFinancePage from "./pages/AdminFinancePage";
@@ -98,6 +98,7 @@ const App = () => (
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/outstanding" element={<AdminOutstandingPage />} />
           <Route path="/admin/checks" element={<AdminChecksPage />} />
+          <Route path="/admin/emails" element={<AdminEmailPage />} />
           <Route path="/admin/settings" element={<AdminSettingsPage />} />
           <Route path="/admin-dashboard" element={<OldAdminDashboardPage />} />
           <Route path="/admin-users" element={<AdminUsersPage />} />
