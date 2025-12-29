@@ -55,8 +55,10 @@ const HomePage = () => {
               </h1>
 
               <p className="max-w-lg text-lg text-muted-foreground">
-                Join thousands of students, families, and sponsors in our community reading 
-                challenge. Track progress, earn pledges, and make reading a celebration.
+                From February 24–March 9, students read to support Janney Elementary.
+              </p>
+              <p className="max-w-lg text-lg text-muted-foreground">
+                Ask friends and family to pledge per minute—or give a flat donation—and help fund the programs that make Janney exceptional.
               </p>
 
               <div className="flex flex-col gap-4 sm:flex-row">
