@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { BookContainer } from "@/components/legacy";
+import { PageHeader } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { 
   CheckCircle, 
@@ -9,7 +10,6 @@ import {
   Users,
   X
 } from "lucide-react";
-import logoSvg from "@/assets/logo.svg";
 import { toast } from "sonner";
 
 // Mock data - in real app would come from session/API
@@ -43,15 +43,13 @@ const SponsorCheckInstructionsPage = () => {
 
   return (
     <div className="min-h-screen bg-background-warm flex flex-col">
-      {/* Header */}
-      <header className="bg-card border-b py-4 px-6 print:hidden">
-        <div className="max-w-2xl mx-auto flex items-center justify-between">
-          <img src={logoSvg} alt="Read-a-thon" className="h-10" />
-          <Link to="/" className="text-muted-foreground hover:text-foreground">
+      <PageHeader 
+        rightContent={
+          <Link to="/" className="text-muted-foreground hover:text-foreground print:hidden">
             <X className="h-6 w-6" />
           </Link>
-        </div>
-      </header>
+        }
+      />
 
       <main className="flex-1 flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-lg">
