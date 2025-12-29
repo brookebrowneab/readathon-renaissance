@@ -28,6 +28,12 @@ const getMockData = (code: string) => ({
   daysLeft: 12,
   sponsorCount: 4,
   inviteeName: code.includes("grandma") ? "Grandma Betty" : "",
+  // Grade-level stats from last year
+  gradeStats: {
+    avgMinutes: 412,
+    maxMinutes: 687,
+    participantCount: 48,
+  },
 });
 
 const AMOUNT_OPTIONS = [25, 50, 100];
@@ -275,14 +281,40 @@ const SponsorLandingPage = () => {
                     </div>
 
                     {/* Calculation Display */}
-                    <div className="bg-muted/30 rounded-xl p-4">
+                    <div className="bg-muted/30 rounded-xl p-4 space-y-3">
                       <div className="flex items-center justify-between">
                         <span className="text-lg text-muted-foreground">
-                          If {data.childFirstName} reaches their {data.readingGoal} min goal:
+                          If {data.childFirstName} reaches their goal ({data.readingGoal} min):
                         </span>
                         <span className="font-handwritten text-3xl text-brand-blue">
                           ${calculatedPerMinute.toFixed(2)}
                         </span>
+                      </div>
+                      
+                      <div className="border-t border-border pt-3 space-y-2">
+                        <p className="text-sm font-medium text-muted-foreground">
+                          Last year's {data.grade} graders ({data.gradeStats.participantCount} students):
+                        </p>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="bg-background rounded-lg p-3">
+                            <p className="text-xs text-muted-foreground">Average read</p>
+                            <p className="font-handwritten text-xl text-foreground">
+                              {data.gradeStats.avgMinutes} min
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              ≈ ${(parseFloat(perMinuteRate) * data.gradeStats.avgMinutes).toFixed(2)}
+                            </p>
+                          </div>
+                          <div className="bg-background rounded-lg p-3">
+                            <p className="text-xs text-muted-foreground">Top reader</p>
+                            <p className="font-handwritten text-xl text-foreground">
+                              {data.gradeStats.maxMinutes} min
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              ≈ ${(parseFloat(perMinuteRate) * data.gradeStats.maxMinutes).toFixed(2)}
+                            </p>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
