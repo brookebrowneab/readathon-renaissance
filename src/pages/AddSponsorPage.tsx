@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { MainNav, Footer, BottomTabBar } from "@/components/layout";
 import { BookContainer } from "@/components/legacy";
@@ -8,6 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { FormField } from "@/components/ui/form-field";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import {
   User,
   Mail,
@@ -21,6 +23,9 @@ import {
   Smartphone,
   RotateCcw,
   ChevronRight,
+  Sparkles,
+  Calendar,
+  History,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -43,6 +48,45 @@ const getMockSchoolData = () => ({
   },
 });
 
+// Mock previous sponsors for this child
+interface PreviousSponsorPledge {
+  email: string;
+  name: string;
+  amount: number;
+  pledgeType: "fixed" | "per-minute";
+  perMinuteRate?: number;
+  year: string;
+  eventName: string;
+}
+
+const mockPreviousSponsors: PreviousSponsorPledge[] = [
+  {
+    email: "grandma.betty@email.com",
+    name: "Grandma Betty",
+    amount: 50,
+    pledgeType: "fixed",
+    year: "2024",
+    eventName: "Fall Read-a-thon 2024",
+  },
+  {
+    email: "uncle.mike@email.com",
+    name: "Uncle Mike",
+    amount: 25,
+    pledgeType: "per-minute",
+    perMinuteRate: 0.05,
+    year: "2024",
+    eventName: "Fall Read-a-thon 2024",
+  },
+  {
+    email: "aunt.susan@email.com",
+    name: "Aunt Susan",
+    amount: 75,
+    pledgeType: "fixed",
+    year: "2023",
+    eventName: "Spring Read-a-thon 2023",
+  },
+];
+
 type PaymentMethod = "email" | "text" | "check" | "cash" | "direct" | null;
 type PledgeType = "fixed" | "per-minute";
 
@@ -59,6 +103,10 @@ const AddSponsorPage = () => {
     contact: string;
   } | null>(null);
 
+  // Returning sponsor detection
+  const [foundPreviousSponsor, setFoundPreviousSponsor] = useState<PreviousSponsorPledge | null>(null);
+  const [useLastYearAmount, setUseLastYearAmount] = useState(false);
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -69,6 +117,42 @@ const AddSponsorPage = () => {
     paymentMethod: null as PaymentMethod,
     notes: "",
   });
+
+  // Check for returning sponsor when email changes
+  useEffect(() => {
+    const emailLower = formData.email.toLowerCase().trim();
+    if (emailLower.length > 5) {
+      const found = mockPreviousSponsors.find(
+        (s) => s.email.toLowerCase() === emailLower
+      );
+      if (found) {
+        setFoundPreviousSponsor(found);
+        // Auto-fill name if empty
+        if (!formData.name.trim()) {
+          updateField("name", found.name);
+        }
+      } else {
+        setFoundPreviousSponsor(null);
+        setUseLastYearAmount(false);
+      }
+    } else {
+      setFoundPreviousSponsor(null);
+      setUseLastYearAmount(false);
+    }
+  }, [formData.email]);
+
+  // Apply last year's amount when toggle is enabled
+  useEffect(() => {
+    if (useLastYearAmount && foundPreviousSponsor) {
+      if (foundPreviousSponsor.pledgeType === "fixed") {
+        updateField("pledgeType", "fixed");
+        updateField("amount", foundPreviousSponsor.amount.toString());
+      } else {
+        updateField("pledgeType", "per-minute");
+        updateField("perMinuteRate", foundPreviousSponsor.perMinuteRate?.toString() || "0.05");
+      }
+    }
+  }, [useLastYearAmount, foundPreviousSponsor]);
 
   const updateField = (field: string, value: string | PaymentMethod | PledgeType) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -130,6 +214,8 @@ const AddSponsorPage = () => {
     });
     setIsSuccess(false);
     setRecordedPledge(null);
+    setFoundPreviousSponsor(null);
+    setUseLastYearAmount(false);
   };
 
   const getSuccessMessage = () => {
@@ -215,10 +301,66 @@ const AddSponsorPage = () => {
                           placeholder="email@example.com"
                           value={formData.email}
                           onChange={(e) => updateField("email", e.target.value)}
-                          className="pl-10"
+                          className={cn(
+                            "pl-10",
+                            foundPreviousSponsor && "border-success focus-visible:ring-success"
+                          )}
                         />
                       </div>
                     </FormField>
+
+                    {/* Returning Sponsor Detection */}
+                    {foundPreviousSponsor && (
+                      <div className="p-4 bg-success/10 border border-success/30 rounded-lg space-y-3">
+                        <div className="flex items-start gap-3">
+                          <div className="p-1.5 rounded-full bg-success/20">
+                            <Sparkles className="h-4 w-4 text-success" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="font-medium text-foreground">
+                              Returning sponsor found!
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {foundPreviousSponsor.name} sponsored {childData.firstName} before
+                              {" "}
+                              <span className="text-foreground font-medium">
+                                (${foundPreviousSponsor.amount}
+                                {foundPreviousSponsor.pledgeType === "per-minute" && "/min"}
+                                {" "}in {foundPreviousSponsor.year})
+                              </span>
+                            </p>
+                          </div>
+                          <Badge variant="outline" className="gap-1 shrink-0">
+                            <History className="h-3 w-3" />
+                            {foundPreviousSponsor.year}
+                          </Badge>
+                        </div>
+
+                        <div className="flex items-center justify-between pt-2 border-t border-success/20">
+                          <div className="flex items-center gap-2">
+                            <Switch
+                              id="useLastYear"
+                              checked={useLastYearAmount}
+                              onCheckedChange={setUseLastYearAmount}
+                            />
+                            <Label htmlFor="useLastYear" className="text-sm cursor-pointer">
+                              Same as last year: {" "}
+                              <span className="font-medium text-foreground">
+                                ${foundPreviousSponsor.pledgeType === "fixed" 
+                                  ? foundPreviousSponsor.amount 
+                                  : `${foundPreviousSponsor.perMinuteRate}/min`}
+                              </span>
+                            </Label>
+                          </div>
+                          {useLastYearAmount && (
+                            <Badge variant="success" className="gap-1">
+                              <CheckCircle className="h-3 w-3" />
+                              Applied
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    )}
 
                     <FormField
                       label="Sponsor's Phone"
