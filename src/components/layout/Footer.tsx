@@ -9,7 +9,7 @@ const Footer = () => {
           {/* Brand */}
           <div className="space-y-4">
             <Link to="/" className="flex items-center gap-3">
-              <span className="text-xl font-display text-foreground">
+              <span className="text-xl font-display tracking-wide text-foreground">
                 Read-a-thon
               </span>
             </Link>
