@@ -97,7 +97,7 @@ const SponsorLandingPage = () => {
       {/* Header */}
       <header className="bg-card border-b py-4">
         <div className="container flex items-center justify-between gap-4 pl-4 md:pl-6">
-          <Logo size="header" className="w-[360px]" />
+          <Logo size="hero" className="w-[540px]" />
           <p className="text-lg text-muted-foreground">
             Invited by <span className="text-foreground font-medium">{data.parentFirstName}</span>
           </p>
