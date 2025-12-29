@@ -49,6 +49,23 @@ const HomePage = () => {
                 </Button>
               </Link>
             </div>
+
+            {/* Stats */}
+            <div className="flex flex-wrap gap-8 pt-4">
+              <div>
+                {/* TODO: Update each year */}
+                <p className="font-handwritten text-4xl text-brand-blue">14 days</p>
+                <p className="text-sm text-muted-foreground">of reading</p>
+              </div>
+              <div>
+                <p className="font-handwritten text-4xl text-brand-blue">2 ways</p>
+                <p className="text-sm text-muted-foreground">to pledge</p>
+              </div>
+              <div>
+                <p className="font-handwritten text-4xl text-brand-blue">1 goal</p>
+                <p className="text-sm text-muted-foreground">support Janney</p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -126,7 +143,8 @@ const HomePage = () => {
                 <CardTitle className="text-xl">Flat Donation</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">For example, $20 or $40—a one-time gift to support your reader.</p>
+                <p className="text-muted-foreground">A one-time gift to support your reader.</p>
+                <p className="font-handwritten text-2xl text-brand-blue mt-2">$20, $40, or more</p>
               </CardContent>
             </Card>
 
@@ -138,7 +156,8 @@ const HomePage = () => {
                 <CardTitle className="text-xl">Per-Minute Pledge</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">Pledge based on time spent reading—the more they read, the more they raise!</p>
+                <p className="text-muted-foreground">The more they read, the more they raise!</p>
+                <p className="font-handwritten text-2xl text-brand-blue mt-2">$0.05, $0.10/min</p>
               </CardContent>
             </Card>
           </div>
@@ -218,13 +237,16 @@ const HomePage = () => {
               "Teacher professional development",
               "Custodial equipment and supplies",
               "Facilities repairs",
-              "Salaries for ten teacher and support staff positions",
             ].map((item, index) => (
               <div key={index} className="flex items-start gap-3 rounded-lg bg-card p-4 shadow-sm">
                 <span className="mt-1 h-2 w-2 rounded-full bg-brand-green shrink-0" />
                 <span className="text-muted-foreground">{item}</span>
               </div>
             ))}
+            <div className="flex items-start gap-3 rounded-lg bg-card p-4 shadow-sm sm:col-span-2 lg:col-span-1">
+              <span className="mt-1 h-2 w-2 rounded-full bg-brand-green shrink-0" />
+              <span className="text-muted-foreground">Salaries for <span className="font-handwritten text-xl text-brand-green">10</span> teacher and support staff positions</span>
+            </div>
           </div>
         </div>
       </section>
