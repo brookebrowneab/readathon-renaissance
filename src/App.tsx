@@ -8,7 +8,7 @@ import AboutPage from "./pages/AboutPage";
 import HowItWorksPage from "./pages/HowItWorksPage";
 import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
-import StudentLoginPage from "./pages/auth/StudentLoginPage";
+import OldStudentLoginPage from "./pages/auth/StudentLoginPage";
 import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
 import { OnboardingAddChild, OnboardingPledge, OnboardingComplete } from "./pages/onboarding";
 import DashboardPage from "./pages/DashboardPage";
@@ -19,8 +19,7 @@ import SponsorPage from "./pages/SponsorPage";
 import SponsorLandingPage from "./pages/SponsorLandingPage";
 import { SponsorThankYouPage, SponsorPledgedPage, SponsorCheckInstructionsPage } from "./pages/sponsor";
 import SponsorDashboardPage from "./pages/SponsorDashboardPage";
-import StudentDashboardPage from "./pages/StudentDashboardPage";
-import StudentLogReadingPage from "./pages/StudentLogReadingPage";
+import { StudentLoginPage, StudentDashboardPage as StudentDashboard, StudentLogReadingPage as StudentLogReading } from "./pages/student";
 import TeacherDashboardPage from "./pages/TeacherDashboardPage";
 import TeacherLogReadingPage from "./pages/TeacherLogReadingPage";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
@@ -51,7 +50,7 @@ const App = () => (
           {/* Auth Routes */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
-          <Route path="/student-login" element={<StudentLoginPage />} />
+          <Route path="/student-login" element={<OldStudentLoginPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           
           {/* Onboarding Routes */}
@@ -69,8 +68,11 @@ const App = () => (
           <Route path="/sponsor-dashboard" element={<SponsorDashboardPage />} />
           
           {/* Student Dashboard */}
-          <Route path="/student-dashboard" element={<StudentDashboardPage />} />
-          <Route path="/student-log-reading" element={<StudentLogReadingPage />} />
+          <Route path="/student/login" element={<StudentLoginPage />} />
+          <Route path="/student" element={<StudentDashboard />} />
+          <Route path="/student/log" element={<StudentLogReading />} />
+          <Route path="/student-dashboard" element={<StudentDashboard />} />
+          <Route path="/student-log-reading" element={<StudentLogReading />} />
           
           {/* Teacher Dashboard */}
           <Route path="/teacher-dashboard" element={<TeacherDashboardPage />} />
