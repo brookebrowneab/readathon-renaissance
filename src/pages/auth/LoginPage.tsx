@@ -54,7 +54,7 @@ const LoginPage = () => {
               <div className="space-y-6">
                 {/* Logo */}
                 <div className="text-center">
-                  <Logo size="medium" className="mx-auto mb-4" />
+                  <Logo size="large" className="mx-auto mb-4" />
                   <h1 className="text-2xl font-bold text-foreground">Welcome Back</h1>
                   <p className="text-muted-foreground">Sign in to your account</p>
                 </div>
