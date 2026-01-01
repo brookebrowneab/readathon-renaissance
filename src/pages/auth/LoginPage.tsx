@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { PublicLayout } from "@/components/layout";
-import { BookContainer, Logo, BookIcon } from "@/components/legacy";
+import { BookContainer, BookIcon } from "@/components/legacy";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormField } from "@/components/ui/form-field";
@@ -52,9 +52,8 @@ const LoginPage = () => {
           <div className="w-full max-w-md">
             <BookContainer variant="default" className="animate-fade-in">
               <div className="space-y-6">
-                {/* Logo */}
+                {/* Header */}
                 <div className="text-center">
-                  <Logo size="large" className="mx-auto mb-4" />
                   <h1 className="text-2xl font-bold text-foreground">Welcome Back</h1>
                   <p className="text-muted-foreground">Sign in to your account</p>
                 </div>
