@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { PublicLayout } from "@/components/layout";
-import { BookContainer, Logo } from "@/components/legacy";
+import { BookContainer } from "@/components/legacy";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormField } from "@/components/ui/form-field";
@@ -120,7 +120,6 @@ const OnboardingAddChild = () => {
             <div className="space-y-6">
               {/* Header */}
               <div className="text-center">
-                <Logo size="large" className="mx-auto mb-4" />
                 <h1 className="text-2xl font-bold text-foreground">
                   Add Your Child
                 </h1>
