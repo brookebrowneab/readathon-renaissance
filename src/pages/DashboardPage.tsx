@@ -106,6 +106,14 @@ const DashboardPage = () => {
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Main Content Area */}
             <div className="flex-1 space-y-8">
+              {/* School-wide Stats Banner */}
+              <div className="bg-primary/5 border border-primary/10 rounded-xl p-4 flex items-center justify-center gap-8">
+                <div className="text-center">
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide">Janney School Total</p>
+                  <p className="font-serif text-3xl md:text-4xl text-primary tracking-tight">128,400 <span className="text-lg">minutes</span></p>
+                </div>
+              </div>
+
               {/* Header Section */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
