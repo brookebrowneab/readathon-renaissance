@@ -95,6 +95,11 @@ const mockSponsorshipData = {
 // Mock pending sponsor requests
 const mockPendingSponsorRequests = 2;
 
+// Mock pending reading log approvals (over 8 hours)
+const mockPendingLogApprovals = [
+  { id: "1", childName: "Emma", minutes: 540, date: "March 5", bookTitle: "Harry Potter" },
+];
+
 const DashboardPage = () => {
   return (
     <div className="flex min-h-screen flex-col">
@@ -106,14 +111,6 @@ const DashboardPage = () => {
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Main Content Area */}
             <div className="flex-1 space-y-8">
-              {/* School-wide Stats Banner */}
-              <div className="bg-primary/5 border border-primary/10 rounded-xl p-4 flex items-center justify-center gap-8">
-                <div className="text-center">
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide">Janney School Total</p>
-                  <p className="font-serif text-3xl md:text-4xl text-primary tracking-tight">128,400 <span className="text-lg">minutes</span></p>
-                </div>
-              </div>
-
               {/* Header Section */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -136,23 +133,43 @@ const DashboardPage = () => {
                   </Link>
                 </div>
 
-                {/* Event Banner */}
-                <div className="bg-brand-blue/10 border border-brand-blue/20 rounded-xl p-4 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-brand-blue/20 flex items-center justify-center">
-                      <Calendar className="h-5 w-5 text-brand-blue" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-foreground">
-                        Spring Read-a-thon 2024
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        12 days remaining • Goal: 300 minutes per child
-                      </p>
-                    </div>
+                {/* School Stats & Countdown Row */}
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-muted/30 rounded-xl p-4">
+                  <div className="text-center sm:text-left">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide">Janney School Total</p>
+                    <p className="font-serif text-2xl md:text-3xl text-primary tracking-tight">128,400 <span className="text-base">minutes</span></p>
                   </div>
-                  <Badge variant="info">Active</Badge>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Clock className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">Spring Read-a-thon 2024</span>
+                    <span className="text-foreground font-medium">• 12 days left</span>
+                  </div>
                 </div>
+
+                {/* Reading Log Approval Alert */}
+                {mockPendingLogApprovals.length > 0 && (
+                  <Link to="/reading-logs/approve">
+                    <div className="bg-destructive/10 border border-destructive/30 rounded-xl p-4 flex items-center justify-between hover:bg-destructive/15 transition-colors cursor-pointer">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-full bg-destructive/20 flex items-center justify-center relative">
+                          <Clock className="h-5 w-5 text-destructive" />
+                          <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-destructive text-destructive-foreground text-xs font-bold flex items-center justify-center">
+                            {mockPendingLogApprovals.length}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="font-medium text-foreground">
+                            {mockPendingLogApprovals.length} reading log{mockPendingLogApprovals.length > 1 ? 's' : ''} needs approval
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {mockPendingLogApprovals[0].childName} logged {Math.floor(mockPendingLogApprovals[0].minutes / 60)}+ hours — please verify
+                          </p>
+                        </div>
+                      </div>
+                      <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                  </Link>
+                )}
 
                 {/* Pending Sponsor Requests Alert */}
                 {mockPendingSponsorRequests > 0 && (
