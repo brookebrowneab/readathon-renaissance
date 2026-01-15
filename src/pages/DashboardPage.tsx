@@ -32,6 +32,11 @@ const mockChildren = [
     minutesRead: 245,
     goalMinutes: 300,
     gradeInfo: "3rd Grade",
+    className: "Mrs. Peterson's Class",
+    classMinutesRead: 4280,
+    gradeMinutesRead: 12450,
+    minutesToday: 25,
+    longestStreak: 45,
   },
   {
     id: "2",
@@ -40,6 +45,11 @@ const mockChildren = [
     minutesRead: 180,
     goalMinutes: 250,
     gradeInfo: "1st Grade",
+    className: "Mr. Garcia's Class",
+    classMinutesRead: 3150,
+    gradeMinutesRead: 9820,
+    minutesToday: 15,
+    longestStreak: 30,
   },
 ];
 
@@ -364,6 +374,11 @@ interface ChildProgressCardProps {
     minutesRead: number;
     goalMinutes: number;
     gradeInfo: string;
+    className: string;
+    classMinutesRead: number;
+    gradeMinutesRead: number;
+    minutesToday: number;
+    longestStreak: number;
   };
 }
 
@@ -379,7 +394,7 @@ const ChildProgressCard = ({ child }: ChildProgressCardProps) => {
         
         <ReadingGoalRing progress={child.minutesRead} goal={child.goalMinutes} size={120} />
         
-        {/* Stats Grid */}
+        {/* Personal Stats Grid */}
         <div className="mt-2 grid w-full grid-cols-2 gap-3">
           <div className="flex flex-col items-center rounded-lg bg-muted/50 p-3">
             <span className="text-xs text-muted-foreground">Reading Goal</span>
@@ -392,7 +407,32 @@ const ChildProgressCard = ({ child }: ChildProgressCardProps) => {
           </div>
         </div>
 
-        <p className="text-sm text-muted-foreground">{child.gradeInfo}</p>
+        {/* Today & Streak Stats */}
+        <div className="grid w-full grid-cols-2 gap-3">
+          <div className="flex flex-col items-center rounded-lg bg-accent/10 p-3 border border-accent/20">
+            <span className="text-xs text-muted-foreground">Read Today</span>
+            <span className="font-handwritten text-xl text-accent">{child.minutesToday} min</span>
+          </div>
+          <div className="flex flex-col items-center rounded-lg bg-brand-green/10 p-3 border border-brand-green/20">
+            <span className="text-xs text-muted-foreground">Longest Stretch</span>
+            <span className="font-handwritten text-xl text-brand-green">{child.longestStreak} min</span>
+          </div>
+        </div>
+
+        {/* Class & Grade Stats */}
+        <div className="w-full space-y-2 pt-2 border-t border-border">
+          <p className="text-xs text-muted-foreground text-center">{child.className} • {child.gradeInfo}</p>
+          <div className="grid w-full grid-cols-2 gap-3">
+            <div className="flex flex-col items-center rounded-lg bg-muted/30 p-2">
+              <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Class Total</span>
+              <span className="font-serif text-lg text-foreground">{child.classMinutesRead.toLocaleString()} min</span>
+            </div>
+            <div className="flex flex-col items-center rounded-lg bg-muted/30 p-2">
+              <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Grade Total</span>
+              <span className="font-serif text-lg text-foreground">{child.gradeMinutesRead.toLocaleString()} min</span>
+            </div>
+          </div>
+        </div>
 
         {/* Actions */}
         <div className="flex gap-2 w-full">
