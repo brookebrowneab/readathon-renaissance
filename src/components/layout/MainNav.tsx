@@ -35,7 +35,7 @@ const MainNav = () => {
     <>
       {/* Desktop Header */}
       <header className="sticky top-0 z-50 w-full bg-white/90 backdrop-blur-sm border-b border-slate-100 hidden md:block">
-        <div className="container flex h-16 items-center justify-between">
+        <div className="container flex h-22 items-center justify-between py-2">
 
           {/* Logo - Left */}
           <Link to="/" className="flex items-center">
