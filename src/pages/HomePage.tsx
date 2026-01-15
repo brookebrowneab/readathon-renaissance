@@ -32,21 +32,39 @@ const HomePage = () => {
               <h1 className="font-serif text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-normal tracking-tight text-foreground leading-[1.05]">
                 {heroHeadline}
               </h1>
-              {/* Handwritten blue pencil underline */}
+              {/* Handwritten pencil underline - sketchy style */}
               <svg 
-                className="absolute -bottom-2 left-0 w-full h-4 text-blue-500" 
-                viewBox="0 0 400 16" 
+                className="absolute -bottom-1 left-0 w-full h-6" 
+                viewBox="0 0 400 24" 
                 fill="none" 
                 preserveAspectRatio="none"
                 aria-hidden="true"
               >
+                {/* Main scratchy pencil stroke */}
                 <path 
-                  d="M2 8C20 12 60 4 100 10C140 16 180 6 220 8C260 10 300 4 340 12C360 14 380 8 398 10" 
-                  stroke="currentColor" 
-                  strokeWidth="3" 
+                  d="M3 14C15 13 35 15 55 12C85 9 115 16 145 13C175 10 205 15 235 12C265 9 295 14 325 11C355 8 375 13 397 12" 
+                  stroke="hsl(var(--primary))" 
+                  strokeWidth="2.5" 
                   strokeLinecap="round"
-                  className="font-handwriting"
-                  style={{ strokeDasharray: "2 6", strokeLinejoin: "round" }}
+                  strokeLinejoin="round"
+                  opacity="0.85"
+                />
+                {/* Secondary lighter stroke for texture */}
+                <path 
+                  d="M8 16C25 15 50 17 80 14C110 11 140 17 170 15C200 13 230 16 260 14C290 12 320 15 350 13C370 12 390 14 395 14" 
+                  stroke="hsl(var(--primary))" 
+                  strokeWidth="1.5" 
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  opacity="0.5"
+                />
+                {/* Thin accent line */}
+                <path 
+                  d="M12 11C40 12 70 10 100 11C130 12 160 10 190 11C220 12 250 10 280 11C310 12 340 10 370 11C385 11 392 10 396 11" 
+                  stroke="hsl(var(--primary))" 
+                  strokeWidth="0.8" 
+                  strokeLinecap="round"
+                  opacity="0.35"
                 />
               </svg>
             </div>
