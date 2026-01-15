@@ -1,11 +1,17 @@
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Menu, User, LogOut } from "lucide-react";
+import { Menu, User, LogOut, Bell, Clock, Mail } from "lucide-react";
 import { useState } from "react";
 import { MobileNavDrawer } from "./MobileNavDrawer";
 import { UserRole } from "./BottomTabBar";
 import logo from "@/assets/logo.svg";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+
 interface NavItem {
   label: string;
   href: string;
@@ -16,15 +22,34 @@ const publicNav: NavItem[] = [
   { label: "JOIN STORY", href: "/how-it-works" },
 ];
 
+// Mock notification data - replace with real data
+const mockNotifications = {
+  pendingLogApprovals: [
+    { id: "1", childName: "Emma", minutes: 540, date: "March 5" },
+  ],
+  pendingSponsorRequests: 2,
+};
+
 const MainNav = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
 
   // Mock auth state - replace with real auth
-  const isAuthenticated = false;
-  const userRole: UserRole = null;
-  const userName = "John Smith";
-  const userEmail = "john@example.com";
+  // Set to true on dashboard routes for demo purposes
+  const isDashboardRoute = location.pathname.startsWith("/dashboard") || 
+                           location.pathname.startsWith("/log-reading") ||
+                           location.pathname.startsWith("/children") ||
+                           location.pathname.startsWith("/family") ||
+                           location.pathname.startsWith("/pledges") ||
+                           location.pathname.startsWith("/reading-logs");
+  const isAuthenticated = isDashboardRoute;
+  const userRole: UserRole = isDashboardRoute ? "parent" : null;
+  const userName = "Sarah Johnson";
+  const userEmail = "sarah@example.com";
+
+  const totalNotifications = 
+    mockNotifications.pendingLogApprovals.length + 
+    (mockNotifications.pendingSponsorRequests > 0 ? 1 : 0);
 
   const handleLogout = () => {
     // Handle logout logic
@@ -59,10 +84,70 @@ const MainNav = () => {
               ))}
             </nav>
 
-            {/* Auth Buttons */}
+            {/* Auth Buttons & Notifications */}
             <div className="flex items-center gap-3">
               {isAuthenticated ? (
                 <>
+                  {/* Notifications Popover */}
+                  {totalNotifications > 0 && (
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="relative text-slate-600 hover:text-slate-800 hover:bg-slate-50"
+                        >
+                          <Bell className="h-5 w-5" />
+                          <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-destructive text-destructive-foreground text-xs font-bold flex items-center justify-center">
+                            {totalNotifications}
+                          </span>
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent align="end" className="w-80 p-0">
+                        <div className="p-3 border-b border-border">
+                          <p className="font-medium text-sm">Notifications</p>
+                        </div>
+                        <div className="divide-y divide-border">
+                          {mockNotifications.pendingLogApprovals.length > 0 && (
+                            <Link 
+                              to="/reading-logs/approve" 
+                              className="flex items-center gap-3 p-3 hover:bg-muted/50 transition-colors"
+                            >
+                              <div className="h-9 w-9 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
+                                <Clock className="h-4 w-4 text-amber-600" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-foreground">
+                                  {mockNotifications.pendingLogApprovals.length} reading log{mockNotifications.pendingLogApprovals.length > 1 ? "s" : ""} to verify
+                                </p>
+                                <p className="text-xs text-muted-foreground truncate">
+                                  {mockNotifications.pendingLogApprovals[0].childName} logged {Math.floor(mockNotifications.pendingLogApprovals[0].minutes / 60)}+ hours
+                                </p>
+                              </div>
+                            </Link>
+                          )}
+                          {mockNotifications.pendingSponsorRequests > 0 && (
+                            <Link 
+                              to="/family/sponsor-requests" 
+                              className="flex items-center gap-3 p-3 hover:bg-muted/50 transition-colors"
+                            >
+                              <div className="h-9 w-9 rounded-full bg-accent/20 flex items-center justify-center shrink-0">
+                                <Mail className="h-4 w-4 text-accent" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-foreground">
+                                  {mockNotifications.pendingSponsorRequests} sponsor request{mockNotifications.pendingSponsorRequests > 1 ? "s" : ""}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  Review and approve sponsors
+                                </p>
+                              </div>
+                            </Link>
+                          )}
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  )}
                   <Link to="/dashboard">
                     <Button variant="ghost" size="sm" className="text-slate-600 hover:text-slate-800 hover:bg-slate-50">
                       <User className="mr-2 h-4 w-4" />
@@ -100,13 +185,68 @@ const MainNav = () => {
         <Link to="/" className="flex items-center">
           <img src={logo} alt="Read-a-thon" className="h-10 w-auto" />
         </Link>
-        <button
-          onClick={() => setMobileOpen(true)}
-          className="flex items-center justify-center w-11 h-11 rounded-lg text-slate-600 hover:bg-slate-50 transition-colors"
-          aria-label="Open menu"
-        >
-          <Menu className="h-6 w-6" />
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Mobile Notifications */}
+          {isAuthenticated && totalNotifications > 0 && (
+            <Popover>
+              <PopoverTrigger asChild>
+                <button
+                  className="relative flex items-center justify-center w-10 h-10 rounded-lg text-slate-600 hover:bg-slate-50 transition-colors"
+                  aria-label="Notifications"
+                >
+                  <Bell className="h-5 w-5" />
+                  <span className="absolute top-1 right-1 h-4 w-4 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center">
+                    {totalNotifications}
+                  </span>
+                </button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-72 p-0">
+                <div className="p-3 border-b border-border">
+                  <p className="font-medium text-sm">Notifications</p>
+                </div>
+                <div className="divide-y divide-border">
+                  {mockNotifications.pendingLogApprovals.length > 0 && (
+                    <Link 
+                      to="/reading-logs/approve" 
+                      className="flex items-center gap-3 p-3 hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="h-8 w-8 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
+                        <Clock className="h-4 w-4 text-amber-600" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground">
+                          {mockNotifications.pendingLogApprovals.length} log{mockNotifications.pendingLogApprovals.length > 1 ? "s" : ""} to verify
+                        </p>
+                      </div>
+                    </Link>
+                  )}
+                  {mockNotifications.pendingSponsorRequests > 0 && (
+                    <Link 
+                      to="/family/sponsor-requests" 
+                      className="flex items-center gap-3 p-3 hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="h-8 w-8 rounded-full bg-accent/20 flex items-center justify-center shrink-0">
+                        <Mail className="h-4 w-4 text-accent" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground">
+                          {mockNotifications.pendingSponsorRequests} sponsor request{mockNotifications.pendingSponsorRequests > 1 ? "s" : ""}
+                        </p>
+                      </div>
+                    </Link>
+                  )}
+                </div>
+              </PopoverContent>
+            </Popover>
+          )}
+          <button
+            onClick={() => setMobileOpen(true)}
+            className="flex items-center justify-center w-11 h-11 rounded-lg text-slate-600 hover:bg-slate-50 transition-colors"
+            aria-label="Open menu"
+          >
+            <Menu className="h-6 w-6" />
+          </button>
+        </div>
       </header>
 
       {/* Mobile Navigation Drawer */}

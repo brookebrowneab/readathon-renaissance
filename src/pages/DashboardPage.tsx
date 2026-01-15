@@ -161,33 +161,6 @@ const DashboardPage = () => {
                   </div>
                 </div>
 
-                {/* Notification Bar - Subtle inline notifications */}
-                {(mockPendingLogApprovals.length > 0 || mockPendingSponsorRequests > 0) && (
-                  <div className="flex flex-wrap gap-2">
-                    {mockPendingLogApprovals.length > 0 && (
-                      <Link to="/reading-logs/approve" className="flex-1 min-w-fit">
-                        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/50 hover:bg-muted transition-colors text-sm">
-                          <span className="h-2 w-2 rounded-full bg-amber-500" />
-                          <span className="text-muted-foreground">
-                            <span className="font-medium text-foreground">{mockPendingLogApprovals.length}</span> log{mockPendingLogApprovals.length > 1 ? 's' : ''} to verify
-                          </span>
-                          <ChevronRight className="h-3 w-3 text-muted-foreground ml-auto" />
-                        </div>
-                      </Link>
-                    )}
-                    {mockPendingSponsorRequests > 0 && (
-                      <Link to="/family/sponsor-requests" className="flex-1 min-w-fit">
-                        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/50 hover:bg-muted transition-colors text-sm">
-                          <span className="h-2 w-2 rounded-full bg-accent" />
-                          <span className="text-muted-foreground">
-                            <span className="font-medium text-foreground">{mockPendingSponsorRequests}</span> sponsor request{mockPendingSponsorRequests > 1 ? 's' : ''}
-                          </span>
-                          <ChevronRight className="h-3 w-3 text-muted-foreground ml-auto" />
-                        </div>
-                      </Link>
-                    )}
-                  </div>
-                )}
               </div>
 
               {/* Children Overview */}
