@@ -133,20 +133,33 @@ const DashboardPage = () => {
                   </Link>
                 </div>
 
-                {/* School Stats - Celebratory */}
-                <div className="relative bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 rounded-2xl p-6 md:p-8 text-center overflow-hidden">
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,hsl(var(--accent)/0.15),transparent_50%)]" />
-                  <div className="relative">
-                    <p className="text-sm text-muted-foreground uppercase tracking-widest mb-1">Janney School Total</p>
-                    <p className="font-serif text-5xl md:text-6xl lg:text-7xl text-primary tracking-tight font-normal">
-                      128,400
+                {/* School Stats - Hero Style */}
+                <div className="pt-2">
+                  <p className="text-sm text-muted-foreground uppercase tracking-widest mb-2">Janney School Total</p>
+                  <div className="relative inline-block">
+                    <p className="font-serif text-5xl md:text-6xl lg:text-7xl text-foreground tracking-tight font-normal relative">
+                      <span className="relative">
+                        128,400 minutes
+                        {/* Highlighter effect */}
+                        <span 
+                          className="absolute inset-0 -skew-y-1 bg-accent/30 -z-10 transform -rotate-[0.5deg]"
+                          style={{
+                            top: '45%',
+                            height: '55%',
+                            left: '-2%',
+                            right: '-2%',
+                            borderRadius: '4px 8px 4px 6px',
+                          }}
+                          aria-hidden="true"
+                        />
+                      </span>
                     </p>
-                    <p className="text-lg text-muted-foreground mt-1">minutes read together</p>
-                    <div className="flex items-center justify-center gap-2 mt-3 text-sm text-muted-foreground">
-                      <Clock className="h-4 w-4" />
-                      <span>Spring Read-a-thon 2024</span>
-                      <span className="text-foreground font-medium">• 12 days left</span>
-                    </div>
+                  </div>
+                  <p className="text-base text-muted-foreground mt-2">read together this year</p>
+                  <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
+                    <Clock className="h-4 w-4" />
+                    <span>Spring Read-a-thon 2024</span>
+                    <span className="text-foreground font-medium">• 12 days left</span>
                   </div>
                 </div>
 
