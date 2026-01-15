@@ -13,154 +13,148 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Read-a-thon Design System - All colors in HSL */
+/* Read-a-thon Design System - Mature, Nonprofit Aesthetic */
+/* Muted navy, indigo, slate, soft teal, warm paper neutrals */
 @layer base {
   :root {
-    /* Brand Colors - LEGACY IMMUTABLE */
-    --brand-blue: 220 50% 45%;        /* #3760AC */
-    --brand-blue-dark: 220 58% 31%;   /* #21427D */
-    --brand-yellow: 58 67% 48%;       /* #C8C42D */
+    /* Brand Colors - Muted Navy/Indigo Palette */
+    --brand-navy: 225 45% 28%;        /* Deep muted navy */
+    --brand-indigo: 235 35% 45%;      /* Muted indigo */
+    --brand-slate: 220 25% 55%;       /* Slate blue */
+    --brand-teal: 185 35% 50%;        /* Soft teal accent */
     
-    /* Background Colors - Warm neutrals */
-    --background: 40 33% 99%;         /* #FFFCF9 */
-    --background-warm: 30 27% 97%;    /* #FAF9F7 */
-    --background-warmer: 30 100% 98%; /* #FFF9F5 */
-    --foreground: 0 0% 15%;           /* #262626 */
+    /* Background Colors - Warm paper-like neutrals */
+    --background: 40 20% 98%;         /* Warm off-white */
+    --background-warm: 35 25% 96%;    /* Light paper */
+    --background-warmer: 32 30% 94%;  /* Warmer paper tone */
+    --foreground: 225 35% 18%;        /* Deep navy text */
 
     /* Card and surfaces */
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 15%;
+    --card: 40 15% 99%;
+    --card-foreground: 225 35% 18%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 15%;
+    --popover: 40 15% 99%;
+    --popover-foreground: 225 35% 18%;
 
-    /* Primary - Brand Blue #3760AC */
-    --primary: 220 50% 45%;
-    --primary-foreground: 0 0% 100%;
-    --primary-hover: 220 55% 35%;
-    --primary-active: 220 55% 30%;
+    /* Primary - Muted Navy */
+    --primary: 225 45% 28%;
+    --primary-foreground: 40 20% 98%;
+    --primary-hover: 225 45% 22%;
+    --primary-active: 225 45% 18%;
 
-    /* Accent hover/active states */
-    --accent-hover: 58 67% 43%;
-    --accent-active: 58 67% 38%;
-
-    /* Secondary - Warm neutral */
-    --secondary: 30 27% 97%;
-    --secondary-foreground: 0 0% 15%;
+    /* Secondary - Paper warm */
+    --secondary: 35 25% 96%;
+    --secondary-foreground: 225 35% 18%;
 
     /* Muted */
-    --muted: 30 15% 94%;
-    --muted-foreground: 0 0% 35%;
+    --muted: 220 15% 92%;
+    --muted-foreground: 220 20% 45%;
 
-    /* Accent - Brand Yellow */
-    --accent: 58 67% 48%;
-    --accent-foreground: 0 0% 15%;
+    /* Accent - Soft Teal (very limited use) */
+    --accent: 185 35% 50%;
+    --accent-foreground: 225 35% 18%;
+    --accent-hover: 185 35% 45%;
+    --accent-active: 185 35% 40%;
 
-    /* Destructive - Danger Red #FF4D4F */
-    --destructive: 359 100% 65%;
+    /* Destructive */
+    --destructive: 0 55% 50%;
     --destructive-foreground: 0 0% 100%;
-    --destructive-hover: 359 100% 55%;
-    --destructive-active: 359 100% 50%;
+    --destructive-hover: 0 55% 45%;
+    --destructive-active: 0 55% 40%;
 
-    /* Success - Brand Yellow */
-    --success: 58 67% 48%;
-    --success-foreground: 0 0% 15%;
+    /* Success */
+    --success: 160 45% 40%;
+    --success-foreground: 0 0% 100%;
 
-    /* Info - Brand Blue */
-    --info: 220 50% 45%;
+    /* Info */
+    --info: 225 45% 28%;
     --info-foreground: 0 0% 100%;
 
     /* Warning */
-    --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 15%;
+    --warning: 38 70% 50%;
+    --warning-foreground: 225 35% 18%;
 
-    /* Accent Colors - NO PURPLE */
-    --accent-orange: 16 100% 60%;     /* #FF6B35 */
-    --accent-teal: 175 64% 55%;       /* #4ECDC4 */
-    --accent-coral: 0 100% 70%;       /* #FF6B6B */
-    --accent-gold: 47 100% 62%;       /* #FFD93D */
-    --accent-green: 96 63% 43%;       /* #52C41A */
+    /* Extended palette for design flexibility */
+    --slate-light: 220 20% 75%;
+    --violet-muted: 250 25% 55%;
+    --indigo-soft: 235 30% 60%;
 
-    /* Progress Ring */
-    --progress-bg: 220 26% 92%;       /* #E6EAF1 */
-    --progress-stroke: 220 50% 45%;   /* #3760AC */
+    /* Progress */
+    --progress-bg: 220 20% 90%;
+    --progress-stroke: 225 45% 28%;
 
     /* Text Colors */
-    --text-primary: 0 0% 15%;         /* #262626 */
-    --text-secondary: 0 0% 35%;       /* #595959 */
-    --text-tertiary: 0 0% 55%;        /* #8C8C8C - Used for input borders */
-    --text-inverse: 0 0% 100%;        /* #FFFFFF */
+    --text-primary: 225 35% 18%;
+    --text-secondary: 220 20% 40%;
+    --text-tertiary: 220 15% 55%;
+    --text-inverse: 40 20% 98%;
 
     /* Border and Input */
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 220 50% 45%;
+    --border: 220 15% 88%;
+    --input: 220 15% 88%;
+    --ring: 225 45% 28%;
 
-    --radius: 0.5rem;
+    --radius: 0.375rem;
     --radius-book: 8vw;
 
-    /* Book Container Shadow - LEGACY IMMUTABLE */
+    /* Shadows - Softer, more refined */
     --shadow-book: 3px 3px 6px 3px rgba(0, 0, 0, 0.3);
-    
-    /* Progress Circle Shadow - LEGACY IMMUTABLE */
     --shadow-progress: inset -1px 1px 2px 2px rgba(0, 0, 0, 0.3), -2px 2px 3px 3px rgba(0, 0, 0, 0.3);
-
-    /* Modern Shadows */
-    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
-    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.08);
-    --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.10);
-    --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.12);
-    --shadow-xl: 0 12px 24px rgba(0, 0, 0, 0.15);
+    --shadow-xs: 0 1px 2px rgba(34, 42, 72, 0.04);
+    --shadow-sm: 0 2px 4px rgba(34, 42, 72, 0.06);
+    --shadow-md: 0 4px 8px rgba(34, 42, 72, 0.08);
+    --shadow-lg: 0 8px 16px rgba(34, 42, 72, 0.10);
+    --shadow-xl: 0 12px 24px rgba(34, 42, 72, 0.12);
 
     /* Sidebar */
-    --sidebar-background: 30 27% 97%;
-    --sidebar-foreground: 0 0% 15%;
-    --sidebar-primary: 220 50% 45%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 30 15% 94%;
-    --sidebar-accent-foreground: 0 0% 15%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 220 50% 45%;
+    --sidebar-background: 35 25% 96%;
+    --sidebar-foreground: 225 35% 18%;
+    --sidebar-primary: 225 45% 28%;
+    --sidebar-primary-foreground: 40 20% 98%;
+    --sidebar-accent: 220 15% 92%;
+    --sidebar-accent-foreground: 225 35% 18%;
+    --sidebar-border: 220 15% 88%;
+    --sidebar-ring: 225 45% 28%;
   }
 
   .dark {
-    --background: 220 20% 10%;
-    --background-warm: 220 15% 12%;
-    --foreground: 0 0% 98%;
+    --background: 225 30% 10%;
+    --background-warm: 225 25% 12%;
+    --foreground: 40 15% 95%;
 
-    --card: 220 20% 12%;
-    --card-foreground: 0 0% 98%;
+    --card: 225 25% 14%;
+    --card-foreground: 40 15% 95%;
 
-    --popover: 220 20% 12%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 225 25% 14%;
+    --popover-foreground: 40 15% 95%;
 
-    --primary: 220 50% 55%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 220 40% 55%;
+    --primary-foreground: 40 20% 98%;
 
-    --secondary: 220 15% 20%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 225 20% 18%;
+    --secondary-foreground: 40 15% 95%;
 
-    --muted: 220 15% 18%;
-    --muted-foreground: 0 0% 65%;
+    --muted: 225 20% 20%;
+    --muted-foreground: 220 15% 60%;
 
-    --accent: 58 67% 55%;
-    --accent-foreground: 0 0% 10%;
+    --accent: 185 30% 50%;
+    --accent-foreground: 40 15% 95%;
 
-    --destructive: 0 62% 40%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 50% 45%;
+    --destructive-foreground: 40 15% 95%;
 
-    --border: 220 15% 20%;
-    --input: 220 15% 20%;
-    --ring: 220 50% 55%;
+    --border: 225 20% 22%;
+    --input: 225 20% 22%;
+    --ring: 220 40% 55%;
 
-    --sidebar-background: 220 20% 10%;
-    --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 220 50% 55%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 15% 18%;
-    --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 220 15% 20%;
-    --sidebar-ring: 220 50% 55%;
+    --sidebar-background: 225 30% 10%;
+    --sidebar-foreground: 40 15% 95%;
+    --sidebar-primary: 220 40% 55%;
+    --sidebar-primary-foreground: 40 20% 98%;
+    --sidebar-accent: 225 20% 18%;
+    --sidebar-accent-foreground: 40 15% 95%;
+    --sidebar-border: 225 20% 22%;
+    --sidebar-ring: 220 40% 55%;
   }
 }
 
