@@ -22,87 +22,83 @@ const HomePage = () => {
 
   return (
     <PublicLayout>
-      {/* Hero Section - 2-column layout with illustration left, text right */}
-      <section className="relative py-8 md:py-12">
+      {/* Hero Section - Large right-aligned headline */}
+      <section className="relative py-10 md:py-16">
         <div className="container">
-          {/* Top row: Illustration + Text */}
-          <div className="grid md:grid-cols-[1fr,1.5fr] gap-6 md:gap-10 items-start mb-8 md:mb-10">
-            {/* Left: Large illustration box */}
-            <div className="relative bg-accent/30 rounded-lg overflow-hidden aspect-square md:aspect-[4/3]">
-              <img 
-                src={booksShelfHero} 
-                alt="Colorful books on a shelf" 
-                className="w-full h-full object-cover"
-              />
-            </div>
+          <div className="max-w-5xl ml-auto text-right">
+            {/* Large headline - right aligned */}
+            <h1 className="font-serif text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-normal tracking-tight text-foreground leading-[1.05] mb-6">
+              {heroHeadline}
+            </h1>
 
-            {/* Right: Headline + body text */}
-            <div className="flex flex-col justify-center">
-              <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-normal tracking-tight text-foreground leading-[1.1] mb-4">
-                {heroHeadline}
-              </h1>
-              <p className="text-sm md:text-base text-muted-foreground leading-relaxed mb-5">
-                Janney Elementary Read-a-thon runs February 24–March 9. Students read to raise funds for our school. 
-                Ask friends and family to pledge per minute—or give a flat donation—and help fund the programs that make Janney exceptional.
-              </p>
-              {/* CTA Buttons */}
-              <div className="flex flex-wrap gap-3">
-                <Link to="/register">
-                  <Button 
-                    size="lg" 
-                    className="bg-primary text-primary-foreground hover:bg-primary-hover px-8"
-                  >
-                    Get Started
-                  </Button>
-                </Link>
-                <Link to="/how-it-works">
-                  <Button 
-                    variant="ghost" 
-                    size="lg"
-                    className="text-foreground hover:bg-muted"
-                  >
-                    Learn More <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </Link>
-              </div>
+            {/* Body text - full width, two lines, smaller */}
+            <p className="text-base md:text-lg text-muted-foreground max-w-3xl leading-relaxed mb-6">
+              Janney Elementary Read-a-thon runs February 24–March 9. Students read to raise funds for our school. 
+              Ask friends and family to pledge per minute—or give a flat donation—and help fund the programs that make Janney exceptional.
+            </p>
+
+            {/* CTA Buttons */}
+            <div className="flex flex-wrap gap-3">
+              <Link to="/register">
+                <Button 
+                  size="lg" 
+                  className="bg-primary text-primary-foreground hover:bg-primary-hover px-8"
+                >
+                  Get Started
+                </Button>
+              </Link>
+              <Link to="/how-it-works">
+                <Button 
+                  variant="ghost" 
+                  size="lg"
+                  className="text-foreground hover:bg-muted"
+                >
+                  Learn More <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
             </div>
           </div>
+        </div>
+      </section>
 
-          {/* Bottom row: Section label + 3 Data Cards */}
-          <div className="flex flex-col md:flex-row md:items-end gap-4 md:gap-8">
-            {/* Left: Small label text */}
-            <div className="md:w-40 shrink-0">
-              <p className="font-handwriting text-lg md:text-xl text-muted-foreground">
-                This year so far...
+      {/* Stats Section - with tiled book illustration background */}
+      <section className="py-10 md:py-14 relative overflow-hidden">
+        {/* Tiled background illustrations */}
+        <div className="absolute inset-0 opacity-[0.08] pointer-events-none">
+          <div className="flex flex-wrap justify-center items-center gap-8 h-full">
+            <img src={booksShelfHero} alt="" className="w-64 h-auto" aria-hidden="true" />
+            <img src={openBook} alt="" className="w-48 h-auto" aria-hidden="true" />
+            <img src={booksShelfDivider} alt="" className="w-64 h-auto" aria-hidden="true" />
+            <img src={bookStackAccent} alt="" className="w-40 h-auto" aria-hidden="true" />
+            <img src={booksShelfHero} alt="" className="w-64 h-auto" aria-hidden="true" />
+          </div>
+        </div>
+        
+        <div className="container relative">
+          <div className="grid grid-cols-3 gap-6 md:gap-10 max-w-4xl mx-auto bg-background/80 backdrop-blur-sm rounded-lg p-6 md:p-10 border border-border">
+            <div className="text-center">
+              <p className="font-serif text-3xl md:text-4xl lg:text-5xl text-foreground tracking-tight">
+                128,400
+              </p>
+              <p className="text-xs md:text-sm text-muted-foreground mt-1 tracking-wide">
+                Minutes Logged
               </p>
             </div>
-
-            {/* Right: 3 Data cards in a row */}
-            <div className="flex-1 grid grid-cols-3 gap-3 md:gap-4">
-              <div className="bg-card border border-border rounded-lg p-4 md:p-6 text-center aspect-square flex flex-col justify-center">
-                <p className="font-handwriting text-2xl md:text-3xl lg:text-4xl text-primary mb-1">
-                  128,400
-                </p>
-                <p className="text-xs md:text-sm text-muted-foreground">
-                  Minutes Logged
-                </p>
-              </div>
-              <div className="bg-card border border-border rounded-lg p-4 md:p-6 text-center aspect-square flex flex-col justify-center">
-                <p className="font-handwriting text-2xl md:text-3xl lg:text-4xl text-primary mb-1">
-                  4,875
-                </p>
-                <p className="text-xs md:text-sm text-muted-foreground">
-                  Books Completed
-                </p>
-              </div>
-              <div className="bg-card border border-border rounded-lg p-4 md:p-6 text-center aspect-square flex flex-col justify-center">
-                <p className="font-handwriting text-2xl md:text-3xl lg:text-4xl text-primary mb-1">
-                  $21,320
-                </p>
-                <p className="text-xs md:text-sm text-muted-foreground">
-                  Funds Raised
-                </p>
-              </div>
+            <div className="text-center border-x border-border">
+              <p className="font-serif text-3xl md:text-4xl lg:text-5xl text-foreground tracking-tight">
+                4,875
+              </p>
+              <p className="text-xs md:text-sm text-muted-foreground mt-1 tracking-wide">
+                Books Completed
+              </p>
+            </div>
+            <div className="text-center">
+              <p className="font-serif text-3xl md:text-4xl lg:text-5xl text-foreground tracking-tight">
+                $21,320
+              </p>
+              <p className="text-xs md:text-sm text-muted-foreground mt-1 tracking-wide">
+                Funds Raised
+              </p>
             </div>
           </div>
         </div>
