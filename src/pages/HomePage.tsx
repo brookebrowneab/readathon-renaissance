@@ -27,54 +27,25 @@ const HomePage = () => {
         <div className="container">
           {/* Constrain hero content to ~2/3 page width, indent to align with data block */}
           <div className="max-w-4xl pl-9 md:pl-14 lg:pl-20 text-left">
-            {/* Large headline - left aligned with pencil underline */}
+            {/* Large headline - left aligned with highlighter effect */}
             <div className="relative inline-block mb-6">
-              <h1 className="font-serif text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-normal tracking-tight text-foreground leading-[1.05]">
-                {heroHeadline}
+              <h1 className="font-serif text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-normal tracking-tight text-foreground leading-[1.05] relative">
+                <span className="relative">
+                  {heroHeadline}
+                  {/* Highlighter effect - sits behind text */}
+                  <span 
+                    className="absolute inset-0 -skew-y-1 bg-accent/30 -z-10 transform -rotate-[0.5deg]"
+                    style={{
+                      top: '45%',
+                      height: '55%',
+                      left: '-2%',
+                      right: '-2%',
+                      borderRadius: '4px 8px 4px 6px',
+                    }}
+                    aria-hidden="true"
+                  />
+                </span>
               </h1>
-              {/* Handwritten pencil underline - rough sketchy style */}
-              <svg 
-                className="absolute -bottom-6 left-0 w-full h-8" 
-                viewBox="0 0 400 32" 
-                fill="none" 
-                preserveAspectRatio="none"
-                aria-hidden="true"
-              >
-                {/* Heavy rough main stroke */}
-                <path 
-                  d="M2 16 L12 15 L22 17 L35 14 L50 16 L68 15 L85 17 L100 14 L118 16 L135 15 L152 17 L170 14 L188 16 L205 15 L222 17 L240 14 L258 16 L275 15 L292 16 L310 15 L328 17 L345 14 L362 16 L380 15 L398 16" 
-                  stroke="hsl(var(--accent))" 
-                  strokeWidth="3" 
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  opacity="0.9"
-                />
-                {/* Second overlapping stroke - slightly offset */}
-                <path 
-                  d="M5 18 L18 17 L32 19 L48 16 L65 18 L82 17 L98 19 L115 16 L132 18 L150 17 L168 18 L185 17 L202 19 L220 16 L238 18 L255 17 L272 19 L290 16 L308 18 L325 17 L342 18 L360 17 L378 19 L395 17" 
-                  stroke="hsl(var(--accent))" 
-                  strokeWidth="2" 
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  opacity="0.6"
-                />
-                {/* Thin scratchy accent strokes */}
-                <path 
-                  d="M8 14 L25 13 L45 15 L70 12 L95 14 L120 13 L145 15 L170 12 L195 14 L220 13 L245 14 L270 13 L295 15 L320 12 L345 14 L370 13 L392 14" 
-                  stroke="hsl(var(--accent))" 
-                  strokeWidth="1" 
-                  strokeLinecap="round"
-                  opacity="0.4"
-                />
-                {/* Extra texture strokes */}
-                <path 
-                  d="M15 20 L40 19 L65 21 L90 18 L115 20 L140 19 L165 20 L190 19 L215 21 L240 18 L265 20 L290 19 L315 20 L340 19 L365 21 L390 19" 
-                  stroke="hsl(var(--accent))" 
-                  strokeWidth="0.75" 
-                  strokeLinecap="round"
-                  opacity="0.3"
-                />
-              </svg>
             </div>
 
             {/* Body text - full width, two lines, smaller */}
