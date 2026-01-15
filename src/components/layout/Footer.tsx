@@ -10,7 +10,7 @@ const Footer = () => {
             About
           </Link>
           <span className="text-slate-300">|</span>
-          <Link to="/how-it-works" className="hover:text-slate-900 transition-colors">
+          <Link to="/faq" className="hover:text-slate-900 transition-colors">
             FAQ
           </Link>
           <span className="text-slate-300">|</span>
