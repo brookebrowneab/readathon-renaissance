@@ -226,6 +226,10 @@ export default {
           "60%": { transform: "scale(1.1)" },
           "100%": { transform: "scale(1)", opacity: "1" },
         },
+        "highlighter-grow": {
+          "0%": { transform: "scaleX(0) skewY(-1deg) rotate(-0.5deg)", transformOrigin: "left", opacity: "0" },
+          "100%": { transform: "scaleX(1) skewY(-1deg) rotate(-0.5deg)", transformOrigin: "left", opacity: "1" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -251,6 +255,7 @@ export default {
         "flash": "flash 0.3s ease-out",
         "progress-draw": "progress-draw 0.8s ease-out forwards",
         "circle-appear": "circle-appear 0.4s ease-out forwards",
+        "highlighter-grow": "highlighter-grow 0.6s ease-out 0.2s forwards",
       },
     },
   },
