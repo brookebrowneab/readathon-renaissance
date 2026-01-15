@@ -125,11 +125,10 @@ const MainNav = () => {
             <Popover>
               <PopoverTrigger asChild>
                 <button 
-                  className="flex items-center justify-center gap-1.5 h-12 w-12 rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-colors"
+                  className="flex items-center justify-center h-8 w-8 rounded-full bg-destructive text-destructive-foreground shadow-lg hover:bg-destructive/90 transition-colors text-sm font-bold"
                   aria-label={`${totalNotifications} notifications`}
                 >
-                  <Bell className="h-5 w-5" />
-                  <span className="text-sm font-bold">{totalNotifications}</span>
+                  {totalNotifications}
                 </button>
               </PopoverTrigger>
               <PopoverContent align="end" className="w-80 p-0 mt-2">
@@ -201,11 +200,10 @@ const MainNav = () => {
             <Popover>
               <PopoverTrigger asChild>
                 <button 
-                  className="flex items-center justify-center gap-1 h-10 w-10 rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-colors"
+                  className="flex items-center justify-center h-7 w-7 rounded-full bg-destructive text-destructive-foreground shadow-lg hover:bg-destructive/90 transition-colors text-xs font-bold"
                   aria-label={`${totalNotifications} notifications`}
                 >
-                  <Bell className="h-4 w-4" />
-                  <span className="text-xs font-bold">{totalNotifications}</span>
+                  {totalNotifications}
                 </button>
               </PopoverTrigger>
               <PopoverContent align="end" className="w-72 p-0 mt-2">
