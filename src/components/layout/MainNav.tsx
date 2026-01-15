@@ -5,7 +5,7 @@ import { Menu, User, LogOut } from "lucide-react";
 import { useState } from "react";
 import { MobileNavDrawer } from "./MobileNavDrawer";
 import { UserRole } from "./BottomTabBar";
-
+import logo from "@/assets/logo.svg";
 interface NavItem {
   label: string;
   href: string;
@@ -38,8 +38,8 @@ const MainNav = () => {
         <div className="container flex h-16 items-center justify-between">
 
           {/* Logo - Left */}
-          <Link to="/" className="font-serif text-xl tracking-wide text-slate-800">
-            Read-a-thon
+          <Link to="/" className="flex items-center">
+            <img src={logo} alt="Read-a-thon" className="h-10 w-auto" />
           </Link>
 
           {/* Desktop Nav - Right side */}
@@ -97,8 +97,8 @@ const MainNav = () => {
 
       {/* Mobile Header */}
       <header className="sticky top-0 z-40 flex items-center justify-between h-14 px-4 bg-white/90 backdrop-blur-sm border-b border-slate-100 md:hidden">
-        <Link to="/" className="font-serif text-lg text-slate-800">
-          Read-a-thon
+        <Link to="/" className="flex items-center">
+          <img src={logo} alt="Read-a-thon" className="h-8 w-auto" />
         </Link>
         <button
           onClick={() => setMobileOpen(true)}
