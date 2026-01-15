@@ -22,17 +22,37 @@ const HomePage = () => {
 
   return (
     <PublicLayout>
-      {/* Hero Section - Large right-aligned headline */}
+      {/* Hero Section - Large left-aligned headline */}
       <section className="relative py-10 md:py-16">
         <div className="container">
-          <div className="max-w-5xl ml-auto text-right">
-            {/* Large headline - right aligned */}
-            <h1 className="font-serif text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-normal tracking-tight text-foreground leading-[1.05] mb-6">
-              {heroHeadline}
-            </h1>
+          {/* Constrain hero content to ~2/3 page width, indent to align with data block */}
+          <div className="max-w-4xl pl-4 md:pl-10 lg:pl-16 text-left">
+            {/* Large headline - left aligned with pencil underline */}
+            <div className="relative inline-block mb-6">
+              <h1 className="font-serif text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-normal tracking-tight text-foreground leading-[1.05]">
+                {heroHeadline}
+              </h1>
+              {/* Handwritten blue pencil underline */}
+              <svg 
+                className="absolute -bottom-2 left-0 w-full h-4 text-blue-500" 
+                viewBox="0 0 400 16" 
+                fill="none" 
+                preserveAspectRatio="none"
+                aria-hidden="true"
+              >
+                <path 
+                  d="M2 8C20 12 60 4 100 10C140 16 180 6 220 8C260 10 300 4 340 12C360 14 380 8 398 10" 
+                  stroke="currentColor" 
+                  strokeWidth="3" 
+                  strokeLinecap="round"
+                  className="font-handwriting"
+                  style={{ strokeDasharray: "2 6", strokeLinejoin: "round" }}
+                />
+              </svg>
+            </div>
 
             {/* Body text - full width, two lines, smaller */}
-            <p className="text-base md:text-lg text-muted-foreground max-w-3xl leading-relaxed mb-6">
+            <p className="text-base md:text-lg text-muted-foreground max-w-2xl leading-relaxed mb-6">
               Janney Elementary Read-a-thon runs February 24–March 9. Students read to raise funds for our school. 
               Ask friends and family to pledge per minute—or give a flat donation—and help fund the programs that make Janney exceptional.
             </p>
