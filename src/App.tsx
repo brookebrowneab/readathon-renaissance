@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import AboutPage from "./pages/AboutPage";
 import HowItWorksPage from "./pages/HowItWorksPage";
+import FAQPage from "./pages/FAQPage";
 import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
 import OldStudentLoginPage from "./pages/auth/StudentLoginPage";
@@ -53,6 +54,7 @@ const App = () => (
           <Route path="/" element={<HomePage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/how-it-works" element={<HowItWorksPage />} />
+          <Route path="/faq" element={<FAQPage />} />
           <Route path="/sponsor" element={<SponsorGatewayPage />} />
           <Route path="/sponsor/:childId" element={<SponsorPage />} />
           <Route path="/invite/:token" element={<SponsorLandingPage />} />
