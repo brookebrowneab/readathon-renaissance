@@ -133,67 +133,49 @@ const DashboardPage = () => {
                   </Link>
                 </div>
 
-                {/* School Stats & Countdown Row */}
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-muted/30 rounded-xl p-4">
-                  <div className="text-center sm:text-left">
-                    <p className="text-xs text-muted-foreground uppercase tracking-wide">Janney School Total</p>
-                    <p className="font-serif text-2xl md:text-3xl text-primary tracking-tight">128,400 <span className="text-base">minutes</span></p>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <Clock className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-muted-foreground">Spring Read-a-thon 2024</span>
-                    <span className="text-foreground font-medium">• 12 days left</span>
+                {/* School Stats - Celebratory */}
+                <div className="relative bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 rounded-2xl p-6 md:p-8 text-center overflow-hidden">
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,hsl(var(--accent)/0.15),transparent_50%)]" />
+                  <div className="relative">
+                    <p className="text-sm text-muted-foreground uppercase tracking-widest mb-1">Janney School Total</p>
+                    <p className="font-serif text-5xl md:text-6xl lg:text-7xl text-primary tracking-tight font-normal">
+                      128,400
+                    </p>
+                    <p className="text-lg text-muted-foreground mt-1">minutes read together</p>
+                    <div className="flex items-center justify-center gap-2 mt-3 text-sm text-muted-foreground">
+                      <Clock className="h-4 w-4" />
+                      <span>Spring Read-a-thon 2024</span>
+                      <span className="text-foreground font-medium">• 12 days left</span>
+                    </div>
                   </div>
                 </div>
 
-                {/* Reading Log Approval Alert */}
-                {mockPendingLogApprovals.length > 0 && (
-                  <Link to="/reading-logs/approve">
-                    <div className="bg-destructive/10 border border-destructive/30 rounded-xl p-4 flex items-center justify-between hover:bg-destructive/15 transition-colors cursor-pointer">
-                      <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-full bg-destructive/20 flex items-center justify-center relative">
-                          <Clock className="h-5 w-5 text-destructive" />
-                          <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-destructive text-destructive-foreground text-xs font-bold flex items-center justify-center">
-                            {mockPendingLogApprovals.length}
+                {/* Notification Bar - Subtle inline notifications */}
+                {(mockPendingLogApprovals.length > 0 || mockPendingSponsorRequests > 0) && (
+                  <div className="flex flex-wrap gap-2">
+                    {mockPendingLogApprovals.length > 0 && (
+                      <Link to="/reading-logs/approve" className="flex-1 min-w-fit">
+                        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/50 hover:bg-muted transition-colors text-sm">
+                          <span className="h-2 w-2 rounded-full bg-amber-500" />
+                          <span className="text-muted-foreground">
+                            <span className="font-medium text-foreground">{mockPendingLogApprovals.length}</span> log{mockPendingLogApprovals.length > 1 ? 's' : ''} to verify
                           </span>
+                          <ChevronRight className="h-3 w-3 text-muted-foreground ml-auto" />
                         </div>
-                        <div>
-                          <p className="font-medium text-foreground">
-                            {mockPendingLogApprovals.length} reading log{mockPendingLogApprovals.length > 1 ? 's' : ''} needs approval
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {mockPendingLogApprovals[0].childName} logged {Math.floor(mockPendingLogApprovals[0].minutes / 60)}+ hours — please verify
-                          </p>
-                        </div>
-                      </div>
-                      <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                    </div>
-                  </Link>
-                )}
-
-                {/* Pending Sponsor Requests Alert */}
-                {mockPendingSponsorRequests > 0 && (
-                  <Link to="/family/sponsor-requests">
-                    <div className="bg-accent-gold/10 border border-accent-gold/30 rounded-xl p-4 flex items-center justify-between hover:bg-accent-gold/20 transition-colors cursor-pointer">
-                      <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-full bg-accent-gold/20 flex items-center justify-center relative">
-                          <Mail className="h-5 w-5 text-accent-gold" />
-                          <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-destructive text-destructive-foreground text-xs font-bold flex items-center justify-center">
-                            {mockPendingSponsorRequests}
+                      </Link>
+                    )}
+                    {mockPendingSponsorRequests > 0 && (
+                      <Link to="/family/sponsor-requests" className="flex-1 min-w-fit">
+                        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/50 hover:bg-muted transition-colors text-sm">
+                          <span className="h-2 w-2 rounded-full bg-accent" />
+                          <span className="text-muted-foreground">
+                            <span className="font-medium text-foreground">{mockPendingSponsorRequests}</span> sponsor request{mockPendingSponsorRequests > 1 ? 's' : ''}
                           </span>
+                          <ChevronRight className="h-3 w-3 text-muted-foreground ml-auto" />
                         </div>
-                        <div>
-                          <p className="font-medium text-foreground">
-                            {mockPendingSponsorRequests} sponsor request{mockPendingSponsorRequests > 1 ? 's' : ''} waiting
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            Review and approve sponsors who want to support your children
-                          </p>
-                        </div>
-                      </div>
-                      <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                    </div>
-                  </Link>
+                      </Link>
+                    )}
+                  </div>
                 )}
               </div>
 
