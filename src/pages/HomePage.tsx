@@ -1,335 +1,234 @@
 import { Link } from "react-router-dom";
 import { PublicLayout } from "@/components/layout";
-import { BookIcon } from "@/components/legacy";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BookOpen, Users, Trophy, Heart, ArrowRight, Sparkles, Gift, HelpCircle, DollarSign, School, Mail, UserPlus, HandHeart } from "lucide-react";
+import { ArrowRight, BookOpen } from "lucide-react";
+import booksHero from "@/assets/books-hero.png";
+import booksShelf from "@/assets/books-shelf.png";
+import watercolorBg from "@/assets/watercolor-bg.jpg";
 
 const HomePage = () => {
   return (
     <PublicLayout>
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-background-warm">
-        {/* Background decoration */}
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute left-1/4 top-1/4 h-64 w-64 rounded-full bg-brand-blue blur-3xl" />
-          <div className="absolute right-1/4 bottom-1/4 h-64 w-64 rounded-full bg-brand-yellow blur-3xl" />
-        </div>
-
+      <section 
+        className="relative min-h-[70vh] flex items-center"
+        style={{
+          backgroundImage: `url(${watercolorBg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
         <div className="container relative py-16 md:py-24">
-          <div className="max-w-2xl animate-fade-in space-y-6">
-            <div className="inline-flex items-center gap-2 rounded-full bg-brand-yellow/20 px-4 py-2 text-sm font-medium text-foreground">
-              <Sparkles className="h-4 w-4 text-brand-yellow" />
-              {/* TODO: Update dates each year */}
-              <span>February 24 – March 9</span>
+          <div className="grid gap-8 lg:grid-cols-2 items-center">
+            {/* Text Content */}
+            <div className="text-center lg:text-left animate-fade-in space-y-6">
+              <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-normal tracking-tight text-slate-800">
+                Read More. Grow Together.
+              </h1>
+
+              <p className="text-lg text-slate-600 max-w-lg mx-auto lg:mx-0">
+                Join our school read-a-thon to inspire a love of reading and support our students.
+              </p>
+
+              {/* CTA Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start items-center">
+                <div className="flex items-center gap-2">
+                  <BookOpen className="h-5 w-5 text-slate-400" />
+                </div>
+                <Link to="/register">
+                  <Button 
+                    size="lg" 
+                    className="bg-slate-700 text-white hover:bg-slate-800 rounded-md px-8"
+                  >
+                    Start Reading
+                  </Button>
+                </Link>
+                <Link to="/how-it-works">
+                  <Button 
+                    variant="ghost" 
+                    size="lg"
+                    className="text-slate-700 hover:bg-transparent hover:text-slate-900"
+                  >
+                    Learn More <ArrowRight className="ml-1 h-4 w-4" />
+                  </Button>
+                </Link>
+              </div>
             </div>
 
-            <h1 className="font-serif text-4xl font-normal tracking-tight text-foreground md:text-5xl lg:text-6xl">
-              Read. Raise funds. Support our school.
-            </h1>
-
-            <p className="text-lg text-muted-foreground">
-              Join the fun in the Janney Read-A-Thon, happening February 24 through March 9.
-            </p>
-            <p className="text-sm text-muted-foreground">
-              {/* TODO: Update dates each year */}
-              Reading minutes count from 12:00 a.m. EST on 2/24 through 11:59 p.m. EST on 3/9.
-            </p>
-
-            {/* Dual pathway CTAs */}
-            <div className="grid gap-4 sm:grid-cols-2 max-w-md">
-              <Link to="/register" className="block">
-                <Button size="lg" className="w-full bg-brand-blue text-white hover:bg-brand-blue/90 h-auto py-4 flex-col gap-1">
-                  <UserPlus className="h-5 w-5" />
-                  <span className="font-semibold">I'm a Parent</span>
-                  <span className="text-xs opacity-80">Register my child</span>
-                </Button>
-              </Link>
-              <Link to="/sponsor" className="block">
-                <Button size="lg" variant="outline" className="w-full h-auto py-4 flex-col gap-1 border-brand-blue text-brand-blue hover:bg-brand-blue/5">
-                  <HandHeart className="h-5 w-5" />
-                  <span className="font-semibold">I'm a Sponsor</span>
-                  <span className="text-xs opacity-80">Make a pledge</span>
-                </Button>
-              </Link>
-            </div>
-
-            {/* Stats */}
-            <div className="flex flex-wrap gap-8 pt-4">
-              <div>
-                {/* TODO: Update each year */}
-                <p className="font-handwritten text-4xl text-brand-blue">14 days</p>
-                <p className="text-sm text-muted-foreground">of reading</p>
-              </div>
-              <div>
-                <p className="font-handwritten text-4xl text-brand-blue">2 ways</p>
-                <p className="text-sm text-muted-foreground">to pledge</p>
-              </div>
-              <div>
-                <p className="font-handwritten text-4xl text-brand-blue">1 goal</p>
-                <p className="text-sm text-muted-foreground">support Janney</p>
-              </div>
+            {/* Hero Illustration */}
+            <div className="hidden lg:flex justify-end">
+              <img 
+                src={booksHero} 
+                alt="Stack of books illustration" 
+                className="max-w-md w-full h-auto object-contain"
+              />
             </div>
           </div>
         </div>
       </section>
 
-      {/* Two Ways to Pledge - FIRST for sponsors */}
-      <section className="bg-background py-16 md:py-24">
+      {/* Stats Section */}
+      <section className="py-8 bg-white/60 backdrop-blur-sm border-y border-slate-200/50">
         <div className="container">
-          <div className="grid items-center gap-12 lg:grid-cols-2">
-            <div className="space-y-4">
-              <div className="inline-flex items-center gap-2 rounded-full bg-brand-green/20 px-3 py-1 text-sm font-medium text-brand-green">
-                <HandHeart className="h-4 w-4" />
-                For Sponsors
-              </div>
-              <h2 className="font-serif text-3xl font-normal text-foreground md:text-4xl">
-                Two Ways to Pledge
-              </h2>
-              <p className="text-muted-foreground">
-                Support a student by pledging a flat donation or per-minute amount. You'll receive a unique link from the family to make your pledge.
-              </p>
-              <p className="text-lg font-medium text-brand-blue">
-                Every page helps strengthen our school community.
-              </p>
+          <div className="grid grid-cols-3 gap-4 max-w-2xl mx-auto">
+            <div className="text-center p-4 border-r border-slate-200 last:border-r-0">
+              <p className="text-3xl md:text-4xl font-serif text-slate-800">128,400</p>
+              <p className="text-sm text-slate-500 mt-1">Minutes Logged</p>
             </div>
-
-            <div className="grid gap-6 sm:grid-cols-2">
-              <Card className="group relative overflow-hidden border-0 bg-card shadow-md transition-all hover:shadow-lg">
-                <CardHeader>
-                  <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-brand-blue/10 text-brand-blue transition-colors group-hover:bg-brand-blue group-hover:text-white">
-                    <DollarSign className="h-6 w-6" />
-                  </div>
-                  <CardTitle className="text-xl">Flat Donation</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">A one-time gift to support your reader.</p>
-                  <p className="font-handwritten text-2xl text-brand-blue mt-2">$20, $40, or more</p>
-                </CardContent>
-              </Card>
-
-              <Card className="group relative overflow-hidden border-0 bg-card shadow-md transition-all hover:shadow-lg">
-                <CardHeader>
-                  <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-brand-blue/10 text-brand-blue transition-colors group-hover:bg-brand-blue group-hover:text-white">
-                    <BookOpen className="h-6 w-6" />
-                  </div>
-                  <CardTitle className="text-xl">Per-Minute Pledge</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">The more they read, the more they raise!</p>
-                  <p className="font-handwritten text-2xl text-brand-blue mt-2">$0.05, $0.10/min</p>
-                </CardContent>
-              </Card>
+            <div className="text-center p-4 border-r border-slate-200">
+              <p className="text-3xl md:text-4xl font-serif text-slate-800">4,875</p>
+              <p className="text-sm text-slate-500 mt-1">Books Completed</p>
+            </div>
+            <div className="text-center p-4">
+              <p className="text-3xl md:text-4xl font-serif text-slate-800">$21,320</p>
+              <p className="text-sm text-slate-500 mt-1">Funds Raised</p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* How It Works - For Parents */}
-      <section className="bg-background-warm py-16 md:py-24">
+      {/* How It Works */}
+      <section 
+        className="relative py-16 md:py-24"
+        style={{
+          backgroundImage: `url(${watercolorBg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'bottom center',
+        }}
+      >
         <div className="container">
-          <div className="mb-12">
-            <div className="inline-flex items-center gap-2 rounded-full bg-brand-blue/20 px-3 py-1 text-sm font-medium text-brand-blue mb-4">
-              <UserPlus className="h-4 w-4" />
-              For Parents
+          <h2 className="text-center font-serif text-3xl md:text-4xl text-slate-800 mb-12">
+            How It Works
+          </h2>
+
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {/* Step 1 */}
+            <div className="bg-white/80 backdrop-blur-sm rounded-lg border border-slate-200/60 p-6 shadow-sm">
+              <h3 className="font-serif text-xl text-slate-800 mb-2">
+                <span className="text-slate-400 mr-2">1.</span>
+                Sign Up & Set Goals
+              </h3>
+              <p className="text-slate-600">
+                Create your profile and choose your reading targets.
+              </p>
             </div>
-            <h2 className="mb-4 font-serif text-3xl font-normal text-foreground md:text-4xl">
-              How the Read-A-Thon Works
+
+            {/* Step 2 */}
+            <div className="bg-white/80 backdrop-blur-sm rounded-lg border border-slate-200/60 p-6 shadow-sm">
+              <h3 className="font-serif text-xl text-slate-800 mb-2">
+                <span className="text-slate-400 mr-2">2.</span>
+                Read & Track Progress
+              </h3>
+              <p className="text-slate-600">
+                Log your reading time and watch your progress grow.
+              </p>
+            </div>
+
+            {/* Step 3 */}
+            <div className="bg-white/80 backdrop-blur-sm rounded-lg border border-slate-200/60 p-6 shadow-sm">
+              <h3 className="font-serif text-xl text-slate-800 mb-2">
+                <span className="text-slate-400 mr-2">3.</span>
+                Share with Sponsors
+              </h3>
+              <p className="text-slate-600">
+                Invite family and friends to pledge their support.
+              </p>
+            </div>
+
+            {/* Step 4 */}
+            <div className="bg-white/80 backdrop-blur-sm rounded-lg border border-slate-200/60 p-6 shadow-sm">
+              <h3 className="font-serif text-xl text-slate-800 mb-2">
+                <span className="text-slate-400 mr-2">4.</span>
+                Celebrate Success
+              </h3>
+              <p className="text-slate-600">
+                Reach your goals and celebrate with prizes!
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Book shelf decoration */}
+        <div className="absolute bottom-0 left-0 right-0 overflow-hidden pointer-events-none">
+          <img 
+            src={booksShelf} 
+            alt="" 
+            className="w-full max-h-32 object-cover object-top opacity-60"
+          />
+        </div>
+      </section>
+
+      {/* Making a Difference */}
+      <section className="py-16 md:py-24 bg-white">
+        <div className="container">
+          <div className="text-center mb-12">
+            <h2 className="font-serif text-3xl md:text-4xl text-slate-800 mb-4">
+              Making a Difference
             </h2>
-            <p className="max-w-2xl text-muted-foreground">
-              A simple, fun way to encourage reading while raising funds for Janney.
+            <p className="text-slate-600 max-w-xl mx-auto">
+              Your participation helps provide books and resources to our school.
             </p>
           </div>
 
-          <div className="grid gap-8 md:grid-cols-3">
-            {[
-              {
-                icon: BookOpen,
-                title: "1. Register & Read",
-                description:
-                  "Sign up your child and help them log reading minutes daily throughout the event.",
-              },
-              {
-                icon: Users,
-                title: "2. Share with Sponsors",
-                description:
-                  "Send your unique sponsor link to family and friends who can pledge per minute or a flat amount.",
-              },
-              {
-                icon: Trophy,
-                title: "3. Celebrate Success",
-                description:
-                  "Track progress, exceed goals, and celebrate achievements with our school community.",
-              },
-            ].map((step, index) => (
-              <Card
-                key={index}
-                className="group relative overflow-hidden border-0 bg-card shadow-md transition-all hover:shadow-lg"
-              >
-                <CardHeader>
-                  <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-brand-blue/10 text-brand-blue transition-colors group-hover:bg-brand-blue group-hover:text-white">
-                    <step.icon className="h-6 w-6" />
-                  </div>
-                  <CardTitle className="text-xl">{step.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-base">{step.description}</CardDescription>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          <div className="mt-8 text-center">
-            <Link to="/register">
-              <Button size="lg" className="bg-brand-blue text-white hover:bg-brand-blue/90">
-                Register Your Child
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Why It Matters */}
-      <section className="bg-background py-16 md:py-24">
-        <div className="container">
-          <div className="grid items-start gap-12 lg:grid-cols-2">
-            <div className="space-y-6">
-              <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-brand-blue/10 text-brand-blue">
-                <Heart className="h-6 w-6" />
+          <div className="grid md:grid-cols-2 gap-12 items-center max-w-5xl mx-auto">
+            {/* Stats Cards */}
+            <div className="grid grid-cols-3 gap-4">
+              <div className="bg-slate-50 rounded-lg border border-slate-200 p-4 text-center">
+                <p className="text-xs text-slate-500 mb-1">Pages Read</p>
+                <p className="text-2xl md:text-3xl font-serif text-slate-800">620</p>
               </div>
-              <h2 className="font-serif text-3xl font-normal text-foreground md:text-4xl">
-                Why the Read-A-Thon Matters
-              </h2>
-
-              <div className="space-y-4 text-muted-foreground">
-                <p>
-                  Janney Elementary is one of the largest elementary schools in Washington, DC, yet our per-student district funding is among the lowest in the city.
-                </p>
-                <p>
-                  DCPS funds are used primarily to pay teachers. Nearly everything else that makes Janney special is supported by PTA fundraising.
-                </p>
-                <p>
-                  Our students, families, and staff make Janney an exceptional place to learn—and the Read-A-Thon helps keep it that way.
-                </p>
+              <div className="bg-slate-50 rounded-lg border border-slate-200 p-4 text-center">
+                <p className="text-xs text-slate-500 mb-1">Minutes Logged</p>
+                <p className="text-2xl md:text-3xl font-serif text-slate-800">1,125</p>
+              </div>
+              <div className="bg-slate-50 rounded-lg border border-slate-200 p-4 text-center">
+                <p className="text-xs text-slate-500 mb-1">Books Completed</p>
+                <p className="text-2xl md:text-3xl font-serif text-slate-800">16</p>
               </div>
             </div>
 
-            <div className="rounded-xl bg-card p-6 shadow-md">
-              <p className="font-medium text-foreground mb-4">Because of this support, Janney is proud to offer:</p>
-              <ul className="space-y-3">
-                <li className="flex items-start gap-3">
-                  <span className="mt-1.5 h-2 w-2 rounded-full bg-brand-blue shrink-0" />
-                  <span className="text-muted-foreground">Art, music, technology, and Spanish for most grades</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="mt-1.5 h-2 w-2 rounded-full bg-brand-blue shrink-0" />
-                  <span className="text-muted-foreground">Strong academic and enrichment programs</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="mt-1.5 h-2 w-2 rounded-full bg-brand-blue shrink-0" />
-                  <span className="text-muted-foreground">A school culture rooted in respect, curiosity, and diligence</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* What Your Donations Support + Prizes + Questions - flows into 3 columns at xl */}
-      <section className="bg-background-warm py-16 md:py-24">
-        <div className="container">
-          <div className="grid items-start gap-12 lg:grid-cols-2 xl:grid-cols-3">
-            {/* What Your Donations Support */}
-            <div className="space-y-6 lg:col-span-2 xl:col-span-1">
-              <div className="space-y-4">
-                <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-brand-green/10 text-brand-green">
-                  <School className="h-6 w-6" />
-                </div>
-                <h2 className="font-serif text-3xl font-normal text-foreground md:text-4xl">
-                  What Your Donations Support
-                </h2>
-                <p className="text-muted-foreground">
-                  Funds raised through the Read-A-Thon help pay for:
-                </p>
-              </div>
-
-              <div className="space-y-3">
-                {[
-                  "Technology materials and support",
-                  "Classroom supplies and textbooks",
-                  "Instructional materials",
-                  "Teacher professional development",
-                  "Custodial equipment and supplies",
-                  "Facilities repairs",
-                ].map((item, index) => (
-                  <div key={index} className="flex items-start gap-3 rounded-lg bg-card p-3 shadow-sm">
-                    <span className="mt-1 h-2 w-2 rounded-full bg-brand-green shrink-0" />
-                    <span className="text-sm text-muted-foreground">{item}</span>
-                  </div>
-                ))}
-                <div className="flex items-start gap-3 rounded-lg bg-card p-3 shadow-sm">
-                  <span className="mt-1 h-2 w-2 rounded-full bg-brand-green shrink-0" />
-                  <span className="text-sm text-muted-foreground">Salaries for <span className="font-handwritten text-lg text-brand-green">10</span> staff positions</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Prizes */}
-            <div className="space-y-4">
-              <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-brand-yellow/20 text-brand-yellow">
-                <Gift className="h-6 w-6" />
-              </div>
-              <h2 className="font-serif text-3xl font-normal text-foreground md:text-4xl">
-                Prizes 🎉
-              </h2>
-              <p className="text-lg text-muted-foreground">
-                The top reader in each grade will receive a gift card to Politics and Prose.
-              </p>
-            </div>
-
-            {/* Questions */}
-            <div className="space-y-4">
-              <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-brand-blue/10 text-brand-blue">
-                <HelpCircle className="h-6 w-6" />
-              </div>
-              <h2 className="font-serif text-3xl font-normal text-foreground md:text-4xl">
-                Questions?
-              </h2>
-              <p className="text-muted-foreground">
-                We're here to help with anything you need.
-              </p>
-              <a 
-                href="mailto:janneyreadathon@janneyschool.org" 
-                className="inline-flex items-center gap-2 text-brand-blue hover:underline font-medium"
-              >
-                <Mail className="h-5 w-5" />
-                janneyreadathon@janneyschool.org
-              </a>
+            {/* Illustration */}
+            <div className="flex justify-center">
+              <img 
+                src={booksHero} 
+                alt="Books illustration" 
+                className="max-w-xs w-full h-auto opacity-80"
+              />
             </div>
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="bg-brand-blue py-16 text-white md:py-24">
+      <section 
+        className="relative py-16 md:py-24"
+        style={{
+          backgroundImage: `url(${watercolorBg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'top center',
+        }}
+      >
         <div className="container text-center">
-          <BookIcon size="large" variant="white" className="mx-auto mb-6" />
-          <h2 className="mb-4 font-serif text-3xl font-normal md:text-4xl">Ready to Join the Read-A-Thon?</h2>
-          <p className="mx-auto mb-8 max-w-xl text-lg text-white/80">
-            Help your student read, raise funds, and support Janney Elementary.
+          <h2 className="font-serif text-3xl md:text-4xl text-slate-800 mb-4">
+            Ready to Start Reading?
+          </h2>
+          <p className="text-slate-600 mb-8 max-w-lg mx-auto">
+            Join our community of readers and help support our school.
           </p>
-          <div className="flex flex-col justify-center gap-4 sm:flex-row">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/register">
-              <Button size="lg" className="w-full bg-brand-yellow text-foreground hover:bg-brand-yellow/90 sm:w-auto">
+              <Button 
+                size="lg" 
+                className="bg-slate-700 text-white hover:bg-slate-800 rounded-md px-8"
+              >
                 Register Now
               </Button>
             </Link>
             <Link to="/login">
-              <Button
-                size="lg"
-                variant="outline"
-                className="w-full border-white/30 bg-transparent text-white hover:bg-white/10 sm:w-auto"
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="border-slate-300 text-slate-700 hover:bg-slate-50 rounded-md px-8"
               >
                 Sign In
               </Button>
