@@ -136,26 +136,24 @@ const DashboardPage = () => {
                 {/* School Stats - Hero Style */}
                 <div className="pt-2">
                   <p className="text-sm text-muted-foreground uppercase tracking-widest mb-2">Janney School Total</p>
-                  <div className="relative inline-block">
-                    <p className="font-serif text-5xl md:text-6xl lg:text-7xl text-foreground tracking-tight font-normal relative">
-                      <span className="relative">
-                        128,400 minutes
-                        {/* Highlighter effect */}
-                        <span 
-                          className="absolute inset-0 -skew-y-1 bg-accent/30 -z-10 transform -rotate-[0.5deg]"
-                          style={{
-                            top: '45%',
-                            height: '55%',
-                            left: '-2%',
-                            right: '-2%',
-                            borderRadius: '4px 8px 4px 6px',
-                          }}
-                          aria-hidden="true"
-                        />
-                      </span>
-                    </p>
+                  <div className="relative inline-block mb-1">
+                    <span className="font-serif text-5xl md:text-6xl lg:text-7xl text-foreground tracking-tight font-normal relative z-10">
+                      128,400 minutes
+                    </span>
+                    {/* Highlighter effect with animation */}
+                    <span 
+                      className="absolute -skew-y-1 bg-accent/30 transform -rotate-[0.5deg] opacity-0 animate-highlighter-grow"
+                      style={{
+                        top: '45%',
+                        height: '55%',
+                        left: '-2%',
+                        right: '-2%',
+                        borderRadius: '4px 8px 4px 6px',
+                      }}
+                      aria-hidden="true"
+                    />
                   </div>
-                  <p className="text-base text-muted-foreground mt-2">read together this year</p>
+                  <p className="text-base text-muted-foreground">read together this year</p>
                   <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
                     <Clock className="h-4 w-4" />
                     <span>Spring Read-a-thon 2024</span>
