@@ -23,10 +23,10 @@ const HomePage = () => {
   return (
     <PublicLayout>
       {/* Hero Section - Large left-aligned headline */}
-      <section className="relative py-10 md:py-16">
+      <section className="relative pt-20 md:pt-24 pb-10 md:pb-16">
         <div className="container">
           {/* Constrain hero content to ~2/3 page width, indent to align with data block */}
-          <div className="max-w-4xl pl-4 md:pl-10 lg:pl-16 text-left">
+          <div className="max-w-4xl pl-9 md:pl-14 lg:pl-20 text-left">
             {/* Large headline - left aligned with pencil underline */}
             <div className="relative inline-block mb-6">
               <h1 className="font-handwritten text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-bold tracking-tight text-foreground leading-[1.05]">
