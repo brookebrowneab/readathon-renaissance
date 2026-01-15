@@ -29,7 +29,7 @@ const HomePage = () => {
           <div className="max-w-4xl pl-4 md:pl-10 lg:pl-16 text-left">
             {/* Large headline - left aligned with pencil underline */}
             <div className="relative inline-block mb-6">
-              <h1 className="font-serif text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-normal tracking-tight text-foreground leading-[1.05]">
+              <h1 className="font-handwritten text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-bold tracking-tight text-foreground leading-[1.05]">
                 {heroHeadline}
               </h1>
               {/* Handwritten pencil underline - rough sketchy style */}
@@ -78,7 +78,7 @@ const HomePage = () => {
             </div>
 
             {/* Body text - full width, two lines, smaller */}
-            <p className="text-base md:text-lg text-muted-foreground max-w-2xl leading-relaxed mb-6">
+            <p className="font-serif text-base md:text-lg text-muted-foreground max-w-2xl leading-relaxed mb-6">
               Janney Elementary Read-a-thon runs February 24–March 9. Students read to raise funds for our school. 
               Ask friends and family to pledge per minute—or give a flat donation—and help fund the programs that make Janney exceptional.
             </p>
