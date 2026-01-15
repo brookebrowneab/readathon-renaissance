@@ -134,7 +134,7 @@ const DashboardPage = () => {
                 </div>
 
                 {/* School Stats - Hero Style */}
-                <div className="pt-2">
+                <div className="pt-2 ml-5">
                   <p className="text-sm text-muted-foreground uppercase tracking-widest mb-2">Janney School Total</p>
                   <div className="relative inline-block mb-1">
                     <span className="font-serif text-5xl md:text-6xl lg:text-7xl text-foreground tracking-tight font-normal relative z-10">
