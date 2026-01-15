@@ -12,8 +12,8 @@ interface NavItem {
 }
 
 const publicNav: NavItem[] = [
-  { label: "About", href: "/about" },
-  { label: "How It Works", href: "/how-it-works" },
+  { label: "ABOUT", href: "/about" },
+  { label: "JOIN STORY", href: "/how-it-works" },
 ];
 
 const MainNav = () => {
@@ -34,71 +34,75 @@ const MainNav = () => {
   return (
     <>
       {/* Desktop Header */}
-      <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-primary backdrop-blur supports-[backdrop-filter]:bg-primary/95 hidden md:block">
-        <div className="container flex h-14 items-center justify-between">
+      <header className="sticky top-0 z-50 w-full bg-white/90 backdrop-blur-sm border-b border-slate-100 hidden md:block">
+        <div className="container flex h-16 items-center justify-between">
 
-          {/* Desktop Nav - Left */}
-          <nav className="flex items-center gap-8">
-            {publicNav.map((item) => (
-              <Link
-                key={item.href}
-                to={item.href}
-                className={cn(
-                  "text-sm font-medium text-primary-foreground/80 transition-colors hover:text-primary-foreground inline-link",
-                  location.pathname === item.href && "text-primary-foreground"
-                )}
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
+          {/* Logo - Left */}
+          <Link to="/" className="font-serif text-xl tracking-wide text-slate-800">
+            Read-a-thon
+          </Link>
 
-          {/* Auth Buttons - Right */}
-          <div className="flex items-center gap-3">
-            {isAuthenticated ? (
-              <>
-                <Link to="/dashboard">
-                  <Button variant="ghost" size="sm" className="text-primary-foreground hover:bg-white/10">
-                    <User className="mr-2 h-4 w-4" />
-                    Dashboard
-                  </Button>
-                </Link>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="text-primary-foreground hover:bg-white/10"
-                  onClick={handleLogout}
+          {/* Desktop Nav - Right side */}
+          <div className="flex items-center gap-8">
+            <nav className="flex items-center gap-8">
+              {publicNav.map((item) => (
+                <Link
+                  key={item.href}
+                  to={item.href}
+                  className={cn(
+                    "text-xs tracking-widest text-slate-500 transition-colors hover:text-slate-800",
+                    location.pathname === item.href && "text-slate-800"
+                  )}
                 >
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Logout
-                </Button>
-              </>
-            ) : (
-              <>
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+
+            {/* Auth Buttons */}
+            <div className="flex items-center gap-3">
+              {isAuthenticated ? (
+                <>
+                  <Link to="/dashboard">
+                    <Button variant="ghost" size="sm" className="text-slate-600 hover:text-slate-800 hover:bg-slate-50">
+                      <User className="mr-2 h-4 w-4" />
+                      Dashboard
+                    </Button>
+                  </Link>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="text-slate-600 hover:text-slate-800 hover:bg-slate-50"
+                    onClick={handleLogout}
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Logout
+                  </Button>
+                </>
+              ) : (
                 <Link to="/login">
-                  <Button variant="ghost" size="sm" className="text-primary-foreground hover:bg-white/10">
-                    Log In
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="border-slate-300 text-slate-700 hover:bg-slate-50 rounded-md"
+                  >
+                    Learn More
                   </Button>
                 </Link>
-                <Link to="/register">
-                  <Button variant="secondary" size="sm" className="bg-accent text-accent-foreground hover:bg-accent-hover">
-                    Sign Up
-                  </Button>
-                </Link>
-              </>
-            )}
+              )}
+            </div>
           </div>
         </div>
       </header>
 
       {/* Mobile Header */}
-      <header className="sticky top-0 z-40 flex items-center justify-between h-14 px-4 border-b bg-primary md:hidden">
-        <span className="text-base font-semibold text-primary-foreground">
+      <header className="sticky top-0 z-40 flex items-center justify-between h-14 px-4 bg-white/90 backdrop-blur-sm border-b border-slate-100 md:hidden">
+        <Link to="/" className="font-serif text-lg text-slate-800">
           Read-a-thon
-        </span>
+        </Link>
         <button
           onClick={() => setMobileOpen(true)}
-          className="flex items-center justify-center w-11 h-11 rounded-lg text-primary-foreground hover:bg-white/10 transition-colors"
+          className="flex items-center justify-center w-11 h-11 rounded-lg text-slate-600 hover:bg-slate-50 transition-colors"
           aria-label="Open menu"
         >
           <Menu className="h-6 w-6" />
