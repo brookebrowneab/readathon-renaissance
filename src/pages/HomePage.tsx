@@ -34,7 +34,7 @@ const HomePage = () => {
               </h1>
               {/* Handwritten pencil underline - rough sketchy style */}
               <svg 
-                className="absolute -bottom-2 left-0 w-full h-8" 
+                className="absolute -bottom-6 left-0 w-full h-8" 
                 viewBox="0 0 400 32" 
                 fill="none" 
                 preserveAspectRatio="none"
