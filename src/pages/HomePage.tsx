@@ -1,44 +1,42 @@
 import { Link } from "react-router-dom";
 import { PublicLayout } from "@/components/layout";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, BookOpen } from "lucide-react";
-import booksHero from "@/assets/books-hero.png";
-import booksShelf from "@/assets/books-shelf.png";
-import watercolorBg from "@/assets/watercolor-bg.jpg";
+import { Card, CardContent } from "@/components/ui/card";
+import { ArrowRight, BookOpen, Clock, Users, Heart } from "lucide-react";
+import bookshelfBand from "@/assets/bookshelf-band.png";
+import childReading from "@/assets/child-reading.png";
+import bookStack from "@/assets/book-stack.png";
 
 const HomePage = () => {
   return (
     <PublicLayout>
       {/* Hero Section */}
-      <section 
-        className="relative min-h-[70vh] flex items-center"
-        style={{
-          backgroundImage: `url(${watercolorBg})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
-      >
-        <div className="container relative py-16 md:py-24">
+      <section className="relative bg-background-warm py-12 md:py-20">
+        <div className="container">
           <div className="grid gap-8 lg:grid-cols-2 items-center">
             {/* Text Content */}
-            <div className="text-center lg:text-left animate-fade-in space-y-6">
-              <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-normal tracking-tight text-slate-800">
-                Read More. Grow Together.
+            <div className="text-center lg:text-left space-y-6">
+              <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium">
+                <BookOpen className="h-4 w-4" />
+                <span>Janney Elementary Read-a-thon</span>
+              </div>
+
+              <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-normal tracking-tight text-foreground leading-tight">
+                Every Page Counts.
               </h1>
 
-              <p className="text-lg text-slate-600 max-w-lg mx-auto lg:mx-0">
-                Join our school read-a-thon to inspire a love of reading and support our students.
+              <p className="text-lg text-muted-foreground max-w-lg mx-auto lg:mx-0">
+                From February 24–March 9, students read to support Janney Elementary. 
+                Ask friends and family to pledge per minute—or give a flat donation—and 
+                help fund the programs that make Janney exceptional.
               </p>
 
               {/* CTA Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start items-center">
-                <div className="flex items-center gap-2">
-                  <BookOpen className="h-5 w-5 text-slate-400" />
-                </div>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Link to="/register">
                   <Button 
                     size="lg" 
-                    className="bg-slate-700 text-white hover:bg-slate-800 rounded-md px-8"
+                    className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg px-8 shadow-sm"
                   >
                     Start Reading
                   </Button>
@@ -47,7 +45,7 @@ const HomePage = () => {
                   <Button 
                     variant="ghost" 
                     size="lg"
-                    className="text-slate-700 hover:bg-transparent hover:text-slate-900"
+                    className="text-primary hover:bg-primary/5"
                   >
                     Learn More <ArrowRight className="ml-1 h-4 w-4" />
                   </Button>
@@ -56,11 +54,11 @@ const HomePage = () => {
             </div>
 
             {/* Hero Illustration */}
-            <div className="hidden lg:flex justify-end">
+            <div className="flex justify-center lg:justify-end">
               <img 
-                src={booksHero} 
-                alt="Stack of books illustration" 
-                className="max-w-md w-full h-auto object-contain"
+                src={childReading} 
+                alt="Child reading a book" 
+                className="max-w-xs md:max-w-sm w-full h-auto"
               />
             </div>
           </div>
@@ -68,131 +66,157 @@ const HomePage = () => {
       </section>
 
       {/* Stats Section */}
-      <section className="py-8 bg-white/60 backdrop-blur-sm border-y border-slate-200/50">
+      <section className="py-8 bg-card border-y border-border">
         <div className="container">
-          <div className="grid grid-cols-3 gap-4 max-w-2xl mx-auto">
-            <div className="text-center p-4 border-r border-slate-200 last:border-r-0">
-              <p className="text-3xl md:text-4xl font-serif text-slate-800">128,400</p>
-              <p className="text-sm text-slate-500 mt-1">Minutes Logged</p>
+          <div className="grid grid-cols-3 gap-4 max-w-3xl mx-auto">
+            <div className="text-center p-4">
+              <p className="text-3xl md:text-4xl font-serif text-foreground">128,400</p>
+              <p className="text-sm text-muted-foreground mt-1">Minutes Logged</p>
             </div>
-            <div className="text-center p-4 border-r border-slate-200">
-              <p className="text-3xl md:text-4xl font-serif text-slate-800">4,875</p>
-              <p className="text-sm text-slate-500 mt-1">Books Completed</p>
+            <div className="text-center p-4 border-x border-border">
+              <p className="text-3xl md:text-4xl font-serif text-foreground">4,875</p>
+              <p className="text-sm text-muted-foreground mt-1">Books Completed</p>
             </div>
             <div className="text-center p-4">
-              <p className="text-3xl md:text-4xl font-serif text-slate-800">$21,320</p>
-              <p className="text-sm text-slate-500 mt-1">Funds Raised</p>
+              <p className="text-3xl md:text-4xl font-serif text-foreground">$21,320</p>
+              <p className="text-sm text-muted-foreground mt-1">Funds Raised</p>
             </div>
           </div>
         </div>
       </section>
 
+      {/* Bookshelf Decoration */}
+      <div className="w-full overflow-hidden bg-[#FAF5E8]">
+        <img 
+          src={bookshelfBand} 
+          alt="" 
+          className="w-full h-auto max-h-24 object-cover object-center"
+        />
+      </div>
+
       {/* How It Works */}
-      <section 
-        className="relative py-16 md:py-24"
-        style={{
-          backgroundImage: `url(${watercolorBg})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'bottom center',
-        }}
-      >
+      <section className="py-16 md:py-24 bg-background">
         <div className="container">
-          <h2 className="text-center font-serif text-3xl md:text-4xl text-slate-800 mb-12">
-            How It Works
-          </h2>
-
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {/* Step 1 */}
-            <div className="bg-white/80 backdrop-blur-sm rounded-lg border border-slate-200/60 p-6 shadow-sm">
-              <h3 className="font-serif text-xl text-slate-800 mb-2">
-                <span className="text-slate-400 mr-2">1.</span>
-                Sign Up & Set Goals
-              </h3>
-              <p className="text-slate-600">
-                Create your profile and choose your reading targets.
-              </p>
-            </div>
-
-            {/* Step 2 */}
-            <div className="bg-white/80 backdrop-blur-sm rounded-lg border border-slate-200/60 p-6 shadow-sm">
-              <h3 className="font-serif text-xl text-slate-800 mb-2">
-                <span className="text-slate-400 mr-2">2.</span>
-                Read & Track Progress
-              </h3>
-              <p className="text-slate-600">
-                Log your reading time and watch your progress grow.
-              </p>
-            </div>
-
-            {/* Step 3 */}
-            <div className="bg-white/80 backdrop-blur-sm rounded-lg border border-slate-200/60 p-6 shadow-sm">
-              <h3 className="font-serif text-xl text-slate-800 mb-2">
-                <span className="text-slate-400 mr-2">3.</span>
-                Share with Sponsors
-              </h3>
-              <p className="text-slate-600">
-                Invite family and friends to pledge their support.
-              </p>
-            </div>
-
-            {/* Step 4 */}
-            <div className="bg-white/80 backdrop-blur-sm rounded-lg border border-slate-200/60 p-6 shadow-sm">
-              <h3 className="font-serif text-xl text-slate-800 mb-2">
-                <span className="text-slate-400 mr-2">4.</span>
-                Celebrate Success
-              </h3>
-              <p className="text-slate-600">
-                Reach your goals and celebrate with prizes!
-              </p>
-            </div>
+          <div className="text-center mb-12">
+            <h2 className="font-serif text-3xl md:text-4xl text-foreground mb-4">
+              How It Works
+            </h2>
+            <p className="text-muted-foreground max-w-xl mx-auto">
+              A simple way for students to read, fundraise, and celebrate success together.
+            </p>
           </div>
-        </div>
 
-        {/* Book shelf decoration */}
-        <div className="absolute bottom-0 left-0 right-0 overflow-hidden pointer-events-none">
-          <img 
-            src={booksShelf} 
-            alt="" 
-            className="w-full max-h-32 object-cover object-top opacity-60"
-          />
+          <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            <Card className="border border-border shadow-sm">
+              <CardContent className="p-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                    <Users className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-serif text-xl text-foreground mb-2">
+                      1. Sign Up & Set Goals
+                    </h3>
+                    <p className="text-muted-foreground">
+                      Create your profile and choose your reading targets. Each child gets a unique sponsor link.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border border-border shadow-sm">
+              <CardContent className="p-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                    <BookOpen className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-serif text-xl text-foreground mb-2">
+                      2. Read & Track Progress
+                    </h3>
+                    <p className="text-muted-foreground">
+                      Log your reading time and watch your progress grow. Parents can approve logs from any device.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border border-border shadow-sm">
+              <CardContent className="p-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                    <Heart className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-serif text-xl text-foreground mb-2">
+                      3. Share with Sponsors
+                    </h3>
+                    <p className="text-muted-foreground">
+                      Invite family and friends to pledge their support—per minute read or as a flat donation.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border border-border shadow-sm">
+              <CardContent className="p-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                    <Clock className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-serif text-xl text-foreground mb-2">
+                      4. Celebrate Success
+                    </h3>
+                    <p className="text-muted-foreground">
+                      At the end, sponsors pay their pledges and funds go directly to supporting our school.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </section>
 
       {/* Making a Difference */}
-      <section className="py-16 md:py-24 bg-white">
+      <section className="py-16 md:py-24 bg-background-warm">
         <div className="container">
-          <div className="text-center mb-12">
-            <h2 className="font-serif text-3xl md:text-4xl text-slate-800 mb-4">
-              Making a Difference
-            </h2>
-            <p className="text-slate-600 max-w-xl mx-auto">
-              Your participation helps provide books and resources to our school.
-            </p>
-          </div>
-
           <div className="grid md:grid-cols-2 gap-12 items-center max-w-5xl mx-auto">
-            {/* Stats Cards */}
-            <div className="grid grid-cols-3 gap-4">
-              <div className="bg-slate-50 rounded-lg border border-slate-200 p-4 text-center">
-                <p className="text-xs text-slate-500 mb-1">Pages Read</p>
-                <p className="text-2xl md:text-3xl font-serif text-slate-800">620</p>
-              </div>
-              <div className="bg-slate-50 rounded-lg border border-slate-200 p-4 text-center">
-                <p className="text-xs text-slate-500 mb-1">Minutes Logged</p>
-                <p className="text-2xl md:text-3xl font-serif text-slate-800">1,125</p>
-              </div>
-              <div className="bg-slate-50 rounded-lg border border-slate-200 p-4 text-center">
-                <p className="text-xs text-slate-500 mb-1">Books Completed</p>
-                <p className="text-2xl md:text-3xl font-serif text-slate-800">16</p>
+            {/* Text and Stats */}
+            <div className="order-2 md:order-1">
+              <h2 className="font-serif text-3xl md:text-4xl text-foreground mb-4">
+                Making a Difference
+              </h2>
+              <p className="text-muted-foreground mb-8">
+                Your participation helps provide books, resources, and enrichment programs for our school community.
+              </p>
+
+              <div className="grid grid-cols-3 gap-4">
+                <div className="bg-card rounded-lg border border-border p-4 text-center shadow-sm">
+                  <p className="text-2xl md:text-3xl font-serif text-foreground">620</p>
+                  <p className="text-xs text-muted-foreground mt-1">Pages Read</p>
+                </div>
+                <div className="bg-card rounded-lg border border-border p-4 text-center shadow-sm">
+                  <p className="text-2xl md:text-3xl font-serif text-foreground">1,125</p>
+                  <p className="text-xs text-muted-foreground mt-1">Minutes Logged</p>
+                </div>
+                <div className="bg-card rounded-lg border border-border p-4 text-center shadow-sm">
+                  <p className="text-2xl md:text-3xl font-serif text-foreground">16</p>
+                  <p className="text-xs text-muted-foreground mt-1">Books Completed</p>
+                </div>
               </div>
             </div>
 
             {/* Illustration */}
-            <div className="flex justify-center">
+            <div className="order-1 md:order-2 flex justify-center">
               <img 
-                src={booksHero} 
-                alt="Books illustration" 
-                className="max-w-xs w-full h-auto opacity-80"
+                src={bookStack} 
+                alt="Stack of colorful books" 
+                className="max-w-48 md:max-w-64 w-full h-auto"
               />
             </div>
           </div>
@@ -200,26 +224,19 @@ const HomePage = () => {
       </section>
 
       {/* CTA Section */}
-      <section 
-        className="relative py-16 md:py-24"
-        style={{
-          backgroundImage: `url(${watercolorBg})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'top center',
-        }}
-      >
+      <section className="py-16 md:py-24 bg-primary text-primary-foreground">
         <div className="container text-center">
-          <h2 className="font-serif text-3xl md:text-4xl text-slate-800 mb-4">
-            Ready to Start Reading?
+          <h2 className="font-serif text-3xl md:text-4xl mb-4">
+            Ready to Join the Read-a-thon?
           </h2>
-          <p className="text-slate-600 mb-8 max-w-lg mx-auto">
-            Join our community of readers and help support our school.
+          <p className="text-primary-foreground/80 mb-8 max-w-lg mx-auto">
+            Create your family account and start logging reading minutes today.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/register">
               <Button 
                 size="lg" 
-                className="bg-slate-700 text-white hover:bg-slate-800 rounded-md px-8"
+                className="bg-accent text-accent-foreground hover:bg-accent/90 rounded-lg px-8"
               >
                 Register Now
               </Button>
@@ -228,7 +245,7 @@ const HomePage = () => {
               <Button 
                 size="lg" 
                 variant="outline" 
-                className="border-slate-300 text-slate-700 hover:bg-slate-50 rounded-md px-8"
+                className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 rounded-lg px-8"
               >
                 Sign In
               </Button>
@@ -236,6 +253,15 @@ const HomePage = () => {
           </div>
         </div>
       </section>
+
+      {/* Bottom Bookshelf */}
+      <div className="w-full overflow-hidden bg-[#FAF5E8]">
+        <img 
+          src={bookshelfBand} 
+          alt="" 
+          className="w-full h-auto max-h-24 object-cover object-center"
+        />
+      </div>
     </PublicLayout>
   );
 };
