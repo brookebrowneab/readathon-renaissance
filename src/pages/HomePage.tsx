@@ -2,21 +2,33 @@ import { Link } from "react-router-dom";
 import { PublicLayout } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import { useMemo } from "react";
 import booksShelfHero from "@/assets/books-shelf-hero.png";
 import booksShelfDivider from "@/assets/books-shelf-divider.png";
 import openBook from "@/assets/open-book.png";
 import bookStackAccent from "@/assets/book-stack-accent.png";
 
+const HERO_HEADLINES = [
+  "Every Page Counts.",
+  "Read More. Grow Together.",
+  "Read books. Support Janney.",
+];
+
 const HomePage = () => {
+  // Randomize hero text on page load (stable for component lifecycle)
+  const heroHeadline = useMemo(() => {
+    return HERO_HEADLINES[Math.floor(Math.random() * HERO_HEADLINES.length)];
+  }, []);
+
   return (
     <PublicLayout>
-      {/* Hero Section - Large left-aligned headline */}
+      {/* Hero Section - Large right-aligned headline */}
       <section className="relative py-10 md:py-16">
         <div className="container">
-          <div className="max-w-5xl">
-            {/* Large headline - left aligned */}
+          <div className="max-w-5xl ml-auto text-right">
+            {/* Large headline - right aligned */}
             <h1 className="font-serif text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-normal tracking-tight text-foreground leading-[1.05] mb-6">
-              Every Page Counts
+              {heroHeadline}
             </h1>
 
             {/* Body text - full width, two lines, smaller */}
