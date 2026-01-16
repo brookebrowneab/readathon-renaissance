@@ -1,7 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
 import AdminLayout from "@/components/layout/AdminLayout";
-import { BookContainer } from "@/components/legacy";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -62,6 +60,15 @@ import {
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+
+// Hand-drawn border style
+const handDrawnBorder = {
+  border: 'solid 1px #41403E',
+  borderTopLeftRadius: '255px 15px',
+  borderTopRightRadius: '15px 225px',
+  borderBottomRightRadius: '225px 15px',
+  borderBottomLeftRadius: '15px 255px',
+};
 
 // Available variables for email templates
 const availableVariables = [
@@ -291,9 +298,24 @@ const AdminEmailPage = () => {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
           <div>
-            <h1 className="font-serif text-3xl font-normal tracking-tight text-foreground">
-              Email Templates
-            </h1>
+            <div className="relative inline-block mb-2">
+              <h1 className="font-serif text-3xl md:text-4xl font-normal tracking-tight text-foreground relative">
+                <span className="relative">
+                  Email Templates
+                  <span 
+                    className="absolute inset-0 -skew-y-1 bg-accent/30 -z-10 transform -rotate-[0.5deg]"
+                    style={{
+                      top: '50%',
+                      height: '50%',
+                      left: '-2%',
+                      right: '-2%',
+                      borderRadius: '4px 8px 4px 6px',
+                    }}
+                    aria-hidden="true"
+                  />
+                </span>
+              </h1>
+            </div>
             <p className="text-muted-foreground">
               Create, schedule, and send emails to sponsors, parents, and teachers
             </p>
@@ -315,10 +337,10 @@ const AdminEmailPage = () => {
 
           <TabsContent value="all" className="space-y-4">
             {templates.map((template) => (
-              <BookContainer
+              <div
                 key={template.id}
-                variant="default"
-                className="p-4 hover:shadow-md transition-shadow"
+                className="bg-background p-4 hover:shadow-md transition-shadow"
+                style={handDrawnBorder}
               >
                 <div className="flex flex-col md:flex-row md:items-center gap-4">
                   <div className="flex-1 min-w-0">
@@ -373,13 +395,13 @@ const AdminEmailPage = () => {
                     )}
                   </div>
                 </div>
-              </BookContainer>
+              </div>
             ))}
           </TabsContent>
 
           <TabsContent value="drafts">
             {templates.filter((t) => t.status === "draft").map((template) => (
-              <BookContainer key={template.id} variant="default" className="p-4">
+              <div key={template.id} className="bg-background p-4" style={handDrawnBorder}>
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="font-medium">{template.name}</h3>
@@ -389,13 +411,13 @@ const AdminEmailPage = () => {
                     Edit
                   </Button>
                 </div>
-              </BookContainer>
+              </div>
             ))}
           </TabsContent>
 
           <TabsContent value="scheduled">
             {templates.filter((t) => t.status === "scheduled").map((template) => (
-              <BookContainer key={template.id} variant="default" className="p-4">
+              <div key={template.id} className="bg-background p-4" style={handDrawnBorder}>
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="font-medium">{template.name}</h3>
@@ -405,13 +427,13 @@ const AdminEmailPage = () => {
                   </div>
                   <Button variant="outline" size="sm">Cancel</Button>
                 </div>
-              </BookContainer>
+              </div>
             ))}
           </TabsContent>
 
           <TabsContent value="sent">
             {templates.filter((t) => t.status === "sent").map((template) => (
-              <BookContainer key={template.id} variant="default" className="p-4">
+              <div key={template.id} className="bg-background p-4" style={handDrawnBorder}>
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="font-medium">{template.name}</h3>
@@ -424,7 +446,7 @@ const AdminEmailPage = () => {
                     Duplicate
                   </Button>
                 </div>
-              </BookContainer>
+              </div>
             ))}
           </TabsContent>
         </Tabs>

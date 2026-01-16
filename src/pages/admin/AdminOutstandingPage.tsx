@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import AdminLayout from "@/components/layout/AdminLayout";
-import { BookContainer } from "@/components/legacy";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -22,17 +21,23 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  ArrowLeft,
   Search,
   Mail,
   Download,
   AlertTriangle,
-  Clock,
-  DollarSign,
   Filter,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+
+// Hand-drawn border style
+const handDrawnBorder = {
+  border: 'solid 1px #41403E',
+  borderTopLeftRadius: '255px 15px',
+  borderTopRightRadius: '15px 225px',
+  borderBottomRightRadius: '225px 15px',
+  borderBottomLeftRadius: '15px 255px',
+};
 
 interface OutstandingPayment {
   id: string;
@@ -116,163 +121,177 @@ const AdminOutstandingPage = () => {
     <AdminLayout>
       <div className="container py-8">
         {/* Header */}
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-            <div>
-              <h1 className="font-serif text-3xl font-normal tracking-tight text-foreground">
-                Outstanding Payments
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+          <div>
+            <div className="relative inline-block mb-2">
+              <h1 className="font-serif text-3xl md:text-4xl font-normal tracking-tight text-foreground relative">
+                <span className="relative">
+                  Outstanding Payments
+                  <span 
+                    className="absolute inset-0 -skew-y-1 bg-accent/30 -z-10 transform -rotate-[0.5deg]"
+                    style={{
+                      top: '50%',
+                      height: '50%',
+                      left: '-2%',
+                      right: '-2%',
+                      borderRadius: '4px 8px 4px 6px',
+                    }}
+                    aria-hidden="true"
+                  />
+                </span>
               </h1>
-              <p className="text-muted-foreground">
-                {filteredPayments.length} payments totaling ${totalOutstanding.toFixed(2)}
-              </p>
             </div>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={handleExport}>
-                <Download className="h-4 w-4 mr-2" />
-                Export
+            <p className="text-muted-foreground">
+              {filteredPayments.length} payments totaling ${totalOutstanding.toFixed(2)}
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={handleExport} style={handDrawnBorder}>
+              <Download className="h-4 w-4 mr-2" />
+              Export
+            </Button>
+            <Button
+              onClick={handleSendReminders}
+              disabled={selectedPayments.length === 0 || isSending}
+            >
+              <Mail className="h-4 w-4 mr-2" />
+              {isSending ? "Sending..." : `Send Reminders (${selectedPayments.length})`}
+            </Button>
+          </div>
+        </div>
+
+        {/* Filters */}
+        <div className="bg-background p-4 mb-6" style={handDrawnBorder}>
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Search sponsors or students..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <Select value={filterBy} onValueChange={(v) => setFilterBy(v as FilterOption)}>
+              <SelectTrigger className="w-[180px]">
+                <Filter className="h-4 w-4 mr-2" />
+                <SelectValue placeholder="Filter" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Outstanding</SelectItem>
+                <SelectItem value="overdue">Overdue (7+ days)</SelectItem>
+                <SelectItem value="no-reminder">No Reminder Sent</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {/* Table */}
+        <div className="bg-background overflow-hidden" style={handDrawnBorder}>
+          <div className="p-4 border-b border-foreground/10 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" size="sm" onClick={selectAll}>
+                Select All
               </Button>
-              <Button
-                onClick={handleSendReminders}
-                disabled={selectedPayments.length === 0 || isSending}
-                loading={isSending}
-              >
-                <Mail className="h-4 w-4 mr-2" />
-                Send Reminders ({selectedPayments.length})
+              <Button variant="ghost" size="sm" onClick={selectNone}>
+                Select None
               </Button>
             </div>
+            <p className="text-sm text-muted-foreground">
+              {selectedPayments.length} selected
+            </p>
           </div>
 
-          {/* Filters */}
-          <BookContainer variant="default" className="p-4 mb-6">
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  placeholder="Search sponsors or students..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              <Select value={filterBy} onValueChange={(v) => setFilterBy(v as FilterOption)}>
-                <SelectTrigger className="w-[180px]">
-                  <Filter className="h-4 w-4 mr-2" />
-                  <SelectValue placeholder="Filter" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Outstanding</SelectItem>
-                  <SelectItem value="overdue">Overdue (7+ days)</SelectItem>
-                  <SelectItem value="no-reminder">No Reminder Sent</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </BookContainer>
-
-          {/* Table */}
-          <BookContainer variant="default" className="overflow-hidden">
-            <div className="p-4 border-b border-border flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <Button variant="ghost" size="sm" onClick={selectAll}>
-                  Select All
-                </Button>
-                <Button variant="ghost" size="sm" onClick={selectNone}>
-                  Select None
-                </Button>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                {selectedPayments.length} selected
-              </p>
-            </div>
-
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-12"></TableHead>
-                    <TableHead>Sponsor</TableHead>
-                    <TableHead>Student</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
-                    <TableHead className="text-right">Days</TableHead>
-                    <TableHead>Last Reminder</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredPayments.map((payment) => (
-                    <TableRow key={payment.id}>
-                      <TableCell>
-                        <Checkbox
-                          checked={selectedPayments.includes(payment.id)}
-                          onCheckedChange={() => toggleSelection(payment.id)}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium">{payment.sponsorName}</p>
-                          <p className="text-sm text-muted-foreground">{payment.sponsorEmail}</p>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium">{payment.studentName}</p>
-                          <p className="text-sm text-muted-foreground">{payment.studentGrade} Grade</p>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="secondary">
-                          {payment.pledgeType === "per-minute" ? "Per Minute" : "Fixed"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right font-medium">
-                        ${payment.amount.toFixed(2)}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <span
-                          className={cn(
-                            "inline-flex items-center gap-1",
-                            payment.daysOutstanding >= 14
-                              ? "text-destructive font-bold"
-                              : payment.daysOutstanding >= 7
-                              ? "text-warning font-medium"
-                              : "text-muted-foreground"
-                          )}
-                        >
-                          {payment.daysOutstanding >= 7 && (
-                            <AlertTriangle className="h-3 w-3" />
-                          )}
-                          {payment.daysOutstanding}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        {payment.lastReminder ? (
-                          <span className="text-sm text-muted-foreground">{payment.lastReminder}</span>
-                        ) : (
-                          <Badge variant="outline" className="text-xs">Never</Badge>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-12"></TableHead>
+                  <TableHead>Sponsor</TableHead>
+                  <TableHead>Student</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead className="text-right">Amount</TableHead>
+                  <TableHead className="text-right">Days</TableHead>
+                  <TableHead>Last Reminder</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredPayments.map((payment) => (
+                  <TableRow key={payment.id}>
+                    <TableCell>
+                      <Checkbox
+                        checked={selectedPayments.includes(payment.id)}
+                        onCheckedChange={() => toggleSelection(payment.id)}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <div>
+                        <p className="font-medium">{payment.sponsorName}</p>
+                        <p className="text-sm text-muted-foreground">{payment.sponsorEmail}</p>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div>
+                        <p className="font-medium">{payment.studentName}</p>
+                        <p className="text-sm text-muted-foreground">{payment.studentGrade} Grade</p>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="secondary">
+                        {payment.pledgeType === "per-minute" ? "Per Minute" : "Fixed"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right font-medium">
+                      ${payment.amount.toFixed(2)}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <span
+                        className={cn(
+                          "inline-flex items-center gap-1",
+                          payment.daysOutstanding >= 14
+                            ? "text-destructive font-bold"
+                            : payment.daysOutstanding >= 7
+                            ? "text-warning font-medium"
+                            : "text-muted-foreground"
                         )}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            toast.success(`Reminder sent to ${payment.sponsorName}`);
-                          }}
-                        >
-                          <Mail className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                      >
+                        {payment.daysOutstanding >= 7 && (
+                          <AlertTriangle className="h-3 w-3" />
+                        )}
+                        {payment.daysOutstanding}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      {payment.lastReminder ? (
+                        <span className="text-sm text-muted-foreground">{payment.lastReminder}</span>
+                      ) : (
+                        <Badge variant="outline" className="text-xs">Never</Badge>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          toast.success(`Reminder sent to ${payment.sponsorName}`);
+                        }}
+                      >
+                        <Mail className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
 
-            {filteredPayments.length === 0 && (
-              <div className="p-8 text-center text-muted-foreground">
-                No outstanding payments match your criteria.
-              </div>
-            )}
-        </BookContainer>
+          {filteredPayments.length === 0 && (
+            <div className="p-8 text-center text-muted-foreground">
+              No outstanding payments match your criteria.
+            </div>
+          )}
+        </div>
       </div>
     </AdminLayout>
   );
