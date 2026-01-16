@@ -53,7 +53,7 @@ const LoginPage = () => {
             <div 
               className="animate-fade-in bg-card p-8 shadow-book"
               style={{
-                border: 'solid 2px #41403E',
+                border: 'solid 1px #41403E',
                 borderTopLeftRadius: '255px 15px',
                 borderTopRightRadius: '15px 225px',
                 borderBottomRightRadius: '225px 15px',
