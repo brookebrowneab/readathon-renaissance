@@ -233,25 +233,37 @@ export default function SponsorDashboardPage() {
   const pendingPayments = mockPledges.filter(p => p.status === "pending").length;
   const totalProjected = mockPledges.reduce((sum, p) => sum + p.projectedAmount, 0);
 
+  // Hand-drawn border style matching homepage
+  const handDrawnBorder = {
+    border: 'solid 1px #41403E',
+    borderTopLeftRadius: '255px 15px',
+    borderTopRightRadius: '15px 225px',
+    borderBottomRightRadius: '225px 15px',
+    borderBottomLeftRadius: '15px 255px',
+  };
+
   return (
     <div className="flex min-h-screen flex-col">
       <MainNav />
 
       <main className="flex-1 bg-background-warm">
-        <div className="container py-8">
+        <div className="container py-8 max-w-5xl">
           {/* Header */}
           <div className="mb-8">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
-                <h1 className="font-serif text-3xl font-normal text-primary">
-                  Welcome back, {mockSponsor.name}!
+                <h1 className="font-serif text-4xl md:text-5xl font-normal tracking-tight text-foreground">
+                  Welcome back, {mockSponsor.name.split(" ")[0]}!
                 </h1>
-                <p className="text-muted-foreground mt-1">
+                <p className="text-muted-foreground mt-2 text-lg">
                   Thank you for supporting young readers
                 </p>
               </div>
               <Link to="/login">
-                <Button variant="ghost">
+                <Button 
+                  variant="ghost"
+                  style={handDrawnBorder}
+                >
                   <LogOut className="h-4 w-4 mr-2" />
                   Sign Out
                 </Button>
@@ -259,64 +271,77 @@ export default function SponsorDashboardPage() {
             </div>
           </div>
 
-          {/* Summary Stats */}
-          <div className="grid gap-4 md:grid-cols-4 mb-8">
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Heart className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Children Supported</p>
-                    <p className="font-handwritten text-2xl text-primary">{mockSponsor.childrenSupported}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                    <TrendingUp className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Active Pledges</p>
-                    <p className="font-handwritten text-2xl text-primary">{activePledges}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-amber-500/10 flex items-center justify-center">
-                    <AlertCircle className="h-5 w-5 text-amber-500" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Pending Payments</p>
-                    <p className="font-handwritten text-2xl text-amber-600">{pendingPayments}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-green-500/10 flex items-center justify-center">
-                    <DollarSign className="h-5 w-5 text-green-600" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Total Paid</p>
-                    <p className="font-handwritten text-2xl text-green-600">${mockSponsor.totalPaid.toFixed(2)}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+          {/* Summary Stats - matching homepage grid style */}
+          <div 
+            className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-10 bg-background p-6 md:p-8 shadow-lg"
+            style={handDrawnBorder}
+          >
+            <div className="text-center">
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-2">
+                <Heart className="h-5 w-5 text-primary" />
+              </div>
+              <p className="font-serif text-2xl md:text-3xl text-foreground tracking-tight">
+                {mockSponsor.childrenSupported}
+              </p>
+              <p className="text-xs md:text-sm text-muted-foreground mt-1 tracking-wide">
+                Children Supported
+              </p>
+            </div>
+            <div 
+              className="text-center px-2 md:px-4"
+              style={{
+                borderLeft: 'solid 1px #41403E',
+              }}
+            >
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-2">
+                <TrendingUp className="h-5 w-5 text-primary" />
+              </div>
+              <p className="font-serif text-2xl md:text-3xl text-foreground tracking-tight">
+                {activePledges}
+              </p>
+              <p className="text-xs md:text-sm text-muted-foreground mt-1 tracking-wide">
+                Active Pledges
+              </p>
+            </div>
+            <div 
+              className="text-center px-2 md:px-4"
+              style={{
+                borderLeft: 'solid 1px #41403E',
+              }}
+            >
+              <div className="h-10 w-10 rounded-full bg-amber-500/10 flex items-center justify-center mx-auto mb-2">
+                <AlertCircle className="h-5 w-5 text-amber-500" />
+              </div>
+              <p className="font-serif text-2xl md:text-3xl text-amber-600 tracking-tight">
+                {pendingPayments}
+              </p>
+              <p className="text-xs md:text-sm text-muted-foreground mt-1 tracking-wide">
+                Pending Payments
+              </p>
+            </div>
+            <div 
+              className="text-center px-2 md:px-4"
+              style={{
+                borderLeft: 'solid 1px #41403E',
+              }}
+            >
+              <div className="h-10 w-10 rounded-full bg-green-500/10 flex items-center justify-center mx-auto mb-2">
+                <DollarSign className="h-5 w-5 text-green-600" />
+              </div>
+              <p className="font-serif text-2xl md:text-3xl text-green-600 tracking-tight">
+                ${mockSponsor.totalPaid.toFixed(2)}
+              </p>
+              <p className="text-xs md:text-sm text-muted-foreground mt-1 tracking-wide">
+                Total Paid
+              </p>
+            </div>
           </div>
 
           <Tabs defaultValue="pledges" className="space-y-6">
-            <TabsList>
+            <TabsList 
+              className="bg-background p-1"
+              style={handDrawnBorder}
+            >
               <TabsTrigger value="pledges">My Pledges</TabsTrigger>
               <TabsTrigger value="progress">Child Progress</TabsTrigger>
               <TabsTrigger value="payments">Payment History</TabsTrigger>
@@ -324,19 +349,26 @@ export default function SponsorDashboardPage() {
 
             {/* My Pledges Tab */}
             <TabsContent value="pledges" className="space-y-6">
-              <BookContainer variant="default" className="p-6">
-                <h2 className="font-serif text-xl text-primary mb-4">My Pledges</h2>
+              <div 
+                className="bg-background p-6 shadow-lg"
+                style={handDrawnBorder}
+              >
+                <h2 className="font-serif text-2xl text-foreground mb-6">My Pledges</h2>
                 
                 <div className="space-y-4">
                   {mockPledges.map((pledge) => (
                     <div
                       key={pledge.id}
-                      className="flex flex-col md:flex-row md:items-center gap-4 p-4 rounded-lg border bg-card"
+                      className="flex flex-col md:flex-row md:items-center gap-4 p-4 rounded-lg bg-muted/30"
+                      style={{
+                        border: 'solid 1px #41403E',
+                        borderRadius: '8px',
+                      }}
                     >
                       {/* Child Info */}
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-medium">{pledge.childName}</h3>
+                          <h3 className="font-serif text-lg text-foreground">{pledge.childName}</h3>
                           <Badge variant={statusConfig[pledge.status].variant} className="gap-1">
                             {statusConfig[pledge.status].icon}
                             {statusConfig[pledge.status].label}
@@ -348,22 +380,25 @@ export default function SponsorDashboardPage() {
                       {/* Pledge Details */}
                       <div className="flex items-center gap-6">
                         <div className="text-center">
-                          <p className="text-xs text-muted-foreground">Type</p>
-                          <p className="font-medium text-sm">
+                          <p className="text-xs text-muted-foreground uppercase tracking-wide">Type</p>
+                          <p className="font-medium text-sm text-foreground">
                             {pledge.pledgeType === "per-minute" ? "Per Min" : "Flat"}
                           </p>
                         </div>
-                        <div className="text-center">
-                          <p className="text-xs text-muted-foreground">Amount</p>
-                          <p className="font-handwritten text-lg text-primary">
+                        <div 
+                          className="text-center px-6"
+                          style={{ borderLeft: 'solid 1px #41403E', borderRight: 'solid 1px #41403E' }}
+                        >
+                          <p className="text-xs text-muted-foreground uppercase tracking-wide">Amount</p>
+                          <p className="font-serif text-xl text-foreground">
                             {pledge.pledgeType === "per-minute" 
                               ? `$${pledge.amount.toFixed(2)}/min`
                               : `$${pledge.amount.toFixed(2)}`}
                           </p>
                         </div>
                         <div className="text-center">
-                          <p className="text-xs text-muted-foreground">Projected</p>
-                          <p className="font-handwritten text-lg text-primary">
+                          <p className="text-xs text-muted-foreground uppercase tracking-wide">Projected</p>
+                          <p className="font-serif text-xl text-foreground">
                             ${pledge.projectedAmount.toFixed(2)}
                           </p>
                         </div>
@@ -418,13 +453,16 @@ export default function SponsorDashboardPage() {
                     </div>
                   ))}
                 </div>
-              </BookContainer>
+              </div>
 
               {/* Invite Others Section - Only show for pledges with sharing enabled */}
               {mockPledges.some(p => p.allowSponsorSharing) && (
-                <BookContainer variant="warm" className="p-6">
-                  <h2 className="font-serif text-xl text-primary mb-4">Invite Others to Sponsor</h2>
-                  <p className="text-muted-foreground mb-4">
+                <div 
+                  className="bg-background-warm p-6 shadow-lg"
+                  style={handDrawnBorder}
+                >
+                  <h2 className="font-serif text-2xl text-foreground mb-2">Invite Others to Sponsor</h2>
+                  <p className="text-muted-foreground mb-6">
                     Share these links with friends and family to help support these amazing readers!
                   </p>
                   
@@ -432,10 +470,14 @@ export default function SponsorDashboardPage() {
                     {mockPledges.filter(p => p.allowSponsorSharing).map((pledge) => (
                       <div
                         key={pledge.id}
-                        className="flex items-center gap-4 p-3 rounded-lg bg-background"
+                        className="flex items-center gap-4 p-4 rounded-lg bg-background"
+                        style={{
+                          border: 'solid 1px #41403E',
+                          borderRadius: '8px',
+                        }}
                       >
                         <div className="flex-1">
-                          <p className="font-medium">{pledge.childName}</p>
+                          <p className="font-serif text-lg text-foreground">{pledge.childName}</p>
                           <p className="text-sm text-muted-foreground truncate">
                             {window.location.origin}{pledge.sponsorLink}
                           </p>
@@ -445,6 +487,7 @@ export default function SponsorDashboardPage() {
                             variant="outline"
                             size="sm"
                             onClick={() => copyLink(pledge.sponsorLink)}
+                            style={{ border: 'solid 1px #41403E', borderRadius: '6px' }}
                           >
                             <Copy className="h-4 w-4" />
                           </Button>
@@ -452,10 +495,16 @@ export default function SponsorDashboardPage() {
                             variant="outline"
                             size="sm"
                             onClick={() => handleEmailInvite(pledge.childName)}
+                            style={{ border: 'solid 1px #41403E', borderRadius: '6px' }}
                           >
                             <Mail className="h-4 w-4" />
                           </Button>
-                          <Button variant="outline" size="sm" asChild>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            asChild
+                            style={{ border: 'solid 1px #41403E', borderRadius: '6px' }}
+                          >
                             <Link to={pledge.sponsorLink} target="_blank">
                               <ExternalLink className="h-4 w-4" />
                             </Link>
@@ -464,15 +513,21 @@ export default function SponsorDashboardPage() {
                       </div>
                     ))}
                   </div>
-                </BookContainer>
+                </div>
               )}
 
               {/* Note about sharing restrictions */}
               {mockPledges.some(p => !p.allowSponsorSharing) && (
-                <div className="flex items-start gap-3 p-4 rounded-lg bg-muted/50">
+                <div 
+                  className="flex items-start gap-3 p-4 bg-muted/30"
+                  style={{
+                    border: 'solid 1px #41403E',
+                    borderRadius: '8px',
+                  }}
+                >
                   <Lock className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" />
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">
+                    <p className="text-sm font-medium text-foreground">
                       Sharing managed by family
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
@@ -483,9 +538,12 @@ export default function SponsorDashboardPage() {
               )}
 
               {/* Add Another Pledge Section */}
-              <BookContainer variant="default" className="p-6">
-                <h2 className="font-serif text-xl text-primary mb-4">Make Another Pledge</h2>
-                <p className="text-muted-foreground mb-4">
+              <div 
+                className="bg-background p-6 shadow-lg"
+                style={handDrawnBorder}
+              >
+                <h2 className="font-serif text-2xl text-foreground mb-2">Make Another Pledge</h2>
+                <p className="text-muted-foreground mb-6">
                   Want to increase your support? Add another pledge for any child you're sponsoring.
                 </p>
                 
@@ -493,13 +551,20 @@ export default function SponsorDashboardPage() {
                   {mockPledges.filter(p => p.status !== "paid").map((pledge) => (
                     <div
                       key={pledge.id}
-                      className="flex items-center justify-between gap-4 p-3 rounded-lg bg-muted/50"
+                      className="flex items-center justify-between gap-4 p-4 bg-muted/30"
+                      style={{
+                        border: 'solid 1px #41403E',
+                        borderRadius: '8px',
+                      }}
                     >
                       <div>
-                        <p className="font-medium">{pledge.childName}</p>
+                        <p className="font-serif text-lg text-foreground">{pledge.childName}</p>
                         <p className="text-sm text-muted-foreground">{pledge.childGrade}</p>
                       </div>
-                      <Button size="sm" variant="outline" asChild>
+                      <Button 
+                        size="sm" 
+                        asChild
+                      >
                         <Link to={`${pledge.sponsorLink}?additional=true`}>
                           <Plus className="h-4 w-4 mr-1" />
                           Add Pledge
@@ -508,18 +573,22 @@ export default function SponsorDashboardPage() {
                     </div>
                   ))}
                 </div>
-              </BookContainer>
+              </div>
             </TabsContent>
 
             {/* Child Progress Tab */}
             <TabsContent value="progress" className="space-y-6">
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {mockPledges.map((pledge) => (
-                  <BookContainer key={pledge.id} variant="default" className="p-6">
+                  <div 
+                    key={pledge.id} 
+                    className="bg-background p-6 shadow-lg"
+                    style={handDrawnBorder}
+                  >
                     <div className="flex flex-col items-center gap-4">
                       <div className="flex items-center justify-between w-full">
                         <div>
-                          <h3 className="font-medium">{pledge.childName}</h3>
+                          <h3 className="font-serif text-lg text-foreground">{pledge.childName}</h3>
                           <p className="text-sm text-muted-foreground">{pledge.childGrade}</p>
                         </div>
                         <Badge variant={statusConfig[pledge.status].variant} className="gap-1">
@@ -535,7 +604,7 @@ export default function SponsorDashboardPage() {
                       />
 
                       <div className="text-center">
-                        <p className="font-handwritten text-xl text-primary">
+                        <p className="font-serif text-2xl text-foreground">
                           {pledge.minutesRead} minutes
                         </p>
                         <p className="text-sm text-muted-foreground">
@@ -544,26 +613,35 @@ export default function SponsorDashboardPage() {
                       </div>
 
                       {pledge.pledgeType === "per-minute" && (
-                        <div className="w-full p-3 rounded-lg bg-muted/50">
+                        <div 
+                          className="w-full p-4 bg-muted/30"
+                          style={{
+                            border: 'solid 1px #41403E',
+                            borderRadius: '8px',
+                          }}
+                        >
                           <div className="flex justify-between items-center">
                             <span className="text-sm text-muted-foreground">Your Pledge</span>
-                            <span className="font-medium">${pledge.amount.toFixed(2)}/min</span>
+                            <span className="font-medium text-foreground">${pledge.amount.toFixed(2)}/min</span>
                           </div>
-                          <div className="flex justify-between items-center mt-1">
+                          <div className="flex justify-between items-center mt-2">
                             <span className="text-sm text-muted-foreground">Current Total</span>
-                            <span className="font-handwritten text-lg text-primary">
+                            <span className="font-serif text-xl text-foreground">
                               ${(pledge.minutesRead * pledge.amount).toFixed(2)}
                             </span>
                           </div>
                           {pledge.maxCap && (
-                            <div className="flex justify-between items-center mt-1">
+                            <div className="flex justify-between items-center mt-2">
                               <span className="text-sm text-muted-foreground">Your Cap</span>
-                              <span className="font-medium">${pledge.maxCap.toFixed(2)}</span>
+                              <span className="font-medium text-foreground">${pledge.maxCap.toFixed(2)}</span>
                             </div>
                           )}
-                          <div className="flex justify-between items-center mt-2 pt-2 border-t">
-                            <span className="text-sm font-medium">At Goal</span>
-                            <span className="font-handwritten text-lg text-primary">
+                          <div 
+                            className="flex justify-between items-center mt-3 pt-3"
+                            style={{ borderTop: 'solid 1px #41403E' }}
+                          >
+                            <span className="text-sm font-medium text-foreground">At Goal</span>
+                            <span className="font-serif text-xl text-foreground">
                               ${Math.min(pledge.goalMinutes * pledge.amount, pledge.maxCap || Infinity).toFixed(2)}
                             </span>
                           </div>
@@ -571,9 +649,15 @@ export default function SponsorDashboardPage() {
                       )}
 
                       {pledge.pledgeType === "flat" && (
-                        <div className="w-full p-3 rounded-lg bg-muted/50 text-center">
+                        <div 
+                          className="w-full p-4 text-center bg-muted/30"
+                          style={{
+                            border: 'solid 1px #41403E',
+                            borderRadius: '8px',
+                          }}
+                        >
                           <p className="text-sm text-muted-foreground">Your Flat Pledge</p>
-                          <p className="font-handwritten text-2xl text-primary">
+                          <p className="font-serif text-3xl text-foreground">
                             ${pledge.amount.toFixed(2)}
                           </p>
                         </div>
@@ -585,6 +669,7 @@ export default function SponsorDashboardPage() {
                           size="sm"
                           className="flex-1"
                           onClick={() => copyLink(pledge.sponsorLink)}
+                          style={{ border: 'solid 1px #41403E', borderRadius: '6px' }}
                         >
                           <Share2 className="h-4 w-4 mr-1" />
                           Share
@@ -597,15 +682,18 @@ export default function SponsorDashboardPage() {
                         )}
                       </div>
                     </div>
-                  </BookContainer>
+                  </div>
                 ))}
               </div>
             </TabsContent>
 
             {/* Payment History Tab */}
             <TabsContent value="payments" className="space-y-6">
-              <BookContainer variant="default" className="p-6">
-                <h2 className="font-serif text-xl text-primary mb-4">Payment History</h2>
+              <div 
+                className="bg-background p-6 shadow-lg"
+                style={handDrawnBorder}
+              >
+                <h2 className="font-serif text-2xl text-foreground mb-6">Payment History</h2>
 
                 {mockPayments.length > 0 ? (
                   <Table>
@@ -625,13 +713,13 @@ export default function SponsorDashboardPage() {
                           <TableCell>
                             {new Date(payment.date).toLocaleDateString()}
                           </TableCell>
-                          <TableCell className="font-medium">{payment.childName}</TableCell>
+                          <TableCell className="font-serif text-foreground">{payment.childName}</TableCell>
                           <TableCell>
-                            <span className="font-handwritten text-lg text-primary">
+                            <span className="font-serif text-xl text-foreground">
                               ${payment.amount.toFixed(2)}
                             </span>
                           </TableCell>
-                          <TableCell>{payment.method}</TableCell>
+                          <TableCell className="text-muted-foreground">{payment.method}</TableCell>
                           <TableCell className="font-mono text-sm text-muted-foreground">
                             {payment.transactionId}
                           </TableCell>
@@ -655,39 +743,41 @@ export default function SponsorDashboardPage() {
                     <p className="text-muted-foreground">No payment history yet</p>
                   </div>
                 )}
-              </BookContainer>
+              </div>
 
               {/* Payment Summary */}
-              <div className="grid gap-4 md:grid-cols-2">
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">
-                      Total Paid
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="font-handwritten text-3xl text-green-600">
-                      ${mockSponsor.totalPaid.toFixed(2)}
-                    </p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">
-                      Outstanding Balance
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="font-handwritten text-3xl text-amber-600">
-                      ${(totalProjected - mockSponsor.totalPaid).toFixed(2)}
-                    </p>
+              <div 
+                className="grid grid-cols-2 gap-6 bg-background p-6 shadow-lg"
+                style={handDrawnBorder}
+              >
+                <div className="text-center">
+                  <div className="h-10 w-10 rounded-full bg-green-500/10 flex items-center justify-center mx-auto mb-2">
+                    <CheckCircle2 className="h-5 w-5 text-green-600" />
+                  </div>
+                  <p className="font-serif text-3xl text-green-600 tracking-tight">
+                    ${mockSponsor.totalPaid.toFixed(2)}
+                  </p>
+                  <p className="text-xs md:text-sm text-muted-foreground mt-1 tracking-wide">
+                    Total Paid
+                  </p>
+                </div>
+                <div 
+                  className="text-center px-4"
+                  style={{ borderLeft: 'solid 1px #41403E' }}
+                >
+                  <div className="h-10 w-10 rounded-full bg-amber-500/10 flex items-center justify-center mx-auto mb-2">
+                    <Clock className="h-5 w-5 text-amber-500" />
+                  </div>
+                  <p className="font-serif text-3xl text-amber-600 tracking-tight">
+                    ${(totalProjected - mockSponsor.totalPaid).toFixed(2)}
+                  </p>
+                  <p className="text-xs md:text-sm text-muted-foreground mt-1 tracking-wide">
+                    Outstanding Balance
                     {pendingPayments > 0 && (
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {pendingPayments} pending payment{pendingPayments > 1 ? "s" : ""}
-                      </p>
+                      <span className="block">({pendingPayments} pending)</span>
                     )}
-                  </CardContent>
-                </Card>
+                  </p>
+                </div>
               </div>
             </TabsContent>
           </Tabs>
