@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { MainNav, Footer, BottomTabBar } from "@/components/layout";
 import { Button } from "@/components/ui/button";
-import { BookContainer, ReadingGoalRing } from "@/components/legacy";
+import { ReadingGoalRing } from "@/components/legacy";
 import { Badge } from "@/components/ui/badge";
 import {
   BookOpen,
@@ -9,16 +9,21 @@ import {
   UserPlus,
   DollarSign,
   ChevronRight,
-  Calendar,
-  Clock,
-  Eye,
   LogOut,
   Star,
   Bell,
-  Mail,
   Heart,
 } from "lucide-react";
 import openBookBanner from "@/assets/open-book-banner.png";
+
+// Hand-drawn border style (consistent with HomePage)
+const handDrawnBorder = {
+  border: 'solid 1px #41403E',
+  borderTopLeftRadius: '255px 15px',
+  borderTopRightRadius: '15px 225px',
+  borderBottomRightRadius: '225px 15px',
+  borderBottomLeftRadius: '15px 255px',
+};
 
 // Mock data
 const mockUser = {
@@ -97,11 +102,6 @@ const mockSponsorshipData = {
 // Mock pending sponsor requests
 const mockPendingSponsorRequests = 2;
 
-// Mock pending reading log approvals (over 8 hours)
-const mockPendingLogApprovals = [
-  { id: "1", childName: "Emma", minutes: 540, date: "March 5", bookTitle: "Harry Potter" },
-];
-
 const DashboardPage = () => {
   return (
     <div className="flex min-h-screen flex-col">
@@ -118,17 +118,21 @@ const DashboardPage = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <h1 className="font-serif text-3xl font-normal tracking-tight text-foreground md:text-4xl">
-                      <span className="font-handwritten text-4xl text-brand-blue">
+                      <span className="font-handwritten text-4xl text-primary">
                         Welcome,
                       </span>{" "}
                       {mockUser.name.split(" ")[0]}!
                     </h1>
-                    <p className="text-muted-foreground mt-1">
+                    <p className="text-muted-foreground mt-1 text-sm md:text-base">
                       Here's how your readers are doing this week
                     </p>
                   </div>
                   <Link to="/login">
-                    <Button variant="ghost" size="sm">
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      style={handDrawnBorder}
+                    >
                       <LogOut className="mr-2 h-4 w-4" />
                       Exit Demo
                     </Button>
@@ -139,16 +143,20 @@ const DashboardPage = () => {
                 <div className="relative">
                   <img src={openBookBanner} alt="Open book illustration" className="w-full h-auto max-h-40 object-contain" />
                 </div>
-
               </div>
 
               {/* Children Overview */}
               <section>
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="font-serif text-xl font-normal text-foreground">
+                  <h2 className="font-serif text-xl md:text-2xl font-normal text-foreground">
                     Your Readers
                   </h2>
-                  <Button variant="ghost" size="sm" asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    asChild
+                    className="text-muted-foreground hover:text-foreground"
+                  >
                     <Link to="/children">
                       Manage Children
                       <ChevronRight className="h-4 w-4 ml-1" />
@@ -165,10 +173,18 @@ const DashboardPage = () => {
 
               {/* Recent Activity */}
               <section>
-                <BookContainer variant="warm" className="p-6">
+                <div 
+                  className="bg-background p-6 shadow-md"
+                  style={handDrawnBorder}
+                >
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-serif text-xl text-brand-blue">Recent Activity</h3>
-                    <Button variant="ghost" size="sm" asChild>
+                    <h3 className="font-serif text-xl md:text-2xl text-foreground">Recent Activity</h3>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      asChild
+                      className="text-muted-foreground hover:text-foreground"
+                    >
                       <Link to="/reading-logs">
                         View all
                         <ChevronRight className="h-4 w-4 ml-1" />
@@ -179,36 +195,41 @@ const DashboardPage = () => {
                     {mockRecentActivity.map((activity) => (
                       <div
                         key={activity.id}
-                        className="flex items-center gap-4 rounded-lg bg-background/80 p-3"
+                        className="flex items-center gap-4 rounded-lg bg-muted/30 p-3"
                       >
-                        <div className="h-10 w-10 rounded-full bg-brand-blue/10 flex items-center justify-center shrink-0">
-                          <BookOpen className="h-5 w-5 text-brand-blue" />
+                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                          <BookOpen className="h-5 w-5 text-primary" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-foreground">
+                          <p className="font-medium text-foreground text-sm md:text-base">
                             {activity.childName} read for {activity.minutes} min
                           </p>
-                          <p className="text-sm text-muted-foreground truncate">
+                          <p className="text-xs md:text-sm text-muted-foreground truncate">
                             {activity.bookTitle || "No book specified"} •{" "}
                             {activity.date}
                           </p>
                         </div>
-                        <div className="flex items-center gap-1 font-handwritten text-lg text-brand-blue">
+                        <div className="flex items-center gap-1 font-serif text-lg text-primary">
                           {activity.minutes}m
                         </div>
                       </div>
                     ))}
                   </div>
-                </BookContainer>
+                </div>
               </section>
 
               {/* Sponsorship Summary */}
               <section>
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="font-serif text-xl font-normal text-foreground">
+                  <h2 className="font-serif text-xl md:text-2xl font-normal text-foreground">
                     Sponsorship Summary
                   </h2>
-                  <Button variant="ghost" size="sm" asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    asChild
+                    className="text-muted-foreground hover:text-foreground"
+                  >
                     <Link to="/pledges">
                       View all pledges
                       <ChevronRight className="h-4 w-4 ml-1" />
@@ -217,14 +238,8 @@ const DashboardPage = () => {
                 </div>
                 
                 <div 
-                  className="bg-background p-6"
-                  style={{
-                    border: 'solid 1px #41403E',
-                    borderTopLeftRadius: '255px 15px',
-                    borderTopRightRadius: '15px 225px',
-                    borderBottomRightRadius: '225px 15px',
-                    borderBottomLeftRadius: '15px 255px',
-                  }}
+                  className="bg-background p-6 shadow-md"
+                  style={handDrawnBorder}
                 >
                   <div className="grid grid-cols-3 gap-6">
                     <div className="text-center">
@@ -235,7 +250,7 @@ const DashboardPage = () => {
                         Total Pledges
                       </p>
                     </div>
-                    {mockSponsorshipData.byChild.map((child, index) => (
+                    {mockSponsorshipData.byChild.map((child) => (
                       <div 
                         key={child.name} 
                         className="text-center"
@@ -255,7 +270,11 @@ const DashboardPage = () => {
                 </div>
 
                 <div className="mt-4">
-                  <Button className="w-full bg-primary text-primary-foreground hover:bg-primary-hover" asChild>
+                  <Button 
+                    className="w-full bg-primary text-primary-foreground hover:bg-primary/90" 
+                    asChild
+                    style={handDrawnBorder}
+                  >
                     <Link to="/invite">
                       <UserPlus className="h-4 w-4 mr-2" />
                       Invite More Sponsors
@@ -268,12 +287,18 @@ const DashboardPage = () => {
             {/* Quick Actions Sidebar (Desktop) */}
             <aside className="hidden lg:block w-80 shrink-0">
               <div className="sticky top-24 space-y-4">
-                <BookContainer variant="default" className="p-6">
+                <div 
+                  className="bg-background p-6 shadow-md"
+                  style={handDrawnBorder}
+                >
                   <div className="space-y-3">
-                    <h3 className="font-serif text-xl text-brand-blue mb-4">
+                    <h3 className="font-serif text-xl text-foreground mb-4">
                       Quick Actions
                     </h3>
-                    <Button className="w-full justify-start bg-brand-blue text-white hover:bg-brand-blue/90" asChild>
+                    <Button 
+                      className="w-full justify-start bg-primary text-primary-foreground hover:bg-primary/90" 
+                      asChild
+                    >
                       <Link to="/log-reading">
                         <Plus className="h-4 w-4 mr-2" />
                         Add Reading Log
@@ -325,23 +350,26 @@ const DashboardPage = () => {
                       </Link>
                     </Button>
                   </div>
-                </BookContainer>
+                </div>
 
                 {/* Stats Summary */}
-                <BookContainer variant="warm" className="p-6">
-                  <h3 className="font-serif text-xl text-brand-blue mb-4">Stats</h3>
+                <div 
+                  className="bg-background p-6 shadow-md"
+                  style={handDrawnBorder}
+                >
+                  <h3 className="font-serif text-xl text-foreground mb-4">Stats</h3>
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="flex flex-col items-center rounded-lg bg-muted/50 p-3">
+                    <div className="flex flex-col items-center rounded-lg bg-muted/30 p-3">
                       <span className="text-xs text-muted-foreground">Total Minutes</span>
-                      <span className="font-handwritten text-2xl text-brand-blue">425</span>
+                      <span className="font-serif text-2xl text-primary">425</span>
                     </div>
-                    <div className="relative flex flex-col items-center rounded-lg bg-muted/50 p-3">
-                      <Star className="absolute -right-1 -top-1 h-4 w-4 fill-brand-yellow text-brand-yellow" />
+                    <div className="relative flex flex-col items-center rounded-lg bg-muted/30 p-3">
+                      <Star className="absolute -right-1 -top-1 h-4 w-4 fill-accent text-accent" />
                       <span className="text-xs text-muted-foreground">Sponsors</span>
-                      <span className="font-handwritten text-2xl text-brand-blue">7</span>
+                      <span className="font-serif text-2xl text-primary">7</span>
                     </div>
                   </div>
-                </BookContainer>
+                </div>
               </div>
             </aside>
           </div>
@@ -377,12 +405,13 @@ interface ChildProgressCardProps {
 }
 
 const ChildProgressCard = ({ child }: ChildProgressCardProps) => {
-  const percentage = Math.round((child.minutesRead / child.goalMinutes) * 100);
-
   return (
-    <BookContainer variant="default" className="p-6">
+    <div 
+      className="bg-background p-6 shadow-md"
+      style={handDrawnBorder}
+    >
       <div className="flex flex-col items-center gap-4">
-        <h2 className="w-full text-left font-serif text-2xl font-normal tracking-tight text-brand-blue">
+        <h2 className="w-full text-left font-serif text-xl md:text-2xl font-normal tracking-tight text-foreground">
           {child.name.split(" ")[0]}'s Reading
         </h2>
         
@@ -390,14 +419,14 @@ const ChildProgressCard = ({ child }: ChildProgressCardProps) => {
         
         {/* Personal Stats Grid */}
         <div className="mt-2 grid w-full grid-cols-2 gap-3">
-          <div className="flex flex-col items-center rounded-lg bg-muted/50 p-3">
+          <div className="flex flex-col items-center rounded-lg bg-muted/30 p-3">
             <span className="text-xs text-muted-foreground">Reading Goal</span>
-            <span className="font-handwritten text-xl text-brand-blue">{child.goalMinutes} min</span>
+            <span className="font-serif text-xl text-primary">{child.goalMinutes} min</span>
           </div>
-          <div className="relative flex flex-col items-center rounded-lg bg-muted/50 p-3">
-            <Star className="absolute -right-1 -top-1 h-4 w-4 fill-brand-yellow text-brand-yellow" />
+          <div className="relative flex flex-col items-center rounded-lg bg-muted/30 p-3">
+            <Star className="absolute -right-1 -top-1 h-4 w-4 fill-accent text-accent" />
             <span className="text-xs text-muted-foreground">Minutes Read</span>
-            <span className="font-handwritten text-xl text-brand-blue">{child.minutesRead} min</span>
+            <span className="font-serif text-xl text-primary">{child.minutesRead} min</span>
           </div>
         </div>
 
@@ -405,11 +434,11 @@ const ChildProgressCard = ({ child }: ChildProgressCardProps) => {
         <div className="grid w-full grid-cols-2 gap-3">
           <div className="flex flex-col items-center rounded-lg bg-accent/10 p-3 border border-accent/20">
             <span className="text-xs text-muted-foreground">Read Today</span>
-            <span className="font-handwritten text-xl text-accent">{child.minutesToday} min</span>
+            <span className="font-serif text-xl text-accent">{child.minutesToday} min</span>
           </div>
-          <div className="flex flex-col items-center rounded-lg bg-brand-green/10 p-3 border border-brand-green/20">
+          <div className="flex flex-col items-center rounded-lg bg-secondary/30 p-3 border border-secondary/40">
             <span className="text-xs text-muted-foreground">Longest Stretch</span>
-            <span className="font-handwritten text-xl text-brand-green">{child.longestStreak} min</span>
+            <span className="font-serif text-xl text-secondary-foreground">{child.longestStreak} min</span>
           </div>
         </div>
 
@@ -417,11 +446,11 @@ const ChildProgressCard = ({ child }: ChildProgressCardProps) => {
         <div className="w-full space-y-2 pt-2 border-t border-border">
           <p className="text-xs text-muted-foreground text-center">{child.className} • {child.gradeInfo}</p>
           <div className="grid w-full grid-cols-2 gap-3">
-            <div className="flex flex-col items-center rounded-lg bg-muted/30 p-2">
+            <div className="flex flex-col items-center rounded-lg bg-muted/20 p-2">
               <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Class Total</span>
               <span className="font-serif text-lg text-foreground">{child.classMinutesRead.toLocaleString()} min</span>
             </div>
-            <div className="flex flex-col items-center rounded-lg bg-muted/30 p-2">
+            <div className="flex flex-col items-center rounded-lg bg-muted/20 p-2">
               <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Grade Total</span>
               <span className="font-serif text-lg text-foreground">{child.gradeMinutesRead.toLocaleString()} min</span>
             </div>
@@ -430,13 +459,21 @@ const ChildProgressCard = ({ child }: ChildProgressCardProps) => {
 
         {/* Actions */}
         <div className="flex gap-2 w-full">
-          <Button variant="outline" size="sm" className="flex-1" asChild>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="flex-1" 
+            asChild
+          >
             <Link to={`/children/${child.id}`}>
-              <Eye className="h-4 w-4 mr-1" />
               Details
             </Link>
           </Button>
-          <Button size="sm" className="flex-1 bg-brand-blue text-white hover:bg-brand-blue/90" asChild>
+          <Button 
+            size="sm" 
+            className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90" 
+            asChild
+          >
             <Link to={`/log-reading?child=${child.id}`}>
               <BookOpen className="h-4 w-4 mr-1" />
               Log
@@ -444,7 +481,7 @@ const ChildProgressCard = ({ child }: ChildProgressCardProps) => {
           </Button>
         </div>
       </div>
-    </BookContainer>
+    </div>
   );
 };
 
