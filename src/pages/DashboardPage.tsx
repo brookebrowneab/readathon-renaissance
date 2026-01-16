@@ -17,7 +17,7 @@ import {
   Bell,
   Mail,
 } from "lucide-react";
-import booksShelfBanner from "@/assets/books-shelf-banner-v2.png";
+import openBookBanner from "@/assets/open-book-banner.png";
 
 // Mock data
 const mockUser = {
@@ -134,9 +134,9 @@ const DashboardPage = () => {
                   </Link>
                 </div>
 
-                {/* School Stats - Hero Style */}
+                {/* Banner Image */}
                 <div className="relative">
-                  <img src={booksShelfBanner} alt="Bookshelf banner" className="w-full h-auto" />
+                  <img src={openBookBanner} alt="Open book illustration" className="w-full h-auto max-h-40 object-contain" />
                 </div>
 
               </div>
@@ -203,50 +203,64 @@ const DashboardPage = () => {
 
               {/* Sponsorship Summary */}
               <section>
-                <BookContainer variant="warm" className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-serif text-xl text-brand-blue">Sponsorship Summary</h3>
-                    <Button variant="ghost" size="sm" asChild>
-                      <Link to="/pledges">
-                        View all pledges
-                        <ChevronRight className="h-4 w-4 ml-1" />
-                      </Link>
-                    </Button>
-                  </div>
-                  <div className="space-y-4">
-                    <div className="relative flex flex-col items-center rounded-lg bg-muted/50 p-4">
-                      <Star className="absolute -right-1 -top-1 h-4 w-4 fill-brand-yellow text-brand-yellow" />
-                      <span className="text-xs text-muted-foreground">Total Pledges</span>
-                      <span className="font-handwritten text-3xl text-brand-green">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="font-serif text-xl font-normal text-foreground">
+                    Sponsorship Summary
+                  </h2>
+                  <Button variant="ghost" size="sm" asChild>
+                    <Link to="/pledges">
+                      View all pledges
+                      <ChevronRight className="h-4 w-4 ml-1" />
+                    </Link>
+                  </Button>
+                </div>
+                
+                <div 
+                  className="bg-background p-6"
+                  style={{
+                    border: 'solid 1px #41403E',
+                    borderTopLeftRadius: '255px 15px',
+                    borderTopRightRadius: '15px 225px',
+                    borderBottomRightRadius: '225px 15px',
+                    borderBottomLeftRadius: '15px 255px',
+                  }}
+                >
+                  <div className="grid grid-cols-3 gap-6">
+                    <div className="text-center">
+                      <p className="font-serif text-2xl md:text-3xl text-foreground tracking-tight">
                         ${mockSponsorshipData.totalPledges.toFixed(2)}
-                      </span>
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1 tracking-wide">
+                        Total Pledges
+                      </p>
                     </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      {mockSponsorshipData.byChild.map((child) => (
-                        <div
-                          key={child.name}
-                          className="flex flex-col items-center rounded-lg bg-muted/50 p-3"
-                        >
-                          <span className="text-xs text-muted-foreground">{child.name}</span>
-                          <span className="font-handwritten text-2xl text-brand-blue">
-                            ${child.amount.toFixed(2)}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            {child.sponsors} sponsors
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-
-                    <Button className="w-full bg-brand-blue text-white hover:bg-brand-blue/90" asChild>
-                      <Link to="/invite">
-                        <UserPlus className="h-4 w-4 mr-2" />
-                        Invite More Sponsors
-                      </Link>
-                    </Button>
+                    {mockSponsorshipData.byChild.map((child, index) => (
+                      <div 
+                        key={child.name} 
+                        className="text-center"
+                        style={{
+                          borderLeft: 'solid 1px #41403E',
+                        }}
+                      >
+                        <p className="font-serif text-2xl md:text-3xl text-foreground tracking-tight">
+                          ${child.amount.toFixed(2)}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1 tracking-wide">
+                          {child.name} ({child.sponsors})
+                        </p>
+                      </div>
+                    ))}
                   </div>
-                </BookContainer>
+                </div>
+
+                <div className="mt-4">
+                  <Button className="w-full bg-primary text-primary-foreground hover:bg-primary-hover" asChild>
+                    <Link to="/invite">
+                      <UserPlus className="h-4 w-4 mr-2" />
+                      Invite More Sponsors
+                    </Link>
+                  </Button>
+                </div>
               </section>
             </div>
 
