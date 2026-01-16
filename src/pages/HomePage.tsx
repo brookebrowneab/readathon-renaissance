@@ -353,8 +353,7 @@ const HomePage = () => {
             <Link to="/login">
               <Button 
                 size="lg" 
-                variant="outline" 
-                className="border-white/50 text-white hover:bg-white/10 px-8"
+                className="bg-white text-primary hover:bg-white/90 px-8"
               >
                 Sign In
               </Button>
