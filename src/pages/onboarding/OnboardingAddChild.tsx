@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { PublicLayout } from "@/components/layout";
-import { BookContainer } from "@/components/legacy";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormField } from "@/components/ui/form-field";
@@ -116,11 +116,20 @@ const OnboardingAddChild = () => {
             ))}
           </div>
 
-          <BookContainer variant="default" className="animate-fade-in">
+          <div 
+            className="animate-fade-in bg-card p-8 shadow-book"
+            style={{
+              border: 'solid 1px #41403E',
+              borderTopLeftRadius: '255px 15px',
+              borderTopRightRadius: '15px 225px',
+              borderBottomRightRadius: '225px 15px',
+              borderBottomLeftRadius: '15px 255px',
+            }}
+          >
             <div className="space-y-6">
               {/* Header */}
               <div className="text-center">
-                <h1 className="text-2xl font-bold text-foreground">
+                <h1 className="font-serif text-2xl text-foreground">
                   Add Your Child
                 </h1>
                 <p className="text-muted-foreground">
@@ -294,7 +303,7 @@ const OnboardingAddChild = () => {
                 </Button>
               </form>
             </div>
-          </BookContainer>
+          </div>
         </div>
       </section>
     </PublicLayout>
