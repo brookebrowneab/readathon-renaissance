@@ -36,14 +36,6 @@ const HomePage = () => {
 
   return (
     <PublicLayout>
-      {/* Divider below header */}
-      <div 
-        className="w-full"
-        style={{
-          borderTop: 'solid 1px #41403E',
-        }}
-      />
-
       {/* Countdown - Top right below header */}
       <div className="container pt-4 md:pt-6">
         <div className="flex justify-end">
