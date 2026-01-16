@@ -9,7 +9,7 @@ import booksShelfDivider from "@/assets/books-shelf-divider.png";
 import openBook from "@/assets/open-book.png";
 import bookStackAccent from "@/assets/book-stack-accent.png";
 import booksShelfBannerV2 from "@/assets/books-shelf-banner-v2.png";
-
+import logo from "@/assets/logo.svg";
 
 const HERO_HEADLINES = [
   "Every Page Counts.",
@@ -41,7 +41,15 @@ const HomePage = () => {
         <div className="container">
           {/* Constrain hero content to ~2/3 page width, indent to align with data block */}
           <div className="max-w-4xl pl-9 md:pl-14 lg:pl-20 text-left">
-            {/* Large headline - left aligned with highlighter effect - now dominant */}
+            {/* Logo above hero */}
+            <img 
+              src={logo} 
+              alt="Read-a-thon" 
+              className="h-18 w-auto mb-12" 
+              style={{ transform: 'scale(1.12)', transformOrigin: 'top left' }} 
+            />
+            
+            {/* Large headline - left aligned with highlighter effect */}
             <div className="relative inline-block mb-6">
               <h1 className="font-serif text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-normal tracking-tight text-foreground leading-[1.05] relative">
                 <span className="relative">

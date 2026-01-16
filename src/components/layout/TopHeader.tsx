@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
+import { Logo } from "@/components/legacy";
 import { Button } from "@/components/ui/button";
-import logo from "@/assets/logo.svg";
 import { cn } from "@/lib/utils";
 import { Menu, User, LogOut, Settings, ChevronDown } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -74,9 +74,9 @@ const TopHeader = ({
       )}
     >
       <div className="container flex h-14 md:h-16 items-center justify-between">
-        {/* Logo - smaller in header */}
-        <Link to="/" className="flex items-center hover-scale">
-          <img src={logo} alt="Read-a-thon" className="h-8 md:h-10 w-auto" />
+        {/* Logo */}
+        <Link to="/" className="flex items-center gap-3 hover-scale">
+          <Logo size="medium" />
         </Link>
 
         {/* Desktop Nav - Center */}
