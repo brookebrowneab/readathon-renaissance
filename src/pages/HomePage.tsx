@@ -42,19 +42,22 @@ const HomePage = () => {
           {/* Constrain hero content to ~2/3 page width, indent to align with data block */}
           <div className="max-w-4xl pl-9 md:pl-14 lg:pl-20 text-left">
             {/* Logo above hero */}
-            {/* Logo section */}
-            <img 
-              src={logo} 
-              alt="Read-a-thon" 
-              className="h-18 w-auto mb-6" 
-              style={{ transform: 'scale(1.12)', transformOrigin: 'top left' }} 
-            />
-            
-            {/* Decorative divider line */}
-            <div className="flex items-center gap-3 mb-8 max-w-xs">
-              <div className="h-px flex-1 bg-accent/60" />
-              <div className="w-1.5 h-1.5 rounded-full bg-accent/80" />
-              <div className="h-px flex-1 bg-accent/60" />
+            {/* Logo in badge/frame */}
+            <div 
+              className="inline-block bg-background/80 backdrop-blur-sm px-6 py-4 mb-10"
+              style={{
+                border: 'solid 1.5px #41403E',
+                borderTopLeftRadius: '255px 15px',
+                borderTopRightRadius: '15px 225px',
+                borderBottomRightRadius: '225px 15px',
+                borderBottomLeftRadius: '15px 255px',
+              }}
+            >
+              <img 
+                src={logo} 
+                alt="Read-a-thon" 
+                className="h-14 w-auto" 
+              />
             </div>
             
             {/* Large headline - left aligned with highlighter effect */}
