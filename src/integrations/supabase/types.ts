@@ -14,6 +14,200 @@ export type Database = {
   }
   public: {
     Tables: {
+      archived_pledges: {
+        Row: {
+          amount: number
+          archived_at: string
+          event_id: string | null
+          event_name: string | null
+          id: string
+          is_paid: boolean
+          original_id: string | null
+          pledge_type: string
+          sponsor_name: string | null
+          student_name: string
+        }
+        Insert: {
+          amount: number
+          archived_at?: string
+          event_id?: string | null
+          event_name?: string | null
+          id?: string
+          is_paid?: boolean
+          original_id?: string | null
+          pledge_type: string
+          sponsor_name?: string | null
+          student_name: string
+        }
+        Update: {
+          amount?: number
+          archived_at?: string
+          event_id?: string | null
+          event_name?: string | null
+          id?: string
+          is_paid?: boolean
+          original_id?: string | null
+          pledge_type?: string
+          sponsor_name?: string | null
+          student_name?: string
+        }
+        Relationships: []
+      }
+      archived_reading_logs: {
+        Row: {
+          archived_at: string
+          book_title: string | null
+          event_id: string | null
+          event_name: string | null
+          id: string
+          logged_at: string
+          minutes: number
+          original_id: string | null
+          student_name: string
+        }
+        Insert: {
+          archived_at?: string
+          book_title?: string | null
+          event_id?: string | null
+          event_name?: string | null
+          id?: string
+          logged_at: string
+          minutes: number
+          original_id?: string | null
+          student_name: string
+        }
+        Update: {
+          archived_at?: string
+          book_title?: string | null
+          event_id?: string | null
+          event_name?: string | null
+          id?: string
+          logged_at?: string
+          minutes?: number
+          original_id?: string | null
+          student_name?: string
+        }
+        Relationships: []
+      }
+      events: {
+        Row: {
+          created_at: string
+          end_date: string
+          id: string
+          is_active: boolean
+          last_log_date: string
+          name: string
+          start_date: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          end_date: string
+          id?: string
+          is_active?: boolean
+          last_log_date: string
+          name: string
+          start_date: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          end_date?: string
+          id?: string
+          is_active?: boolean
+          last_log_date?: string
+          name?: string
+          start_date?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      pledges: {
+        Row: {
+          amount: number
+          created_at: string
+          event_id: string | null
+          id: string
+          is_paid: boolean
+          pledge_type: string
+          sponsor_id: string | null
+          student_name: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          event_id?: string | null
+          id?: string
+          is_paid?: boolean
+          pledge_type: string
+          sponsor_id?: string | null
+          student_name: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          event_id?: string | null
+          id?: string
+          is_paid?: boolean
+          pledge_type?: string
+          sponsor_id?: string | null
+          student_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pledges_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pledges_sponsor_id_fkey"
+            columns: ["sponsor_id"]
+            isOneToOne: false
+            referencedRelation: "sponsors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reading_logs: {
+        Row: {
+          book_title: string | null
+          created_at: string
+          event_id: string | null
+          id: string
+          logged_at: string
+          minutes: number
+          student_name: string
+        }
+        Insert: {
+          book_title?: string | null
+          created_at?: string
+          event_id?: string | null
+          id?: string
+          logged_at?: string
+          minutes: number
+          student_name: string
+        }
+        Update: {
+          book_title?: string | null
+          created_at?: string
+          event_id?: string | null
+          id?: string
+          logged_at?: string
+          minutes?: number
+          student_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reading_logs_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sponsors: {
         Row: {
           created_at: string
