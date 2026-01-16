@@ -40,7 +40,7 @@ const HomePage = () => {
       <div 
         className="w-full"
         style={{
-          borderTop: 'solid 2px #41403E',
+          borderTop: 'solid 1px #41403E',
         }}
       />
 
