@@ -69,7 +69,7 @@ const MainNav = () => {
               alt="Read-a-thon" 
               className="h-18 w-auto" 
               style={{ 
-                transform: location.pathname === "/" ? 'scale(2.2)' : 'scale(1.08)', 
+                transform: location.pathname === "/" ? 'scale(1.65)' : 'scale(1.08)', 
                 transformOrigin: 'top left' 
               }} 
             />
