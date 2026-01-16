@@ -84,6 +84,7 @@ const App = () => (
           <Route path="/family/sponsor-my-child" element={<SponsorMyChildPage />} />
           <Route path="/reading-logs/approve" element={<VerifyLogsPage />} />
           <Route path="/children/:id/invite" element={<InviteSponsorsPage />} />
+          <Route path="/invite" element={<InviteSponsorsPage />} />
           <Route path="/children/:id/add-sponsor" element={<AddSponsorPage />} />
           <Route path="/log-reading" element={<LogReadingPage />} />
           
