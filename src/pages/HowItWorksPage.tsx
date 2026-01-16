@@ -54,7 +54,7 @@ const HowItWorksPage = () => {
       number: "5",
       title: "Celebrate Success",
       description:
-        "Students who meet their goals earn recognition, and schools receive the funds raised to support programs.",
+        "Students who meet their goals earn recognition, and Janney receives the funds raised to support programs.",
       details: [
         "Achievement badges and certificates",
         "Classroom and school leaderboards",

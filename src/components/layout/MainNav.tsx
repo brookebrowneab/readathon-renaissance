@@ -124,7 +124,7 @@ const MainNav = () => {
                     size="sm" 
                     className="border-slate-300 text-slate-700 hover:bg-slate-50 rounded-md"
                   >
-                    Learn More
+                    Sign In
                   </Button>
                 </Link>
               )}
