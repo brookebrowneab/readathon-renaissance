@@ -17,6 +17,7 @@ import {
   Bell,
   Mail,
 } from "lucide-react";
+import booksShelfBanner from "@/assets/books-shelf-banner.png";
 
 // Mock data
 const mockUser = {
@@ -134,30 +135,43 @@ const DashboardPage = () => {
                 </div>
 
                 {/* School Stats - Hero Style */}
-                <div className="pt-2 ml-5">
-                  <p className="text-sm text-muted-foreground uppercase tracking-widest mb-2">Janney School Total</p>
-                  <div className="relative inline-block mb-1">
-                    <span className="font-serif text-5xl md:text-6xl lg:text-7xl text-foreground tracking-tight font-normal relative z-10">
-                      128,400 minutes
-                    </span>
-                    {/* Highlighter effect with animation */}
-                    <span 
-                      className="absolute -skew-y-1 bg-accent/30 transform -rotate-[0.5deg] opacity-0 animate-highlighter-grow"
-                      style={{
-                        top: '45%',
-                        height: '55%',
-                        left: '-2%',
-                        right: '-2%',
-                        borderRadius: '4px 8px 4px 6px',
-                      }}
-                      aria-hidden="true"
-                    />
-                  </div>
-                  <p className="text-base text-muted-foreground">read together this year</p>
-                  <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
-                    <Clock className="h-4 w-4" />
-                    <span>Spring Read-a-thon 2024</span>
-                    <span className="text-foreground font-medium">• 12 days left</span>
+                <div 
+                  className="relative pt-6 pb-8 px-6 -mx-4 md:-mx-6 rounded-lg overflow-hidden"
+                  style={{
+                    backgroundImage: `url(${booksShelfBanner})`,
+                    backgroundRepeat: 'repeat-x',
+                    backgroundPosition: 'bottom center',
+                    backgroundSize: 'auto 100%',
+                  }}
+                >
+                  {/* Semi-transparent overlay for readability */}
+                  <div className="absolute inset-0 bg-gradient-to-b from-background via-background/95 to-background/70" />
+                  
+                  <div className="relative z-10">
+                    <p className="text-sm text-muted-foreground uppercase tracking-widest mb-2">Janney School Total</p>
+                    <div className="relative inline-block mb-1">
+                      <span className="font-serif text-5xl md:text-6xl lg:text-7xl text-foreground tracking-tight font-normal relative z-10">
+                        128,400 minutes
+                      </span>
+                      {/* Highlighter effect with animation */}
+                      <span 
+                        className="absolute -skew-y-1 bg-accent/30 transform -rotate-[0.5deg] opacity-0 animate-highlighter-grow"
+                        style={{
+                          top: '45%',
+                          height: '55%',
+                          left: '-2%',
+                          right: '-2%',
+                          borderRadius: '4px 8px 4px 6px',
+                        }}
+                        aria-hidden="true"
+                      />
+                    </div>
+                    <p className="text-base text-muted-foreground">read together this year</p>
+                    <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
+                      <Clock className="h-4 w-4" />
+                      <span>Spring Read-a-thon 2024</span>
+                      <span className="text-foreground font-medium">• 12 days left</span>
+                    </div>
                   </div>
                 </div>
 
