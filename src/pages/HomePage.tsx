@@ -3,6 +3,7 @@ import { PublicLayout } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { useMemo } from "react";
+import { differenceInDays, differenceInHours } from "date-fns";
 import booksShelfHero from "@/assets/books-shelf-hero.png";
 import booksShelfDivider from "@/assets/books-shelf-divider.png";
 import openBook from "@/assets/open-book.png";
@@ -15,10 +16,21 @@ const HERO_HEADLINES = [
   "Read books. Support Janney.",
 ];
 
+// Read-a-thon end date: March 8, 2025 at 11:59 PM EST
+const READATHON_END = new Date("2025-03-08T23:59:59-05:00");
+
 const HomePage = () => {
   // Randomize hero text on page load (stable for component lifecycle)
   const heroHeadline = useMemo(() => {
     return HERO_HEADLINES[Math.floor(Math.random() * HERO_HEADLINES.length)];
+  }, []);
+
+  // Calculate days remaining
+  const daysRemaining = useMemo(() => {
+    const now = new Date();
+    const days = differenceInDays(READATHON_END, now);
+    const hours = differenceInHours(READATHON_END, now) % 24;
+    return { days: Math.max(0, days), hours: Math.max(0, hours) };
   }, []);
 
   return (
@@ -49,9 +61,27 @@ const HomePage = () => {
               </h1>
             </div>
 
-            {/* Body text - full width, two lines, smaller */}
+            {/* Countdown + Body text */}
+            <div className="flex flex-wrap items-center gap-4 mb-6">
+              <div 
+                className="inline-flex items-baseline gap-1 bg-background px-4 py-2"
+                style={{
+                  border: 'solid 1px #41403E',
+                  borderTopLeftRadius: '255px 15px',
+                  borderTopRightRadius: '15px 225px',
+                  borderBottomRightRadius: '225px 15px',
+                  borderBottomLeftRadius: '15px 255px',
+                }}
+              >
+                <span className="font-serif text-2xl md:text-3xl text-foreground">{daysRemaining.days}</span>
+                <span className="text-sm text-muted-foreground mr-2">days</span>
+                <span className="font-serif text-2xl md:text-3xl text-foreground">{daysRemaining.hours}</span>
+                <span className="text-sm text-muted-foreground">hours left</span>
+              </div>
+            </div>
+
             <p className="text-base md:text-lg text-muted-foreground max-w-2xl leading-relaxed mb-6">
-              Janney Elementary Read-a-thon runs February 24–March 9. Students read to raise funds for our school. 
+              Janney Elementary Read-a-thon runs February 24–March 8. Students read to raise funds for our school. 
               Ask friends and family to pledge per minute—or give a flat donation—and help fund the programs that make Janney exceptional.
             </p>
 
