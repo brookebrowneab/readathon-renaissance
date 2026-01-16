@@ -60,8 +60,8 @@ const MainNav = () => {
     <>
       {/* Desktop Header */}
       <header className={cn(
-        "sticky top-0 z-50 w-full bg-white/90 backdrop-blur-sm border-b border-slate-100 hidden md:block",
-        location.pathname === "/" ? "py-6" : ""
+        "sticky top-0 z-50 w-full bg-white/90 backdrop-blur-sm hidden md:block",
+        location.pathname === "/" ? "py-6 border-b border-[#1e3a5f]/30" : "border-b border-slate-100"
       )}>
         <div className={cn(
           "container flex items-center justify-between",
