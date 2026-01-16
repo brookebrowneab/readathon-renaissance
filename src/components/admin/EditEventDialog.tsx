@@ -87,8 +87,8 @@ export function EditEventDialog({ open, onOpenChange, event, onSave }: EditEvent
       return;
     }
 
-    if (lastLogDate < startDate || lastLogDate > endDate) {
-      toast.error("Last log date must be between start and end dates");
+    if (lastLogDate < startDate) {
+      toast.error("Last log date must be on or after start date");
       return;
     }
 
