@@ -39,85 +39,80 @@ const HomePage = () => {
       {/* Hero Section - Large left-aligned headline */}
       <section className="relative pt-8 md:pt-12 pb-4 md:pb-6">
         <div className="container">
-          {/* Asymmetric layout: headline left, logo right */}
-          <div className="flex flex-col md:flex-row items-start justify-between gap-8 md:gap-12 pl-9 md:pl-14 lg:pl-20">
-            {/* Left: Headline and content */}
-            <div className="flex-1 max-w-2xl text-left">
-              {/* Large headline - left aligned with highlighter effect */}
-              <div className="relative inline-block mb-6">
-                <h1 className="font-serif text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-normal tracking-tight text-foreground leading-[1.05] relative">
-                  <span className="relative">
-                    {heroHeadline}
-                    {/* Highlighter effect - sits behind text */}
-                    <span 
-                      className="absolute inset-0 -skew-y-1 bg-accent/30 -z-10 transform -rotate-[0.5deg]"
-                      style={{
-                        top: '45%',
-                        height: '55%',
-                        left: '-2%',
-                        right: '-2%',
-                        borderRadius: '4px 8px 4px 6px',
-                      }}
-                      aria-hidden="true"
-                    />
-                  </span>
-                </h1>
-              </div>
+          {/* Constrain hero content to ~2/3 page width, indent to align with data block */}
+          <div className="max-w-4xl pl-9 md:pl-14 lg:pl-20 text-left">
+            {/* Logo above hero */}
+            <img 
+              src={logo} 
+              alt="Read-a-thon" 
+              className="h-18 w-auto mb-12" 
+              style={{ transform: 'scale(1.12)', transformOrigin: 'top left' }} 
+            />
+            
+            {/* Large headline - left aligned with highlighter effect */}
+            <div className="relative inline-block mb-6">
+              <h1 className="font-serif text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-normal tracking-tight text-foreground leading-[1.05] relative">
+                <span className="relative">
+                  {heroHeadline}
+                  {/* Highlighter effect - sits behind text */}
+                  <span 
+                    className="absolute inset-0 -skew-y-1 bg-accent/30 -z-10 transform -rotate-[0.5deg]"
+                    style={{
+                      top: '45%',
+                      height: '55%',
+                      left: '-2%',
+                      right: '-2%',
+                      borderRadius: '4px 8px 4px 6px',
+                    }}
+                    aria-hidden="true"
+                  />
+                </span>
+              </h1>
+            </div>
 
-              {/* Countdown + Body text */}
-              <div className="flex flex-wrap items-center gap-4 mb-6">
-                <div 
-                  className="inline-flex items-baseline gap-1 bg-background px-4 py-2"
-                  style={{
-                    border: 'solid 1px #41403E',
-                    borderTopLeftRadius: '255px 15px',
-                    borderTopRightRadius: '15px 225px',
-                    borderBottomRightRadius: '225px 15px',
-                    borderBottomLeftRadius: '15px 255px',
-                  }}
-                >
-                  <span className="font-serif text-2xl md:text-3xl text-foreground">{daysRemaining.days}</span>
-                  <span className="text-sm text-muted-foreground mr-2">days</span>
-                  <span className="font-serif text-2xl md:text-3xl text-foreground">{daysRemaining.hours}</span>
-                  <span className="text-sm text-muted-foreground">hours left</span>
-                </div>
-              </div>
-
-              <p className="text-base md:text-lg text-muted-foreground max-w-xl leading-relaxed mb-6">
-                Janney Elementary Read-a-thon runs February 24–March 8. Students read to raise funds for our school. 
-                Ask friends and family to pledge per minute—or give a flat donation—and help fund the programs that make Janney exceptional.
-              </p>
-
-              {/* CTA Buttons */}
-              <div className="flex flex-wrap gap-3">
-                <Link to="/register">
-                  <Button 
-                    size="lg" 
-                    className="bg-primary text-primary-foreground hover:bg-primary-hover px-8"
-                  >
-                    Get Started
-                  </Button>
-                </Link>
-                <Link to="/how-it-works">
-                  <Button 
-                    variant="ghost" 
-                    size="lg"
-                    className="text-foreground hover:bg-muted"
-                  >
-                    Learn More <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </Link>
+            {/* Countdown + Body text */}
+            <div className="flex flex-wrap items-center gap-4 mb-6">
+              <div 
+                className="inline-flex items-baseline gap-1 bg-background px-4 py-2"
+                style={{
+                  border: 'solid 1px #41403E',
+                  borderTopLeftRadius: '255px 15px',
+                  borderTopRightRadius: '15px 225px',
+                  borderBottomRightRadius: '225px 15px',
+                  borderBottomLeftRadius: '15px 255px',
+                }}
+              >
+                <span className="font-serif text-2xl md:text-3xl text-foreground">{daysRemaining.days}</span>
+                <span className="text-sm text-muted-foreground mr-2">days</span>
+                <span className="font-serif text-2xl md:text-3xl text-foreground">{daysRemaining.hours}</span>
+                <span className="text-sm text-muted-foreground">hours left</span>
               </div>
             </div>
 
-            {/* Right: Logo as visual anchor */}
-            <div className="hidden md:flex items-start justify-end flex-shrink-0 pr-8 lg:pr-16">
-              <img 
-                src={logo} 
-                alt="Read-a-thon" 
-                className="w-auto"
-                style={{ height: '280px' }} 
-              />
+            <p className="text-base md:text-lg text-muted-foreground max-w-2xl leading-relaxed mb-6">
+              Janney Elementary Read-a-thon runs February 24–March 8. Students read to raise funds for our school. 
+              Ask friends and family to pledge per minute—or give a flat donation—and help fund the programs that make Janney exceptional.
+            </p>
+
+            {/* CTA Buttons */}
+            <div className="flex flex-wrap gap-3">
+              <Link to="/register">
+                <Button 
+                  size="lg" 
+                  className="bg-primary text-primary-foreground hover:bg-primary-hover px-8"
+                >
+                  Get Started
+                </Button>
+              </Link>
+              <Link to="/how-it-works">
+                <Button 
+                  variant="ghost" 
+                  size="lg"
+                  className="text-foreground hover:bg-muted"
+                >
+                  Learn More <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
