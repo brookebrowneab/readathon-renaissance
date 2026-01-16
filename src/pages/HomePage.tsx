@@ -36,8 +36,29 @@ const HomePage = () => {
 
   return (
     <PublicLayout>
+      {/* Countdown - Top right below header */}
+      <div className="container pt-4 md:pt-6">
+        <div className="flex justify-end">
+          <div 
+            className="inline-flex items-baseline gap-1 bg-background px-4 py-2"
+            style={{
+              border: 'solid 1px #41403E',
+              borderTopLeftRadius: '255px 15px',
+              borderTopRightRadius: '15px 225px',
+              borderBottomRightRadius: '225px 15px',
+              borderBottomLeftRadius: '15px 255px',
+            }}
+          >
+            <span className="font-serif text-2xl md:text-3xl text-foreground">{daysRemaining.days}</span>
+            <span className="text-sm text-muted-foreground mr-2">days</span>
+            <span className="font-serif text-2xl md:text-3xl text-foreground">{daysRemaining.hours}</span>
+            <span className="text-sm text-muted-foreground">hours left</span>
+          </div>
+        </div>
+      </div>
+
       {/* Hero Section - Large left-aligned headline */}
-      <section className="relative pt-8 md:pt-12 pb-4 md:pb-6">
+      <section className="relative pt-12 md:pt-20 pb-4 md:pb-6">
         <div className="container">
           {/* Constrain hero content to ~2/3 page width, indent to align with data block */}
           <div className="max-w-4xl pl-9 md:pl-14 lg:pl-20 text-left">
@@ -60,25 +81,6 @@ const HomePage = () => {
                   />
                 </span>
               </h1>
-            </div>
-
-            {/* Countdown + Body text */}
-            <div className="flex flex-wrap items-center gap-4 mb-6">
-              <div 
-                className="inline-flex items-baseline gap-1 bg-background px-4 py-2"
-                style={{
-                  border: 'solid 1px #41403E',
-                  borderTopLeftRadius: '255px 15px',
-                  borderTopRightRadius: '15px 225px',
-                  borderBottomRightRadius: '225px 15px',
-                  borderBottomLeftRadius: '15px 255px',
-                }}
-              >
-                <span className="font-serif text-2xl md:text-3xl text-foreground">{daysRemaining.days}</span>
-                <span className="text-sm text-muted-foreground mr-2">days</span>
-                <span className="font-serif text-2xl md:text-3xl text-foreground">{daysRemaining.hours}</span>
-                <span className="text-sm text-muted-foreground">hours left</span>
-              </div>
             </div>
 
             <p className="text-base md:text-lg text-muted-foreground max-w-2xl leading-relaxed mb-6">
