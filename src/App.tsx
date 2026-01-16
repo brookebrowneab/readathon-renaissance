@@ -12,6 +12,7 @@ import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
 import OldStudentLoginPage from "./pages/auth/StudentLoginPage";
 import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
+import AdminLoginPage from "./pages/auth/AdminLoginPage";
 import { OnboardingAddChild, OnboardingPledge, OnboardingComplete, ReEnrollmentPage } from "./pages/onboarding";
 import DashboardPage from "./pages/DashboardPage";
 import InviteSponsorsPage from "./pages/InviteSponsorsPage";
@@ -43,6 +44,7 @@ import OldAdminDashboardPage from "./pages/AdminDashboardPage";
 import AdminUsersPage from "./pages/AdminUsersPage";
 import AdminFinancePage from "./pages/AdminFinancePage";
 import NotFound from "./pages/NotFound";
+import { RequireAdmin } from "./components/auth/RequireAdmin";
 
 const queryClient = new QueryClient();
 
@@ -74,6 +76,7 @@ const App = () => (
           <Route path="/student-login" element={<OldStudentLoginPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/sponsor/auth" element={<SponsorAuthPage />} />
+          <Route path="/admin/login" element={<AdminLoginPage />} />
           
           {/* Onboarding Routes */}
           <Route path="/onboarding/add-child" element={<OnboardingAddChild />} />
@@ -114,15 +117,15 @@ const App = () => (
           <Route path="/teacher-dashboard" element={<OldTeacherDashboardPage />} />
           <Route path="/teacher-log-reading" element={<OldTeacherLogReadingPage />} />
           
-          {/* Admin Dashboard */}
-          <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/admin/outstanding" element={<AdminOutstandingPage />} />
-          <Route path="/admin/checks" element={<AdminChecksPage />} />
-          <Route path="/admin/emails" element={<AdminEmailPage />} />
-          <Route path="/admin/settings" element={<AdminSettingsPage />} />
-          <Route path="/admin-dashboard" element={<OldAdminDashboardPage />} />
-          <Route path="/admin-users" element={<AdminUsersPage />} />
-          <Route path="/admin-finance" element={<AdminFinancePage />} />
+          {/* Admin Dashboard - Protected */}
+          <Route path="/admin" element={<RequireAdmin><AdminDashboard /></RequireAdmin>} />
+          <Route path="/admin/outstanding" element={<RequireAdmin><AdminOutstandingPage /></RequireAdmin>} />
+          <Route path="/admin/checks" element={<RequireAdmin><AdminChecksPage /></RequireAdmin>} />
+          <Route path="/admin/emails" element={<RequireAdmin><AdminEmailPage /></RequireAdmin>} />
+          <Route path="/admin/settings" element={<RequireAdmin><AdminSettingsPage /></RequireAdmin>} />
+          <Route path="/admin-dashboard" element={<RequireAdmin><OldAdminDashboardPage /></RequireAdmin>} />
+          <Route path="/admin-users" element={<RequireAdmin><AdminUsersPage /></RequireAdmin>} />
+          <Route path="/admin-finance" element={<RequireAdmin><AdminFinancePage /></RequireAdmin>} />
           
           {/* Catch-all */}
           <Route path="*" element={<NotFound />} />
