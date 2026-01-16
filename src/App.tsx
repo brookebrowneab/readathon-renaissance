@@ -35,7 +35,7 @@ import { TeacherDashboard, TeacherLogReading } from "./pages/teacher";
 import OldTeacherDashboardPage from "./pages/TeacherDashboardPage";
 import OldTeacherLogReadingPage from "./pages/TeacherLogReadingPage";
 import { AdminDashboard, AdminOutstandingPage, AdminChecksPage, AdminSettingsPage, AdminEmailPage } from "./pages/admin";
-import { SponsorRequestsPage, ChildSettingsPage, SponsorMyChildPage } from "./pages/family";
+import { SponsorRequestsPage, ChildSettingsPage, SponsorMyChildPage, ManageChildrenPage, ChildDetailsPage } from "./pages/family";
 import { VerifyLogsPage } from "./pages/reading-logs";
 import OldAdminDashboardPage from "./pages/AdminDashboardPage";
 import AdminUsersPage from "./pages/AdminUsersPage";
@@ -79,6 +79,8 @@ const App = () => (
           
           {/* Parent/Family Dashboard */}
           <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/children" element={<ManageChildrenPage />} />
+          <Route path="/children/:id" element={<ChildDetailsPage />} />
           <Route path="/family/sponsor-requests" element={<SponsorRequestsPage />} />
           <Route path="/family/children/:id/settings" element={<ChildSettingsPage />} />
           <Route path="/family/sponsor-my-child" element={<SponsorMyChildPage />} />
