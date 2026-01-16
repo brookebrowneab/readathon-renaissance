@@ -212,17 +212,10 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Making a Difference - with vertical tiled illustrations */}
-      <section className="py-10 md:py-14 relative overflow-hidden">
-        {/* Vertical tiled illustrations on right side */}
-        <div className="absolute right-0 top-0 bottom-0 w-1/3 opacity-[0.12] pointer-events-none hidden md:flex flex-col justify-center items-center gap-6 overflow-hidden">
-          <img src={booksShelfHero} alt="" className="w-full max-w-xs h-auto" aria-hidden="true" />
-          <img src={openBook} alt="" className="w-full max-w-xs h-auto" aria-hidden="true" />
-          <img src={bookStackAccent} alt="" className="w-full max-w-xs h-auto" aria-hidden="true" />
-        </div>
-        
-        <div className="container relative">
-          <div className="max-w-2xl">
+      {/* Making a Difference */}
+      <section className="py-10 md:py-14">
+        <div className="container">
+          <div className="max-w-4xl mx-auto">
             <h2 className="font-serif text-3xl md:text-4xl text-foreground mb-3">
               Making a Difference
             </h2>
