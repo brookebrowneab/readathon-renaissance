@@ -1,12 +1,10 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { MainNav, Footer, AppBreadcrumbs } from "@/components/layout";
-import { BookContainer } from "@/components/legacy";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { FormField } from "@/components/ui/form-field";
-import { DataCard } from "@/components/ui/data-card";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
@@ -32,6 +30,15 @@ import {
   Sparkles,
   PartyPopper,
 } from "lucide-react";
+
+// Hand-drawn border style (consistent with HomePage)
+const handDrawnBorder = {
+  border: 'solid 1px #41403E',
+  borderTopLeftRadius: '255px 15px',
+  borderTopRightRadius: '15px 225px',
+  borderBottomRightRadius: '225px 15px',
+  borderBottomLeftRadius: '15px 255px',
+};
 
 // Mock data
 const mockChildren = [
@@ -181,10 +188,23 @@ const LogReadingPage = () => {
             className="mb-6"
           />
 
+          {/* Page Header */}
+          <div className="mb-8">
+            <h1 className="font-serif text-3xl md:text-4xl font-normal tracking-tight text-foreground">
+              Log Reading
+            </h1>
+            <p className="text-muted-foreground mt-1 text-sm md:text-base">
+              Record today's reading session for your child
+            </p>
+          </div>
+
           {/* Child Selector */}
           {mockChildren.length > 1 && (
             <div className="mb-6">
-              <div className="flex gap-2 p-1 bg-card rounded-xl shadow-sm">
+              <div 
+                className="flex gap-2 p-1 bg-background"
+                style={handDrawnBorder}
+              >
                 {mockChildren.map((child) => (
                   <button
                     key={child.id}
@@ -194,7 +214,7 @@ const LogReadingPage = () => {
                       "flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg text-sm font-medium transition-all",
                       selectedChildId === child.id
                         ? "bg-primary text-primary-foreground shadow-sm"
-                        : "text-muted-foreground hover:bg-secondary"
+                        : "text-muted-foreground hover:bg-muted/50"
                     )}
                   >
                     <span
@@ -202,38 +222,49 @@ const LogReadingPage = () => {
                         "h-8 w-8 rounded-full flex items-center justify-center text-xs font-semibold",
                         selectedChildId === child.id
                           ? "bg-primary-foreground/20 text-primary-foreground"
-                          : "bg-secondary text-muted-foreground"
+                          : "bg-muted text-muted-foreground"
                       )}
                     >
                       {child.avatarInitials}
                     </span>
-                    {child.name.split(" ")[0]}
+                    <span className="font-serif">{child.name.split(" ")[0]}</span>
                   </button>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Selected Child Header */}
-          <div className="flex items-center gap-4 mb-6">
-            <div className="h-16 w-16 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-2xl font-semibold">
-              {selectedChild?.avatarInitials}
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">
-                Log Reading for {selectedChild?.name.split(" ")[0]}
-              </h1>
-              <p className="text-muted-foreground">
-                Current progress: {selectedChild?.minutesRead} /{" "}
-                {selectedChild?.goalMinutes} minutes ({currentPercentage}%)
-              </p>
+          {/* Selected Child Stats */}
+          <div 
+            className="bg-background p-6 mb-8 shadow-md"
+            style={handDrawnBorder}
+          >
+            <div className="flex items-center gap-4">
+              <div className="h-14 w-14 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xl font-serif">
+                {selectedChild?.avatarInitials}
+              </div>
+              <div className="flex-1">
+                <h2 className="font-serif text-xl md:text-2xl text-foreground">
+                  {selectedChild?.name.split(" ")[0]}'s Progress
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  {selectedChild?.minutesRead} / {selectedChild?.goalMinutes} minutes ({currentPercentage}%)
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="font-serif text-2xl md:text-3xl text-primary">{currentPercentage}%</p>
+                <p className="text-xs text-muted-foreground">of goal</p>
+              </div>
             </div>
           </div>
 
           {/* Success State */}
           {isSuccess && (
             <div className="mb-6 animate-scale-in">
-              <div className="bg-accent-green/10 border border-accent-green/20 rounded-xl p-6 text-center relative overflow-hidden">
+              <div 
+                className="bg-background p-6 text-center relative overflow-hidden shadow-md"
+                style={handDrawnBorder}
+              >
                 {/* Confetti Effect */}
                 <div className="absolute inset-0 pointer-events-none">
                   {[...Array(20)].map((_, i) => (
@@ -260,19 +291,19 @@ const LogReadingPage = () => {
                 </div>
 
                 <div className="relative z-10">
-                  <div className="mx-auto w-16 h-16 bg-accent-green/20 rounded-full flex items-center justify-center mb-4">
+                  <div className="mx-auto w-16 h-16 bg-accent/20 rounded-full flex items-center justify-center mb-4">
                     {willReachGoal ? (
-                      <PartyPopper className="h-8 w-8 text-accent-green" />
+                      <PartyPopper className="h-8 w-8 text-accent" />
                     ) : (
-                      <Check className="h-8 w-8 text-accent-green" />
+                      <Check className="h-8 w-8 text-accent" />
                     )}
                   </div>
-                  <h2 className="text-xl font-bold text-foreground mb-2">
+                  <h2 className="font-serif text-xl md:text-2xl text-foreground mb-2">
                     {willReachGoal
                       ? "🎉 Goal Reached!"
                       : "Reading Logged Successfully!"}
                   </h2>
-                  <p className="text-muted-foreground">
+                  <p className="text-muted-foreground text-sm md:text-base">
                     {selectedChild?.name.split(" ")[0]} now has {newMinutesRead}{" "}
                     minutes ({newPercentage}% of goal)
                   </p>
@@ -283,7 +314,10 @@ const LogReadingPage = () => {
 
           {/* Form */}
           {!isSuccess && (
-            <BookContainer variant="default" className="mb-8">
+            <div 
+              className="bg-background p-6 mb-8 shadow-md"
+              style={handDrawnBorder}
+            >
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Date Picker */}
                 <FormField label="Date" htmlFor="date">
@@ -338,7 +372,7 @@ const LogReadingPage = () => {
                           onChange={(e) =>
                             setMinutes(Math.max(0, parseInt(e.target.value) || 0))
                           }
-                          className="w-24 h-14 text-center text-2xl font-bold"
+                          className="w-24 h-14 text-center text-2xl font-serif"
                           min={0}
                         />
                         <span className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-xs text-muted-foreground">
@@ -362,9 +396,10 @@ const LogReadingPage = () => {
                         <Button
                           key={preset}
                           type="button"
-                          variant={minutes === preset ? "default" : "secondary"}
+                          variant={minutes === preset ? "default" : "outline"}
                           size="sm"
                           onClick={() => setMinutes(preset)}
+                          className="font-serif"
                         >
                           {preset} min
                         </Button>
@@ -403,7 +438,7 @@ const LogReadingPage = () => {
                             <button
                               key={suggestion}
                               type="button"
-                              className="w-full px-4 py-2 text-left text-sm hover:bg-secondary transition-colors"
+                              className="w-full px-4 py-2 text-left text-sm hover:bg-muted transition-colors"
                               onClick={() => {
                                 setBookTitle(suggestion);
                                 setShowSuggestions(false);
@@ -434,7 +469,10 @@ const LogReadingPage = () => {
 
                 {/* Progress Preview */}
                 {minutes > 0 && (
-                  <div className="bg-secondary rounded-xl p-4 animate-fade-in">
+                  <div 
+                    className="bg-muted/30 p-4 animate-fade-in"
+                    style={handDrawnBorder}
+                  >
                     <div className="flex items-center gap-4">
                       {/* Mini Progress Ring */}
                       <div className="relative w-16 h-16 shrink-0">
@@ -461,7 +499,7 @@ const LogReadingPage = () => {
                             strokeLinecap="round"
                           />
                         </svg>
-                        <span className="absolute inset-0 flex items-center justify-center text-sm font-bold text-primary">
+                        <span className="absolute inset-0 flex items-center justify-center text-sm font-serif text-primary">
                           {newPercentage}%
                         </span>
                       </div>
@@ -472,13 +510,13 @@ const LogReadingPage = () => {
                             {selectedChild?.name.split(" ")[0]}
                           </span>{" "}
                           to{" "}
-                          <span className="font-semibold text-primary">
+                          <span className="font-serif text-primary">
                             {newMinutesRead} minutes
                           </span>{" "}
                           ({newPercentage}% of goal)
                         </p>
                         {willReachGoal && (
-                          <p className="text-sm text-accent-gold font-medium mt-1 flex items-center gap-1">
+                          <p className="text-sm text-accent font-medium mt-1 flex items-center gap-1">
                             <Sparkles className="h-4 w-4" />
                             This entry will reach the goal!
                           </p>
@@ -492,27 +530,33 @@ const LogReadingPage = () => {
                 <div className="flex gap-3 pt-2">
                   <Button
                     type="submit"
-                    className="flex-1"
+                    className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
                     disabled={minutes <= 0 || isSubmitting}
-                    loading={isSubmitting}
                   >
-                    Log Reading
+                    {isSubmitting ? "Logging..." : "Log Reading"}
                   </Button>
-                  <Button variant="ghost" asChild>
+                  <Button 
+                    variant="ghost" 
+                    asChild
+                    style={handDrawnBorder}
+                  >
                     <Link to="/dashboard">Cancel</Link>
                   </Button>
                 </div>
               </form>
-            </BookContainer>
+            </div>
           )}
 
           {/* Reading History */}
           <Collapsible open={historyOpen} onOpenChange={setHistoryOpen}>
-            <DataCard>
+            <div 
+              className="bg-background p-6 shadow-md"
+              style={handDrawnBorder}
+            >
               <CollapsibleTrigger asChild>
                 <button className="w-full flex items-center justify-between text-left">
                   <div>
-                    <h3 className="font-semibold text-foreground">
+                    <h3 className="font-serif text-lg md:text-xl text-foreground">
                       Recent Reading History
                     </h3>
                     <p className="text-sm text-muted-foreground">
@@ -533,14 +577,14 @@ const LogReadingPage = () => {
                   {childHistory.map((entry) => (
                     <div
                       key={entry.id}
-                      className="flex items-start gap-3 p-3 bg-secondary/50 rounded-lg"
+                      className="flex items-start gap-3 p-3 bg-muted/30 rounded-lg"
                     >
                       <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                         <BookOpen className="h-5 w-5 text-primary" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="font-medium text-foreground">
+                          <span className="font-serif text-foreground">
                             {entry.minutes} minutes
                           </span>
                           <span className="text-sm text-muted-foreground">
@@ -554,7 +598,7 @@ const LogReadingPage = () => {
                           </p>
                         )}
                         {entry.notes && (
-                          <p className="text-sm text-muted-foreground truncate mt-1">
+                          <p className="text-sm text-muted-foreground truncate mt-1 italic">
                             "{entry.notes}"
                           </p>
                         )}
@@ -575,7 +619,7 @@ const LogReadingPage = () => {
                   ))}
                 </div>
               </CollapsibleContent>
-            </DataCard>
+            </div>
           </Collapsible>
         </div>
       </main>
