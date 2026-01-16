@@ -50,11 +50,20 @@ const LoginPage = () => {
         {/* Right Side - Form */}
         <div className="flex-1 flex items-center justify-center bg-background-warm p-6 lg:p-12">
           <div className="w-full max-w-md">
-            <BookContainer variant="default" className="animate-fade-in">
+            <div 
+              className="animate-fade-in bg-card p-8 shadow-book"
+              style={{
+                border: 'solid 2px #41403E',
+                borderTopLeftRadius: '255px 15px',
+                borderTopRightRadius: '15px 225px',
+                borderBottomRightRadius: '225px 15px',
+                borderBottomLeftRadius: '15px 255px',
+              }}
+            >
               <div className="space-y-6">
                 {/* Header */}
                 <div className="text-center">
-                  <h1 className="text-2xl font-bold text-foreground">Welcome Back</h1>
+                  <h1 className="font-serif text-2xl text-foreground">Welcome Back</h1>
                   <p className="text-muted-foreground">Sign in to your account</p>
                 </div>
 
@@ -179,7 +188,7 @@ const LoginPage = () => {
                   </Link>
                 </p>
               </div>
-            </BookContainer>
+            </div>
           </div>
         </div>
       </section>
