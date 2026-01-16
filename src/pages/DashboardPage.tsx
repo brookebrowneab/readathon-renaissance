@@ -135,8 +135,10 @@ const DashboardPage = () => {
                 </div>
 
                 {/* School Stats - Hero Style */}
-                {/* Test: Raw image display */}
-                <img src={booksShelfBanner} alt="Bookshelf" className="w-full" />
+                {/* Test: Raw image on white background */}
+                <div className="relative bg-white">
+                  <img src={booksShelfBanner} alt="Bookshelf" className="relative z-10 w-full" />
+                </div>
 
               </div>
 
