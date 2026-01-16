@@ -122,8 +122,8 @@ const MainNav = () => {
                   key={item.href}
                   to={item.href}
                   className={cn(
-                    "text-xs tracking-widest text-slate-500 transition-colors hover:text-slate-800",
-                    location.pathname === item.href && "text-slate-800"
+                    "text-xs font-semibold tracking-widest text-slate-600 transition-colors hover:text-slate-900 hover:underline",
+                    location.pathname === item.href && "text-slate-900"
                   )}
                 >
                   {item.label}
