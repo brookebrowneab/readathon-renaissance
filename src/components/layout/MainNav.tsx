@@ -64,7 +64,7 @@ const MainNav = () => {
 
           {/* Logo - Left */}
           <Link to="/" className="flex items-center" style={{ marginTop: '10px' }}>
-            <img src={logo} alt="Read-a-thon" className="h-18 w-auto" />
+            <img src={logo} alt="Read-a-thon" className="h-18 w-auto" style={{ transform: 'scale(1.2)', transformOrigin: 'top left' }} />
           </Link>
 
           {/* Desktop Nav - Right side */}
