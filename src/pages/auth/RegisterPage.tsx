@@ -6,8 +6,6 @@ import { Input } from "@/components/ui/input";
 import { FormField } from "@/components/ui/form-field";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { DecorativeBlob } from "@/components/ui/decorative-blobs";
-import decorativeShape from "@/assets/decorative-shape.svg";
 import { useState, useMemo } from "react";
 import { Eye, EyeOff, Mail, Lock, User, Users, Check, X } from "lucide-react";
 
@@ -154,23 +152,7 @@ const RegisterPage = () => {
         </div>
 
         {/* Right Side - Form */}
-        <div className="flex-1 flex items-center justify-center bg-background-warm p-6 lg:p-12 relative overflow-hidden">
-          {/* Decorative blobs */}
-          <DecorativeBlob position="top-left" size={500} opacity={4} />
-          <DecorativeBlob position="bottom-left" size={400} opacity={3} colorClass="text-accent" />
-          {/* Additional blob on right side, positioned in middle */}
-          <div 
-            className="absolute pointer-events-none select-none -right-20 top-1/2 rotate-[135deg]"
-            style={{ width: 300, height: 300, opacity: 0.05 }}
-            aria-hidden="true"
-          >
-            <img 
-              src={decorativeShape} 
-              alt="" 
-              className="w-full h-full"
-              style={{ filter: "blur(1px)" }}
-            />
-          </div>
+        <div className="flex-1 flex items-center justify-center bg-background-warm p-6 lg:p-12">
           
           <div className="w-full max-w-md relative z-10">
             <div 
