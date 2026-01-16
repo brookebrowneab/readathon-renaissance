@@ -26,7 +26,8 @@ const OnboardingComplete = () => {
   } | null>(null);
   const [pledgeData, setPledgeData] = useState<{
     type: string;
-    amount: number;
+    amount: number | null;
+    perMinuteRate: number | null;
   } | null>(null);
   const [hasMultipleChildren, setHasMultipleChildren] = useState(false);
 
@@ -146,7 +147,12 @@ const OnboardingComplete = () => {
                     </p>
                     {pledgeData && (
                       <p className="text-sm text-success font-medium mt-1">
-                        ${pledgeData.amount.toFixed(2)} pledged
+                        {pledgeData.perMinuteRate 
+                          ? `$${pledgeData.perMinuteRate.toFixed(2)}/min pledged`
+                          : pledgeData.amount 
+                            ? `$${pledgeData.amount.toFixed(2)} pledged`
+                            : null
+                        }
                       </p>
                     )}
                   </div>
