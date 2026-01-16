@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { MainNav, Footer, BottomTabBar } from "@/components/layout";
-import { BookContainer } from "@/components/legacy";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -54,8 +53,17 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Legend,
 } from "recharts";
+import openBookBanner from "@/assets/open-book-banner.png";
+
+// Hand-drawn border style (consistent with DashboardPage)
+const handDrawnBorder = {
+  border: 'solid 1px #41403E',
+  borderTopLeftRadius: '255px 15px',
+  borderTopRightRadius: '15px 225px',
+  borderBottomRightRadius: '225px 15px',
+  borderBottomLeftRadius: '15px 255px',
+};
 
 // Mock data
 const mockEvent = {
@@ -150,10 +158,10 @@ const AdminDashboardPage = () => {
 
   const getActivityIcon = (type: string) => {
     switch (type) {
-      case "reading": return <BookOpen className="h-4 w-4 text-brand-blue" />;
-      case "pledge": return <DollarSign className="h-4 w-4 text-brand-green" />;
-      case "registration": return <UserPlus className="h-4 w-4 text-brand-yellow" />;
-      case "payment": return <CreditCard className="h-4 w-4 text-emerald-500" />;
+      case "reading": return <BookOpen className="h-4 w-4 text-primary" />;
+      case "pledge": return <DollarSign className="h-4 w-4 text-accent" />;
+      case "registration": return <UserPlus className="h-4 w-4 text-secondary" />;
+      case "payment": return <CreditCard className="h-4 w-4 text-accent" />;
       default: return <Activity className="h-4 w-4 text-muted-foreground" />;
     }
   };
@@ -173,19 +181,54 @@ const AdminDashboardPage = () => {
 
       <main className="flex-1 bg-background-warm">
         <div className="container py-8">
+          {/* Header Section */}
+          <div className="space-y-4 mb-8">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="font-serif text-3xl font-normal tracking-tight text-foreground md:text-4xl">
+                  <span className="font-handwritten text-4xl text-primary">
+                    Admin
+                  </span>{" "}
+                  Dashboard
+                </h1>
+                <p className="text-muted-foreground mt-1 text-sm md:text-base">
+                  Overview of your read-a-thon event
+                </p>
+              </div>
+              <Link to="/login">
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  style={handDrawnBorder}
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Exit Demo
+                </Button>
+              </Link>
+            </div>
+
+            {/* Banner Image */}
+            <div className="relative">
+              <img src={openBookBanner} alt="Open book illustration" className="w-full h-auto max-h-40 object-contain" />
+            </div>
+          </div>
+
           {/* Event Status Hero */}
           <div className="mb-8">
-            <BookContainer variant="default" className="p-6">
+            <div 
+              className="bg-background p-6 shadow-md"
+              style={handDrawnBorder}
+            >
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                 <div className="flex items-start gap-4">
-                  <div className="h-16 w-16 rounded-2xl bg-brand-blue/20 flex items-center justify-center shrink-0">
-                    <Calendar className="h-8 w-8 text-brand-blue" />
+                  <div className="h-16 w-16 rounded-2xl bg-primary/20 flex items-center justify-center shrink-0">
+                    <Calendar className="h-8 w-8 text-primary" />
                   </div>
                   <div>
                     <div className="flex items-center gap-3 mb-1">
-                      <h1 className="font-serif text-2xl font-normal text-foreground md:text-3xl">
+                      <h2 className="font-serif text-2xl font-normal text-foreground md:text-3xl">
                         {mockEvent.name}
-                      </h1>
+                      </h2>
                       {getStatusBadge(mockEvent.status)}
                     </div>
                     <p className="text-muted-foreground">
@@ -196,17 +239,17 @@ const AdminDashboardPage = () => {
 
                 <div className="flex items-center gap-6">
                   <div className="text-center">
-                    <p className="font-handwritten text-4xl text-brand-blue">{mockEvent.daysRemaining}</p>
+                    <p className="font-handwritten text-4xl text-primary">{mockEvent.daysRemaining}</p>
                     <p className="text-sm text-muted-foreground">days left</p>
                   </div>
                   <div className="flex gap-2">
-                    <Button variant="outline">
+                    <Button variant="outline" style={handDrawnBorder}>
                       <Edit className="h-4 w-4 mr-2" />
                       Edit Event
                     </Button>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button variant="outline" className="text-destructive hover:text-destructive">
+                        <Button variant="outline" className="text-destructive hover:text-destructive" style={handDrawnBorder}>
                           <StopCircle className="h-4 w-4 mr-2" />
                           End Event
                         </Button>
@@ -230,7 +273,7 @@ const AdminDashboardPage = () => {
                   </div>
                 </div>
               </div>
-            </BookContainer>
+            </div>
           </div>
 
           {/* Alerts */}
@@ -239,17 +282,13 @@ const AdminDashboardPage = () => {
               {mockAlerts.map((alert) => (
                 <div
                   key={alert.id}
-                  className={cn(
-                    "flex items-center gap-3 p-4 rounded-xl border",
-                    alert.severity === "warning" 
-                      ? "bg-amber-500/10 border-amber-500/20" 
-                      : "bg-brand-blue/5 border-brand-blue/20"
-                  )}
+                  className="flex items-center gap-3 p-4 bg-background shadow-sm"
+                  style={handDrawnBorder}
                 >
                   {alert.severity === "warning" ? (
-                    <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0" />
+                    <AlertTriangle className="h-5 w-5 text-accent shrink-0" />
                   ) : (
-                    <Bell className="h-5 w-5 text-brand-blue shrink-0" />
+                    <Bell className="h-5 w-5 text-primary shrink-0" />
                   )}
                   <p className="flex-1 text-sm text-foreground">{alert.message}</p>
                   <Button variant="ghost" size="sm">
@@ -300,14 +339,17 @@ const AdminDashboardPage = () => {
             {/* Charts - 2 columns */}
             <div className="lg:col-span-2 space-y-8">
               {/* Daily Activity Chart */}
-              <BookContainer variant="default" className="p-6">
+              <div 
+                className="bg-background p-6 shadow-md"
+                style={handDrawnBorder}
+              >
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="font-serif text-xl text-brand-blue">Daily Activity</h2>
+                  <h2 className="font-serif text-xl text-primary">Daily Activity</h2>
                   <div className="flex gap-2">
                     <Button
                       variant={chartMetric === "minutes" ? "default" : "outline"}
                       size="sm"
-                      className={cn(chartMetric === "minutes" && "bg-brand-blue text-white hover:bg-brand-blue/90")}
+                      className={cn(chartMetric === "minutes" && "bg-primary text-primary-foreground hover:bg-primary/90")}
                       onClick={() => setChartMetric("minutes")}
                     >
                       Minutes
@@ -315,7 +357,7 @@ const AdminDashboardPage = () => {
                     <Button
                       variant={chartMetric === "students" ? "default" : "outline"}
                       size="sm"
-                      className={cn(chartMetric === "students" && "bg-brand-blue text-white hover:bg-brand-blue/90")}
+                      className={cn(chartMetric === "students" && "bg-primary text-primary-foreground hover:bg-primary/90")}
                       onClick={() => setChartMetric("students")}
                     >
                       Students
@@ -338,18 +380,21 @@ const AdminDashboardPage = () => {
                       <Line
                         type="monotone"
                         dataKey={chartMetric}
-                        stroke="hsl(var(--brand-blue))"
+                        stroke="hsl(var(--primary))"
                         strokeWidth={2}
-                        dot={{ fill: "hsl(var(--brand-blue))" }}
+                        dot={{ fill: "hsl(var(--primary))" }}
                       />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
-              </BookContainer>
+              </div>
 
               {/* Grade Distribution Chart */}
-              <BookContainer variant="warm" className="p-6">
-                <h2 className="font-serif text-xl text-brand-blue mb-4">Participation by Grade</h2>
+              <div 
+                className="bg-muted/30 p-6 shadow-md"
+                style={handDrawnBorder}
+              >
+                <h2 className="font-serif text-xl text-primary mb-4">Participation by Grade</h2>
                 <div className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={mockGradeData}>
@@ -363,93 +408,105 @@ const AdminDashboardPage = () => {
                           borderRadius: '8px'
                         }} 
                       />
-                      <Bar dataKey="minutes" fill="hsl(var(--brand-blue))" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="minutes" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
-              </BookContainer>
+              </div>
 
               {/* Top Performers */}
               <div className="grid gap-6 md:grid-cols-3">
                 {/* Top Students */}
-                <BookContainer variant="default" className="p-4">
+                <div 
+                  className="bg-background p-4 shadow-md"
+                  style={handDrawnBorder}
+                >
                   <div className="flex items-center gap-2 mb-3">
-                    <Trophy className="h-5 w-5 text-brand-yellow" />
-                    <h3 className="font-serif text-lg text-brand-blue">Top Students</h3>
+                    <Trophy className="h-5 w-5 text-accent" />
+                    <h3 className="font-serif text-lg text-primary">Top Students</h3>
                   </div>
                   <div className="space-y-2">
                     {mockTopStudents.slice(0, 5).map((student, i) => (
                       <div key={i} className="flex items-center gap-2 text-sm">
                         <span className={cn(
                           "w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold",
-                          i === 0 ? "bg-brand-yellow text-foreground" :
+                          i === 0 ? "bg-accent text-foreground" :
                           i === 1 ? "bg-gray-300 text-foreground" :
                           i === 2 ? "bg-amber-600 text-white" : "bg-muted text-muted-foreground"
                         )}>
                           {i + 1}
                         </span>
                         <span className="flex-1 truncate">{student.name}</span>
-                        <span className="font-handwritten text-brand-blue">{student.minutes}</span>
+                        <span className="font-handwritten text-primary">{student.minutes}</span>
                       </div>
                     ))}
                   </div>
-                </BookContainer>
+                </div>
 
                 {/* Top Classes */}
-                <BookContainer variant="warm" className="p-4">
+                <div 
+                  className="bg-muted/30 p-4 shadow-md"
+                  style={handDrawnBorder}
+                >
                   <div className="flex items-center gap-2 mb-3">
-                    <School className="h-5 w-5 text-brand-blue" />
-                    <h3 className="font-serif text-lg text-brand-blue">Top Classes</h3>
+                    <School className="h-5 w-5 text-primary" />
+                    <h3 className="font-serif text-lg text-primary">Top Classes</h3>
                   </div>
                   <div className="space-y-2">
                     {mockTopClasses.slice(0, 5).map((cls, i) => (
                       <div key={i} className="flex items-center gap-2 text-sm">
                         <span className={cn(
                           "w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold",
-                          i === 0 ? "bg-brand-yellow text-foreground" :
+                          i === 0 ? "bg-accent text-foreground" :
                           i === 1 ? "bg-gray-300 text-foreground" :
                           i === 2 ? "bg-amber-600 text-white" : "bg-muted text-muted-foreground"
                         )}>
                           {i + 1}
                         </span>
                         <span className="flex-1 truncate">{cls.name}</span>
-                        <span className="font-handwritten text-brand-blue">{cls.avgMinutes}</span>
+                        <span className="font-handwritten text-primary">{cls.avgMinutes}</span>
                       </div>
                     ))}
                   </div>
-                </BookContainer>
+                </div>
 
                 {/* Top Sponsors */}
-                <BookContainer variant="default" className="p-4">
+                <div 
+                  className="bg-background p-4 shadow-md"
+                  style={handDrawnBorder}
+                >
                   <div className="flex items-center gap-2 mb-3">
-                    <Star className="h-5 w-5 text-brand-green fill-brand-green" />
-                    <h3 className="font-serif text-lg text-brand-blue">Top Sponsors</h3>
+                    <Star className="h-5 w-5 text-accent fill-accent" />
+                    <h3 className="font-serif text-lg text-primary">Top Sponsors</h3>
                   </div>
                   <div className="space-y-2">
                     {mockTopSponsors.slice(0, 5).map((sponsor, i) => (
                       <div key={i} className="flex items-center gap-2 text-sm">
                         <span className={cn(
                           "w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold",
-                          i === 0 ? "bg-brand-yellow text-foreground" :
+                          i === 0 ? "bg-accent text-foreground" :
                           i === 1 ? "bg-gray-300 text-foreground" :
                           i === 2 ? "bg-amber-600 text-white" : "bg-muted text-muted-foreground"
                         )}>
                           {i + 1}
                         </span>
                         <span className="flex-1 truncate">{sponsor.name}</span>
-                        <span className="font-handwritten text-brand-green">${sponsor.amount}</span>
+                        <span className="font-handwritten text-accent">${sponsor.amount}</span>
                       </div>
                     ))}
                   </div>
-                </BookContainer>
+                </div>
               </div>
             </div>
 
             {/* Activity Feed - 1 column */}
             <div className="space-y-6">
-              <BookContainer variant="default" className="p-6">
+              <div 
+                className="bg-background p-6 shadow-md"
+                style={handDrawnBorder}
+              >
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="font-serif text-xl text-brand-blue">Recent Activity</h2>
+                  <h2 className="font-serif text-xl text-primary">Recent Activity</h2>
                   <Select value={activityFilter} onValueChange={(v) => setActivityFilter(v as ActivityFilter)}>
                     <SelectTrigger className="w-32">
                       <Filter className="h-4 w-4 mr-2" />
@@ -467,7 +524,7 @@ const AdminDashboardPage = () => {
                 
                 <div className="space-y-3 max-h-[600px] overflow-y-auto">
                   {filteredActivity.map((item) => (
-                    <div key={item.id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
+                    <div key={item.id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/30">
                       <div className="h-8 w-8 rounded-full bg-background flex items-center justify-center shrink-0">
                         {getActivityIcon(item.type)}
                       </div>
@@ -478,54 +535,64 @@ const AdminDashboardPage = () => {
                     </div>
                   ))}
                 </div>
-              </BookContainer>
+              </div>
 
               {/* Quick Stats */}
-              <BookContainer variant="warm" className="p-6">
-                <h3 className="font-serif text-lg text-brand-blue mb-4">Today's Highlights</h3>
+              <div 
+                className="bg-muted/30 p-6 shadow-md"
+                style={handDrawnBorder}
+              >
+                <h3 className="font-serif text-lg text-primary mb-4">Today's Highlights</h3>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">New readings</span>
-                    <span className="font-handwritten text-xl text-brand-blue">142</span>
+                    <span className="font-handwritten text-xl text-primary">142</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">Minutes logged</span>
-                    <span className="font-handwritten text-xl text-brand-blue">3,450</span>
+                    <span className="font-handwritten text-xl text-primary">3,450</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">New pledges</span>
-                    <span className="font-handwritten text-xl text-brand-green">18</span>
+                    <span className="font-handwritten text-xl text-accent">18</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">Payments received</span>
-                    <span className="font-handwritten text-xl text-brand-green">$425</span>
+                    <span className="font-handwritten text-xl text-accent">$425</span>
                   </div>
                 </div>
-              </BookContainer>
-
-              {/* Admin Actions */}
-              <div className="space-y-2">
-                <Link to="/admin-users">
-                  <Button variant="outline" className="w-full">
-                    <Users className="h-4 w-4 mr-2" />
-                    Manage Users
-                  </Button>
-                </Link>
-                <Link to="/admin-finance">
-                  <Button variant="outline" className="w-full">
-                    <DollarSign className="h-4 w-4 mr-2" />
-                    Financial Management
-                  </Button>
-                </Link>
               </div>
 
-              {/* Exit Demo */}
-              <Link to="/login">
-                <Button variant="ghost" className="w-full">
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Exit Demo
-                </Button>
-              </Link>
+              {/* Admin Actions */}
+              <div 
+                className="bg-background p-6 shadow-md"
+                style={handDrawnBorder}
+              >
+                <h3 className="font-serif text-xl text-foreground mb-4">
+                  Quick Actions
+                </h3>
+                <div className="space-y-2">
+                  <Button 
+                    className="w-full justify-start bg-primary text-primary-foreground hover:bg-primary/90" 
+                    asChild
+                  >
+                    <Link to="/admin-users">
+                      <Users className="h-4 w-4 mr-2" />
+                      Manage Users
+                    </Link>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start"
+                    asChild
+                  >
+                    <Link to="/admin-finance">
+                      <DollarSign className="h-4 w-4 mr-2" />
+                      Financial Management
+                    </Link>
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -550,13 +617,16 @@ interface MetricCardProps {
 }
 
 const MetricCard = ({ label, value, icon: Icon, color, subtext }: MetricCardProps) => (
-  <div className="rounded-xl border bg-card p-4 shadow-sm">
+  <div 
+    className="bg-background p-4 shadow-md"
+    style={handDrawnBorder}
+  >
     <div className="flex items-start justify-between">
       <div>
         <p className="text-sm text-muted-foreground">{label}</p>
         <p className={cn(
           "font-handwritten text-2xl mt-1",
-          color === "blue" ? "text-brand-blue" : "text-brand-green"
+          color === "blue" ? "text-primary" : "text-accent"
         )}>
           {value}
         </p>
@@ -566,11 +636,11 @@ const MetricCard = ({ label, value, icon: Icon, color, subtext }: MetricCardProp
       </div>
       <div className={cn(
         "h-10 w-10 rounded-lg flex items-center justify-center",
-        color === "blue" ? "bg-brand-blue/10" : "bg-brand-green/10"
+        color === "blue" ? "bg-primary/10" : "bg-accent/10"
       )}>
         <Icon className={cn(
           "h-5 w-5",
-          color === "blue" ? "text-brand-blue" : "text-brand-green"
+          color === "blue" ? "text-primary" : "text-accent"
         )} />
       </div>
     </div>
