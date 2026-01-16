@@ -88,7 +88,7 @@ const HomePage = () => {
             backgroundImage: `url(${booksShelfBannerV2})`,
             backgroundRepeat: 'repeat-x',
             backgroundSize: 'auto 50%',
-            backgroundPosition: 'center center',
+            backgroundPosition: 'center calc(50% - 75px)',
           }}
           aria-hidden="true"
         />
