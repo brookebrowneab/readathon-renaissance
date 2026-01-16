@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import { MainNav, Footer, BottomTabBar } from "@/components/layout";
 import { Button } from "@/components/ui/button";
@@ -244,7 +245,11 @@ const AdminDashboardPage = () => {
                     <p className="text-sm text-muted-foreground">days left</p>
                   </div>
                   <div className="flex gap-2">
-                    <Button variant="outline" style={handDrawnBorder}>
+                    <Button 
+                      variant="outline" 
+                      style={handDrawnBorder}
+                      onClick={() => toast.info("Edit Event feature coming soon!", { description: "This is a demo dashboard." })}
+                    >
                       <Edit className="h-4 w-4 mr-2" />
                       Edit Event
                     </Button>
