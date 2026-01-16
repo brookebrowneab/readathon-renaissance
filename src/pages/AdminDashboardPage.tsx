@@ -54,7 +54,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import openBookBanner from "@/assets/open-book-banner.png";
+
 
 // Hand-drawn border style (consistent with DashboardPage)
 const handDrawnBorder = {
@@ -182,35 +182,36 @@ const AdminDashboardPage = () => {
       <main className="flex-1 bg-background-warm">
         <div className="container py-8">
           {/* Header Section */}
-          <div className="space-y-4 mb-8">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="font-serif text-3xl font-normal tracking-tight text-foreground md:text-4xl">
-                  <span className="font-handwritten text-4xl text-primary">
-                    Admin
-                  </span>{" "}
-                  Dashboard
-                </h1>
-                <p className="text-muted-foreground mt-1 text-sm md:text-base">
-                  Overview of your read-a-thon event
-                </p>
-              </div>
-              <Link to="/login">
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  style={handDrawnBorder}
-                >
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Exit Demo
-                </Button>
-              </Link>
+          <div className="flex items-center justify-between mb-8">
+            <div className="relative inline-block">
+              <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-normal tracking-tight text-foreground leading-[1.05] relative">
+                <span className="relative">
+                  Admin Dashboard
+                  {/* Highlighter effect */}
+                  <span 
+                    className="absolute inset-0 -skew-y-1 bg-accent/30 -z-10 transform -rotate-[0.5deg]"
+                    style={{
+                      top: '45%',
+                      height: '55%',
+                      left: '-2%',
+                      right: '-2%',
+                      borderRadius: '4px 8px 4px 6px',
+                    }}
+                    aria-hidden="true"
+                  />
+                </span>
+              </h1>
             </div>
-
-            {/* Banner Image */}
-            <div className="relative">
-              <img src={openBookBanner} alt="Open book illustration" className="w-full h-auto max-h-40 object-contain" />
-            </div>
+            <Link to="/login">
+              <Button 
+                variant="ghost" 
+                size="sm"
+                style={handDrawnBorder}
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                Exit Demo
+              </Button>
+            </Link>
           </div>
 
           {/* Event Status Hero */}
