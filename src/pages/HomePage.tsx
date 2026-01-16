@@ -227,25 +227,32 @@ const HomePage = () => {
               Making a Difference
             </h2>
             <p className="text-sm md:text-base text-muted-foreground leading-relaxed mb-6">
-              Your participation helps provide books, resources, and enrichment 
-              programs for our school community. Every minute read brings us closer to our goals.
+              Janney relies on PTA funds to pay for programs that make our school exceptional. 
+              Your donations help fund:
             </p>
 
-            {/* Progress summary */}
-            <div className="space-y-3 max-w-md">
-              <div className="flex justify-between items-baseline border-b border-border pb-2">
-                <span className="text-sm text-muted-foreground">Pages Read</span>
-                <span className="font-serif text-xl text-foreground">620</span>
-              </div>
-              <div className="flex justify-between items-baseline border-b border-border pb-2">
-                <span className="text-sm text-muted-foreground">Minutes Logged</span>
-                <span className="font-serif text-xl text-foreground">1,125</span>
-              </div>
-              <div className="flex justify-between items-baseline">
-                <span className="text-sm text-muted-foreground">Books Completed</span>
-                <span className="font-serif text-xl text-foreground">16</span>
-              </div>
-            </div>
+            {/* What funds support */}
+            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 mb-8">
+              {[
+                "Technology materials & support",
+                "Classroom supplies",
+                "Textbooks",
+                "Teacher professional development",
+                "Instructional materials",
+                "Custodial equipment & supplies",
+                "Facilities repairs",
+                "Staff positions (10 teachers & support)",
+              ].map((item) => (
+                <li key={item} className="flex items-start gap-2 text-sm text-muted-foreground">
+                  <span className="text-primary mt-0.5">•</span>
+                  {item}
+                </li>
+              ))}
+            </ul>
+
+            <p className="text-xs text-muted-foreground/70 italic">
+              Questions? Contact <a href="mailto:janneyreadathon@janneyschool.org" className="underline hover:text-foreground">janneyreadathon@janneyschool.org</a>
+            </p>
           </div>
         </div>
       </section>
