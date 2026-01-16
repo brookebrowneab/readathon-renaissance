@@ -24,7 +24,7 @@ const OnboardingPledge = () => {
   const [fixedAmount, setFixedAmount] = useState<number | null>(null);
   const [customAmount, setCustomAmount] = useState("");
   const [perMinuteRate, setPerMinuteRate] = useState("0.05");
-  const [pledgeCap, setPledgeCap] = useState("");
+  
   const [paymentTiming, setPaymentTiming] = useState<"now" | "later">("later");
 
   useEffect(() => {
@@ -41,15 +41,11 @@ const OnboardingPledge = () => {
     if (pledgeType === "fixed") {
       return customAmount ? parseFloat(customAmount) : fixedAmount;
     }
-    if (pledgeType === "per-minute" && childData) {
-      const calculated = parseFloat(perMinuteRate) * childData.readingGoal;
-      if (pledgeCap && parseFloat(pledgeCap) < calculated) {
-        return parseFloat(pledgeCap);
-      }
-      return calculated;
+    if (pledgeType === "per-minute") {
+      return parseFloat(perMinuteRate);
     }
     return null;
-  }, [pledgeType, fixedAmount, customAmount, perMinuteRate, pledgeCap, childData]);
+  }, [pledgeType, fixedAmount, customAmount, perMinuteRate]);
 
   const calculatedPerMinute = useMemo(() => {
     if (!childData) return 0;
@@ -62,9 +58,8 @@ const OnboardingPledge = () => {
     // Store pledge data
     const pledgeData = {
       type: pledgeType,
-      amount: effectiveAmount,
+      amount: pledgeType === "fixed" ? effectiveAmount : null,
       perMinuteRate: pledgeType === "per-minute" ? parseFloat(perMinuteRate) : null,
-      cap: pledgeType === "per-minute" && pledgeCap ? parseFloat(pledgeCap) : null,
       paymentTiming,
     };
     
@@ -264,19 +259,6 @@ const OnboardingPledge = () => {
                           </span>
                         </div>
 
-                        <FormField label="Cap my pledge at (optional)">
-                          <div className="relative">
-                            <DollarSign className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                            <Input
-                              type="number"
-                              min={1}
-                              placeholder="No cap"
-                              value={pledgeCap}
-                              onChange={(e) => setPledgeCap(e.target.value)}
-                              className="pl-10"
-                            />
-                          </div>
-                        </FormField>
                       </div>
                     )}
                   </button>
@@ -312,9 +294,11 @@ const OnboardingPledge = () => {
                 <div className="space-y-3 pt-2">
                   {pledgeType && effectiveAmount && effectiveAmount > 0 && (
                     <Button type="submit" className="w-full">
-                      {paymentTiming === "now" 
-                        ? `Pay $${effectiveAmount.toFixed(2)} Now`
-                        : `Pledge $${effectiveAmount.toFixed(2)}`
+                      {pledgeType === "per-minute"
+                        ? `Pledge $${effectiveAmount.toFixed(2)} per minute`
+                        : paymentTiming === "now" 
+                          ? `Pay $${effectiveAmount.toFixed(2)} Now`
+                          : `Pledge $${effectiveAmount.toFixed(2)}`
                       }
                     </Button>
                   )}
