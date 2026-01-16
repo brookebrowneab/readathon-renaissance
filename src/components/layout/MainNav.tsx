@@ -62,13 +62,10 @@ const MainNav = () => {
       <header className="sticky top-0 z-50 w-full bg-white/90 backdrop-blur-sm border-b border-slate-100 hidden md:block">
         <div className="container flex h-22 items-center justify-between py-2">
 
-          {/* Logo - Left (hidden on home page) */}
-          {location.pathname !== "/" && (
-            <Link to="/" className="flex items-center" style={{ marginTop: '10px', marginLeft: '20px' }}>
-              <img src={logo} alt="Read-a-thon" className="h-18 w-auto" style={{ transform: 'scale(1.08)', transformOrigin: 'top left' }} />
-            </Link>
-          )}
-          {location.pathname === "/" && <div />}
+          {/* Logo - Left (always visible with Option 3) */}
+          <Link to="/" className="flex items-center" style={{ marginTop: '10px', marginLeft: '20px' }}>
+            <img src={logo} alt="Read-a-thon" className="h-10 w-auto" />
+          </Link>
 
           {/* Desktop Nav - Right side */}
           <div className="flex items-center gap-8">
