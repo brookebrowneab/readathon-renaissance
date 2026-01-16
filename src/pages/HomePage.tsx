@@ -225,7 +225,16 @@ const HomePage = () => {
             </p>
 
             {/* What funds support */}
-            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 mb-8">
+            <ul 
+              className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 mb-8 bg-background p-6"
+              style={{
+                border: 'solid 1px #41403E',
+                borderTopLeftRadius: '255px 15px',
+                borderTopRightRadius: '15px 225px',
+                borderBottomRightRadius: '225px 15px',
+                borderBottomLeftRadius: '15px 255px',
+              }}
+            >
               {[
                 "Technology materials & support",
                 "Classroom supplies",
