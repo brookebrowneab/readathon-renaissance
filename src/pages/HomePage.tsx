@@ -115,9 +115,16 @@ const HomePage = () => {
               </Link>
               <Link to="/how-it-works">
                 <Button 
-                  variant="outline" 
+                  variant="ghost" 
                   size="lg"
-                  className="text-foreground hover:bg-muted border-2 border-[#1e3a5f]"
+                  className="text-foreground hover:bg-muted"
+                  style={{
+                    border: 'solid 1px #41403E',
+                    borderTopLeftRadius: '255px 15px',
+                    borderTopRightRadius: '15px 225px',
+                    borderBottomRightRadius: '225px 15px',
+                    borderBottomLeftRadius: '15px 255px',
+                  }}
                 >
                   Learn More <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
