@@ -115,9 +115,9 @@ const HomePage = () => {
               </Link>
               <Link to="/how-it-works">
                 <Button 
-                  variant="ghost" 
+                  variant="outline" 
                   size="lg"
-                  className="text-foreground hover:bg-muted"
+                  className="text-foreground hover:bg-muted border-2 border-[#1e3a5f]"
                 >
                   Learn More <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
