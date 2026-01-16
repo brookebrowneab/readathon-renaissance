@@ -36,15 +36,17 @@ const PrivacyPage = () => {
         </div>
       </section>
 
-      {/* Decorative Divider */}
-      <div className="w-full relative z-10">
-        <img
-          src={booksShelfDivider}
-          alt=""
-          className="w-full h-auto object-cover"
-          style={{ maxHeight: 90 }}
-        />
-      </div>
+      {/* Decorative Divider - Tiled */}
+      <div 
+        className="w-full h-16 md:h-20 relative z-10"
+        style={{
+          backgroundImage: `url(${booksShelfDivider})`,
+          backgroundRepeat: 'repeat-x',
+          backgroundSize: 'auto 100%',
+          backgroundPosition: 'center',
+        }}
+        aria-hidden="true"
+      />
 
       {/* Intro Section */}
       <section className="py-10 md:py-14 bg-background-warm">
@@ -234,15 +236,17 @@ const PrivacyPage = () => {
         </div>
       </section>
 
-      {/* Decorative Divider */}
-      <div className="w-full relative z-10">
-        <img
-          src={booksShelfDivider}
-          alt=""
-          className="w-full h-auto object-cover"
-          style={{ maxHeight: 90 }}
-        />
-      </div>
+      {/* Decorative Divider - Tiled */}
+      <div 
+        className="w-full h-16 md:h-20 relative z-10"
+        style={{
+          backgroundImage: `url(${booksShelfDivider})`,
+          backgroundRepeat: 'repeat-x',
+          backgroundSize: 'auto 100%',
+          backgroundPosition: 'center',
+        }}
+        aria-hidden="true"
+      />
 
       {/* Your Rights */}
       <section className="py-10 md:py-14">
