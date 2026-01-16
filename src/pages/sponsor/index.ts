@@ -1,4 +1,5 @@
 export { default as SponsorGatewayPage } from "./SponsorGatewayPage";
+export { default as SponsorAuthPage } from "./SponsorAuthPage";
 export { default as SponsorThankYouPage } from "./SponsorThankYouPage";
 export { default as SponsorPledgedPage } from "./SponsorPledgedPage";
 export { default as SponsorCheckInstructionsPage } from "./SponsorCheckInstructionsPage";
