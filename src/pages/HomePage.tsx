@@ -42,12 +42,20 @@ const HomePage = () => {
           {/* Constrain hero content to ~2/3 page width, indent to align with data block */}
           <div className="max-w-4xl pl-9 md:pl-14 lg:pl-20 text-left">
             {/* Logo above hero */}
+            {/* Logo section */}
             <img 
               src={logo} 
               alt="Read-a-thon" 
-              className="h-18 w-auto mb-12" 
+              className="h-18 w-auto mb-6" 
               style={{ transform: 'scale(1.12)', transformOrigin: 'top left' }} 
             />
+            
+            {/* Decorative divider line */}
+            <div className="flex items-center gap-3 mb-8 max-w-xs">
+              <div className="h-px flex-1 bg-accent/60" />
+              <div className="w-1.5 h-1.5 rounded-full bg-accent/80" />
+              <div className="h-px flex-1 bg-accent/60" />
+            </div>
             
             {/* Large headline - left aligned with highlighter effect */}
             <div className="relative inline-block mb-6">
