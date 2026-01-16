@@ -63,7 +63,7 @@ const MainNav = () => {
         <div className="container flex h-22 items-center justify-between py-2">
 
           {/* Logo - Left */}
-          <Link to="/" className="flex items-center">
+          <Link to="/" className="flex items-center" style={{ marginTop: '5px' }}>
             <img src={logo} alt="Read-a-thon" className="h-18 w-auto" />
           </Link>
 
