@@ -58,7 +58,7 @@ const HowItWorksPage = () => {
       details: [
         "Achievement badges and certificates",
         "Classroom and school leaderboards",
-        "Funds go directly to schools",
+        "Funds go directly to Janney",
       ],
     },
   ];
