@@ -136,7 +136,7 @@ const DashboardPage = () => {
 
                 {/* School Stats - Hero Style */}
                 <div 
-                  className="relative pt-6 pb-8 px-6 -mx-4 md:-mx-6 rounded-lg overflow-hidden"
+                  className="relative pt-6 pb-8 px-6 -mx-4 md:-mx-6 rounded-lg overflow-hidden bg-white"
                   style={{
                     backgroundImage: `url(${booksShelfBanner})`,
                     backgroundRepeat: 'repeat-x',
