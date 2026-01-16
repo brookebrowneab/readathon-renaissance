@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/accordion";
 import { ArrowRight } from "lucide-react";
 import booksShelfDivider from "@/assets/books-shelf-divider.png";
+import booksShelfBannerV2 from "@/assets/books-shelf-banner-v2.png";
 
 const FAQ_ITEMS = [
   {
@@ -96,7 +97,7 @@ const FAQ_ITEMS = [
       },
       {
         q: "Who do I contact if I have a problem?",
-        a: "For technical issues or questions, please email the Read-a-thon coordinators at readathon@janneyhsa.org.",
+        a: "For technical issues or questions, please email the Read-a-thon coordinators at janneyreadathon@janneyschool.org.",
       },
     ],
   },
@@ -106,35 +107,55 @@ const FAQPage = () => {
   return (
     <PublicLayout>
       {/* Hero Section */}
-      <section className="pt-16 md:pt-20 pb-10 md:pb-12 bg-background-warm">
+      <section className="relative pt-8 md:pt-12 pb-6 md:pb-8">
         <div className="container">
-          <div className="max-w-3xl mx-auto text-center">
-            <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl text-foreground mb-4">
-              Frequently Asked Questions
-            </h1>
-            <p className="text-base md:text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed">
+          <div className="max-w-4xl pl-9 md:pl-14 lg:pl-20">
+            {/* Large headline with highlighter effect */}
+            <div className="relative inline-block mb-4">
+              <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-normal tracking-tight text-foreground leading-[1.05] relative">
+                <span className="relative">
+                  Frequently Asked<br />Questions
+                  {/* Highlighter effect */}
+                  <span 
+                    className="absolute inset-0 -skew-y-1 bg-accent/30 -z-10 transform -rotate-[0.5deg]"
+                    style={{
+                      top: '45%',
+                      height: '55%',
+                      left: '-2%',
+                      right: '-2%',
+                      borderRadius: '4px 8px 4px 6px',
+                    }}
+                    aria-hidden="true"
+                  />
+                </span>
+              </h1>
+            </div>
+            <p className="text-base md:text-lg text-muted-foreground max-w-2xl leading-relaxed">
               Find answers to common questions about the Janney Elementary Read-a-thon.
             </p>
           </div>
         </div>
       </section>
 
-      {/* Book shelf divider */}
-      <div className="w-full bg-background">
-        <div className="flex justify-center items-center gap-4 py-3 opacity-50 overflow-hidden">
-          <img src={booksShelfDivider} alt="" className="h-10 w-auto" aria-hidden="true" />
-          <img src={booksShelfDivider} alt="" className="h-10 w-auto" aria-hidden="true" />
-          <img src={booksShelfDivider} alt="" className="h-10 w-auto hidden md:block" aria-hidden="true" />
-        </div>
-      </div>
+      {/* Decorative Divider - Tiled */}
+      <div 
+        className="w-full h-16 md:h-20 relative z-10"
+        style={{
+          backgroundImage: `url(${booksShelfDivider})`,
+          backgroundRepeat: 'repeat-x',
+          backgroundSize: 'auto 100%',
+          backgroundPosition: 'center',
+        }}
+        aria-hidden="true"
+      />
 
       {/* FAQ Sections */}
-      <section className="py-10 md:py-14">
+      <section className="py-10 md:py-14 bg-background-warm">
         <div className="container">
           <div className="max-w-3xl mx-auto space-y-10">
             {FAQ_ITEMS.map((section, sectionIndex) => (
               <div key={sectionIndex}>
-                <h2 className="font-serif text-2xl md:text-3xl text-foreground mb-4 pb-2 border-b border-border">
+                <h2 className="font-serif text-2xl md:text-3xl text-foreground mb-4 pb-2 border-b border-foreground/20">
                   {section.category}
                 </h2>
                 <Accordion type="single" collapsible className="space-y-2">
@@ -142,7 +163,14 @@ const FAQPage = () => {
                     <AccordionItem 
                       key={itemIndex} 
                       value={`${sectionIndex}-${itemIndex}`}
-                      className="border border-border rounded-lg px-4 data-[state=open]:bg-muted/30"
+                      className="bg-background px-4 data-[state=open]:bg-background"
+                      style={{
+                        border: 'solid 1px #41403E',
+                        borderTopLeftRadius: '255px 15px',
+                        borderTopRightRadius: '15px 225px',
+                        borderBottomRightRadius: '225px 15px',
+                        borderBottomLeftRadius: '15px 255px',
+                      }}
                     >
                       <AccordionTrigger className="text-left font-medium text-foreground hover:no-underline py-4">
                         {item.q}
@@ -159,10 +187,37 @@ const FAQPage = () => {
         </div>
       </section>
 
-      {/* Still Have Questions Section */}
-      <section className="py-10 md:py-14 bg-background-warm">
-        <div className="container">
-          <div className="max-w-2xl mx-auto text-center">
+      {/* Hand-drawn section divider */}
+      <div 
+        className="w-full"
+        style={{
+          borderTop: 'solid 2px #41403E',
+        }}
+      />
+
+      {/* Still Have Questions Section - with bookshelf background */}
+      <section className="py-10 md:py-14 relative overflow-hidden">
+        <div 
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage: `url(${booksShelfBannerV2})`,
+            backgroundRepeat: 'repeat-x',
+            backgroundSize: 'auto 50%',
+            backgroundPosition: 'center bottom',
+          }}
+          aria-hidden="true"
+        />
+        <div className="container relative">
+          <div 
+            className="max-w-2xl mx-auto text-center bg-background p-6 md:p-10"
+            style={{
+              border: 'solid 1px #41403E',
+              borderTopLeftRadius: '255px 15px',
+              borderTopRightRadius: '15px 225px',
+              borderBottomRightRadius: '225px 15px',
+              borderBottomLeftRadius: '15px 255px',
+            }}
+          >
             <h2 className="font-serif text-2xl md:text-3xl text-foreground mb-3">
               Still Have Questions?
             </h2>
@@ -170,13 +225,23 @@ const FAQPage = () => {
               We're here to help. Reach out to our Read-a-thon coordinators or explore more resources.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <a href="mailto:readathon@janneyhsa.org">
+              <a href="mailto:janneyreadathon@janneyschool.org">
                 <Button size="lg" className="px-8">
                   Contact Us
                 </Button>
               </a>
               <Link to="/how-it-works">
-                <Button variant="ghost" size="lg">
+                <Button 
+                  variant="ghost" 
+                  size="lg"
+                  style={{
+                    border: 'solid 1px #41403E',
+                    borderTopLeftRadius: '255px 15px',
+                    borderTopRightRadius: '15px 225px',
+                    borderBottomRightRadius: '225px 15px',
+                    borderBottomLeftRadius: '15px 255px',
+                  }}
+                >
                   How It Works <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
@@ -206,8 +271,7 @@ const FAQPage = () => {
             <Link to="/login">
               <Button 
                 size="lg" 
-                variant="outline" 
-                className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 px-8"
+                className="bg-white text-primary hover:bg-white/90 px-8"
               >
                 Sign In
               </Button>
