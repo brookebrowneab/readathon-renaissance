@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { MainNav, Footer, BottomTabBar } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -42,6 +43,7 @@ import {
   Activity,
   School,
   Filter,
+  Plus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -55,7 +57,8 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-
+import { EditEventDialog } from "@/components/admin/EditEventDialog";
+import { useActiveEvent, formatEventDates } from "@/hooks/useActiveEvent";
 
 // Hand-drawn border style (consistent with DashboardPage)
 const handDrawnBorder = {
@@ -64,15 +67,6 @@ const handDrawnBorder = {
   borderTopRightRadius: '15px 225px',
   borderBottomRightRadius: '225px 15px',
   borderBottomLeftRadius: '15px 255px',
-};
-
-// Mock data
-const mockEvent = {
-  name: "Spring Read-a-thon 2024",
-  startDate: "March 1, 2024",
-  endDate: "April 15, 2024",
-  daysRemaining: 12,
-  status: "active" as const,
 };
 
 const mockMetrics = {
@@ -152,6 +146,11 @@ type ActivityFilter = "all" | "reading" | "pledge" | "registration" | "payment";
 const AdminDashboardPage = () => {
   const [chartMetric, setChartMetric] = useState<ChartMetric>("minutes");
   const [activityFilter, setActivityFilter] = useState<ActivityFilter>("all");
+  const [editEventOpen, setEditEventOpen] = useState(false);
+  
+  const queryClient = useQueryClient();
+  const { data: activeEvent, isLoading: eventLoading } = useActiveEvent();
+  const eventDates = formatEventDates(activeEvent);
 
   const filteredActivity = mockActivityFeed.filter(
     (item) => activityFilter === "all" || item.type === activityFilter
@@ -174,6 +173,10 @@ const AdminDashboardPage = () => {
       case "ended": return <Badge variant="outline">Ended</Badge>;
       default: return null;
     }
+  };
+
+  const handleEventSave = () => {
+    queryClient.invalidateQueries({ queryKey: ['active-event'] });
   };
 
   return (
@@ -221,64 +224,76 @@ const AdminDashboardPage = () => {
               className="bg-background p-6 shadow-md"
               style={handDrawnBorder}
             >
-              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-                <div className="flex items-start gap-4">
-                  <div className="h-16 w-16 rounded-2xl bg-primary/20 flex items-center justify-center shrink-0">
-                    <Calendar className="h-8 w-8 text-primary" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-3 mb-1">
-                      <h2 className="font-serif text-2xl font-normal text-foreground md:text-3xl">
-                        {mockEvent.name}
-                      </h2>
-                      {getStatusBadge(mockEvent.status)}
+              {activeEvent ? (
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                  <div className="flex items-start gap-4">
+                    <div className="h-16 w-16 rounded-2xl bg-primary/20 flex items-center justify-center shrink-0">
+                      <Calendar className="h-8 w-8 text-primary" />
                     </div>
-                    <p className="text-muted-foreground">
-                      {mockEvent.startDate} – {mockEvent.endDate}
-                    </p>
+                    <div>
+                      <div className="flex items-center gap-3 mb-1">
+                        <h2 className="font-serif text-2xl font-normal text-foreground md:text-3xl">
+                          {activeEvent.name}
+                        </h2>
+                        {getStatusBadge(eventDates.status)}
+                      </div>
+                      <p className="text-muted-foreground">
+                        {eventDates.startDate} – {eventDates.endDate}
+                      </p>
+                    </div>
                   </div>
-                </div>
 
-                <div className="flex items-center gap-6">
-                  <div className="text-center">
-                    <p className="font-handwritten text-4xl text-primary">{mockEvent.daysRemaining}</p>
-                    <p className="text-sm text-muted-foreground">days left</p>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button 
-                      variant="outline" 
-                      style={handDrawnBorder}
-                      onClick={() => toast.info("Edit Event feature coming soon!", { description: "This is a demo dashboard." })}
-                    >
-                      <Edit className="h-4 w-4 mr-2" />
-                      Edit Event
-                    </Button>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="outline" className="text-destructive hover:text-destructive" style={handDrawnBorder}>
-                          <StopCircle className="h-4 w-4 mr-2" />
-                          End Event
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>End this event?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This will close the event for new reading logs and begin the pledge collection process.
-                            This action cannot be undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                  <div className="flex items-center gap-6">
+                    <div className="text-center">
+                      <p className="font-handwritten text-4xl text-primary">{eventDates.daysRemaining}</p>
+                      <p className="text-sm text-muted-foreground">days left</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="outline" 
+                        style={handDrawnBorder}
+                        onClick={() => setEditEventOpen(true)}
+                      >
+                        <Edit className="h-4 w-4 mr-2" />
+                        Edit Event
+                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="outline" className="text-destructive hover:text-destructive" style={handDrawnBorder}>
+                            <StopCircle className="h-4 w-4 mr-2" />
                             End Event
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>End this event?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This will close the event for new reading logs and begin the pledge collection process.
+                              This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                              End Event
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
                   </div>
                 </div>
-              </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-8 text-center">
+                  <Calendar className="h-12 w-12 text-muted-foreground mb-4" />
+                  <h2 className="font-serif text-2xl text-foreground mb-2">No Active Read-a-thon</h2>
+                  <p className="text-muted-foreground mb-4">Create a new event to get started</p>
+                  <Button onClick={() => setEditEventOpen(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create New Read-a-thon
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
 
@@ -609,6 +624,20 @@ const AdminDashboardPage = () => {
 
       <Footer />
       <BottomTabBar role="admin" />
+
+      <EditEventDialog 
+        open={editEventOpen} 
+        onOpenChange={setEditEventOpen}
+        event={activeEvent ? {
+          id: activeEvent.id,
+          name: activeEvent.name,
+          start_date: new Date(activeEvent.start_date),
+          end_date: new Date(activeEvent.end_date),
+          last_log_date: new Date(activeEvent.last_log_date),
+          is_active: activeEvent.is_active,
+        } : null}
+        onSave={handleEventSave}
+      />
     </div>
   );
 };
