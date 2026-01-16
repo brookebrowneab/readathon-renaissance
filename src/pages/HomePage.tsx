@@ -66,7 +66,14 @@ const HomePage = () => {
             <div className="relative inline-block mb-6">
               <h1 className="font-serif text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-normal tracking-tight text-foreground leading-[1.05] relative">
                 <span className="relative">
-                  {heroHeadline}
+                  {heroHeadline.includes(". ") ? (
+                    <>
+                      {heroHeadline.split(". ")[0]}.<br />
+                      {heroHeadline.split(". ")[1]}
+                    </>
+                  ) : (
+                    heroHeadline
+                  )}
                   {/* Highlighter effect - sits behind text */}
                   <span 
                     className="absolute inset-0 -skew-y-1 bg-accent/30 -z-10 transform -rotate-[0.5deg]"
