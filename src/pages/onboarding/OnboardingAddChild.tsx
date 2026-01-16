@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { FormField } from "@/components/ui/form-field";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -14,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { User, GraduationCap, BookOpen } from "lucide-react";
+import { User, GraduationCap, BookOpen, Shield } from "lucide-react";
 
 const GRADES = [
   "Pre-K",
@@ -52,6 +53,7 @@ const OnboardingAddChild = () => {
     teacher: "",
     customTeacher: "",
     readingGoal: 500,
+    allowSponsorSharing: false,
   });
 
   useEffect(() => {
@@ -61,7 +63,7 @@ const OnboardingAddChild = () => {
     }
   }, []);
 
-  const updateField = (field: string, value: string | number) => {
+  const updateField = (field: string, value: string | number | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -86,6 +88,7 @@ const OnboardingAddChild = () => {
       grade: formData.grade,
       teacher: teacherNotListed ? formData.customTeacher : formData.teacher,
       readingGoal: formData.readingGoal,
+      allowSponsorSharing: formData.allowSponsorSharing,
     };
     
     sessionStorage.setItem('childData', JSON.stringify(childData));
@@ -279,6 +282,32 @@ const OnboardingAddChild = () => {
                     </div>
                   </div>
                 </FormField>
+
+                {/* Sponsor Sharing Permission */}
+                <div 
+                  className="p-4 rounded-lg bg-muted/50 space-y-3"
+                  style={{
+                    border: 'solid 1px #41403E',
+                    borderRadius: '8px',
+                  }}
+                >
+                  <div className="flex items-start gap-3">
+                    <Shield className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+                    <div className="flex-1">
+                      <Label htmlFor="allowSponsorSharing" className="text-sm font-medium">
+                        Allow sponsors to invite others
+                      </Label>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        When enabled, your child's sponsors can share the sponsor link with friends and family
+                      </p>
+                    </div>
+                    <Switch
+                      id="allowSponsorSharing"
+                      checked={formData.allowSponsorSharing}
+                      onCheckedChange={(checked) => updateField("allowSponsorSharing", checked)}
+                    />
+                  </div>
+                </div>
 
                 <div className="flex items-start gap-2 pt-2">
                   <Checkbox

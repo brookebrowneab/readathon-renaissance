@@ -54,6 +54,8 @@ import {
   LogOut,
   FileText,
   Receipt,
+  Plus,
+  Lock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -74,6 +76,7 @@ interface Pledge {
   projectedAmount: number;
   createdAt: string;
   sponsorLink: string;
+  allowSponsorSharing: boolean; // Whether this sponsor can share
 }
 
 interface Payment {
@@ -109,6 +112,7 @@ const mockPledges: Pledge[] = [
     projectedAmount: 30.00,
     createdAt: "2024-03-01",
     sponsorLink: "/sponsor/emma-123",
+    allowSponsorSharing: true, // Parent allowed sharing for this child
   },
   {
     id: "2",
@@ -122,6 +126,7 @@ const mockPledges: Pledge[] = [
     projectedAmount: 25.00,
     createdAt: "2024-03-05",
     sponsorLink: "/sponsor/lucas-456",
+    allowSponsorSharing: false, // Parent did not allow sharing
   },
   {
     id: "3",
@@ -135,6 +140,7 @@ const mockPledges: Pledge[] = [
     projectedAmount: 16.00,
     createdAt: "2024-03-08",
     sponsorLink: "/sponsor/sophia-789",
+    allowSponsorSharing: true,
   },
 ];
 
@@ -414,46 +420,91 @@ export default function SponsorDashboardPage() {
                 </div>
               </BookContainer>
 
-              {/* Invite Others Section */}
-              <BookContainer variant="warm" className="p-6">
-                <h2 className="font-serif text-xl text-primary mb-4">Invite Others to Sponsor</h2>
+              {/* Invite Others Section - Only show for pledges with sharing enabled */}
+              {mockPledges.some(p => p.allowSponsorSharing) && (
+                <BookContainer variant="warm" className="p-6">
+                  <h2 className="font-serif text-xl text-primary mb-4">Invite Others to Sponsor</h2>
+                  <p className="text-muted-foreground mb-4">
+                    Share these links with friends and family to help support these amazing readers!
+                  </p>
+                  
+                  <div className="space-y-3">
+                    {mockPledges.filter(p => p.allowSponsorSharing).map((pledge) => (
+                      <div
+                        key={pledge.id}
+                        className="flex items-center gap-4 p-3 rounded-lg bg-background"
+                      >
+                        <div className="flex-1">
+                          <p className="font-medium">{pledge.childName}</p>
+                          <p className="text-sm text-muted-foreground truncate">
+                            {window.location.origin}{pledge.sponsorLink}
+                          </p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => copyLink(pledge.sponsorLink)}
+                          >
+                            <Copy className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEmailInvite(pledge.childName)}
+                          >
+                            <Mail className="h-4 w-4" />
+                          </Button>
+                          <Button variant="outline" size="sm" asChild>
+                            <Link to={pledge.sponsorLink} target="_blank">
+                              <ExternalLink className="h-4 w-4" />
+                            </Link>
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </BookContainer>
+              )}
+
+              {/* Note about sharing restrictions */}
+              {mockPledges.some(p => !p.allowSponsorSharing) && (
+                <div className="flex items-start gap-3 p-4 rounded-lg bg-muted/50">
+                  <Lock className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">
+                      Sharing managed by family
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Some sponsorships have sharing managed by the family. Contact the family directly if you'd like to invite others to sponsor.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Add Another Pledge Section */}
+              <BookContainer variant="default" className="p-6">
+                <h2 className="font-serif text-xl text-primary mb-4">Make Another Pledge</h2>
                 <p className="text-muted-foreground mb-4">
-                  Share these links with friends and family to help support these amazing readers!
+                  Want to increase your support? Add another pledge for any child you're sponsoring.
                 </p>
                 
                 <div className="space-y-3">
-                  {mockPledges.map((pledge) => (
+                  {mockPledges.filter(p => p.status !== "paid").map((pledge) => (
                     <div
                       key={pledge.id}
-                      className="flex items-center gap-4 p-3 rounded-lg bg-background"
+                      className="flex items-center justify-between gap-4 p-3 rounded-lg bg-muted/50"
                     >
-                      <div className="flex-1">
+                      <div>
                         <p className="font-medium">{pledge.childName}</p>
-                        <p className="text-sm text-muted-foreground truncate">
-                          {window.location.origin}{pledge.sponsorLink}
-                        </p>
+                        <p className="text-sm text-muted-foreground">{pledge.childGrade}</p>
                       </div>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => copyLink(pledge.sponsorLink)}
-                        >
-                          <Copy className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleEmailInvite(pledge.childName)}
-                        >
-                          <Mail className="h-4 w-4" />
-                        </Button>
-                        <Button variant="outline" size="sm" asChild>
-                          <Link to={pledge.sponsorLink} target="_blank">
-                            <ExternalLink className="h-4 w-4" />
-                          </Link>
-                        </Button>
-                      </div>
+                      <Button size="sm" variant="outline" asChild>
+                        <Link to={`${pledge.sponsorLink}?additional=true`}>
+                          <Plus className="h-4 w-4 mr-1" />
+                          Add Pledge
+                        </Link>
+                      </Button>
                     </div>
                   ))}
                 </div>

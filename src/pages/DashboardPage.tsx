@@ -16,6 +16,7 @@ import {
   Star,
   Bell,
   Mail,
+  Heart,
 } from "lucide-react";
 import openBookBanner from "@/assets/open-book-banner.png";
 
@@ -296,6 +297,16 @@ const DashboardPage = () => {
                       <Link to="/pledges">
                         <DollarSign className="h-4 w-4 mr-2" />
                         View All Pledges
+                      </Link>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start"
+                      asChild
+                    >
+                      <Link to="/family/sponsor-my-child">
+                        <Heart className="h-4 w-4 mr-2" />
+                        Sponsor My Child
                       </Link>
                     </Button>
                     <Button

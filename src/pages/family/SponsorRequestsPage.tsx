@@ -2,6 +2,8 @@ import { useState } from "react";
 import { MainNav, Footer } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/sonner";
 import {
   AlertDialog,
@@ -22,6 +24,7 @@ import {
   User,
   Calendar,
   DollarSign,
+  Share2,
 } from "lucide-react";
 
 // Hand-drawn border style matching homepage/login
@@ -42,6 +45,7 @@ interface SponsorRequest {
   totalContributed: number;
   lastYear: string;
   status: "pending" | "approved" | "denied";
+  allowSharing?: boolean; // Permission for this specific sponsor to share
 }
 
 // Mock data - simulating pending requests
@@ -80,31 +84,35 @@ const SponsorRequestsPage = () => {
     open: boolean;
     type: "approve" | "deny";
     request: SponsorRequest | null;
-  }>({ open: false, type: "approve", request: null });
+    allowSharing: boolean;
+  }>({ open: false, type: "approve", request: null, allowSharing: false });
 
   const pendingRequests = requests.filter((r) => r.status === "pending");
   const processedRequests = requests.filter((r) => r.status !== "pending");
 
-  const handleApprove = async (request: SponsorRequest) => {
+  const handleApprove = async (request: SponsorRequest, allowSharing: boolean) => {
     setProcessingId(request.id);
-    setConfirmDialog({ open: false, type: "approve", request: null });
+    setConfirmDialog({ open: false, type: "approve", request: null, allowSharing: false });
 
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     setRequests((prev) =>
-      prev.map((r) => (r.id === request.id ? { ...r, status: "approved" as const } : r))
+      prev.map((r) => (r.id === request.id ? { ...r, status: "approved" as const, allowSharing } : r))
     );
     setProcessingId(null);
 
+    const sharingNote = allowSharing 
+      ? " They can also invite others to sponsor."
+      : "";
     toast.success(`${request.sponsorName} can now sponsor ${mockChild.name}!`, {
-      description: "They'll receive an email with the sponsor link.",
+      description: `They'll receive an email with the sponsor link.${sharingNote}`,
     });
   };
 
   const handleDeny = async (request: SponsorRequest) => {
     setProcessingId(request.id);
-    setConfirmDialog({ open: false, type: "deny", request: null });
+    setConfirmDialog({ open: false, type: "deny", request: null, allowSharing: false });
 
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -238,7 +246,7 @@ const SponsorRequestsPage = () => {
                       <div className="flex gap-3 ml-12">
                         <Button
                           onClick={() =>
-                            setConfirmDialog({ open: true, type: "approve", request })
+                            setConfirmDialog({ open: true, type: "approve", request, allowSharing: false })
                           }
                           disabled={processingId === request.id}
                           className="px-6"
@@ -249,7 +257,7 @@ const SponsorRequestsPage = () => {
                         <Button
                           variant="ghost"
                           onClick={() =>
-                            setConfirmDialog({ open: true, type: "deny", request })
+                            setConfirmDialog({ open: true, type: "deny", request, allowSharing: false })
                           }
                           disabled={processingId === request.id}
                           style={handDrawnBorder}
@@ -343,18 +351,41 @@ const SponsorRequestsPage = () => {
                 ? "Approve this sponsor?"
                 : "Decline this request?"}
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-lg">
-              {confirmDialog.type === "approve" ? (
-                <>
-                  <strong>{confirmDialog.request?.sponsorName}</strong> will receive an email 
-                  with a link to sponsor {mockChild.name} in this year's Read-a-thon.
-                </>
-              ) : (
-                <>
-                  <strong>{confirmDialog.request?.sponsorName}</strong> will be notified that 
-                  their request was not approved. They won't see any information about {mockChild.name}.
-                </>
-              )}
+            <AlertDialogDescription asChild>
+              <div className="text-lg space-y-4">
+                {confirmDialog.type === "approve" ? (
+                  <>
+                    <p>
+                      <strong>{confirmDialog.request?.sponsorName}</strong> will receive an email 
+                      with a link to sponsor {mockChild.name} in this year's Read-a-thon.
+                    </p>
+                    {/* Sharing permission checkbox */}
+                    <div className="flex items-start gap-3 p-4 rounded-lg bg-muted/50 mt-4">
+                      <Checkbox
+                        id="allowSharing"
+                        checked={confirmDialog.allowSharing}
+                        onCheckedChange={(checked) =>
+                          setConfirmDialog((prev) => ({ ...prev, allowSharing: checked as boolean }))
+                        }
+                      />
+                      <div className="flex-1">
+                        <Label htmlFor="allowSharing" className="text-sm font-medium cursor-pointer">
+                          <Share2 className="h-4 w-4 inline mr-2" />
+                          Allow this sponsor to invite others
+                        </Label>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          When enabled, they can share the sponsor link with friends and family
+                        </p>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <p>
+                    <strong>{confirmDialog.request?.sponsorName}</strong> will be notified that 
+                    their request was not approved. They won't see any information about {mockChild.name}.
+                  </p>
+                )}
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -362,7 +393,7 @@ const SponsorRequestsPage = () => {
             <AlertDialogAction
               onClick={() =>
                 confirmDialog.type === "approve"
-                  ? handleApprove(confirmDialog.request!)
+                  ? handleApprove(confirmDialog.request!, confirmDialog.allowSharing)
                   : handleDeny(confirmDialog.request!)
               }
               className={`h-12 text-lg ${
