@@ -81,8 +81,8 @@ const MainNav = () => {
           </Link>
 
           {/* Desktop Nav - Right side */}
-          <div className="flex items-center gap-8">
-            {/* Auth Buttons - First */}
+          <div className="flex flex-col items-end gap-2">
+            {/* Auth Buttons - Top */}
             <div className="flex items-center gap-3">
               {isAuthenticated ? (
                 <>
@@ -115,7 +115,7 @@ const MainNav = () => {
               )}
             </div>
 
-            {/* Nav Links - After Sign In */}
+            {/* Nav Links - Below Sign In */}
             <nav className="flex items-center gap-8">
               {publicNav.map((item) => (
                 <Link
