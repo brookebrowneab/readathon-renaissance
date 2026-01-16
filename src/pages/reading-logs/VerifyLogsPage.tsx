@@ -202,18 +202,18 @@ export default function VerifyLogsPage() {
           <Table>
             <TableHeader>
               <TableRow style={handDrawnBorderSubtle}>
-                <TableHead className="w-[50px]">
+                <TableHead className="w-[50px] pt-4">
                   <Checkbox
                     checked={selectedLogs.length === filteredLogs.length && filteredLogs.length > 0}
                     onCheckedChange={handleSelectAll}
                   />
                 </TableHead>
-                <TableHead className="font-serif text-foreground">Student</TableHead>
-                <TableHead className="font-serif text-foreground">Book</TableHead>
-                <TableHead className="font-serif text-foreground text-center">Minutes</TableHead>
-                <TableHead className="font-serif text-foreground">Date</TableHead>
-                <TableHead className="font-serif text-foreground">Source</TableHead>
-                <TableHead className="font-serif text-foreground text-right">Actions</TableHead>
+                <TableHead className="font-serif text-foreground pt-4">Student</TableHead>
+                <TableHead className="font-serif text-foreground pt-4">Book</TableHead>
+                <TableHead className="font-serif text-foreground text-center pt-4">Minutes</TableHead>
+                <TableHead className="font-serif text-foreground pt-4">Date</TableHead>
+                <TableHead className="font-serif text-foreground pt-4">Source</TableHead>
+                <TableHead className="font-serif text-foreground text-right pt-4">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
