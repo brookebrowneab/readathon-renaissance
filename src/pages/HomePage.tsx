@@ -46,7 +46,7 @@ const HomePage = () => {
               src={logo} 
               alt="Read-a-thon" 
               className="h-18 w-auto mb-8" 
-              style={{ transform: 'scale(1.08)', transformOrigin: 'top left' }} 
+              style={{ transform: 'scale(1.4)', transformOrigin: 'top left' }} 
             />
             
             {/* Large headline - left aligned with highlighter effect */}
