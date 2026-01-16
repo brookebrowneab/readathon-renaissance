@@ -97,7 +97,7 @@ const HomePage = () => {
           <div 
             className="grid grid-cols-3 gap-6 md:gap-10 max-w-4xl mx-auto bg-background p-6 md:p-10"
             style={{
-              border: 'solid 2px #41403E',
+              border: 'solid 1px #41403E',
               borderTopLeftRadius: '255px 15px',
               borderTopRightRadius: '15px 225px',
               borderBottomRightRadius: '225px 15px',
@@ -115,8 +115,8 @@ const HomePage = () => {
             <div 
               className="text-center px-4 md:px-6"
               style={{
-                borderLeft: 'solid 2px #41403E',
-                borderRight: 'solid 2px #41403E',
+                borderLeft: 'solid 1px #41403E',
+                borderRight: 'solid 1px #41403E',
               }}
             >
               <p className="font-serif text-3xl md:text-4xl lg:text-5xl text-foreground tracking-tight">
@@ -142,7 +142,7 @@ const HomePage = () => {
       <div 
         className="w-full"
         style={{
-          borderTop: 'solid 3px #41403E',
+          borderTop: 'solid 2px #41403E',
         }}
       />
 
