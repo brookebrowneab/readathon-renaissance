@@ -36,6 +36,7 @@ import OldTeacherDashboardPage from "./pages/TeacherDashboardPage";
 import OldTeacherLogReadingPage from "./pages/TeacherLogReadingPage";
 import { AdminDashboard, AdminOutstandingPage, AdminChecksPage, AdminSettingsPage, AdminEmailPage } from "./pages/admin";
 import { SponsorRequestsPage } from "./pages/family";
+import { VerifyLogsPage } from "./pages/reading-logs";
 import OldAdminDashboardPage from "./pages/AdminDashboardPage";
 import AdminUsersPage from "./pages/AdminUsersPage";
 import AdminFinancePage from "./pages/AdminFinancePage";
@@ -79,6 +80,7 @@ const App = () => (
           {/* Parent/Family Dashboard */}
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/family/sponsor-requests" element={<SponsorRequestsPage />} />
+          <Route path="/reading-logs/approve" element={<VerifyLogsPage />} />
           <Route path="/children/:id/invite" element={<InviteSponsorsPage />} />
           <Route path="/children/:id/add-sponsor" element={<AddSponsorPage />} />
           <Route path="/log-reading" element={<LogReadingPage />} />
