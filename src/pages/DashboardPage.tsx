@@ -135,15 +135,19 @@ const DashboardPage = () => {
                 </div>
 
                 {/* School Stats - Hero Style */}
-                <div 
-                  className="relative pt-6 pb-8 px-6 -mx-4 md:-mx-6 rounded-lg overflow-hidden bg-white"
-                  style={{
-                    backgroundImage: `url(${booksShelfBanner})`,
-                    backgroundRepeat: 'repeat-x',
-                    backgroundPosition: 'bottom center',
-                    backgroundSize: 'auto 100%',
-                  }}
-                >
+                <div className="relative pt-6 pb-8 px-6 -mx-4 md:-mx-6 rounded-lg overflow-hidden">
+                  {/* Background image layer with enhanced colors */}
+                  <div 
+                    className="absolute inset-0"
+                    style={{
+                      backgroundImage: `url(${booksShelfBanner})`,
+                      backgroundRepeat: 'repeat-x',
+                      backgroundPosition: 'bottom center',
+                      backgroundSize: 'auto 100%',
+                      filter: 'saturate(1.5) contrast(1.2)',
+                    }}
+                    aria-hidden="true"
+                  />
                   <div className="relative z-10">
                     <p className="text-sm text-muted-foreground uppercase tracking-widest mb-2">Janney School Total</p>
                     <div className="relative inline-block mb-1">
