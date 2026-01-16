@@ -1,13 +1,8 @@
 import { useState } from "react";
 import { MainNav, Footer } from "@/components/layout";
-import { BookContainer } from "@/components/legacy";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/components/ui/sonner";
-import {
-  Card,
-  CardContent,
-} from "@/components/ui/card";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,6 +23,15 @@ import {
   Calendar,
   DollarSign,
 } from "lucide-react";
+
+// Hand-drawn border style matching homepage/login
+const handDrawnBorder = {
+  border: 'solid 1px #41403E',
+  borderTopLeftRadius: '255px 15px',
+  borderTopRightRadius: '15px 225px',
+  borderBottomRightRadius: '225px 15px',
+  borderBottomLeftRadius: '15px 255px',
+};
 
 interface SponsorRequest {
   id: string;
@@ -132,119 +136,130 @@ const SponsorRequestsPage = () => {
           </div>
 
           {/* Privacy Notice */}
-          <BookContainer variant="warm" className="p-6 mb-8">
+          <div 
+            className="bg-background p-6 mb-8"
+            style={handDrawnBorder}
+          >
             <div className="flex items-start gap-4">
               <div className="p-3 rounded-full bg-primary/10 flex-shrink-0">
                 <Shield className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <h3 className="text-xl font-medium text-foreground mb-2">
+                <h3 className="font-serif text-xl text-foreground mb-2">
                   Your child's privacy is protected
                 </h3>
-                <p className="text-lg text-muted-foreground">
+                <p className="text-sm text-muted-foreground leading-relaxed">
                   Sponsors can only see {mockChild.name}'s information after you approve their request. 
                   You're always in control of who can sponsor your child.
                 </p>
               </div>
             </div>
-          </BookContainer>
+          </div>
 
           {/* Pending Requests */}
           <section className="mb-10">
-            <h2 className="text-2xl font-medium text-foreground mb-4 flex items-center gap-2">
-              <Clock className="h-6 w-6 text-accent-gold" />
+            <h2 className="font-serif text-2xl text-foreground mb-4 flex items-center gap-2">
+              <Clock className="h-5 w-5 text-muted-foreground" />
               Pending Requests ({pendingRequests.length})
             </h2>
 
             {pendingRequests.length === 0 ? (
-              <BookContainer variant="default" className="p-8 text-center">
-                <p className="text-xl text-muted-foreground">
+              <div 
+                className="bg-background p-8 text-center"
+                style={handDrawnBorder}
+              >
+                <p className="text-sm text-muted-foreground">
                   No pending requests right now.
                 </p>
-              </BookContainer>
+              </div>
             ) : (
               <div className="space-y-4">
                 {pendingRequests.map((request) => (
-                  <BookContainer key={request.id} variant="default" className="p-6">
+                  <div 
+                    key={request.id} 
+                    className="bg-background p-6"
+                    style={handDrawnBorder}
+                  >
                     <div className="flex flex-col gap-4">
                       {/* Sponsor Info */}
                       <div className="flex items-start gap-4">
                         <div className="p-3 rounded-full bg-primary/10 flex-shrink-0">
-                          <User className="h-6 w-6 text-primary" />
+                          <User className="h-5 w-5 text-primary" />
                         </div>
                         <div className="flex-1">
-                          <h3 className="text-xl font-medium text-foreground">
+                          <h3 className="font-serif text-xl text-foreground">
                             {request.sponsorName}
                           </h3>
-                          <p className="text-lg text-muted-foreground">
+                          <p className="text-sm text-muted-foreground">
                             {request.sponsorEmail}
                           </p>
                         </div>
-                        <Badge variant="outline" className="text-base py-1 px-3">
-                          <Heart className="h-4 w-4 mr-1" />
-                          Returning Sponsor
+                        <Badge variant="outline" className="text-xs py-1 px-2">
+                          <Heart className="h-3 w-3 mr-1" />
+                          Returning
                         </Badge>
                       </div>
 
-                      {/* Past History */}
-                      <div className="grid sm:grid-cols-3 gap-4 ml-16">
-                        <div className="bg-muted/50 rounded-lg p-4">
-                          <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                            <Calendar className="h-4 w-4" />
-                            <span>Last sponsored</span>
-                          </div>
-                          <p className="text-xl font-semibold text-foreground">
+                      {/* Past History - Inline stats like homepage */}
+                      <div 
+                        className="grid grid-cols-3 gap-4 ml-12 bg-background-warm p-4"
+                        style={handDrawnBorder}
+                      >
+                        <div className="text-center">
+                          <p className="font-serif text-xl text-foreground">
                             {request.lastYear}
                           </p>
-                        </div>
-                        <div className="bg-muted/50 rounded-lg p-4">
-                          <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                            <Heart className="h-4 w-4" />
-                            <span>Times sponsored</span>
-                          </div>
-                          <p className="text-xl font-semibold text-foreground">
-                            {request.pastSponsorships}
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Last sponsored
                           </p>
                         </div>
-                        <div className="bg-muted/50 rounded-lg p-4">
-                          <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                            <DollarSign className="h-4 w-4" />
-                            <span>Total given</span>
-                          </div>
-                          <p className="text-xl font-semibold text-foreground">
+                        <div 
+                          className="text-center px-4"
+                          style={{ borderLeft: 'solid 1px #41403E', borderRight: 'solid 1px #41403E' }}
+                        >
+                          <p className="font-serif text-xl text-foreground">
+                            {request.pastSponsorships}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Times sponsored
+                          </p>
+                        </div>
+                        <div className="text-center">
+                          <p className="font-serif text-xl text-foreground">
                             ${request.totalContributed.toFixed(2)}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Total given
                           </p>
                         </div>
                       </div>
 
                       {/* Actions */}
-                      <div className="flex gap-3 ml-16">
+                      <div className="flex gap-3 ml-12">
                         <Button
                           onClick={() =>
                             setConfirmDialog({ open: true, type: "approve", request })
                           }
                           disabled={processingId === request.id}
-                          className="h-14 text-lg px-8"
-                          size="lg"
+                          className="px-6"
                         >
-                          <CheckCircle className="h-5 w-5 mr-2" />
+                          <CheckCircle className="h-4 w-4 mr-2" />
                           Approve
                         </Button>
                         <Button
-                          variant="outline"
+                          variant="ghost"
                           onClick={() =>
                             setConfirmDialog({ open: true, type: "deny", request })
                           }
                           disabled={processingId === request.id}
-                          className="h-14 text-lg px-8"
-                          size="lg"
+                          style={handDrawnBorder}
                         >
-                          <XCircle className="h-5 w-5 mr-2" />
+                          <XCircle className="h-4 w-4 mr-2" />
                           Decline
                         </Button>
                       </div>
                     </div>
-                  </BookContainer>
+                  </div>
                 ))}
               </div>
             )}
@@ -253,52 +268,56 @@ const SponsorRequestsPage = () => {
           {/* Recently Processed */}
           {processedRequests.length > 0 && (
             <section>
-              <h2 className="text-2xl font-medium text-foreground mb-4">
+              <h2 className="font-serif text-2xl text-foreground mb-4">
                 Recently Processed
               </h2>
               <div className="space-y-4">
                 {processedRequests.map((request) => (
-                  <BookContainer key={request.id} variant="default" className="p-6 opacity-75">
+                  <div 
+                    key={request.id} 
+                    className="bg-background p-6 opacity-75"
+                    style={handDrawnBorder}
+                  >
                     <div className="flex items-center justify-between gap-4">
                       <div className="flex items-center gap-4">
                         <div className="p-3 rounded-full bg-muted flex-shrink-0">
-                          <User className="h-6 w-6 text-muted-foreground" />
+                          <User className="h-5 w-5 text-muted-foreground" />
                         </div>
                         <div>
-                          <h3 className="text-xl font-medium text-foreground">
+                          <h3 className="font-serif text-lg text-foreground">
                             {request.sponsorName}
                           </h3>
-                          <p className="text-lg text-muted-foreground">
+                          <p className="text-sm text-muted-foreground">
                             {request.sponsorEmail}
                           </p>
                         </div>
                       </div>
                       <Badge
                         variant={request.status === "approved" ? "success" : "destructive"}
-                        className="text-base py-1 px-3"
+                        className="text-xs py-1 px-2"
                       >
                         {request.status === "approved" ? (
                           <>
-                            <CheckCircle className="h-4 w-4 mr-1" />
+                            <CheckCircle className="h-3 w-3 mr-1" />
                             Approved
                           </>
                         ) : (
                           <>
-                            <XCircle className="h-4 w-4 mr-1" />
+                            <XCircle className="h-3 w-3 mr-1" />
                             Declined
                           </>
                         )}
                       </Badge>
                     </div>
-                  </BookContainer>
+                  </div>
                 ))}
               </div>
             </section>
           )}
 
           {/* Footer Help */}
-          <div className="mt-10 pt-6 border-t border-border">
-            <p className="text-lg text-center text-muted-foreground">
+          <div className="mt-10 pt-6" style={{ borderTop: 'solid 1px #41403E' }}>
+            <p className="text-xs text-center text-muted-foreground">
               Questions? Contact us at{" "}
               <a href="mailto:help@school.org" className="text-primary hover:underline">
                 help@school.org
