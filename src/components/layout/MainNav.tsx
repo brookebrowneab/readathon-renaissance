@@ -82,22 +82,7 @@ const MainNav = () => {
 
           {/* Desktop Nav - Right side */}
           <div className="flex items-center gap-8">
-            <nav className="flex items-center gap-8">
-              {publicNav.map((item) => (
-                <Link
-                  key={item.href}
-                  to={item.href}
-                  className={cn(
-                    "text-xs tracking-widest text-slate-500 transition-colors hover:text-slate-800",
-                    location.pathname === item.href && "text-slate-800"
-                  )}
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </nav>
-
-            {/* Auth Buttons */}
+            {/* Auth Buttons - First */}
             <div className="flex items-center gap-3">
               {isAuthenticated ? (
                 <>
@@ -129,6 +114,22 @@ const MainNav = () => {
                 </Link>
               )}
             </div>
+
+            {/* Nav Links - After Sign In */}
+            <nav className="flex items-center gap-8">
+              {publicNav.map((item) => (
+                <Link
+                  key={item.href}
+                  to={item.href}
+                  className={cn(
+                    "text-xs tracking-widest text-slate-500 transition-colors hover:text-slate-800",
+                    location.pathname === item.href && "text-slate-800"
+                  )}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
           </div>
         </div>
 
