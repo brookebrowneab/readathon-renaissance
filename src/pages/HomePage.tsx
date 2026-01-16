@@ -81,14 +81,14 @@ const HomePage = () => {
 
       {/* Stats Section */}
       <section className="py-10 md:py-14 relative overflow-hidden">
-        {/* Bookshelf band background - tiled at 50% size */}
+        {/* Bookshelf band background - tiled and vertically centered */}
         <div 
-          className="absolute inset-x-0 bottom-0 h-24 pointer-events-none"
+          className="absolute inset-0 pointer-events-none"
           style={{
             backgroundImage: `url(${booksShelfBannerV2})`,
             backgroundRepeat: 'repeat-x',
-            backgroundSize: 'auto 100%',
-            backgroundPosition: 'bottom center',
+            backgroundSize: 'auto 50%',
+            backgroundPosition: 'center center',
           }}
           aria-hidden="true"
         />
