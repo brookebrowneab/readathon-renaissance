@@ -64,7 +64,7 @@ const HomePage = () => {
           <div className="max-w-4xl pl-9 md:pl-14 lg:pl-20 text-left">
             {/* Large headline - left aligned with highlighter effect */}
             <div className="relative inline-block mb-6">
-              <h1 className="font-serif text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-normal tracking-tight text-foreground leading-[1.05] relative">
+              <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-normal tracking-tight text-foreground leading-[1.05] relative">
                 <span className="relative">
                   {heroHeadline.includes(". ") ? (
                     <>
