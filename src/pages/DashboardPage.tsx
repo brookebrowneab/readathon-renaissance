@@ -17,7 +17,7 @@ import {
   Bell,
   Mail,
 } from "lucide-react";
-import booksShelfBanner from "@/assets/books-shelf-banner.png";
+import booksShelfBanner from "@/assets/books-shelf-banner-v2.png";
 
 // Mock data
 const mockUser = {
@@ -135,9 +135,8 @@ const DashboardPage = () => {
                 </div>
 
                 {/* School Stats - Hero Style */}
-                {/* Test: Raw image on dark background to check transparency */}
-                <div className="relative bg-slate-800 p-4">
-                  <img src={booksShelfBanner} alt="Bookshelf" className="w-full" />
+                <div className="relative">
+                  <img src={booksShelfBanner} alt="Bookshelf banner" className="w-full h-auto" />
                 </div>
 
               </div>

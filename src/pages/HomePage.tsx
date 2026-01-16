@@ -7,6 +7,7 @@ import booksShelfHero from "@/assets/books-shelf-hero.png";
 import booksShelfDivider from "@/assets/books-shelf-divider.png";
 import openBook from "@/assets/open-book.png";
 import bookStackAccent from "@/assets/book-stack-accent.png";
+import booksShelfBannerV2 from "@/assets/books-shelf-banner-v2.png";
 
 const HERO_HEADLINES = [
   "Every Page Counts.",
@@ -78,21 +79,18 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Stats Section - with tiled book illustration background */}
+      {/* Stats Section */}
       <section className="py-10 md:py-14 relative overflow-hidden">
-        {/* Tiled background illustrations */}
-        <div className="absolute inset-0 opacity-[0.08] pointer-events-none">
-          <div className="flex flex-wrap justify-center items-center gap-8 h-full">
-            <img src={booksShelfHero} alt="" className="w-64 h-auto" aria-hidden="true" />
-            <img src={openBook} alt="" className="w-48 h-auto" aria-hidden="true" />
-            <img src={booksShelfDivider} alt="" className="w-64 h-auto" aria-hidden="true" />
-            <img src={bookStackAccent} alt="" className="w-40 h-auto" aria-hidden="true" />
-            <img src={booksShelfHero} alt="" className="w-64 h-auto" aria-hidden="true" />
-          </div>
-        </div>
-        
+        {/* Bookshelf band background (no blending/filtering) */}
+        <img
+          src={booksShelfBannerV2}
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-x-0 bottom-0 w-full h-auto pointer-events-none select-none"
+        />
+
         <div className="container relative">
-          <div className="grid grid-cols-3 gap-6 md:gap-10 max-w-4xl mx-auto bg-background/80 backdrop-blur-sm rounded-lg p-6 md:p-10 border border-border">
+          <div className="grid grid-cols-3 gap-6 md:gap-10 max-w-4xl mx-auto bg-background rounded-lg p-6 md:p-10 border border-border">
             <div className="text-center">
               <p className="font-serif text-3xl md:text-4xl lg:text-5xl text-foreground tracking-tight">
                 128,400
