@@ -306,14 +306,6 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Book shelf band divider */}
-      <div className="w-full bg-background-warm">
-        <div className="flex justify-center items-center gap-4 py-3 opacity-60 overflow-hidden">
-          <img src={booksShelfDivider} alt="" className="h-12 w-auto" aria-hidden="true" />
-          <img src={booksShelfDivider} alt="" className="h-12 w-auto" aria-hidden="true" />
-          <img src={booksShelfDivider} alt="" className="h-12 w-auto hidden md:block" aria-hidden="true" />
-        </div>
-      </div>
 
       {/* CTA Section */}
       <section className="py-10 md:py-14 bg-primary relative overflow-hidden">
