@@ -18,7 +18,7 @@ interface NavItem {
 }
 
 const publicNav: NavItem[] = [
-  { label: "JOIN STORY", href: "/how-it-works" },
+  { label: "HOW THE READ-A-THON WORKS", href: "/how-it-works" },
 ];
 
 // Mock notification data - replace with real data
