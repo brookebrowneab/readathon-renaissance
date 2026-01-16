@@ -25,8 +25,8 @@
     
     /* Background Colors - Warm paper-like neutrals */
     --background: 40 20% 98%;         /* Warm off-white */
-    --background-warm: 35 25% 96%;    /* Light paper */
-    --background-warmer: 32 30% 94%;  /* Warmer paper tone */
+    --background-warm: 38 35% 93%;    /* Light paper - more saturated */
+    --background-warmer: 36 40% 90%;  /* Warmer paper tone - more saturated */
     --foreground: 225 35% 18%;        /* Deep navy text */
 
     /* Card and surfaces */
