@@ -29,9 +29,30 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
+
+interface PendingLog {
+  id: string;
+  studentName: string;
+  minutes: number;
+  date: string;
+  bookTitle: string | null;
+  submittedBy: string;
+  flagged: boolean;
+}
 
 // Mock data for pending reading logs
-const mockPendingLogs = [
+const initialMockPendingLogs: PendingLog[] = [
   { id: "1", studentName: "Emma S.", minutes: 45, date: "Today", bookTitle: "Charlotte's Web", submittedBy: "Student", flagged: false },
   { id: "2", studentName: "Noah P.", minutes: 120, date: "Today", bookTitle: "Magic Tree House", submittedBy: "Parent", flagged: true },
   { id: "3", studentName: "Sophia L.", minutes: 60, date: "Yesterday", bookTitle: "Harry Potter", submittedBy: "Student", flagged: false },
@@ -53,15 +74,32 @@ const handDrawnBorderSubtle = {
   borderBottom: 'solid 1px #41403E',
 };
 
+type DialogAction = {
+  type: 'approve' | 'reject';
+  logIds: string[];
+  logDetails?: PendingLog;
+};
+
 export default function VerifyLogsPage() {
+  const { toast } = useToast();
+  const [logs, setLogs] = useState<PendingLog[]>(initialMockPendingLogs);
   const [selectedLogs, setSelectedLogs] = useState<string[]>([]);
   const [filterBy, setFilterBy] = useState<string>("all");
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [pendingAction, setPendingAction] = useState<DialogAction | null>(null);
 
   const handleLogToggle = (id: string) => {
     setSelectedLogs(prev => 
       prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
     );
   };
+
+  const filteredLogs = logs.filter(log => {
+    if (filterBy === "flagged") return log.flagged;
+    if (filterBy === "student") return log.submittedBy === "Student";
+    if (filterBy === "parent") return log.submittedBy === "Parent";
+    return true;
+  });
 
   const handleSelectAll = () => {
     if (selectedLogs.length === filteredLogs.length) {
@@ -71,24 +109,31 @@ export default function VerifyLogsPage() {
     }
   };
 
-  const handleBulkApprove = () => {
-    console.log("Approving:", selectedLogs);
-    setSelectedLogs([]);
+  const openConfirmDialog = (action: DialogAction) => {
+    setPendingAction(action);
+    setDialogOpen(true);
   };
 
-  const handleBulkReject = () => {
-    console.log("Rejecting:", selectedLogs);
-    setSelectedLogs([]);
+  const handleConfirmAction = () => {
+    if (!pendingAction) return;
+
+    const { type, logIds } = pendingAction;
+    
+    // Remove logs from the list
+    setLogs(prev => prev.filter(log => !logIds.includes(log.id)));
+    setSelectedLogs(prev => prev.filter(id => !logIds.includes(id)));
+    
+    // Show toast
+    toast({
+      title: type === 'approve' ? "Logs Approved" : "Logs Rejected",
+      description: `${logIds.length} reading log${logIds.length > 1 ? 's' : ''} ${type === 'approve' ? 'approved' : 'rejected'} successfully.`,
+    });
+
+    setDialogOpen(false);
+    setPendingAction(null);
   };
 
-  const filteredLogs = mockPendingLogs.filter(log => {
-    if (filterBy === "flagged") return log.flagged;
-    if (filterBy === "student") return log.submittedBy === "Student";
-    if (filterBy === "parent") return log.submittedBy === "Parent";
-    return true;
-  });
-
-  const flaggedCount = mockPendingLogs.filter(log => log.flagged).length;
+  const flaggedCount = logs.filter(log => log.flagged).length;
 
   return (
     <div className="min-h-screen flex flex-col bg-background-warm">
@@ -132,7 +177,7 @@ export default function VerifyLogsPage() {
           <div className="grid grid-cols-3 gap-6">
             <div className="text-center">
               <p className="font-serif text-2xl md:text-3xl text-foreground tracking-tight">
-                {mockPendingLogs.length}
+                {logs.length}
               </p>
               <p className="text-xs text-muted-foreground mt-1 tracking-wide">
                 Pending Logs
@@ -143,7 +188,7 @@ export default function VerifyLogsPage() {
               style={{ borderLeft: 'solid 1px #41403E' }}
             >
               <p className="font-serif text-2xl md:text-3xl text-foreground tracking-tight">
-                {mockPendingLogs.reduce((sum, log) => sum + log.minutes, 0)}
+                {logs.reduce((sum, log) => sum + log.minutes, 0)}
               </p>
               <p className="text-xs text-muted-foreground mt-1 tracking-wide">
                 Total Minutes
@@ -182,11 +227,11 @@ export default function VerifyLogsPage() {
 
           {selectedLogs.length > 0 && (
             <div className="flex gap-2">
-              <Button size="sm" onClick={handleBulkApprove}>
+              <Button size="sm" onClick={() => openConfirmDialog({ type: 'approve', logIds: selectedLogs })}>
                 <CheckCircle className="h-4 w-4 mr-1" />
                 Approve ({selectedLogs.length})
               </Button>
-              <Button size="sm" variant="outline" onClick={handleBulkReject}>
+              <Button size="sm" variant="outline" onClick={() => openConfirmDialog({ type: 'reject', logIds: selectedLogs })}>
                 <XCircle className="h-4 w-4 mr-1" />
                 Reject
               </Button>
@@ -265,6 +310,7 @@ export default function VerifyLogsPage() {
                         size="icon" 
                         variant="ghost" 
                         className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
+                        onClick={() => openConfirmDialog({ type: 'approve', logIds: [log.id], logDetails: log })}
                       >
                         <CheckCircle className="h-4 w-4" />
                       </Button>
@@ -272,6 +318,7 @@ export default function VerifyLogsPage() {
                         size="icon" 
                         variant="ghost" 
                         className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                        onClick={() => openConfirmDialog({ type: 'reject', logIds: [log.id], logDetails: log })}
                       >
                         <XCircle className="h-4 w-4" />
                       </Button>
@@ -306,6 +353,45 @@ export default function VerifyLogsPage() {
       </main>
 
       <Footer />
+
+      {/* Confirmation Dialog */}
+      <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {pendingAction?.type === 'approve' ? 'Approve Reading Log' : 'Reject Reading Log'}
+              {pendingAction && pendingAction.logIds.length > 1 && 's'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {pendingAction?.logDetails ? (
+                <>
+                  Are you sure you want to {pendingAction.type}{' '}
+                  <strong>{pendingAction.logDetails.studentName}</strong>'s reading log of{' '}
+                  <strong>{pendingAction.logDetails.minutes} minutes</strong>
+                  {pendingAction.logDetails.bookTitle && (
+                    <> reading <strong>{pendingAction.logDetails.bookTitle}</strong></>
+                  )}?
+                </>
+              ) : (
+                <>
+                  Are you sure you want to {pendingAction?.type}{' '}
+                  <strong>{pendingAction?.logIds.length}</strong> reading log
+                  {pendingAction && pendingAction.logIds.length > 1 && 's'}?
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmAction}
+              className={pendingAction?.type === 'reject' ? 'bg-destructive hover:bg-destructive/90' : ''}
+            >
+              {pendingAction?.type === 'approve' ? 'Approve' : 'Reject'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
