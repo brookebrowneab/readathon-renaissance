@@ -20,6 +20,7 @@ import SponsorPage from "./pages/SponsorPage";
 import SponsorLandingPage from "./pages/SponsorLandingPage";
 import { 
   SponsorGatewayPage,
+  SponsorAuthPage,
   SponsorThankYouPage, 
   SponsorPledgedPage, 
   SponsorCheckInstructionsPage,
@@ -70,6 +71,7 @@ const App = () => (
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/student-login" element={<OldStudentLoginPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/sponsor/auth" element={<SponsorAuthPage />} />
           
           {/* Onboarding Routes */}
           <Route path="/onboarding/add-child" element={<OnboardingAddChild />} />
