@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import booksShelfBannerV2 from "@/assets/books-shelf-banner-v2.png";
-
+import checkmarkImage from "@/assets/checkmark.png";
 const HowItWorksPage = () => {
   const steps = [
     {
@@ -126,9 +126,13 @@ const HowItWorksPage = () => {
                 key={index}
                 className="grid md:grid-cols-[auto_1fr] gap-6 md:gap-10"
               >
-                {/* Step number and title */}
+                {/* Step checkmark and title */}
                 <div className="flex gap-4 items-start">
-                  <span className="font-serif text-4xl md:text-5xl text-muted-foreground/40">{step.number}.</span>
+                  <img 
+                    src={checkmarkImage} 
+                    alt="Checkmark" 
+                    className="w-10 h-10 md:w-12 md:h-12 object-contain flex-shrink-0 mt-1"
+                  />
                   <div>
                     <h2 className="font-serif text-2xl md:text-3xl text-foreground mb-2">
                       {step.title}
