@@ -7,9 +7,8 @@ import {
   FileText,
   Settings,
   Mail,
-  Users,
-  BarChart3,
 } from "lucide-react";
+import booksShelfDivider from "@/assets/books-shelf-divider.png";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -31,9 +30,9 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
       <MainNav />
 
       {/* Admin Navigation Bar */}
-      <div className="border-b border-border bg-card">
+      <div className="border-b-2 border-foreground/20 bg-background">
         <div className="container">
-          <nav className="flex overflow-x-auto">
+          <nav className="flex overflow-x-auto gap-1 py-2">
             {navItems.map((item) => {
               const isActive = location.pathname === item.path;
               return (
@@ -41,11 +40,17 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
                   key={item.path}
                   to={item.path}
                   className={cn(
-                    "flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap",
+                    "flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors whitespace-nowrap rounded-md",
                     isActive
-                      ? "border-primary text-primary"
-                      : "border-transparent text-muted-foreground hover:text-foreground hover:border-muted"
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
                   )}
+                  style={isActive ? {
+                    borderTopLeftRadius: '255px 15px',
+                    borderTopRightRadius: '15px 225px',
+                    borderBottomRightRadius: '225px 15px',
+                    borderBottomLeftRadius: '15px 255px',
+                  } : undefined}
                 >
                   <item.icon className="h-4 w-4" />
                   {item.label}
@@ -55,6 +60,18 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
           </nav>
         </div>
       </div>
+
+      {/* Decorative Divider - Tiled */}
+      <div 
+        className="w-full h-12 md:h-16"
+        style={{
+          backgroundImage: `url(${booksShelfDivider})`,
+          backgroundRepeat: 'repeat-x',
+          backgroundSize: 'auto 100%',
+          backgroundPosition: 'center',
+        }}
+        aria-hidden="true"
+      />
 
       <main className="flex-1 bg-background-warm">{children}</main>
 

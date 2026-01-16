@@ -1,11 +1,8 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
 import AdminLayout from "@/components/layout/AdminLayout";
-import { BookContainer } from "@/components/legacy";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Table,
@@ -24,18 +21,23 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  ArrowLeft,
   Search,
   CheckCircle,
   XCircle,
   Mail,
   FileText,
-  Calendar,
-  DollarSign,
   Download,
 } from "lucide-react";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
+
+// Hand-drawn border style
+const handDrawnBorder = {
+  border: 'solid 1px #41403E',
+  borderTopLeftRadius: '255px 15px',
+  borderTopRightRadius: '15px 225px',
+  borderBottomRightRadius: '225px 15px',
+  borderBottomLeftRadius: '15px 255px',
+};
 
 interface PendingCheck {
   id: string;
@@ -115,177 +117,192 @@ const AdminChecksPage = () => {
     <AdminLayout>
       <div className="container py-8">
         {/* Header */}
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-            <div>
-              <h1 className="font-serif text-3xl font-normal tracking-tight text-foreground">
-                Check Management
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+          <div>
+            <div className="relative inline-block mb-2">
+              <h1 className="font-serif text-3xl md:text-4xl font-normal tracking-tight text-foreground relative">
+                <span className="relative">
+                  Check Management
+                  <span 
+                    className="absolute inset-0 -skew-y-1 bg-accent/30 -z-10 transform -rotate-[0.5deg]"
+                    style={{
+                      top: '50%',
+                      height: '50%',
+                      left: '-2%',
+                      right: '-2%',
+                      borderRadius: '4px 8px 4px 6px',
+                    }}
+                    aria-hidden="true"
+                  />
+                </span>
               </h1>
-              <p className="text-muted-foreground">
-                {pendingChecks.length} pending checks totaling ${totalPending.toFixed(2)}
-              </p>
             </div>
-            <Button variant="outline" onClick={() => toast.success("Exporting check report...")}>
-              <Download className="h-4 w-4 mr-2" />
-              Export Report
-            </Button>
+            <p className="text-muted-foreground">
+              {pendingChecks.length} pending checks totaling ${totalPending.toFixed(2)}
+            </p>
           </div>
+          <Button variant="outline" onClick={() => toast.success("Exporting check report...")} style={handDrawnBorder}>
+            <Download className="h-4 w-4 mr-2" />
+            Export Report
+          </Button>
+        </div>
 
-          {/* Summary Cards */}
-          <div className="grid grid-cols-3 gap-4 mb-8">
-            <BookContainer variant="default" className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-warning/10 flex items-center justify-center">
-                  <FileText className="h-5 w-5 text-warning" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-foreground">{pendingChecks.length}</p>
-                  <p className="text-sm text-muted-foreground">Pending</p>
-                </div>
+        {/* Summary Cards */}
+        <div className="grid grid-cols-3 gap-4 mb-8">
+          <div className="bg-background p-4" style={handDrawnBorder}>
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-warning/10 flex items-center justify-center">
+                <FileText className="h-5 w-5 text-warning" />
               </div>
-            </BookContainer>
-
-            <BookContainer variant="default" className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-success/10 flex items-center justify-center">
-                  <CheckCircle className="h-5 w-5 text-success" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-foreground">{receivedChecks.length}</p>
-                  <p className="text-sm text-muted-foreground">Received</p>
-                </div>
+              <div>
+                <p className="font-serif text-2xl text-foreground">{pendingChecks.length}</p>
+                <p className="text-sm text-muted-foreground">Pending</p>
               </div>
-            </BookContainer>
-
-            <BookContainer variant="default" className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-destructive/10 flex items-center justify-center">
-                  <XCircle className="h-5 w-5 text-destructive" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-foreground">{bouncedChecks.length}</p>
-                  <p className="text-sm text-muted-foreground">Bounced</p>
-                </div>
-              </div>
-            </BookContainer>
-          </div>
-
-          {/* Search */}
-          <div className="mb-6">
-            <div className="relative max-w-md">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Search sponsors or students..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
             </div>
           </div>
 
-          {/* Table */}
-          <BookContainer variant="default" className="overflow-hidden">
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Sponsor</TableHead>
-                    <TableHead>Student</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
-                    <TableHead>Pledge Date</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Notes</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredChecks.map((check) => (
-                    <TableRow key={check.id}>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium">{check.sponsorName}</p>
-                          <p className="text-sm text-muted-foreground">{check.sponsorEmail}</p>
-                        </div>
-                      </TableCell>
-                      <TableCell className="font-medium">{check.studentName}</TableCell>
-                      <TableCell className="text-right font-bold">
-                        ${check.amount.toFixed(2)}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">{check.pledgeDate}</TableCell>
-                      <TableCell>{getStatusBadge(check.status)}</TableCell>
-                      <TableCell>
-                        <span className="text-sm text-muted-foreground max-w-[150px] truncate block">
-                          {check.notes || "—"}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {check.status === "pending" && (
-                          <div className="flex justify-end gap-1">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="text-success hover:text-success"
-                              onClick={() => handleAction(check, "received")}
-                            >
-                              <CheckCircle className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="text-destructive hover:text-destructive"
-                              onClick={() => handleAction(check, "bounced")}
-                            >
-                              <XCircle className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        )}
-                        {check.status === "bounced" && (
+          <div className="bg-background p-4" style={handDrawnBorder}>
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-success/10 flex items-center justify-center">
+                <CheckCircle className="h-5 w-5 text-success" />
+              </div>
+              <div>
+                <p className="font-serif text-2xl text-foreground">{receivedChecks.length}</p>
+                <p className="text-sm text-muted-foreground">Received</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-background p-4" style={handDrawnBorder}>
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-destructive/10 flex items-center justify-center">
+                <XCircle className="h-5 w-5 text-destructive" />
+              </div>
+              <div>
+                <p className="font-serif text-2xl text-foreground">{bouncedChecks.length}</p>
+                <p className="text-sm text-muted-foreground">Bounced</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Search */}
+        <div className="mb-6">
+          <div className="relative max-w-md">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Search sponsors or students..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+        </div>
+
+        {/* Table */}
+        <div className="bg-background overflow-hidden" style={handDrawnBorder}>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Sponsor</TableHead>
+                  <TableHead>Student</TableHead>
+                  <TableHead className="text-right">Amount</TableHead>
+                  <TableHead>Pledge Date</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Notes</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredChecks.map((check) => (
+                  <TableRow key={check.id}>
+                    <TableCell>
+                      <div>
+                        <p className="font-medium">{check.sponsorName}</p>
+                        <p className="text-sm text-muted-foreground">{check.sponsorEmail}</p>
+                      </div>
+                    </TableCell>
+                    <TableCell className="font-medium">{check.studentName}</TableCell>
+                    <TableCell className="text-right font-serif text-lg">
+                      ${check.amount.toFixed(2)}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">{check.pledgeDate}</TableCell>
+                    <TableCell>{getStatusBadge(check.status)}</TableCell>
+                    <TableCell>
+                      <span className="text-sm text-muted-foreground max-w-[150px] truncate block">
+                        {check.notes || "—"}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {check.status === "pending" && (
+                        <div className="flex justify-end gap-1">
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => toast.success(`Reminder sent to ${check.sponsorName}`)}
+                            className="text-success hover:text-success"
+                            onClick={() => handleAction(check, "received")}
                           >
-                            <Mail className="h-4 w-4" />
+                            <CheckCircle className="h-4 w-4" />
                           </Button>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-destructive hover:text-destructive"
+                            onClick={() => handleAction(check, "bounced")}
+                          >
+                            <XCircle className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
+                      {check.status === "bounced" && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => toast.success(`Reminder sent to ${check.sponsorName}`)}
+                        >
+                          <Mail className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
 
-            {filteredChecks.length === 0 && (
-              <div className="p-8 text-center text-muted-foreground">
-                No checks match your search.
-              </div>
-            )}
-          </BookContainer>
-
-          {/* Mailing Instructions */}
-          <BookContainer variant="default" className="p-6 mt-8">
-            <h2 className="font-medium text-foreground mb-4">Check Mailing Instructions</h2>
-            <div className="bg-muted/50 rounded-lg p-4">
-              <p className="text-sm text-muted-foreground mb-2">
-                Sponsors have been instructed to mail checks to:
-              </p>
-              <address className="text-foreground not-italic font-medium">
-                Lincoln Elementary PTA<br />
-                Read-a-thon Fund<br />
-                123 School Street<br />
-                Anytown, ST 12345
-              </address>
+          {filteredChecks.length === 0 && (
+            <div className="p-8 text-center text-muted-foreground">
+              No checks match your search.
             </div>
-          </BookContainer>
+          )}
         </div>
 
-        {/* Action Dialog */}
+        {/* Mailing Instructions */}
+        <div className="bg-background p-6 mt-8" style={handDrawnBorder}>
+          <h2 className="font-serif text-xl text-foreground mb-4">Check Mailing Instructions</h2>
+          <div className="bg-muted/50 rounded-lg p-4">
+            <p className="text-sm text-muted-foreground mb-2">
+              Sponsors have been instructed to mail checks to:
+            </p>
+            <address className="text-foreground not-italic font-medium">
+              Janney Elementary PTA<br />
+              Read-a-thon Fund<br />
+              4130 Albemarle St. NW<br />
+              Washington, DC 20016
+            </address>
+          </div>
+        </div>
+      </div>
+
+      {/* Action Dialog */}
       <Dialog open={!!selectedCheck && !!actionType} onOpenChange={() => {
         setSelectedCheck(null);
         setActionType(null);
       }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>
+            <DialogTitle className="font-serif">
               {actionType === "received" ? "Mark Check as Received" : "Mark Check as Bounced"}
             </DialogTitle>
             <DialogDescription>
@@ -309,23 +326,23 @@ const AdminChecksPage = () => {
             <Button variant="outline" onClick={() => {
               setSelectedCheck(null);
               setActionType(null);
-            }}>
+            }} style={handDrawnBorder}>
               Cancel
             </Button>
             <Button
               onClick={processAction}
-              loading={isProcessing}
+              disabled={isProcessing}
               variant={actionType === "bounced" ? "destructive" : "default"}
             >
               {actionType === "received" ? (
                 <>
                   <CheckCircle className="h-4 w-4 mr-2" />
-                  Mark Received
+                  {isProcessing ? "Processing..." : "Mark Received"}
                 </>
               ) : (
                 <>
                   <XCircle className="h-4 w-4 mr-2" />
-                  Mark Bounced
+                  {isProcessing ? "Processing..." : "Mark Bounced"}
                 </>
               )}
             </Button>
