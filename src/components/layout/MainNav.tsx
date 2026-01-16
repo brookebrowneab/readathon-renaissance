@@ -59,8 +59,14 @@ const MainNav = () => {
   return (
     <>
       {/* Desktop Header */}
-      <header className="sticky top-0 z-50 w-full bg-white/90 backdrop-blur-sm border-b border-slate-100 hidden md:block">
-        <div className="container flex h-22 items-center justify-between py-2">
+      <header className={cn(
+        "sticky top-0 z-50 w-full bg-white/90 backdrop-blur-sm border-b border-slate-100 hidden md:block",
+        location.pathname === "/" ? "py-6" : ""
+      )}>
+        <div className={cn(
+          "container flex items-center justify-between",
+          location.pathname === "/" ? "h-28 py-4" : "h-22 py-2"
+        )}>
 
           {/* Logo - Left (larger on home page) */}
           <Link to="/" className="flex items-center" style={{ marginTop: '10px', marginLeft: '20px' }}>
