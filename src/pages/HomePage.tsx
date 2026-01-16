@@ -42,21 +42,12 @@ const HomePage = () => {
           {/* Constrain hero content to ~2/3 page width, indent to align with data block */}
           <div className="max-w-4xl pl-9 md:pl-14 lg:pl-20 text-left">
             {/* Logo above hero */}
-            {/* Logo in badge/frame */}
-            <div 
-              className="inline-block bg-background/80 backdrop-blur-sm px-6 py-4 mb-10"
-              style={{
-                border: 'solid 1.5px #41403E',
-                borderTopLeftRadius: '255px 15px',
-                borderTopRightRadius: '15px 225px',
-                borderBottomRightRadius: '225px 15px',
-                borderBottomLeftRadius: '15px 255px',
-              }}
-            >
+            {/* Logo with subtle background contrast */}
+            <div className="bg-background-warm/60 backdrop-blur-sm -ml-6 pl-6 pr-8 py-4 mb-8 inline-block rounded-r-lg">
               <img 
                 src={logo} 
                 alt="Read-a-thon" 
-                className="h-14 w-auto" 
+                className="h-16 w-auto" 
               />
             </div>
             
