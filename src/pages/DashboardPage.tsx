@@ -144,9 +144,6 @@ const DashboardPage = () => {
                     backgroundSize: 'auto 100%',
                   }}
                 >
-                  {/* Semi-transparent overlay for readability */}
-                  <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/60 to-transparent" />
-                  
                   <div className="relative z-10">
                     <p className="text-sm text-muted-foreground uppercase tracking-widest mb-2">Janney School Total</p>
                     <div className="relative inline-block mb-1">
