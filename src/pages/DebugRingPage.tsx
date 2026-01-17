@@ -307,95 +307,139 @@ function PatternUnitsTest() {
   );
 }
 /**
- * Test 4: Image element bounds test
- * Test if the issue is the <image> element's bounding box within the pattern
+ * Test 4: Large pattern tile (FIX)
+ * Use a pattern tile large enough to cover the entire circle without visible tiling
  */
-function ImageElementTest() {
+function LargePatternTest() {
   return (
     <section className="grid gap-4 rounded-lg border bg-card p-4">
       <header className="grid gap-1">
-        <h2 className="text-lg font-semibold">Test 4 — Image element positioning</h2>
+        <h2 className="text-lg font-semibold">Test 4 — Large pattern tile (potential fix)</h2>
         <p className="text-sm text-muted-foreground">
-          Different image positions/sizes within the pattern tile.
+          Use a pattern tile larger than the SVG viewBox to eliminate visible tiling boundaries.
         </p>
       </header>
 
-      <div className="flex flex-wrap gap-4">
-        {/* Current: image at 0,0 size 20x20 */}
+      <div className="rounded-md bg-green-100 dark:bg-green-900/20 border-green-300 dark:border-green-700 border p-3 text-sm">
+        <strong>Hypothesis:</strong> If the pattern tile is large enough (e.g., 100×100 in a 20×20 viewBox), no tile boundary will be visible within the rendered circle.
+      </div>
+
+      <div className="flex flex-wrap gap-6">
+        {/* Current 20x20 tile */}
         <div className="grid gap-2">
-          <div className="text-xs font-medium">Current: x=0 y=0 20×20</div>
+          <div className="text-sm font-medium">Current: 20×20 tile</div>
           <div
             className="grid place-items-center rounded-full"
-            style={{ width: 140, height: 140, background: "#E6EAF1", border: "solid 0.5px #41403E" }}
+            style={{ width: 160, height: 160, background: "#E6EAF1", border: "solid 0.5px #41403E" }}
           >
-            <svg width={140} height={140} viewBox="0 0 20 20">
+            <svg width={160} height={160} viewBox="0 0 20 20">
               <defs>
-                <pattern id="img-test-1" patternUnits="userSpaceOnUse" x="0" y="0" width="20" height="20">
+                <pattern id="tile-20" patternUnits="userSpaceOnUse" x="0" y="0" width="20" height="20">
                   <image href={pencilPattern} x="0" y="0" width="20" height="20" preserveAspectRatio="xMidYMid slice" />
                 </pattern>
               </defs>
-              <circle r={r} cx="10" cy="10" fill="transparent" stroke="url(#img-test-1)" strokeWidth={strokeWidth} />
+              <circle r={r} cx="10" cy="10" fill="transparent" stroke="url(#tile-20)" strokeWidth={strokeWidth} />
             </svg>
           </div>
+          <div className="text-xs text-muted-foreground">Visible tiling boundary</div>
         </div>
 
-        {/* Image shifted: x=-2 y=-2 size 24x24 */}
+        {/* 100x100 tile */}
         <div className="grid gap-2">
-          <div className="text-xs font-medium">Shifted: x=-2 y=-2 24×24</div>
+          <div className="text-sm font-medium">Fix: 100×100 tile</div>
           <div
             className="grid place-items-center rounded-full"
-            style={{ width: 140, height: 140, background: "#E6EAF1", border: "solid 0.5px #41403E" }}
+            style={{ width: 160, height: 160, background: "#E6EAF1", border: "solid 0.5px #41403E" }}
           >
-            <svg width={140} height={140} viewBox="0 0 20 20">
+            <svg width={160} height={160} viewBox="0 0 20 20">
               <defs>
-                <pattern id="img-test-2" patternUnits="userSpaceOnUse" x="0" y="0" width="20" height="20">
-                  <image href={pencilPattern} x="-2" y="-2" width="24" height="24" preserveAspectRatio="xMidYMid slice" />
+                <pattern id="tile-100" patternUnits="userSpaceOnUse" x="-40" y="-40" width="100" height="100">
+                  <image href={pencilPattern} x="0" y="0" width="100" height="100" preserveAspectRatio="xMidYMid slice" />
                 </pattern>
               </defs>
-              <circle r={r} cx="10" cy="10" fill="transparent" stroke="url(#img-test-2)" strokeWidth={strokeWidth} />
+              <circle r={r} cx="10" cy="10" fill="transparent" stroke="url(#tile-100)" strokeWidth={strokeWidth} />
             </svg>
           </div>
+          <div className="text-xs text-muted-foreground">No visible tile boundary</div>
         </div>
 
-        {/* Larger pattern tile */}
+        {/* 100x100 tile as progress ring with dashoffset */}
         <div className="grid gap-2">
-          <div className="text-xs font-medium">Larger tile: 24×24 pattern</div>
+          <div className="text-sm font-medium">100×100 with 75% fill</div>
           <div
             className="grid place-items-center rounded-full"
-            style={{ width: 140, height: 140, background: "#E6EAF1", border: "solid 0.5px #41403E" }}
+            style={{ width: 160, height: 160, background: "#E6EAF1", border: "solid 0.5px #41403E" }}
           >
-            <svg width={140} height={140} viewBox="0 0 20 20">
+            <svg width={160} height={160} viewBox="0 0 20 20">
               <defs>
-                <pattern id="img-test-3" patternUnits="userSpaceOnUse" x="-2" y="-2" width="24" height="24">
-                  <image href={pencilPattern} x="0" y="0" width="24" height="24" preserveAspectRatio="xMidYMid slice" />
+                <pattern id="tile-100-progress" patternUnits="userSpaceOnUse" x="-40" y="-40" width="100" height="100">
+                  <image href={pencilPattern} x="0" y="0" width="100" height="100" preserveAspectRatio="xMidYMid slice" />
                 </pattern>
               </defs>
-              <circle r={r} cx="10" cy="10" fill="transparent" stroke="url(#img-test-3)" strokeWidth={strokeWidth} />
+              <circle
+                r={r}
+                cx="10"
+                cy="10"
+                fill="transparent"
+                stroke="url(#tile-100-progress)"
+                strokeWidth={strokeWidth}
+                pathLength={100}
+                strokeDasharray={100}
+                strokeDashoffset={25}
+                transform="rotate(-90 10 10)"
+              />
             </svg>
           </div>
-        </div>
-
-        {/* No preserveAspectRatio */}
-        <div className="grid gap-2">
-          <div className="text-xs font-medium">No aspect ratio (stretch)</div>
-          <div
-            className="grid place-items-center rounded-full"
-            style={{ width: 140, height: 140, background: "#E6EAF1", border: "solid 0.5px #41403E" }}
-          >
-            <svg width={140} height={140} viewBox="0 0 20 20">
-              <defs>
-                <pattern id="img-test-4" patternUnits="userSpaceOnUse" x="0" y="0" width="20" height="20">
-                  <image href={pencilPattern} x="0" y="0" width="20" height="20" preserveAspectRatio="none" />
-                </pattern>
-              </defs>
-              <circle r={r} cx="10" cy="10" fill="transparent" stroke="url(#img-test-4)" strokeWidth={strokeWidth} />
-            </svg>
-          </div>
+          <div className="text-xs text-muted-foreground">Progress ring style</div>
         </div>
       </div>
 
-      <div className="rounded-md bg-muted/40 p-3 text-sm">
-        <strong>What to check:</strong> Does shifting the image or enlarging the pattern tile eliminate the horizontal line?
+      <div className="grid gap-4 mt-4">
+        <div className="text-sm font-medium">Same 100×100 pattern at different positions</div>
+        <div className="flex gap-4">
+          <div
+            className="grid place-items-center rounded-full"
+            style={{ width: 100, height: 100, background: "#E6EAF1", border: "solid 0.5px #41403E" }}
+          >
+            <svg width={100} height={100} viewBox="0 0 20 20">
+              <defs>
+                <pattern id="tile-100-a" patternUnits="userSpaceOnUse" x="-40" y="-40" width="100" height="100">
+                  <image href={pencilPattern} x="0" y="0" width="100" height="100" preserveAspectRatio="xMidYMid slice" />
+                </pattern>
+              </defs>
+              <circle r={r} cx="10" cy="10" fill="transparent" stroke="url(#tile-100-a)" strokeWidth={strokeWidth} />
+            </svg>
+          </div>
+          <div
+            className="grid place-items-center rounded-full"
+            style={{ width: 100, height: 100, background: "#E6EAF1", border: "solid 0.5px #41403E", marginLeft: 50 }}
+          >
+            <svg width={100} height={100} viewBox="0 0 20 20">
+              <defs>
+                <pattern id="tile-100-b" patternUnits="userSpaceOnUse" x="-40" y="-40" width="100" height="100">
+                  <image href={pencilPattern} x="0" y="0" width="100" height="100" preserveAspectRatio="xMidYMid slice" />
+                </pattern>
+              </defs>
+              <circle r={r} cx="10" cy="10" fill="transparent" stroke="url(#tile-100-b)" strokeWidth={strokeWidth} />
+            </svg>
+          </div>
+          <div
+            className="grid place-items-center rounded-full"
+            style={{ width: 100, height: 100, background: "#E6EAF1", border: "solid 0.5px #41403E", marginLeft: 100 }}
+          >
+            <svg width={100} height={100} viewBox="0 0 20 20">
+              <defs>
+                <pattern id="tile-100-c" patternUnits="userSpaceOnUse" x="-40" y="-40" width="100" height="100">
+                  <image href={pencilPattern} x="0" y="0" width="100" height="100" preserveAspectRatio="xMidYMid slice" />
+                </pattern>
+              </defs>
+              <circle r={r} cx="10" cy="10" fill="transparent" stroke="url(#tile-100-c)" strokeWidth={strokeWidth} />
+            </svg>
+          </div>
+        </div>
+        <div className="text-xs text-muted-foreground">
+          All three should look consistent — no position-dependent cutoff
+        </div>
       </div>
     </section>
   );
@@ -662,7 +706,7 @@ export default function DebugRingPage() {
         <RotationTest />
         <FullCircleTest />
         <PatternUnitsTest />
-        <ImageElementTest />
+        <LargePatternTest />
         <StrokeEdgeTest />
         <ZoomedCropTest />
 
