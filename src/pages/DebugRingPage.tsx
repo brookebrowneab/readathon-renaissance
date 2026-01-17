@@ -1,257 +1,34 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import pencilPattern from "@/assets/pencil-pattern-blue.png";
 import { ReadingGoalRing } from "@/components/legacy/ReadingGoalRing";
 
-function round(n: number, d = 2) {
-  const p = 10 ** d;
-  return Math.round(n * p) / p;
-}
+const r = 4.75;
+const strokeWidth = 9.5;
 
-function PatternClippingTest() {
-  // Tests whether the pattern/image element has an internal bounding box that clips content
-  const viewBoxSize = 20;
-  const r = 4.75;
-  const strokeWidth = 9.5;
-
-  return (
-    <section className="grid gap-4 rounded-lg border bg-card p-4">
-      <header className="grid gap-1">
-        <h2 className="text-lg font-semibold">Test A — Pattern &amp; Image Clipping</h2>
-        <p className="text-sm text-muted-foreground">
-          Compares different pattern/image configurations to isolate clipping behavior.
-        </p>
-      </header>
-
-      <div className="grid gap-6 md:grid-cols-3">
-        {/* Control: Current implementation */}
-        <div className="grid gap-2">
-          <div className="text-sm font-medium">Current implementation</div>
-          <div
-            className="grid place-items-center rounded-full"
-            style={{ width: 180, height: 180, background: "#E6EAF1", border: "solid 0.5px #41403E" }}
-          >
-            <svg width={180} height={180} viewBox="0 0 20 20">
-              <defs>
-                <pattern
-                  id="test-pattern-current"
-                  patternUnits="userSpaceOnUse"
-                  x="0"
-                  y="0"
-                  width="20"
-                  height="20"
-                >
-                  <image
-                    href={pencilPattern}
-                    x="0"
-                    y="0"
-                    width="20"
-                    height="20"
-                    preserveAspectRatio="xMidYMid slice"
-                  />
-                </pattern>
-              </defs>
-              <circle
-                r={r}
-                cx="10"
-                cy="10"
-                fill="transparent"
-                stroke="url(#test-pattern-current)"
-                strokeWidth={strokeWidth}
-                pathLength={100}
-                strokeDasharray={100}
-                strokeDashoffset={0}
-                transform="rotate(-90 10 10)"
-              />
-            </svg>
-          </div>
-          <code className="text-xs text-muted-foreground">patternUnits=userSpaceOnUse</code>
-        </div>
-
-        {/* Test: overflow visible on pattern and image */}
-        <div className="grid gap-2">
-          <div className="text-sm font-medium">With overflow="visible"</div>
-          <div
-            className="grid place-items-center rounded-full"
-            style={{ width: 180, height: 180, background: "#E6EAF1", border: "solid 0.5px #41403E" }}
-          >
-            <svg width={180} height={180} viewBox="0 0 20 20" overflow="visible">
-              <defs>
-                <pattern
-                  id="test-pattern-overflow"
-                  patternUnits="userSpaceOnUse"
-                  x="0"
-                  y="0"
-                  width="20"
-                  height="20"
-                  overflow="visible"
-                >
-                  <image
-                    href={pencilPattern}
-                    x="0"
-                    y="0"
-                    width="20"
-                    height="20"
-                    preserveAspectRatio="xMidYMid slice"
-                    overflow="visible"
-                  />
-                </pattern>
-              </defs>
-              <circle
-                r={r}
-                cx="10"
-                cy="10"
-                fill="transparent"
-                stroke="url(#test-pattern-overflow)"
-                strokeWidth={strokeWidth}
-                pathLength={100}
-                strokeDasharray={100}
-                strokeDashoffset={0}
-                transform="rotate(-90 10 10)"
-              />
-            </svg>
-          </div>
-          <code className="text-xs text-muted-foreground">overflow="visible" on svg, pattern, image</code>
-        </div>
-
-        {/* Test: Larger pattern bounds */}
-        <div className="grid gap-2">
-          <div className="text-sm font-medium">Larger pattern (24×24)</div>
-          <div
-            className="grid place-items-center rounded-full"
-            style={{ width: 180, height: 180, background: "#E6EAF1", border: "solid 0.5px #41403E" }}
-          >
-            <svg width={180} height={180} viewBox="0 0 20 20" overflow="visible">
-              <defs>
-                <pattern
-                  id="test-pattern-larger"
-                  patternUnits="userSpaceOnUse"
-                  x="-2"
-                  y="-2"
-                  width="24"
-                  height="24"
-                >
-                  <image
-                    href={pencilPattern}
-                    x="0"
-                    y="0"
-                    width="24"
-                    height="24"
-                    preserveAspectRatio="xMidYMid slice"
-                  />
-                </pattern>
-              </defs>
-              <circle
-                r={r}
-                cx="10"
-                cy="10"
-                fill="transparent"
-                stroke="url(#test-pattern-larger)"
-                strokeWidth={strokeWidth}
-                pathLength={100}
-                strokeDasharray={100}
-                strokeDashoffset={0}
-                transform="rotate(-90 10 10)"
-              />
-            </svg>
-          </div>
-          <code className="text-xs text-muted-foreground">pattern x/y=-2, width/height=24</code>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function ImageBoundsTest() {
-  const imgRef = useRef<HTMLImageElement | null>(null);
-  const [dims, setDims] = useState<{ w: number; h: number; ratio: string } | null>(null);
-
-  useEffect(() => {
-    const img = imgRef.current;
-    if (!img) return;
-    const run = () => {
-      const w = img.naturalWidth;
-      const h = img.naturalHeight;
-      setDims({ w, h, ratio: `${round(w / h, 3)}:1` });
-    };
-    if (img.complete) run();
-    img.addEventListener("load", run);
-    return () => img.removeEventListener("load", run);
-  }, []);
-
-  return (
-    <section className="grid gap-4 rounded-lg border bg-card p-4">
-      <header className="grid gap-1">
-        <h2 className="text-lg font-semibold">Test B — Pattern Asset Dimensions</h2>
-        <p className="text-sm text-muted-foreground">
-          If the image isn't square, preserveAspectRatio="slice" may clip content.
-        </p>
-      </header>
-
-      <div className="grid gap-4 md:grid-cols-2">
-        <div className="grid place-items-center">
-          <div
-            className="rounded-md border"
-            style={{
-              background:
-                "linear-gradient(45deg, #ccc 25%, transparent 25%), linear-gradient(-45deg, #ccc 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #ccc 75%), linear-gradient(-45deg, transparent 75%, #ccc 75%)",
-              backgroundSize: "16px 16px",
-              backgroundPosition: "0 0, 0 8px, 8px -8px, -8px 0px",
-              padding: 8,
-            }}
-          >
-            <img
-              ref={imgRef}
-              src={pencilPattern}
-              alt="Pencil pattern"
-              style={{ display: "block", maxWidth: 200, border: "1px solid red" }}
-            />
-          </div>
-        </div>
-        <div className="rounded-md bg-muted/40 p-3 text-sm">
-          {dims ? (
-            <ul className="grid gap-1">
-              <li>
-                Natural size: <code>{dims.w}×{dims.h}</code>
-              </li>
-              <li>
-                Aspect ratio: <code>{dims.ratio}</code>
-              </li>
-              <li className="mt-2 text-muted-foreground">
-                If the image is taller than wide, the top/bottom get sliced off when rendered into a square pattern box with <code>slice</code>. If it's wider, left/right get sliced.
-              </li>
-            </ul>
-          ) : (
-            <div className="text-muted-foreground">Loading…</div>
-          )}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function PreserveAspectRatioTest() {
-  const r = 4.75;
-  const strokeWidth = 9.5;
-
-  const variants: { label: string; par: string }[] = [
-    { label: "xMidYMid slice (current)", par: "xMidYMid slice" },
-    { label: "xMidYMid meet", par: "xMidYMid meet" },
-    { label: "none (stretch)", par: "none" },
-    { label: "xMinYMin slice", par: "xMinYMin slice" },
-    { label: "xMaxYMax slice", par: "xMaxYMax slice" },
+/**
+ * Test 1: Rotation test
+ * If the "cutoff" moves with rotation, it's tied to stroke start/end.
+ * If it stays at the bottom regardless of rotation, it's position-based.
+ */
+function RotationTest() {
+  const rotations = [
+    { label: "Current (-90°, starts top)", rotate: -90 },
+    { label: "0° (starts right)", rotate: 0 },
+    { label: "90° (starts bottom)", rotate: 90 },
+    { label: "180° (starts left)", rotate: 180 },
   ];
 
   return (
     <section className="grid gap-4 rounded-lg border bg-card p-4">
       <header className="grid gap-1">
-        <h2 className="text-lg font-semibold">Test C — preserveAspectRatio variants</h2>
+        <h2 className="text-lg font-semibold">Test 1 — Rotation (stroke start position)</h2>
         <p className="text-sm text-muted-foreground">
-          Different values change how the image is fit/clipped inside the pattern tile.
+          75% fill at different rotations. Watch where the "cutoff" appears relative to the stroke start/end vs. the bottom of the circle.
         </p>
       </header>
 
-      <div className="flex flex-wrap gap-4">
-        {variants.map((v, i) => (
+      <div className="flex flex-wrap gap-6">
+        {rotations.map((rot, i) => (
           <div key={i} className="grid gap-2">
             <div
               className="grid place-items-center rounded-full"
@@ -260,7 +37,7 @@ function PreserveAspectRatioTest() {
               <svg width={140} height={140} viewBox="0 0 20 20">
                 <defs>
                   <pattern
-                    id={`par-test-${i}`}
+                    id={`rot-pattern-${i}`}
                     patternUnits="userSpaceOnUse"
                     x="0"
                     y="0"
@@ -273,7 +50,7 @@ function PreserveAspectRatioTest() {
                       y="0"
                       width="20"
                       height="20"
-                      preserveAspectRatio={v.par}
+                      preserveAspectRatio="xMidYMid slice"
                     />
                   </pattern>
                 </defs>
@@ -282,16 +59,89 @@ function PreserveAspectRatioTest() {
                   cx="10"
                   cy="10"
                   fill="transparent"
-                  stroke={`url(#par-test-${i})`}
+                  stroke={`url(#rot-pattern-${i})`}
                   strokeWidth={strokeWidth}
                   pathLength={100}
                   strokeDasharray={100}
-                  strokeDashoffset={0}
-                  transform="rotate(-90 10 10)"
+                  strokeDashoffset={25} /* 75% fill */
+                  transform={`rotate(${rot.rotate} 10 10)`}
                 />
               </svg>
             </div>
-            <code className="text-xs text-muted-foreground max-w-[140px] break-words">{v.label}</code>
+            <div className="text-xs text-muted-foreground max-w-[140px]">{rot.label}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="rounded-md bg-muted/40 p-3 text-sm">
+        <strong>Interpretation:</strong>
+        <ul className="mt-1 list-disc pl-4 text-muted-foreground">
+          <li>If cutoff follows the stroke end → it's the dashoffset gap (intentional pie shape)</li>
+          <li>If cutoff stays at 6 o'clock regardless → it's position-based clipping (unintentional)</li>
+        </ul>
+      </div>
+    </section>
+  );
+}
+
+/**
+ * Test 2: Full circle (100%) at different rotations
+ * With 100% fill there's no dashoffset gap, so any visible cutoff is unintentional.
+ */
+function FullCircleTest() {
+  const rotations = [-90, 0, 45, 90, 135, 180];
+
+  return (
+    <section className="grid gap-4 rounded-lg border bg-card p-4">
+      <header className="grid gap-1">
+        <h2 className="text-lg font-semibold">Test 2 — 100% fill at different rotations</h2>
+        <p className="text-sm text-muted-foreground">
+          No dashoffset gap. Any visible cutoff here is <strong>unintentional clipping</strong>.
+        </p>
+      </header>
+
+      <div className="flex flex-wrap gap-4">
+        {rotations.map((rot, i) => (
+          <div key={i} className="grid gap-2">
+            <div
+              className="grid place-items-center rounded-full"
+              style={{ width: 120, height: 120, background: "#E6EAF1", border: "solid 0.5px #41403E" }}
+            >
+              <svg width={120} height={120} viewBox="0 0 20 20">
+                <defs>
+                  <pattern
+                    id={`full-pattern-${i}`}
+                    patternUnits="userSpaceOnUse"
+                    x="0"
+                    y="0"
+                    width="20"
+                    height="20"
+                  >
+                    <image
+                      href={pencilPattern}
+                      x="0"
+                      y="0"
+                      width="20"
+                      height="20"
+                      preserveAspectRatio="xMidYMid slice"
+                    />
+                  </pattern>
+                </defs>
+                <circle
+                  r={r}
+                  cx="10"
+                  cy="10"
+                  fill="transparent"
+                  stroke={`url(#full-pattern-${i})`}
+                  strokeWidth={strokeWidth}
+                  pathLength={100}
+                  strokeDasharray={100}
+                  strokeDashoffset={0} /* 100% fill */
+                  transform={`rotate(${rot} 10 10)`}
+                />
+              </svg>
+            </div>
+            <code className="text-xs text-muted-foreground">rotate({rot}°)</code>
           </div>
         ))}
       </div>
@@ -299,33 +149,77 @@ function PreserveAspectRatioTest() {
   );
 }
 
-function SolidFillComparison() {
-  const r = 4.75;
-  const strokeWidth = 9.5;
-
+/**
+ * Test 3: Pattern tile grid overlay
+ * Visualizes where 20x20 pattern tiles align relative to the circle.
+ */
+function PatternGridTest() {
   return (
     <section className="grid gap-4 rounded-lg border bg-card p-4">
       <header className="grid gap-1">
-        <h2 className="text-lg font-semibold">Test D — Solid fill vs Pattern fill</h2>
+        <h2 className="text-lg font-semibold">Test 3 — Pattern tile grid overlay</h2>
         <p className="text-sm text-muted-foreground">
-          If solid fill reaches the edge but pattern doesn't, the issue is pattern/image clipping.
+          Red grid shows 20×20 pattern tile boundaries. Check if cutoff aligns with tile edges.
         </p>
       </header>
 
       <div className="flex flex-wrap gap-6">
         <div className="grid gap-2">
-          <div className="text-sm font-medium">Solid stroke</div>
+          <div className="text-sm font-medium">With tile grid</div>
           <div
-            className="grid place-items-center rounded-full"
+            className="relative grid place-items-center rounded-full"
             style={{ width: 180, height: 180, background: "#E6EAF1", border: "solid 0.5px #41403E" }}
           >
             <svg width={180} height={180} viewBox="0 0 20 20">
+              <defs>
+                <pattern
+                  id="grid-pattern"
+                  patternUnits="userSpaceOnUse"
+                  x="0"
+                  y="0"
+                  width="20"
+                  height="20"
+                >
+                  <image
+                    href={pencilPattern}
+                    x="0"
+                    y="0"
+                    width="20"
+                    height="20"
+                    preserveAspectRatio="xMidYMid slice"
+                  />
+                </pattern>
+                {/* Grid pattern for overlay */}
+                <pattern
+                  id="tile-grid"
+                  patternUnits="userSpaceOnUse"
+                  x="0"
+                  y="0"
+                  width="20"
+                  height="20"
+                >
+                  <rect x="0" y="0" width="20" height="20" fill="none" stroke="red" strokeWidth="0.2" />
+                </pattern>
+              </defs>
               <circle
                 r={r}
                 cx="10"
                 cy="10"
                 fill="transparent"
-                stroke="#3b5998"
+                stroke="url(#grid-pattern)"
+                strokeWidth={strokeWidth}
+                pathLength={100}
+                strokeDasharray={100}
+                strokeDashoffset={0}
+                transform="rotate(-90 10 10)"
+              />
+              {/* Grid overlay */}
+              <circle
+                r={r}
+                cx="10"
+                cy="10"
+                fill="transparent"
+                stroke="url(#tile-grid)"
                 strokeWidth={strokeWidth}
                 pathLength={100}
                 strokeDasharray={100}
@@ -337,15 +231,153 @@ function SolidFillComparison() {
         </div>
 
         <div className="grid gap-2">
-          <div className="text-sm font-medium">Pattern stroke</div>
-          <div
-            className="grid place-items-center rounded-full"
-            style={{ width: 180, height: 180, background: "#E6EAF1", border: "solid 0.5px #41403E" }}
-          >
-            <svg width={180} height={180} viewBox="0 0 20 20">
+          <div className="text-sm font-medium">Tile boundary reference</div>
+          <div className="rounded-md bg-muted/40 p-3 text-sm">
+            <p>Pattern tiles at:</p>
+            <ul className="mt-1 list-disc pl-4 text-muted-foreground">
+              <li>x: 0, y: 0 (only one tile in 20×20 viewBox)</li>
+              <li>Circle center: (10, 10)</li>
+              <li>Stroke outer edge: 0.5 to 19.5</li>
+            </ul>
+            <p className="mt-2">
+              If cutoff appears at y≈19.5 or y≈0.5, it could be pattern edge alignment.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/**
+ * Test 4: Stroke edge analysis
+ * Compare the visual edge at different positions around the circle.
+ */
+function StrokeEdgeTest() {
+  const [highlight, setHighlight] = useState<"top" | "right" | "bottom" | "left" | null>(null);
+
+  return (
+    <section className="grid gap-4 rounded-lg border bg-card p-4">
+      <header className="grid gap-1">
+        <h2 className="text-lg font-semibold">Test 4 — Stroke edge comparison</h2>
+        <p className="text-sm text-muted-foreground">
+          Hover/tap to highlight different edges. Compare pattern density at each edge.
+        </p>
+      </header>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid place-items-center">
+          <div className="relative">
+            <div
+              className="grid place-items-center rounded-full"
+              style={{ width: 200, height: 200, background: "#E6EAF1", border: "solid 0.5px #41403E" }}
+            >
+              <svg width={200} height={200} viewBox="0 0 20 20">
+                <defs>
+                  <pattern
+                    id="edge-pattern"
+                    patternUnits="userSpaceOnUse"
+                    x="0"
+                    y="0"
+                    width="20"
+                    height="20"
+                  >
+                    <image
+                      href={pencilPattern}
+                      x="0"
+                      y="0"
+                      width="20"
+                      height="20"
+                      preserveAspectRatio="xMidYMid slice"
+                    />
+                  </pattern>
+                </defs>
+                <circle
+                  r={r}
+                  cx="10"
+                  cy="10"
+                  fill="transparent"
+                  stroke="url(#edge-pattern)"
+                  strokeWidth={strokeWidth}
+                  pathLength={100}
+                  strokeDasharray={100}
+                  strokeDashoffset={0}
+                  transform="rotate(-90 10 10)"
+                />
+              </svg>
+            </div>
+            {/* Edge highlight overlays */}
+            {(["top", "right", "bottom", "left"] as const).map((edge) => {
+              const positions: Record<string, React.CSSProperties> = {
+                top: { top: 0, left: "50%", transform: "translateX(-50%)", width: 60, height: 30 },
+                right: { top: "50%", right: 0, transform: "translateY(-50%)", width: 30, height: 60 },
+                bottom: { bottom: 0, left: "50%", transform: "translateX(-50%)", width: 60, height: 30 },
+                left: { top: "50%", left: 0, transform: "translateY(-50%)", width: 30, height: 60 },
+              };
+              return (
+                <div
+                  key={edge}
+                  className="absolute cursor-pointer transition-colors"
+                  style={{
+                    ...positions[edge],
+                    background: highlight === edge ? "rgba(255,0,0,0.2)" : "transparent",
+                    border: highlight === edge ? "2px solid red" : "2px solid transparent",
+                  }}
+                  onMouseEnter={() => setHighlight(edge)}
+                  onMouseLeave={() => setHighlight(null)}
+                />
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="rounded-md bg-muted/40 p-3 text-sm">
+          <div className="font-medium mb-2">Edge Analysis</div>
+          <p className="text-muted-foreground">
+            Hover over each edge zone. If the <strong>bottom</strong> shows less pattern density at the outer rim compared to top/left/right, that's the unintentional clipping.
+          </p>
+          <div className="mt-3 grid gap-1">
+            <div className={highlight === "top" ? "font-medium text-foreground" : "text-muted-foreground"}>
+              Top edge: y ≈ 0.5 in viewBox
+            </div>
+            <div className={highlight === "bottom" ? "font-medium text-foreground" : "text-muted-foreground"}>
+              Bottom edge: y ≈ 19.5 in viewBox
+            </div>
+            <div className={highlight === "left" ? "font-medium text-foreground" : "text-muted-foreground"}>
+              Left edge: x ≈ 0.5 in viewBox
+            </div>
+            <div className={highlight === "right" ? "font-medium text-foreground" : "text-muted-foreground"}>
+              Right edge: x ≈ 19.5 in viewBox
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/**
+ * Test 5: Zoomed crop comparison
+ * Side-by-side crops of top vs bottom edge at high zoom.
+ */
+function ZoomedCropTest() {
+  return (
+    <section className="grid gap-4 rounded-lg border bg-card p-4">
+      <header className="grid gap-1">
+        <h2 className="text-lg font-semibold">Test 5 — Zoomed edge crops</h2>
+        <p className="text-sm text-muted-foreground">
+          ViewBox crops showing just the top or bottom edge at 4× zoom. Compare pattern-to-edge distance.
+        </p>
+      </header>
+
+      <div className="flex flex-wrap gap-6">
+        <div className="grid gap-2">
+          <div className="text-sm font-medium">Top edge (y: 0–5)</div>
+          <div className="rounded-md border overflow-hidden" style={{ width: 200, height: 100 }}>
+            <svg width={200} height={100} viewBox="0 0 20 5">
               <defs>
                 <pattern
-                  id="test-pattern-compare"
+                  id="zoom-top-pattern"
                   patternUnits="userSpaceOnUse"
                   x="0"
                   y="0"
@@ -362,20 +394,94 @@ function SolidFillComparison() {
                   />
                 </pattern>
               </defs>
+              <rect x="0" y="0" width="20" height="5" fill="#E6EAF1" />
               <circle
                 r={r}
                 cx="10"
                 cy="10"
                 fill="transparent"
-                stroke="url(#test-pattern-compare)"
+                stroke="url(#zoom-top-pattern)"
                 strokeWidth={strokeWidth}
-                pathLength={100}
-                strokeDasharray={100}
-                strokeDashoffset={0}
-                transform="rotate(-90 10 10)"
               />
+              {/* Edge marker */}
+              <line x1="0" y1="0.5" x2="20" y2="0.5" stroke="red" strokeWidth="0.05" />
             </svg>
           </div>
+          <code className="text-xs text-muted-foreground">Red line = y: 0.5 (theoretical edge)</code>
+        </div>
+
+        <div className="grid gap-2">
+          <div className="text-sm font-medium">Bottom edge (y: 15–20)</div>
+          <div className="rounded-md border overflow-hidden" style={{ width: 200, height: 100 }}>
+            <svg width={200} height={100} viewBox="0 15 20 5">
+              <defs>
+                <pattern
+                  id="zoom-bottom-pattern"
+                  patternUnits="userSpaceOnUse"
+                  x="0"
+                  y="0"
+                  width="20"
+                  height="20"
+                >
+                  <image
+                    href={pencilPattern}
+                    x="0"
+                    y="0"
+                    width="20"
+                    height="20"
+                    preserveAspectRatio="xMidYMid slice"
+                  />
+                </pattern>
+              </defs>
+              <rect x="0" y="15" width="20" height="5" fill="#E6EAF1" />
+              <circle
+                r={r}
+                cx="10"
+                cy="10"
+                fill="transparent"
+                stroke="url(#zoom-bottom-pattern)"
+                strokeWidth={strokeWidth}
+              />
+              {/* Edge marker */}
+              <line x1="0" y1="19.5" x2="20" y2="19.5" stroke="red" strokeWidth="0.05" />
+            </svg>
+          </div>
+          <code className="text-xs text-muted-foreground">Red line = y: 19.5 (theoretical edge)</code>
+        </div>
+      </div>
+
+      <div className="rounded-md bg-muted/40 p-3 text-sm">
+        <strong>What to compare:</strong>
+        <ul className="mt-1 list-disc pl-4 text-muted-foreground">
+          <li>Does the pattern reach the red line equally at top and bottom?</li>
+          <li>Is there more grey background visible at bottom than top?</li>
+          <li>This would indicate unintentional clipping at the bottom.</li>
+        </ul>
+      </div>
+    </section>
+  );
+}
+
+/**
+ * Control: Current component
+ */
+function ControlSection() {
+  return (
+    <section className="grid gap-4 rounded-lg border bg-card p-4">
+      <h2 className="text-lg font-semibold">Control — Current component</h2>
+      <p className="text-sm text-muted-foreground">Reference rendering from the actual component.</p>
+      <div className="flex flex-wrap items-start gap-10">
+        <div className="grid gap-1">
+          <ReadingGoalRing progress={100} goal={100} size={160} showLabel={false} />
+          <div className="text-xs text-muted-foreground">100%</div>
+        </div>
+        <div className="grid gap-1">
+          <ReadingGoalRing progress={75} goal={100} size={160} showLabel={false} />
+          <div className="text-xs text-muted-foreground">75%</div>
+        </div>
+        <div className="grid gap-1">
+          <ReadingGoalRing progress={50} goal={100} size={160} showLabel={false} />
+          <div className="text-xs text-muted-foreground">50%</div>
         </div>
       </div>
     </section>
@@ -389,30 +495,33 @@ export default function DebugRingPage() {
         <header className="grid gap-2">
           <h1 className="font-serif text-3xl">Progress Ring Cutoff Investigation</h1>
           <p className="text-sm text-muted-foreground">
-            Focus: Pattern/image bounding box clipping behavior.
+            Distinguishing intentional pie-chart clipping (dashoffset) from unintentional bottom-edge clipping.
           </p>
         </header>
 
-        <section className="grid gap-4 rounded-lg border bg-card p-4">
-          <h2 className="text-lg font-semibold">Control — Current component</h2>
-          <div className="flex flex-wrap items-start gap-10">
-            <ReadingGoalRing progress={100} goal={100} size={180} />
-            <ReadingGoalRing progress={75} goal={100} size={180} />
-          </div>
-        </section>
+        <div className="rounded-lg border border-warning bg-warning/10 p-4 text-sm">
+          <strong>Key distinction:</strong>
+          <ul className="mt-1 list-disc pl-4">
+            <li><strong>Intentional:</strong> The "missing slice" created by strokeDashoffset — this follows the stroke path and creates the pie chart wedge.</li>
+            <li><strong>Unintentional:</strong> Pattern appearing cut off at the outer rim before reaching the circle edge — visible as a gap between pattern and container border.</li>
+          </ul>
+        </div>
 
-        <SolidFillComparison />
-        <PatternClippingTest />
-        <ImageBoundsTest />
-        <PreserveAspectRatioTest />
+        <ControlSection />
+        <RotationTest />
+        <FullCircleTest />
+        <PatternGridTest />
+        <StrokeEdgeTest />
+        <ZoomedCropTest />
 
         <section className="rounded-lg border bg-card p-4 text-sm">
-          <h2 className="text-lg font-semibold">What to look for</h2>
-          <ul className="mt-2 list-disc space-y-1 pl-5 text-muted-foreground">
-            <li><strong>Test D:</strong> If solid fill reaches the edge but pattern doesn't → the clipping is in the pattern/image, not ring geometry.</li>
-            <li><strong>Test A:</strong> If "overflow=visible" or "larger pattern" fixes it → the pattern bounds were clipping.</li>
-            <li><strong>Test B:</strong> If the image isn't square, "slice" clips the longer dimension.</li>
-            <li><strong>Test C:</strong> Different preserveAspectRatio values show how the image is positioned inside the tile.</li>
+          <h2 className="text-lg font-semibold">Summary: What to look for</h2>
+          <ul className="mt-2 list-disc space-y-2 pl-5 text-muted-foreground">
+            <li><strong>Test 1:</strong> If cutoff moves with rotation → intentional (dashoffset). If it stays at bottom → unintentional.</li>
+            <li><strong>Test 2:</strong> 100% fill has no dashoffset gap. Any visible edge cutoff here is purely unintentional.</li>
+            <li><strong>Test 3:</strong> Check if cutoff aligns with pattern tile boundaries.</li>
+            <li><strong>Test 4:</strong> Compare pattern density at all four edges.</li>
+            <li><strong>Test 5:</strong> Zoomed comparison of top vs bottom — if bottom has more grey gap, that's the unintentional clipping.</li>
           </ul>
         </section>
       </div>
