@@ -11,9 +11,8 @@ interface ReadingGoalRingProps {
   className?: string;
 }
 
-const CIRCUMFERENCE = 29.85; // radius 4.75 × 2π
+const PATH_LENGTH = 100;
 const CIRCLE_OFFSET = 20; // px offset for overlapping circles
-
 
 const ReadingGoalRing = ({
   progress,
@@ -53,14 +52,14 @@ const ReadingGoalRing = ({
 
   // Calculate circles needed for overflow behavior
   const circles = useMemo(() => {
-    const result: { dashArray: number; isComplete: boolean; tierIndex: number }[] = [];
+    const result: { percent: number; isComplete: boolean; tierIndex: number }[] = [];
     let remaining = percentage;
     let tierIndex = 0;
 
     while (remaining > 0) {
       const current = Math.min(remaining, 100);
       result.push({
-        dashArray: (current * CIRCUMFERENCE) / 100,
+        percent: current,
         isComplete: current >= 100,
         tierIndex,
       });
@@ -70,7 +69,7 @@ const ReadingGoalRing = ({
 
     // Always show at least one circle
     if (result.length === 0) {
-      result.push({ dashArray: 0, isComplete: false, tierIndex: 0 });
+      result.push({ percent: 0, isComplete: false, tierIndex: 0 });
     }
 
     return result;
@@ -162,8 +161,9 @@ const ReadingGoalRing = ({
               fill="transparent"
               stroke={`url(#pencil-pattern-${index})`}
               strokeWidth="9.5"
-              strokeDasharray={CIRCUMFERENCE}
-              strokeDashoffset={CIRCUMFERENCE - circle.dashArray}
+              pathLength={PATH_LENGTH}
+              strokeDasharray={PATH_LENGTH}
+              strokeDashoffset={PATH_LENGTH - circle.percent}
               transform="rotate(-90 10 10)"
               className="transition-all duration-500 ease-out"
             />
