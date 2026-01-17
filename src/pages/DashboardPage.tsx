@@ -410,13 +410,16 @@ const ChildProgressCard = ({ child }: ChildProgressCardProps) => {
       className="bg-background p-6 shadow-md"
       style={handDrawnBorder}
     >
-      <div className="flex flex-col items-center gap-4">
-        <h2 className="w-full text-left font-serif text-xl md:text-2xl font-normal tracking-tight text-foreground">
+      <div className="relative flex flex-col items-center gap-4">
+        {/* Header positioned as overlay - doesn't affect SVG layout */}
+        <h2 className="absolute top-0 left-0 right-0 z-10 font-serif text-xl md:text-2xl font-normal tracking-tight text-foreground bg-background pb-2">
           {child.name.split(" ")[0]}'s Reading
         </h2>
         
-        <div style={{ height: 15 }} />
-        <ReadingGoalRing progress={child.minutesRead} goal={child.goalMinutes} size={120} />
+        {/* Padding to account for header height visually, but ring renders from top */}
+        <div className="pt-8">
+          <ReadingGoalRing progress={child.minutesRead} goal={child.goalMinutes} size={120} />
+        </div>
         
         {/* Personal Stats Grid */}
         <div className="mt-2 grid w-full grid-cols-2 gap-3">
