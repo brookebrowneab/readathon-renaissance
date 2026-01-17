@@ -416,9 +416,7 @@ const ChildProgressCard = ({ child }: ChildProgressCardProps) => {
         </h2>
         
         <div style={{ height: 15 }} />
-        <div style={{ marginTop: -10 }}>
-          <ReadingGoalRing progress={child.minutesRead} goal={child.goalMinutes} size={120} />
-        </div>
+        <ReadingGoalRing progress={child.minutesRead} goal={child.goalMinutes} size={120} />
         
         {/* Personal Stats Grid */}
         <div className="mt-2 grid w-full grid-cols-2 gap-3">
