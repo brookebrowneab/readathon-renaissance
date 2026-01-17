@@ -365,7 +365,7 @@ const AdminDashboardPage = () => {
                 style={handDrawnBorder}
               >
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="font-serif text-xl text-primary">Daily Activity</h2>
+                  <h2 className="font-serif text-xl text-foreground">Daily Activity</h2>
                   <div className="flex gap-2">
                     <Button
                       variant={chartMetric === "minutes" ? "default" : "outline"}
@@ -415,7 +415,7 @@ const AdminDashboardPage = () => {
                 className="bg-muted/30 p-6 shadow-md"
                 style={handDrawnBorder}
               >
-                <h2 className="font-serif text-xl text-primary mb-4">Participation by Grade</h2>
+                <h2 className="font-serif text-xl text-foreground mb-4">Participation by Grade</h2>
                 <div className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={mockGradeData}>
@@ -444,7 +444,7 @@ const AdminDashboardPage = () => {
                 >
                   <div className="flex items-center gap-2 mb-3">
                     <Trophy className="h-5 w-5 text-accent" />
-                    <h3 className="font-serif text-lg text-primary">Top Students</h3>
+                    <h3 className="font-serif text-lg text-foreground">Top Students</h3>
                   </div>
                   <div className="space-y-2">
                     {mockTopStudents.slice(0, 5).map((student, i) => (
@@ -471,7 +471,7 @@ const AdminDashboardPage = () => {
                 >
                   <div className="flex items-center gap-2 mb-3">
                     <School className="h-5 w-5 text-primary" />
-                    <h3 className="font-serif text-lg text-primary">Top Classes</h3>
+                    <h3 className="font-serif text-lg text-foreground">Top Classes</h3>
                   </div>
                   <div className="space-y-2">
                     {mockTopClasses.slice(0, 5).map((cls, i) => (
@@ -498,7 +498,7 @@ const AdminDashboardPage = () => {
                 >
                   <div className="flex items-center gap-2 mb-3">
                     <Star className="h-5 w-5 text-accent fill-accent" />
-                    <h3 className="font-serif text-lg text-primary">Top Sponsors</h3>
+                    <h3 className="font-serif text-lg text-foreground">Top Sponsors</h3>
                   </div>
                   <div className="space-y-2">
                     {mockTopSponsors.slice(0, 5).map((sponsor, i) => (
@@ -527,7 +527,7 @@ const AdminDashboardPage = () => {
                 style={handDrawnBorder}
               >
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="font-serif text-xl text-primary">Recent Activity</h2>
+                  <h2 className="font-serif text-xl text-foreground">Recent Activity</h2>
                   <Select value={activityFilter} onValueChange={(v) => setActivityFilter(v as ActivityFilter)}>
                     <SelectTrigger className="w-32">
                       <Filter className="h-4 w-4 mr-2" />
@@ -563,7 +563,7 @@ const AdminDashboardPage = () => {
                 className="bg-muted/30 p-6 shadow-md"
                 style={handDrawnBorder}
               >
-                <h3 className="font-serif text-lg text-primary mb-4">Today's Highlights</h3>
+                <h3 className="font-serif text-lg text-foreground mb-4">Today's Highlights</h3>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">New readings</span>
