@@ -1,24 +1,23 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import AdminPageLayout from "@/components/layout/AdminPageLayout";
 import {
-  ArrowLeft,
   DollarSign,
   TrendingUp,
   AlertCircle,
   Download,
   Search,
-  Filter,
   Send,
   Eye,
   RotateCcw,
   Plus,
-  Calendar,
   CheckCircle2,
   Clock,
   XCircle,
   RefreshCw,
   Mail,
   FileText,
+  LogOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -288,164 +287,156 @@ export default function AdminFinancePage() {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-card">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" asChild>
-                <Link to="/admin-dashboard">
-                  <ArrowLeft className="h-5 w-5" />
-                </Link>
-              </Button>
-              <div>
-                <h1 className="text-2xl font-bold">Financial Management</h1>
-                <p className="text-sm text-muted-foreground">
-                  Track payments, pledges, and generate reports
-                </p>
+  const headerActions = (
+    <>
+      <Dialog open={isManualPaymentOpen} onOpenChange={setIsManualPaymentOpen}>
+        <DialogTrigger asChild>
+          <Button variant="outline">
+            <Plus className="mr-2 h-4 w-4" />
+            Manual Payment
+          </Button>
+        </DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Record Manual Payment</DialogTitle>
+            <DialogDescription>
+              Enter details for cash or check payments.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleManualPayment} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="payer">Payer Name</Label>
+              <Input id="payer" placeholder="Enter payer name" required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="payerEmail">Payer Email</Label>
+              <Input id="payerEmail" type="email" placeholder="Enter email" required />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="amount">Amount ($)</Label>
+                <Input id="amount" type="number" step="0.01" min="0" placeholder="0.00" required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="method">Payment Method</Label>
+                <Select defaultValue="cash">
+                  <SelectTrigger id="method">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="cash">Cash</SelectItem>
+                    <SelectItem value="check">Check</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
-            <div className="flex gap-2">
-              <Dialog open={isManualPaymentOpen} onOpenChange={setIsManualPaymentOpen}>
-                <DialogTrigger asChild>
-                  <Button variant="outline">
-                    <Plus className="mr-2 h-4 w-4" />
-                    Manual Payment
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Record Manual Payment</DialogTitle>
-                    <DialogDescription>
-                      Enter details for cash or check payments.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <form onSubmit={handleManualPayment} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="payer">Payer Name</Label>
-                      <Input id="payer" placeholder="Enter payer name" required />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="payerEmail">Payer Email</Label>
-                      <Input id="payerEmail" type="email" placeholder="Enter email" required />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="amount">Amount ($)</Label>
-                        <Input id="amount" type="number" step="0.01" min="0" placeholder="0.00" required />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="method">Payment Method</Label>
-                        <Select defaultValue="cash">
-                          <SelectTrigger id="method">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="cash">Cash</SelectItem>
-                            <SelectItem value="check">Check</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="reference">Reference Number (Optional)</Label>
-                      <Input id="reference" placeholder="Check number or receipt ID" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="linkedPledge">Link to Pledge (Optional)</Label>
-                      <Select>
-                        <SelectTrigger id="linkedPledge">
-                          <SelectValue placeholder="Select a pledge" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {mockOutstandingPledges.map((pledge) => (
-                            <SelectItem key={pledge.id} value={pledge.id}>
-                              {pledge.sponsorName} - ${pledge.amount.toFixed(2)} ({pledge.studentName})
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <DialogFooter>
-                      <Button type="button" variant="outline" onClick={() => setIsManualPaymentOpen(false)}>
-                        Cancel
-                      </Button>
-                      <Button type="submit">Record Payment</Button>
-                    </DialogFooter>
-                  </form>
-                </DialogContent>
-              </Dialog>
-
-              <Dialog open={isExportOpen} onOpenChange={setIsExportOpen}>
-                <DialogTrigger asChild>
-                  <Button>
-                    <Download className="mr-2 h-4 w-4" />
-                    Export Report
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Export Financial Report</DialogTitle>
-                    <DialogDescription>
-                      Generate a CSV report of financial data.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <form onSubmit={handleExport} className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="exportFrom">From Date</Label>
-                        <Input id="exportFrom" type="date" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="exportTo">To Date</Label>
-                        <Input id="exportTo" type="date" />
-                      </div>
-                    </div>
-                    <div className="space-y-3">
-                      <Label>Include Data</Label>
-                      <div className="space-y-2">
-                        <div className="flex items-center space-x-2">
-                          <Checkbox id="includePayments" defaultChecked />
-                          <label htmlFor="includePayments" className="text-sm">Completed Payments</label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Checkbox id="includePending" defaultChecked />
-                          <label htmlFor="includePending" className="text-sm">Pending Payments</label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Checkbox id="includeOutstanding" defaultChecked />
-                          <label htmlFor="includeOutstanding" className="text-sm">Outstanding Pledges</label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Checkbox id="includeRefunds" />
-                          <label htmlFor="includeRefunds" className="text-sm">Refunded Payments</label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Checkbox id="includeFailed" />
-                          <label htmlFor="includeFailed" className="text-sm">Failed Payments</label>
-                        </div>
-                      </div>
-                    </div>
-                    <DialogFooter>
-                      <Button type="button" variant="outline" onClick={() => setIsExportOpen(false)}>
-                        Cancel
-                      </Button>
-                      <Button type="submit">
-                        <FileText className="mr-2 h-4 w-4" />
-                        Generate CSV
-                      </Button>
-                    </DialogFooter>
-                  </form>
-                </DialogContent>
-              </Dialog>
+            <div className="space-y-2">
+              <Label htmlFor="reference">Reference Number (Optional)</Label>
+              <Input id="reference" placeholder="Check number or receipt ID" />
             </div>
-          </div>
-        </div>
-      </header>
+            <div className="space-y-2">
+              <Label htmlFor="linkedPledge">Link to Pledge (Optional)</Label>
+              <Select>
+                <SelectTrigger id="linkedPledge">
+                  <SelectValue placeholder="Select a pledge" />
+                </SelectTrigger>
+                <SelectContent>
+                  {mockOutstandingPledges.map((pledge) => (
+                    <SelectItem key={pledge.id} value={pledge.id}>
+                      {pledge.sponsorName} - ${pledge.amount.toFixed(2)} ({pledge.studentName})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setIsManualPaymentOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit">Record Payment</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
-      <main className="container mx-auto px-4 py-6 space-y-6">
+      <Dialog open={isExportOpen} onOpenChange={setIsExportOpen}>
+        <DialogTrigger asChild>
+          <Button>
+            <Download className="mr-2 h-4 w-4" />
+            Export Report
+          </Button>
+        </DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Export Financial Report</DialogTitle>
+            <DialogDescription>
+              Generate a CSV report of financial data.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleExport} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="exportFrom">From Date</Label>
+                <Input id="exportFrom" type="date" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="exportTo">To Date</Label>
+                <Input id="exportTo" type="date" />
+              </div>
+            </div>
+            <div className="space-y-3">
+              <Label>Include Data</Label>
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  <Checkbox id="includePayments" defaultChecked />
+                  <label htmlFor="includePayments" className="text-sm">Completed Payments</label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox id="includePending" defaultChecked />
+                  <label htmlFor="includePending" className="text-sm">Pending Payments</label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox id="includeOutstanding" defaultChecked />
+                  <label htmlFor="includeOutstanding" className="text-sm">Outstanding Pledges</label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox id="includeRefunds" />
+                  <label htmlFor="includeRefunds" className="text-sm">Refunded Payments</label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox id="includeFailed" />
+                  <label htmlFor="includeFailed" className="text-sm">Failed Payments</label>
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setIsExportOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit">
+                <FileText className="mr-2 h-4 w-4" />
+                Generate CSV
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <Link to="/login">
+        <Button variant="outline">
+          <LogOut className="h-4 w-4 mr-2" />
+          Exit
+        </Button>
+      </Link>
+    </>
+  );
+
+  return (
+    <AdminPageLayout 
+      title="Financial Management" 
+      subtitle="Track payments, pledges, and generate reports"
+      actions={headerActions}
+    >
         {/* Financial Summary */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card>
@@ -531,7 +522,6 @@ export default function AdminFinancePage() {
                     </div>
                     <Select value={statusFilter} onValueChange={setStatusFilter}>
                       <SelectTrigger className="w-full md:w-40">
-                        <Filter className="mr-2 h-4 w-4" />
                         <SelectValue placeholder="Status" />
                       </SelectTrigger>
                       <SelectContent>
@@ -698,7 +688,6 @@ export default function AdminFinancePage() {
             </Card>
           </TabsContent>
         </Tabs>
-      </main>
 
       {/* Payment Details Sheet */}
       <Sheet open={!!selectedPayment} onOpenChange={() => setSelectedPayment(null)}>
@@ -795,6 +784,6 @@ export default function AdminFinancePage() {
           )}
         </SheetContent>
       </Sheet>
-    </div>
+    </AdminPageLayout>
   );
 }

@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { MainNav, Footer } from "@/components/layout";
+import AdminPageLayout from "@/components/layout/AdminPageLayout";
 import { BookContainer } from "@/components/legacy";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -65,7 +65,6 @@ import {
   School,
   Clock,
   LogOut,
-  ArrowLeft,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
@@ -218,113 +217,97 @@ const AdminUsersPage = () => {
 
   const hasActiveFilters = searchQuery || roleFilter !== "all" || statusFilter !== "all" || participationFilter !== "all";
 
-  return (
-    <div className="flex min-h-screen flex-col">
-      <MainNav />
-
-      <main className="flex-1 bg-background-warm">
-        <div className="container py-8">
-          {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" asChild>
-                <Link to="/admin-dashboard">
-                  <ArrowLeft className="h-5 w-5" />
-                </Link>
-              </Button>
-              <div>
-                <h1 className="font-serif text-2xl font-normal text-foreground md:text-3xl">
-                  User Management
-                </h1>
-                <p className="text-muted-foreground">
-                  {filteredUsers.length} users {hasActiveFilters && "(filtered)"}
-                </p>
+  const headerActions = (
+    <>
+      <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+        <DialogTrigger asChild>
+          <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
+            <UserPlus className="h-4 w-4 mr-2" />
+            Add User
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Create New User</DialogTitle>
+            <DialogDescription>
+              Add a new user to the system manually.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Role</Label>
+              <Select value={newUserRole} onValueChange={(v) => setNewUserRole(v as UserRole)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="parent">Parent</SelectItem>
+                  <SelectItem value="teacher">Teacher</SelectItem>
+                  <SelectItem value="sponsor">Sponsor</SelectItem>
+                  <SelectItem value="admin">Admin</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>First Name</Label>
+                <Input placeholder="John" />
+              </div>
+              <div className="space-y-2">
+                <Label>Last Name</Label>
+                <Input placeholder="Smith" />
               </div>
             </div>
-            <div className="flex gap-2">
-              <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-                <DialogTrigger asChild>
-                  <Button className="bg-brand-blue text-white hover:bg-brand-blue/90">
-                    <UserPlus className="h-4 w-4 mr-2" />
-                    Add User
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-md">
-                  <DialogHeader>
-                    <DialogTitle>Create New User</DialogTitle>
-                    <DialogDescription>
-                      Add a new user to the system manually.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4 py-4">
-                    <div className="space-y-2">
-                      <Label>Role</Label>
-                      <Select value={newUserRole} onValueChange={(v) => setNewUserRole(v as UserRole)}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="parent">Parent</SelectItem>
-                          <SelectItem value="teacher">Teacher</SelectItem>
-                          <SelectItem value="sponsor">Sponsor</SelectItem>
-                          <SelectItem value="admin">Admin</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label>First Name</Label>
-                        <Input placeholder="John" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Last Name</Label>
-                        <Input placeholder="Smith" />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Email</Label>
-                      <Input type="email" placeholder="john@example.com" />
-                    </div>
-                    {newUserRole === "teacher" && (
-                      <div className="space-y-2">
-                        <Label>Classroom</Label>
-                        <Input placeholder="Room 204" />
-                      </div>
-                    )}
-                    {newUserRole === "parent" && (
-                      <div className="space-y-2">
-                        <Label>Children (comma-separated)</Label>
-                        <Input placeholder="Emma, Lucas" />
-                      </div>
-                    )}
-                    <div className="flex items-center gap-2">
-                      <Checkbox id="sendWelcome" defaultChecked />
-                      <Label htmlFor="sendWelcome" className="text-sm font-normal">
-                        Send welcome email with login instructions
-                      </Label>
-                    </div>
-                  </div>
-                  <DialogFooter>
-                    <Button variant="outline" onClick={() => setIsCreateOpen(false)}>
-                      Cancel
-                    </Button>
-                    <Button onClick={() => setIsCreateOpen(false)}>
-                      Create User
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-              <Link to="/login">
-                <Button variant="outline">
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Exit
-                </Button>
-              </Link>
+            <div className="space-y-2">
+              <Label>Email</Label>
+              <Input type="email" placeholder="john@example.com" />
+            </div>
+            {newUserRole === "teacher" && (
+              <div className="space-y-2">
+                <Label>Classroom</Label>
+                <Input placeholder="Room 204" />
+              </div>
+            )}
+            {newUserRole === "parent" && (
+              <div className="space-y-2">
+                <Label>Children (comma-separated)</Label>
+                <Input placeholder="Emma, Lucas" />
+              </div>
+            )}
+            <div className="flex items-center gap-2">
+              <Checkbox id="sendWelcome" defaultChecked />
+              <Label htmlFor="sendWelcome" className="text-sm font-normal">
+                Send welcome email with login instructions
+              </Label>
             </div>
           </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsCreateOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={() => setIsCreateOpen(false)}>
+              Create User
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <Link to="/login">
+        <Button variant="outline">
+          <LogOut className="h-4 w-4 mr-2" />
+          Exit
+        </Button>
+      </Link>
+    </>
+  );
 
-          {/* Filters */}
-          <BookContainer variant="warm" className="p-4 mb-6">
+  return (
+    <AdminPageLayout 
+      title="User Management" 
+      subtitle={`${filteredUsers.length} users ${hasActiveFilters ? "(filtered)" : ""}`}
+      actions={headerActions}
+    >
+      {/* Filters */}
+      <BookContainer variant="warm" className="p-4 mb-6">
             <div className="flex flex-wrap gap-4">
               <div className="relative flex-1 min-w-[200px]">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -537,8 +520,6 @@ const AdminUsersPage = () => {
               </TableBody>
             </Table>
           </BookContainer>
-        </div>
-      </main>
 
       {/* User Detail Sheet */}
       <Sheet open={!!detailUser} onOpenChange={(open) => !open && setDetailUser(null)}>
@@ -549,125 +530,111 @@ const AdminUsersPage = () => {
                 <SheetTitle className="flex items-center gap-3">
                   <div className={cn(
                     "h-12 w-12 rounded-full flex items-center justify-center",
-                    detailUser.role === "parent" ? "bg-brand-blue/10 text-brand-blue" :
+                    detailUser.role === "parent" ? "bg-primary/10 text-primary" :
                     detailUser.role === "teacher" ? "bg-purple-500/10 text-purple-600" :
-                    detailUser.role === "sponsor" ? "bg-brand-green/10 text-brand-green" :
+                    detailUser.role === "sponsor" ? "bg-accent/10 text-accent" :
                     "bg-amber-500/10 text-amber-600"
                   )}>
                     {getRoleIcon(detailUser.role)}
                   </div>
                   <div>
-                    <span className="block">{detailUser.name}</span>
-                    <span className="text-sm font-normal text-muted-foreground">{detailUser.email}</span>
+                    <div className="text-lg">{detailUser.name}</div>
+                    <div className="text-sm font-normal text-muted-foreground">{detailUser.email}</div>
                   </div>
                 </SheetTitle>
-                <SheetDescription className="flex gap-2 mt-2">
-                  {getRoleBadge(detailUser.role)}
-                  {getStatusBadge(detailUser.status)}
+                <SheetDescription className="sr-only">
+                  User details and actions
                 </SheetDescription>
               </SheetHeader>
-
+              
               <div className="mt-6 space-y-6">
-                {/* Profile Info */}
-                <div>
-                  <h3 className="font-serif text-lg text-brand-blue mb-3">Profile Information</h3>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between py-2 border-b border-border">
-                      <span className="text-muted-foreground">Registered</span>
-                      <span>{format(new Date(detailUser.registeredAt), "MMM d, yyyy")}</span>
-                    </div>
-                    <div className="flex justify-between py-2 border-b border-border">
-                      <span className="text-muted-foreground">Last Active</span>
-                      <span>{detailUser.lastActive}</span>
-                    </div>
-                    <div className="flex justify-between py-2 border-b border-border">
-                      <span className="text-muted-foreground">Has Logged Reading</span>
-                      <span>{detailUser.hasLoggedReading ? "Yes" : "No"}</span>
-                    </div>
-                    <div className="flex justify-between py-2 border-b border-border">
-                      <span className="text-muted-foreground">Has Pledged</span>
-                      <span>{detailUser.hasPledged ? "Yes" : "No"}</span>
-                    </div>
+                <div className="flex gap-2">
+                  {getRoleBadge(detailUser.role)}
+                  {getStatusBadge(detailUser.status)}
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Registered</p>
+                    <p className="font-medium">{format(new Date(detailUser.registeredAt), "MMM d, yyyy")}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Last Active</p>
+                    <p className="font-medium">{detailUser.lastActive}</p>
                   </div>
                 </div>
 
-                {/* Role-specific data */}
+                {/* Role-specific info */}
                 {detailUser.role === "parent" && detailUser.children && (
                   <div>
-                    <h3 className="font-serif text-lg text-brand-blue mb-3">Children</h3>
-                    <div className="space-y-2">
-                      {detailUser.children.map((child, i) => (
-                        <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                          <BookOpen className="h-4 w-4 text-brand-blue" />
-                          <span>{child}</span>
-                        </div>
+                    <p className="text-sm text-muted-foreground mb-2">Children</p>
+                    <div className="flex flex-wrap gap-2">
+                      {detailUser.children.map((child) => (
+                        <Badge key={child} variant="secondary">
+                          {child}
+                        </Badge>
                       ))}
                     </div>
                   </div>
                 )}
 
                 {detailUser.role === "teacher" && (
-                  <div>
-                    <h3 className="font-serif text-lg text-brand-blue mb-3">Classroom</h3>
-                    <div className="p-4 rounded-lg bg-muted/50">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="font-medium">{detailUser.className}</span>
-                        <Badge variant="outline">{detailUser.students} students</Badge>
-                      </div>
-                      <Button variant="outline" size="sm" className="w-full mt-2">
-                        View Class Details
-                      </Button>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Classroom</p>
+                      <p className="font-medium">{detailUser.className}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Students</p>
+                      <p className="font-medium">{detailUser.students}</p>
                     </div>
                   </div>
                 )}
 
                 {detailUser.role === "sponsor" && detailUser.pledges && (
                   <div>
-                    <h3 className="font-serif text-lg text-brand-blue mb-3">Pledges</h3>
+                    <p className="text-sm text-muted-foreground mb-2">Pledges</p>
                     <div className="space-y-2">
                       {detailUser.pledges.map((pledge, i) => (
-                        <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                        <div key={i} className="flex justify-between items-center p-2 bg-muted/50 rounded">
                           <span>{pledge.child}</span>
-                          <span className="font-handwritten text-brand-green">${pledge.amount}</span>
+                          <span className="font-medium">${pledge.amount}</span>
                         </div>
                       ))}
                     </div>
                   </div>
                 )}
 
-                {/* Action History */}
+                {/* Activity */}
                 <div>
-                  <h3 className="font-serif text-lg text-brand-blue mb-3">Action History</h3>
+                  <p className="text-sm text-muted-foreground mb-2">Recent Activity</p>
                   <div className="space-y-2">
-                    {mockActionHistory.map((action, i) => (
-                      <div key={i} className="flex items-start gap-3 py-2 border-b border-border last:border-0">
-                        <Clock className="h-4 w-4 text-muted-foreground mt-0.5" />
-                        <div className="flex-1">
-                          <p className="text-sm">{action.action}</p>
-                          <p className="text-xs text-muted-foreground">{action.date}</p>
-                        </div>
+                    {mockActionHistory.map((item, i) => (
+                      <div key={i} className="flex justify-between text-sm py-1 border-b last:border-0">
+                        <span>{item.action}</span>
+                        <span className="text-muted-foreground">{item.date}</span>
                       </div>
                     ))}
                   </div>
                 </div>
 
                 {/* Actions */}
-                <div className="flex gap-2 pt-4">
-                  <Button variant="outline" className="flex-1">
-                    <Edit className="h-4 w-4 mr-2" />
-                    Edit
-                  </Button>
-                  <Button variant="outline" className="flex-1">
-                    <Mail className="h-4 w-4 mr-2" />
+                <div className="flex flex-wrap gap-2 pt-4 border-t">
+                  <Button variant="outline" size="sm">
+                    <Mail className="h-4 w-4 mr-1" />
                     Email
                   </Button>
+                  <Button variant="outline" size="sm">
+                    <Edit className="h-4 w-4 mr-1" />
+                    Edit
+                  </Button>
                   {detailUser.status === "active" ? (
-                    <Button variant="outline" className="flex-1 text-destructive hover:text-destructive">
+                    <Button variant="outline" size="sm" className="text-destructive hover:text-destructive">
                       <UserX className="h-4 w-4 mr-2" />
                       Suspend
                     </Button>
                   ) : (
-                    <Button variant="outline" className="flex-1">
+                    <Button variant="outline" size="sm" className="text-green-600 hover:text-green-600">
                       <UserCheck className="h-4 w-4 mr-2" />
                       Activate
                     </Button>
@@ -678,9 +645,7 @@ const AdminUsersPage = () => {
           )}
         </SheetContent>
       </Sheet>
-
-      <Footer />
-    </div>
+    </AdminPageLayout>
   );
 };
 
