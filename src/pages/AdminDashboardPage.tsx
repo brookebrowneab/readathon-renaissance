@@ -63,7 +63,6 @@ import {
 } from "recharts";
 import { EditEventDialog } from "@/components/admin/EditEventDialog";
 import { useActiveEvent, formatEventDates } from "@/hooks/useActiveEvent";
-import booksShelfDivider from "@/assets/books-shelf-divider.png";
 
 // Admin navigation items
 const adminNavItems = [
@@ -344,19 +343,6 @@ const AdminDashboardPage = () => {
               )}
             </div>
           </div>
-
-          {/* Decorative Divider - Tiled */}
-          <div 
-            className="h-12 md:h-16 mb-8 -mx-4 md:-mx-6 lg:-mx-8"
-            style={{
-              backgroundImage: `url(${booksShelfDivider})`,
-              backgroundRepeat: 'repeat-x',
-              backgroundSize: 'auto 100%',
-              backgroundPosition: 'center',
-              width: 'calc(100% + 2rem)',
-            }}
-            aria-hidden="true"
-          />
 
           {/* Alerts */}
           {mockAlerts.length > 0 && (
