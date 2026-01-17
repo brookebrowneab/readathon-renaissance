@@ -150,30 +150,32 @@ function FullCircleTest() {
 }
 
 /**
- * Test 3: Pattern tile grid overlay
- * Visualizes where 20x20 pattern tiles align relative to the circle.
+ * Test 3: Horizontal line investigation
+ * Add reference lines at different y positions to find where the cutoff occurs.
  */
-function PatternGridTest() {
+function HorizontalLineTest() {
+  const yPositions = [5, 10, 15, 17, 18, 19];
+
   return (
     <section className="grid gap-4 rounded-lg border bg-card p-4">
       <header className="grid gap-1">
-        <h2 className="text-lg font-semibold">Test 3 — Pattern tile grid overlay</h2>
+        <h2 className="text-lg font-semibold">Test 3 — Horizontal line locator</h2>
         <p className="text-sm text-muted-foreground">
-          Red grid shows 20×20 pattern tile boundaries. Check if cutoff aligns with tile edges.
+          Red horizontal lines at various y positions. Find which line aligns with the visible cutoff.
         </p>
       </header>
 
       <div className="flex flex-wrap gap-6">
         <div className="grid gap-2">
-          <div className="text-sm font-medium">With tile grid</div>
+          <div className="text-sm font-medium">With reference lines</div>
           <div
-            className="relative grid place-items-center rounded-full"
-            style={{ width: 180, height: 180, background: "#E6EAF1", border: "solid 0.5px #41403E" }}
+            className="grid place-items-center rounded-full"
+            style={{ width: 200, height: 200, background: "#E6EAF1", border: "solid 0.5px #41403E" }}
           >
-            <svg width={180} height={180} viewBox="0 0 20 20">
+            <svg width={200} height={200} viewBox="0 0 20 20">
               <defs>
                 <pattern
-                  id="grid-pattern"
+                  id="line-test-pattern"
                   patternUnits="userSpaceOnUse"
                   x="0"
                   y="0"
@@ -189,16 +191,64 @@ function PatternGridTest() {
                     preserveAspectRatio="xMidYMid slice"
                   />
                 </pattern>
-                {/* Grid pattern for overlay */}
+              </defs>
+              <circle
+                r={r}
+                cx="10"
+                cy="10"
+                fill="transparent"
+                stroke="url(#line-test-pattern)"
+                strokeWidth={strokeWidth}
+                pathLength={100}
+                strokeDasharray={100}
+                strokeDashoffset={0}
+                transform="rotate(-90 10 10)"
+              />
+              {/* Reference lines */}
+              {yPositions.map((y, i) => (
+                <line
+                  key={y}
+                  x1="0"
+                  y1={y}
+                  x2="20"
+                  y2={y}
+                  stroke={y === 10 ? "yellow" : "red"}
+                  strokeWidth="0.15"
+                  opacity="0.8"
+                />
+              ))}
+            </svg>
+          </div>
+          <div className="text-xs text-muted-foreground">
+            Yellow = y:10 (center)<br/>
+            Red = y:5, 15, 17, 18, 19
+          </div>
+        </div>
+
+        <div className="grid gap-2">
+          <div className="text-sm font-medium">Pattern only (no lines)</div>
+          <div
+            className="grid place-items-center rounded-full"
+            style={{ width: 200, height: 200, background: "#E6EAF1", border: "solid 0.5px #41403E" }}
+          >
+            <svg width={200} height={200} viewBox="0 0 20 20">
+              <defs>
                 <pattern
-                  id="tile-grid"
+                  id="line-test-pattern-2"
                   patternUnits="userSpaceOnUse"
                   x="0"
                   y="0"
                   width="20"
                   height="20"
                 >
-                  <rect x="0" y="0" width="20" height="20" fill="none" stroke="red" strokeWidth="0.2" />
+                  <image
+                    href={pencilPattern}
+                    x="0"
+                    y="0"
+                    width="20"
+                    height="20"
+                    preserveAspectRatio="xMidYMid slice"
+                  />
                 </pattern>
               </defs>
               <circle
@@ -206,20 +256,7 @@ function PatternGridTest() {
                 cx="10"
                 cy="10"
                 fill="transparent"
-                stroke="url(#grid-pattern)"
-                strokeWidth={strokeWidth}
-                pathLength={100}
-                strokeDasharray={100}
-                strokeDashoffset={0}
-                transform="rotate(-90 10 10)"
-              />
-              {/* Grid overlay */}
-              <circle
-                r={r}
-                cx="10"
-                cy="10"
-                fill="transparent"
-                stroke="url(#tile-grid)"
+                stroke="url(#line-test-pattern-2)"
                 strokeWidth={strokeWidth}
                 pathLength={100}
                 strokeDasharray={100}
@@ -229,26 +266,117 @@ function PatternGridTest() {
             </svg>
           </div>
         </div>
+      </div>
 
-        <div className="grid gap-2">
-          <div className="text-sm font-medium">Tile boundary reference</div>
-          <div className="rounded-md bg-muted/40 p-3 text-sm">
-            <p>Pattern tiles at:</p>
-            <ul className="mt-1 list-disc pl-4 text-muted-foreground">
-              <li>x: 0, y: 0 (only one tile in 20×20 viewBox)</li>
-              <li>Circle center: (10, 10)</li>
-              <li>Stroke outer edge: 0.5 to 19.5</li>
-            </ul>
-            <p className="mt-2">
-              If cutoff appears at y≈19.5 or y≈0.5, it could be pattern edge alignment.
-            </p>
-          </div>
-        </div>
+      <div className="rounded-md bg-muted/40 p-3 text-sm">
+        <strong>Geometry reference:</strong>
+        <ul className="mt-1 list-disc pl-4 text-muted-foreground">
+          <li>Circle center: (10, 10)</li>
+          <li>r = 4.75, strokeWidth = 9.5</li>
+          <li>Stroke inner edge: 10 - 4.75 = 5.25</li>
+          <li>Stroke outer edge: 10 + 4.75 + 4.75 = 19.5</li>
+          <li>If cutoff aligns with y=10 → clipping at circle center</li>
+          <li>If cutoff aligns with y=15 → clipping at r + center</li>
+        </ul>
       </div>
     </section>
   );
 }
 
+/**
+ * Test 4: Image element bounds test
+ * Test if the issue is the <image> element's bounding box within the pattern
+ */
+function ImageElementTest() {
+  return (
+    <section className="grid gap-4 rounded-lg border bg-card p-4">
+      <header className="grid gap-1">
+        <h2 className="text-lg font-semibold">Test 4 — Image element positioning</h2>
+        <p className="text-sm text-muted-foreground">
+          Different image positions/sizes within the pattern tile.
+        </p>
+      </header>
+
+      <div className="flex flex-wrap gap-4">
+        {/* Current: image at 0,0 size 20x20 */}
+        <div className="grid gap-2">
+          <div className="text-xs font-medium">Current: x=0 y=0 20×20</div>
+          <div
+            className="grid place-items-center rounded-full"
+            style={{ width: 140, height: 140, background: "#E6EAF1", border: "solid 0.5px #41403E" }}
+          >
+            <svg width={140} height={140} viewBox="0 0 20 20">
+              <defs>
+                <pattern id="img-test-1" patternUnits="userSpaceOnUse" x="0" y="0" width="20" height="20">
+                  <image href={pencilPattern} x="0" y="0" width="20" height="20" preserveAspectRatio="xMidYMid slice" />
+                </pattern>
+              </defs>
+              <circle r={r} cx="10" cy="10" fill="transparent" stroke="url(#img-test-1)" strokeWidth={strokeWidth} />
+            </svg>
+          </div>
+        </div>
+
+        {/* Image shifted: x=-2 y=-2 size 24x24 */}
+        <div className="grid gap-2">
+          <div className="text-xs font-medium">Shifted: x=-2 y=-2 24×24</div>
+          <div
+            className="grid place-items-center rounded-full"
+            style={{ width: 140, height: 140, background: "#E6EAF1", border: "solid 0.5px #41403E" }}
+          >
+            <svg width={140} height={140} viewBox="0 0 20 20">
+              <defs>
+                <pattern id="img-test-2" patternUnits="userSpaceOnUse" x="0" y="0" width="20" height="20">
+                  <image href={pencilPattern} x="-2" y="-2" width="24" height="24" preserveAspectRatio="xMidYMid slice" />
+                </pattern>
+              </defs>
+              <circle r={r} cx="10" cy="10" fill="transparent" stroke="url(#img-test-2)" strokeWidth={strokeWidth} />
+            </svg>
+          </div>
+        </div>
+
+        {/* Larger pattern tile */}
+        <div className="grid gap-2">
+          <div className="text-xs font-medium">Larger tile: 24×24 pattern</div>
+          <div
+            className="grid place-items-center rounded-full"
+            style={{ width: 140, height: 140, background: "#E6EAF1", border: "solid 0.5px #41403E" }}
+          >
+            <svg width={140} height={140} viewBox="0 0 20 20">
+              <defs>
+                <pattern id="img-test-3" patternUnits="userSpaceOnUse" x="-2" y="-2" width="24" height="24">
+                  <image href={pencilPattern} x="0" y="0" width="24" height="24" preserveAspectRatio="xMidYMid slice" />
+                </pattern>
+              </defs>
+              <circle r={r} cx="10" cy="10" fill="transparent" stroke="url(#img-test-3)" strokeWidth={strokeWidth} />
+            </svg>
+          </div>
+        </div>
+
+        {/* No preserveAspectRatio */}
+        <div className="grid gap-2">
+          <div className="text-xs font-medium">No aspect ratio (stretch)</div>
+          <div
+            className="grid place-items-center rounded-full"
+            style={{ width: 140, height: 140, background: "#E6EAF1", border: "solid 0.5px #41403E" }}
+          >
+            <svg width={140} height={140} viewBox="0 0 20 20">
+              <defs>
+                <pattern id="img-test-4" patternUnits="userSpaceOnUse" x="0" y="0" width="20" height="20">
+                  <image href={pencilPattern} x="0" y="0" width="20" height="20" preserveAspectRatio="none" />
+                </pattern>
+              </defs>
+              <circle r={r} cx="10" cy="10" fill="transparent" stroke="url(#img-test-4)" strokeWidth={strokeWidth} />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-md bg-muted/40 p-3 text-sm">
+        <strong>What to check:</strong> Does shifting the image or enlarging the pattern tile eliminate the horizontal line?
+      </div>
+    </section>
+  );
+}
 /**
  * Test 4: Stroke edge analysis
  * Compare the visual edge at different positions around the circle.
@@ -510,7 +638,8 @@ export default function DebugRingPage() {
         <ControlSection />
         <RotationTest />
         <FullCircleTest />
-        <PatternGridTest />
+        <HorizontalLineTest />
+        <ImageElementTest />
         <StrokeEdgeTest />
         <ZoomedCropTest />
 
@@ -519,9 +648,10 @@ export default function DebugRingPage() {
           <ul className="mt-2 list-disc space-y-2 pl-5 text-muted-foreground">
             <li><strong>Test 1:</strong> If cutoff moves with rotation → intentional (dashoffset). If it stays at bottom → unintentional.</li>
             <li><strong>Test 2:</strong> 100% fill has no dashoffset gap. Any visible edge cutoff here is purely unintentional.</li>
-            <li><strong>Test 3:</strong> Check if cutoff aligns with pattern tile boundaries.</li>
-            <li><strong>Test 4:</strong> Compare pattern density at all four edges.</li>
-            <li><strong>Test 5:</strong> Zoomed comparison of top vs bottom — if bottom has more grey gap, that's the unintentional clipping.</li>
+            <li><strong>Test 3:</strong> Which reference line aligns with the visible cutoff? This tells us the y-coordinate.</li>
+            <li><strong>Test 4:</strong> Does shifting/enlarging the image element fix the line?</li>
+            <li><strong>Test 5:</strong> Compare pattern density at all four edges.</li>
+            <li><strong>Test 6:</strong> Zoomed comparison of top vs bottom.</li>
           </ul>
         </section>
       </div>
