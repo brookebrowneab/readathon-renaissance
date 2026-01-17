@@ -415,6 +415,7 @@ const ChildProgressCard = ({ child }: ChildProgressCardProps) => {
           {child.name.split(" ")[0]}'s Reading
         </h2>
         
+        <div style={{ height: 15 }} />
         <ReadingGoalRing progress={child.minutesRead} goal={child.goalMinutes} size={120} />
         
         {/* Personal Stats Grid */}
