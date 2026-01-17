@@ -334,9 +334,9 @@ const AdminDashboard = () => {
           <div className="bg-background p-6" style={handDrawnBorder}>
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-serif text-xl text-foreground">Recent Activity</h2>
-              <Link to="/admin/activity" className="text-sm text-primary hover:underline">
-                View all
-              </Link>
+              <span className="text-sm text-muted-foreground">
+                Recent
+              </span>
             </div>
             <div className="space-y-4">
               {mockActivity.slice(0, 8).map((item) => (

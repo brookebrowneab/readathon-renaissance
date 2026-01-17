@@ -339,7 +339,7 @@ const RegisterPage = () => {
                       className="text-sm font-normal leading-relaxed"
                     >
                       I agree to the{" "}
-                      <Link to="/terms" className="text-primary hover:underline inline-link">
+                      <Link to="/privacy" className="text-primary hover:underline inline-link">
                         Terms of Service
                       </Link>{" "}
                       and{" "}

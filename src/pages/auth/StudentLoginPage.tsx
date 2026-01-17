@@ -140,7 +140,7 @@ const StudentLoginPage = () => {
                 variant="secondary"
                 size="lg"
                 className="w-full h-12"
-                onClick={() => navigate("/student-dashboard")}
+                onClick={() => navigate("/student")}
               >
                 ✨ Try Demo Mode
               </Button>

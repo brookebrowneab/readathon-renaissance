@@ -157,7 +157,7 @@ const StudentLogReadingPage = () => {
                   className="w-full h-12"
                   asChild
                 >
-                  <Link to="/student-dashboard">
+                  <Link to="/student">
                     <ArrowLeft className="h-4 w-4 mr-2" />
                     Back to My Dashboard
                   </Link>
@@ -201,7 +201,7 @@ const StudentLogReadingPage = () => {
           {/* Header */}
           <div className="flex items-center gap-4 mb-8">
             <Button variant="ghost" size="icon" asChild>
-              <Link to="/student-dashboard">
+              <Link to="/student">
                 <ArrowLeft className="h-5 w-5" />
               </Link>
             </Button>
