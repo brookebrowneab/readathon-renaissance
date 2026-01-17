@@ -236,16 +236,16 @@ const AdminDashboardPage = () => {
           <div className="flex items-center justify-between mb-10">
             <div className="relative inline-block">
               <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-normal tracking-tight text-foreground leading-[1.05]">
-                <span className="relative inline-block">
-                  Admin Dashboard
+                <span className="relative inline-block isolate">
+                  <span className="relative z-10">Admin Dashboard</span>
                   {/* Highlighter effect */}
-                  <span 
-                    className="absolute left-[-2%] right-[-2%] -skew-y-1 -z-10 transform -rotate-[0.5deg]"
+                  <span
+                    className="absolute left-[-2%] right-[-2%] -skew-y-1 z-0 transform -rotate-[0.5deg]"
                     style={{
-                      top: '50%',
-                      bottom: '0',
-                      borderRadius: '4px 8px 4px 6px',
-                      backgroundColor: 'hsl(38 70% 50% / 0.4)',
+                      top: "50%",
+                      bottom: "0",
+                      borderRadius: "4px 8px 4px 6px",
+                      backgroundColor: "hsl(var(--warning) / 0.45)",
                     }}
                     aria-hidden="true"
                   />
