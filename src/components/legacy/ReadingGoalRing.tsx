@@ -162,7 +162,8 @@ const ReadingGoalRing = ({
               fill="transparent"
               stroke={`url(#pencil-pattern-${index})`}
               strokeWidth="9.5"
-              strokeDasharray={`${circle.dashArray} ${Math.max(CIRCUMFERENCE - circle.dashArray, 0)}`}
+              strokeDasharray={CIRCUMFERENCE}
+              strokeDashoffset={CIRCUMFERENCE - circle.dashArray}
               transform="rotate(-90 10 10)"
               className="transition-all duration-500 ease-out"
             />
