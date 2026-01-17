@@ -235,17 +235,15 @@ const AdminDashboardPage = () => {
           {/* Header Section */}
           <div className="flex items-center justify-between mb-10">
             <div className="relative inline-block">
-              <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-normal tracking-tight text-foreground leading-[1.05] relative">
-                <span className="relative">
+              <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-normal tracking-tight text-foreground leading-[1.05]">
+                <span className="relative inline-block">
                   Admin Dashboard
                   {/* Highlighter effect */}
                   <span 
-                    className="absolute -skew-y-1 -z-10 transform -rotate-[0.5deg]"
+                    className="absolute left-[-2%] right-[-2%] -skew-y-1 -z-10 transform -rotate-[0.5deg]"
                     style={{
                       top: '50%',
-                      height: '50%',
-                      left: '-2%',
-                      right: '-2%',
+                      bottom: '0',
                       borderRadius: '4px 8px 4px 6px',
                       backgroundColor: 'hsl(38 70% 50% / 0.4)',
                     }}
