@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { MainNav, Footer, BottomTabBar } from "@/components/layout";
 import { Button } from "@/components/ui/button";
@@ -44,6 +44,10 @@ import {
   School,
   Filter,
   Plus,
+  LayoutDashboard,
+  FileText,
+  Settings,
+  Mail,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -59,6 +63,16 @@ import {
 } from "recharts";
 import { EditEventDialog } from "@/components/admin/EditEventDialog";
 import { useActiveEvent, formatEventDates } from "@/hooks/useActiveEvent";
+import booksShelfDivider from "@/assets/books-shelf-divider.png";
+
+// Admin navigation items
+const adminNavItems = [
+  { label: "Dashboard", path: "/admin-dashboard", icon: LayoutDashboard },
+  { label: "Users", path: "/admin-users", icon: Users },
+  { label: "Finance", path: "/admin-finance", icon: DollarSign },
+  { label: "Emails", path: "/admin/emails", icon: Mail },
+  { label: "Settings", path: "/admin/settings", icon: Settings },
+];
 
 // Hand-drawn border style (consistent with DashboardPage)
 const handDrawnBorder = {
@@ -179,9 +193,55 @@ const AdminDashboardPage = () => {
     queryClient.invalidateQueries({ queryKey: ['active-event'] });
   };
 
+  const location = useLocation();
+
   return (
     <div className="flex min-h-screen flex-col">
       <MainNav />
+
+      {/* Admin Navigation Bar */}
+      <div className="border-b-2 border-foreground/20 bg-background">
+        <div className="container">
+          <nav className="flex overflow-x-auto gap-1 py-2">
+            {adminNavItems.map((item) => {
+              const isActive = location.pathname === item.path;
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={cn(
+                    "flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors whitespace-nowrap rounded-md",
+                    isActive
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  )}
+                  style={isActive ? {
+                    borderTopLeftRadius: '255px 15px',
+                    borderTopRightRadius: '15px 225px',
+                    borderBottomRightRadius: '225px 15px',
+                    borderBottomLeftRadius: '15px 255px',
+                  } : undefined}
+                >
+                  <item.icon className="h-4 w-4" />
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+      </div>
+
+      {/* Decorative Divider - Tiled */}
+      <div 
+        className="w-full h-12 md:h-16"
+        style={{
+          backgroundImage: `url(${booksShelfDivider})`,
+          backgroundRepeat: 'repeat-x',
+          backgroundSize: 'auto 100%',
+          backgroundPosition: 'center',
+        }}
+        aria-hidden="true"
+      />
 
       <main className="flex-1 bg-background-warm">
         <div className="container py-8">
