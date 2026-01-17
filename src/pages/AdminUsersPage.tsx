@@ -1,7 +1,6 @@
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import AdminPageLayout from "@/components/layout/AdminPageLayout";
-import { BookContainer } from "@/components/legacy";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -47,7 +46,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   Search,
-  Filter,
   UserPlus,
   MoreHorizontal,
   Mail,
@@ -67,6 +65,7 @@ import {
   LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { handDrawnBorder } from "@/lib/admin-styles";
 import { format } from "date-fns";
 
 // Mock data
@@ -307,8 +306,8 @@ const AdminUsersPage = () => {
       actions={headerActions}
     >
       {/* Filters */}
-      <BookContainer variant="warm" className="p-4 mb-6">
-            <div className="flex flex-wrap gap-4">
+      <div className="bg-background-warm p-4 mb-6" style={handDrawnBorder}>
+        <div className="flex flex-wrap gap-4">
               <div className="relative flex-1 min-w-[200px]">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -357,12 +356,12 @@ const AdminUsersPage = () => {
                   Clear
                 </Button>
               )}
-            </div>
-          </BookContainer>
+        </div>
+      </div>
 
           {/* Bulk Actions */}
           {selectedUsers.length > 0 && (
-            <div className="flex items-center gap-4 p-4 mb-4 rounded-xl bg-brand-blue/10 border border-brand-blue/20">
+            <div className="flex items-center gap-4 p-4 mb-4 bg-primary/10" style={handDrawnBorder}>
               <span className="text-sm font-medium">
                 {selectedUsers.length} user{selectedUsers.length > 1 ? "s" : ""} selected
               </span>
@@ -400,7 +399,7 @@ const AdminUsersPage = () => {
           )}
 
           {/* User Table */}
-          <BookContainer variant="default" className="p-0 overflow-hidden">
+          <div className="bg-background overflow-hidden" style={handDrawnBorder}>
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/50">
@@ -519,7 +518,7 @@ const AdminUsersPage = () => {
                 )}
               </TableBody>
             </Table>
-          </BookContainer>
+          </div>
 
       {/* User Detail Sheet */}
       <Sheet open={!!detailUser} onOpenChange={(open) => !open && setDetailUser(null)}>

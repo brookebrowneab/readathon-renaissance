@@ -20,9 +20,9 @@ import {
   LogOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -58,6 +58,8 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
+import { handDrawnBorder } from "@/lib/admin-styles";
+import { cn } from "@/lib/utils";
 
 type PaymentStatus = "completed" | "pending" | "failed" | "refunded";
 type PaymentMethod = "card" | "cash" | "check" | "online";
@@ -438,58 +440,44 @@ export default function AdminFinancePage() {
       actions={headerActions}
     >
         {/* Financial Summary */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Pledged</CardTitle>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
+          <div className="bg-background p-4" style={handDrawnBorder}>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm text-muted-foreground">Total Pledged</p>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">${totalPledged.toFixed(2)}</div>
-              <p className="text-xs text-muted-foreground">
-                From all sponsors
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Collected</CardTitle>
-              <CheckCircle2 className="h-4 w-4 text-green-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600">${totalCollected.toFixed(2)}</div>
-              <p className="text-xs text-muted-foreground">
-                Payments received
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Outstanding</CardTitle>
-              <AlertCircle className="h-4 w-4 text-orange-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-orange-600">${outstanding.toFixed(2)}</div>
-              <p className="text-xs text-muted-foreground">
-                Awaiting payment
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Collection Rate</CardTitle>
+            </div>
+            <p className="font-handwritten text-2xl text-primary">${totalPledged.toFixed(2)}</p>
+            <p className="text-xs text-muted-foreground mt-1">From all sponsors</p>
+          </div>
+          <div className="bg-background p-4" style={handDrawnBorder}>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm text-muted-foreground">Total Collected</p>
+              <CheckCircle2 className="h-4 w-4 text-accent" />
+            </div>
+            <p className="font-handwritten text-2xl text-accent">${totalCollected.toFixed(2)}</p>
+            <p className="text-xs text-muted-foreground mt-1">Payments received</p>
+          </div>
+          <div className="bg-background p-4" style={handDrawnBorder}>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm text-muted-foreground">Outstanding</p>
+              <AlertCircle className="h-4 w-4 text-warning" />
+            </div>
+            <p className="font-handwritten text-2xl text-warning">${outstanding.toFixed(2)}</p>
+            <p className="text-xs text-muted-foreground mt-1">Awaiting payment</p>
+          </div>
+          <div className="bg-background p-4" style={handDrawnBorder}>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm text-muted-foreground">Collection Rate</p>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{collectionRate}%</div>
-              <div className="mt-2 h-2 w-full bg-secondary rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-primary transition-all"
-                  style={{ width: `${collectionRate}%` }}
-                />
-              </div>
-            </CardContent>
-          </Card>
+            </div>
+            <p className="font-handwritten text-2xl text-primary">{collectionRate}%</p>
+            <div className="mt-2 h-2 w-full bg-muted rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-primary transition-all"
+                style={{ width: `${collectionRate}%` }}
+              />
+            </div>
+          </div>
         </div>
 
         {/* Tabs for Payments and Outstanding Pledges */}
