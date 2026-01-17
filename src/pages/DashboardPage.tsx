@@ -411,7 +411,7 @@ const ChildProgressCard = ({ child }: ChildProgressCardProps) => {
       style={handDrawnBorder}
     >
       <div className="flex flex-col items-center gap-4">
-        <h2 className="w-full text-left font-serif text-xl md:text-2xl font-normal tracking-tight text-foreground bg-transparent pb-0">
+        <h2 className="w-full text-left font-serif text-xl md:text-2xl font-normal tracking-tight text-foreground bg-transparent pb-0 mt-[10px]">
           {child.name.split(" ")[0]}'s Reading
         </h2>
         
