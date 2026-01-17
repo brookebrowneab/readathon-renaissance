@@ -1054,6 +1054,138 @@ function ContainerIsolationTest() {
   );
 }
 
+/**
+ * Test 10: objectBoundingBox at different vertical positions
+ * Does objectBoundingBox also have position-dependent cutoff?
+ */
+function ObjectBoundingBoxPositionTest() {
+  // Create spacers of different heights to push circles to different vertical positions
+  const verticalOffsets = [0, 50, 100, 150, 200];
+
+  return (
+    <section className="grid gap-4 rounded-lg border bg-card p-4">
+      <header className="grid gap-1">
+        <h2 className="text-lg font-semibold">Test 10 — objectBoundingBox at different vertical positions</h2>
+        <p className="text-sm text-muted-foreground">
+          Same objectBoundingBox pattern at different vertical page positions. Does cutoff appear/disappear?
+        </p>
+      </header>
+
+      <div className="rounded-md bg-yellow-100 dark:bg-yellow-900/20 border-yellow-300 dark:border-yellow-700 border p-3 text-sm">
+        <strong>Hypothesis:</strong> If objectBoundingBox is truly element-relative, all circles should look identical regardless of vertical position. If they differ, there's a browser rendering quirk.
+      </div>
+
+      <div className="grid gap-4">
+        <div className="text-sm font-medium">Horizontal row (same vertical position, different horizontal)</div>
+        <div className="flex gap-4">
+          {[0, 17, 34, 51].map((marginLeft, i) => (
+            <div key={i} style={{ marginLeft: i === 0 ? 0 : marginLeft }}>
+              <div
+                className="grid place-items-center rounded-full"
+                style={{ width: 100, height: 100, background: "#E6EAF1", border: "solid 0.5px #41403E" }}
+              >
+                <svg width={100} height={100} viewBox="0 0 20 20">
+                  <defs>
+                    <pattern id={`obb-h-${i}`} patternUnits="objectBoundingBox" x="0" y="0" width="1" height="1">
+                      <image href={pencilPattern} x="0" y="0" width="20" height="20" preserveAspectRatio="xMidYMid slice" />
+                    </pattern>
+                  </defs>
+                  <circle r={r} cx="10" cy="10" fill="transparent" stroke={`url(#obb-h-${i})`} strokeWidth={strokeWidth} />
+                </svg>
+              </div>
+              <code className="text-xs text-muted-foreground">+{marginLeft}px</code>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="grid gap-4 mt-4">
+        <div className="text-sm font-medium">Vertical stack (different vertical positions)</div>
+        <div className="grid gap-2">
+          {verticalOffsets.map((offset, i) => (
+            <div key={i} className="flex items-center gap-4" style={{ marginTop: i === 0 ? 0 : offset - verticalOffsets[i-1] - 100 - 8 }}>
+              <div
+                className="grid place-items-center rounded-full"
+                style={{ width: 100, height: 100, background: "#E6EAF1", border: "solid 0.5px #41403E" }}
+              >
+                <svg width={100} height={100} viewBox="0 0 20 20">
+                  <defs>
+                    <pattern id={`obb-v-${i}`} patternUnits="objectBoundingBox" x="0" y="0" width="1" height="1">
+                      <image href={pencilPattern} x="0" y="0" width="20" height="20" preserveAspectRatio="xMidYMid slice" />
+                    </pattern>
+                  </defs>
+                  <circle r={r} cx="10" cy="10" fill="transparent" stroke={`url(#obb-v-${i})`} strokeWidth={strokeWidth} />
+                </svg>
+              </div>
+              <code className="text-xs text-muted-foreground">Vertical position #{i + 1}</code>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="grid gap-4 mt-4">
+        <div className="text-sm font-medium">Compare: userSpaceOnUse vs objectBoundingBox side by side</div>
+        <div className="flex gap-8">
+          <div className="grid gap-2">
+            <div className="text-sm text-destructive font-medium">userSpaceOnUse (20×20)</div>
+            <div className="flex gap-2">
+              {[0, 13, 26].map((ml, i) => (
+                <div key={i} style={{ marginLeft: ml }}>
+                  <div
+                    className="grid place-items-center rounded-full"
+                    style={{ width: 80, height: 80, background: "#E6EAF1", border: "solid 0.5px #41403E" }}
+                  >
+                    <svg width={80} height={80} viewBox="0 0 20 20">
+                      <defs>
+                        <pattern id={`usou-cmp-${i}`} patternUnits="userSpaceOnUse" x="0" y="0" width="20" height="20">
+                          <image href={pencilPattern} x="0" y="0" width="20" height="20" preserveAspectRatio="xMidYMid slice" />
+                        </pattern>
+                      </defs>
+                      <circle r={r} cx="10" cy="10" fill="transparent" stroke={`url(#usou-cmp-${i})`} strokeWidth={strokeWidth} />
+                    </svg>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid gap-2">
+            <div className="text-sm text-green-600 font-medium">objectBoundingBox</div>
+            <div className="flex gap-2">
+              {[0, 13, 26].map((ml, i) => (
+                <div key={i} style={{ marginLeft: ml }}>
+                  <div
+                    className="grid place-items-center rounded-full"
+                    style={{ width: 80, height: 80, background: "#E6EAF1", border: "solid 0.5px #41403E" }}
+                  >
+                    <svg width={80} height={80} viewBox="0 0 20 20">
+                      <defs>
+                        <pattern id={`obb-cmp-${i}`} patternUnits="objectBoundingBox" x="0" y="0" width="1" height="1">
+                          <image href={pencilPattern} x="0" y="0" width="20" height="20" preserveAspectRatio="xMidYMid slice" />
+                        </pattern>
+                      </defs>
+                      <circle r={r} cx="10" cy="10" fill="transparent" stroke={`url(#obb-cmp-${i})`} strokeWidth={strokeWidth} />
+                    </svg>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-md bg-muted/40 p-3 text-sm mt-4">
+        <strong>What to compare:</strong>
+        <ul className="list-disc pl-4 mt-1 text-muted-foreground">
+          <li><strong>Horizontal row:</strong> Do all objectBoundingBox circles look identical?</li>
+          <li><strong>Vertical stack:</strong> Does the cutoff appear at certain vertical positions?</li>
+          <li><strong>Side by side:</strong> userSpaceOnUse should vary by position, objectBoundingBox should not</li>
+        </ul>
+      </div>
+    </section>
+  );
+}
+
 export default function DebugRingPage() {
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -1084,6 +1216,7 @@ export default function DebugRingPage() {
         <PatternOffsetTest />
         <PagePositionTest />
         <ContainerIsolationTest />
+        <ObjectBoundingBoxPositionTest />
 
         <section className="rounded-lg border bg-card p-4 text-sm">
           <h2 className="text-lg font-semibold">Summary: What to look for</h2>
@@ -1097,6 +1230,7 @@ export default function DebugRingPage() {
             <li><strong>Test 7:</strong> Pattern offset values — does centering the tile hide the boundary?</li>
             <li><strong>Test 8:</strong> Same pattern at different page positions — proves userSpaceOnUse is position-dependent.</li>
             <li><strong>Test 9:</strong> Container isolation — is the cutoff from CSS or SVG?</li>
+            <li><strong>Test 10:</strong> objectBoundingBox at different positions — is it truly position-independent?</li>
           </ul>
         </section>
       </div>
