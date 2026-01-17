@@ -60,8 +60,8 @@ const HomePage = () => {
       {/* Hero Section - Large left-aligned headline */}
       <section className="relative pt-4 md:pt-6 pb-4 md:pb-6 mt-[30px]">
         <div className="container">
-          {/* Constrain hero content to ~2/3 page width, indent to align with data block - no indent on mobile */}
-          <div className="max-w-4xl pl-4 md:pl-14 lg:pl-20 ml-0 md:ml-[30px] text-left">
+          {/* Constrain hero content - equal padding on mobile, left-aligned indent on desktop */}
+          <div className="max-w-4xl px-4 md:px-0 md:pl-14 lg:pl-20 md:ml-[30px] text-left">
             {/* Large headline - left aligned with highlighter effect */}
             <div className="relative inline-block mb-6">
               <h1 className="font-serif text-5xl md:text-6xl lg:text-7xl font-normal tracking-tight text-foreground leading-[1.05] relative">
@@ -128,43 +128,36 @@ const HomePage = () => {
 
       {/* Stats Section */}
       <section className="py-10 md:py-14 relative overflow-hidden">
-        {/* Bookshelf band background - tiled, bottom-aligned, fixed on mobile */}
+        {/* Bookshelf band background - tiled, bottom-aligned, scrolls with page */}
         <div 
-          className="absolute inset-0 pointer-events-none md:bg-scroll"
+          className="absolute inset-0 pointer-events-none"
           style={{
             backgroundImage: `url(${booksShelfBannerV2})`,
             backgroundRepeat: 'repeat-x',
             backgroundSize: 'auto 50%',
             backgroundPosition: 'center bottom',
-            backgroundAttachment: 'fixed',
           }}
           aria-hidden="true"
         />
-        {/* Desktop: remove fixed attachment */}
-        <style>{`
-          @media (min-width: 768px) {
-            .stats-bg { background-attachment: scroll !important; }
-          }
-        `}</style>
 
         <div className="container relative">
-          {/* Mobile: horizontally scrollable stats */}
-          <div className="md:hidden overflow-x-auto pb-4 -mx-4 px-4 scrollbar-hide">
+          {/* Mobile: single container with horizontally scrollable content inside */}
+          <div 
+            className="md:hidden bg-background p-4 overflow-x-auto scrollbar-hide"
+            style={{
+              border: 'solid 1px #41403E',
+              borderTopLeftRadius: '255px 15px',
+              borderTopRightRadius: '15px 225px',
+              borderBottomRightRadius: '225px 15px',
+              borderBottomLeftRadius: '15px 255px',
+            }}
+          >
             <div 
               className="flex gap-4 min-w-max"
               style={{ touchAction: 'pan-x' }}
             >
-              <div 
-                className="text-center bg-background p-5 min-w-[140px]"
-                style={{
-                  border: 'solid 1px #41403E',
-                  borderTopLeftRadius: '255px 15px',
-                  borderTopRightRadius: '15px 225px',
-                  borderBottomRightRadius: '225px 15px',
-                  borderBottomLeftRadius: '15px 255px',
-                }}
-              >
-                <p className="font-serif text-3xl text-foreground tracking-tight">
+              <div className="text-center px-4 min-w-[120px]">
+                <p className="font-serif text-2xl text-foreground tracking-tight">
                   128,400
                 </p>
                 <p className="text-xs text-muted-foreground mt-1 tracking-wide">
@@ -172,33 +165,21 @@ const HomePage = () => {
                 </p>
               </div>
               <div 
-                className="text-center bg-background p-5 min-w-[140px]"
+                className="text-center px-4 min-w-[120px]"
                 style={{
-                  border: 'solid 1px #41403E',
-                  borderTopLeftRadius: '255px 15px',
-                  borderTopRightRadius: '15px 225px',
-                  borderBottomRightRadius: '225px 15px',
-                  borderBottomLeftRadius: '15px 255px',
+                  borderLeft: 'solid 1px #41403E',
+                  borderRight: 'solid 1px #41403E',
                 }}
               >
-                <p className="font-serif text-3xl text-foreground tracking-tight">
+                <p className="font-serif text-2xl text-foreground tracking-tight">
                   4,875
                 </p>
                 <p className="text-xs text-muted-foreground mt-1 tracking-wide">
                   Books Completed
                 </p>
               </div>
-              <div 
-                className="text-center bg-background p-5 min-w-[140px]"
-                style={{
-                  border: 'solid 1px #41403E',
-                  borderTopLeftRadius: '255px 15px',
-                  borderTopRightRadius: '15px 225px',
-                  borderBottomRightRadius: '225px 15px',
-                  borderBottomLeftRadius: '15px 255px',
-                }}
-              >
-                <p className="font-serif text-3xl text-foreground tracking-tight">
+              <div className="text-center px-4 min-w-[120px]">
+                <p className="font-serif text-2xl text-foreground tracking-tight">
                   $21,320
                 </p>
                 <p className="text-xs text-muted-foreground mt-1 tracking-wide">
