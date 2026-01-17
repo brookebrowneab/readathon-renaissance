@@ -60,8 +60,8 @@ const HomePage = () => {
       {/* Hero Section - Large left-aligned headline */}
       <section className="relative pt-4 md:pt-6 pb-4 md:pb-6 mt-[30px]">
         <div className="container">
-          {/* Constrain hero content to ~2/3 page width, indent to align with data block */}
-          <div className="max-w-4xl pl-9 md:pl-14 lg:pl-20 ml-[30px] text-left">
+          {/* Constrain hero content to ~2/3 page width, indent to align with data block - no indent on mobile */}
+          <div className="max-w-4xl pl-4 md:pl-14 lg:pl-20 ml-0 md:ml-[30px] text-left">
             {/* Large headline - left aligned with highlighter effect */}
             <div className="relative inline-block mb-6">
               <h1 className="font-serif text-5xl md:text-6xl lg:text-7xl font-normal tracking-tight text-foreground leading-[1.05] relative">
@@ -128,21 +128,89 @@ const HomePage = () => {
 
       {/* Stats Section */}
       <section className="py-10 md:py-14 relative overflow-hidden">
-        {/* Bookshelf band background - tiled, bottom-aligned */}
+        {/* Bookshelf band background - tiled, bottom-aligned, fixed on mobile */}
         <div 
-          className="absolute inset-0 pointer-events-none"
+          className="absolute inset-0 pointer-events-none md:bg-scroll"
           style={{
             backgroundImage: `url(${booksShelfBannerV2})`,
             backgroundRepeat: 'repeat-x',
             backgroundSize: 'auto 50%',
             backgroundPosition: 'center bottom',
+            backgroundAttachment: 'fixed',
           }}
           aria-hidden="true"
         />
+        {/* Desktop: remove fixed attachment */}
+        <style>{`
+          @media (min-width: 768px) {
+            .stats-bg { background-attachment: scroll !important; }
+          }
+        `}</style>
 
         <div className="container relative">
+          {/* Mobile: horizontally scrollable stats */}
+          <div className="md:hidden overflow-x-auto pb-4 -mx-4 px-4 scrollbar-hide">
+            <div 
+              className="flex gap-4 min-w-max"
+              style={{ touchAction: 'pan-x' }}
+            >
+              <div 
+                className="text-center bg-background p-5 min-w-[140px]"
+                style={{
+                  border: 'solid 1px #41403E',
+                  borderTopLeftRadius: '255px 15px',
+                  borderTopRightRadius: '15px 225px',
+                  borderBottomRightRadius: '225px 15px',
+                  borderBottomLeftRadius: '15px 255px',
+                }}
+              >
+                <p className="font-serif text-3xl text-foreground tracking-tight">
+                  128,400
+                </p>
+                <p className="text-xs text-muted-foreground mt-1 tracking-wide">
+                  Minutes Logged
+                </p>
+              </div>
+              <div 
+                className="text-center bg-background p-5 min-w-[140px]"
+                style={{
+                  border: 'solid 1px #41403E',
+                  borderTopLeftRadius: '255px 15px',
+                  borderTopRightRadius: '15px 225px',
+                  borderBottomRightRadius: '225px 15px',
+                  borderBottomLeftRadius: '15px 255px',
+                }}
+              >
+                <p className="font-serif text-3xl text-foreground tracking-tight">
+                  4,875
+                </p>
+                <p className="text-xs text-muted-foreground mt-1 tracking-wide">
+                  Books Completed
+                </p>
+              </div>
+              <div 
+                className="text-center bg-background p-5 min-w-[140px]"
+                style={{
+                  border: 'solid 1px #41403E',
+                  borderTopLeftRadius: '255px 15px',
+                  borderTopRightRadius: '15px 225px',
+                  borderBottomRightRadius: '225px 15px',
+                  borderBottomLeftRadius: '15px 255px',
+                }}
+              >
+                <p className="font-serif text-3xl text-foreground tracking-tight">
+                  $21,320
+                </p>
+                <p className="text-xs text-muted-foreground mt-1 tracking-wide">
+                  Funds Raised
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Desktop: grid layout */}
           <div 
-            className="grid grid-cols-3 gap-6 md:gap-10 max-w-4xl mx-auto bg-background p-6 md:p-10"
+            className="hidden md:grid grid-cols-3 gap-6 md:gap-10 max-w-4xl mx-auto bg-background p-6 md:p-10"
             style={{
               border: 'solid 1px #41403E',
               borderTopLeftRadius: '255px 15px',
