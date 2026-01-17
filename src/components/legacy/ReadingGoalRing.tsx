@@ -121,7 +121,7 @@ const ReadingGoalRing = ({
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            background: 'radial-gradient(#E6EAF1 0% 35%, #C8C42D 35% 39%, #E6EAF1 39% 100%)',
+            background: '#E6EAF1',
             borderRadius: '50%',
           }}
         >
