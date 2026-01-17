@@ -150,139 +150,162 @@ function FullCircleTest() {
 }
 
 /**
- * Test 3: Horizontal line investigation
- * Add reference lines at different y positions to find where the cutoff occurs.
+ * Test 3: patternUnits comparison
+ * userSpaceOnUse vs objectBoundingBox - the key difference
  */
-function HorizontalLineTest() {
-  const yPositions = [5, 10, 15, 17, 18, 19];
-
+function PatternUnitsTest() {
   return (
     <section className="grid gap-4 rounded-lg border bg-card p-4">
       <header className="grid gap-1">
-        <h2 className="text-lg font-semibold">Test 3 — Horizontal line locator</h2>
+        <h2 className="text-lg font-semibold">Test 3 — patternUnits: the root cause</h2>
         <p className="text-sm text-muted-foreground">
-          Red horizontal lines at various y positions. Find which line aligns with the visible cutoff.
+          <code>userSpaceOnUse</code> tiles relative to the PAGE. <code>objectBoundingBox</code> tiles relative to the ELEMENT.
         </p>
       </header>
 
+      <div className="rounded-md bg-destructive/10 border-destructive/30 border p-3 text-sm">
+        <strong>Root Cause Identified:</strong> With <code>patternUnits="userSpaceOnUse"</code>, the pattern's 20×20 grid is fixed to the page coordinate system. The visible "cutoff line" is where the pattern tile boundary falls within each SVG — this varies by SVG position on the page.
+      </div>
+
       <div className="flex flex-wrap gap-6">
+        {/* Current: userSpaceOnUse */}
         <div className="grid gap-2">
-          <div className="text-sm font-medium">With reference lines</div>
+          <div className="text-sm font-medium">Current: userSpaceOnUse</div>
           <div
             className="grid place-items-center rounded-full"
-            style={{ width: 200, height: 200, background: "#E6EAF1", border: "solid 0.5px #41403E" }}
+            style={{ width: 160, height: 160, background: "#E6EAF1", border: "solid 0.5px #41403E" }}
           >
-            <svg width={200} height={200} viewBox="0 0 20 20">
+            <svg width={160} height={160} viewBox="0 0 20 20">
               <defs>
                 <pattern
-                  id="line-test-pattern"
+                  id="pattern-usou"
                   patternUnits="userSpaceOnUse"
                   x="0"
                   y="0"
                   width="20"
                   height="20"
                 >
-                  <image
-                    href={pencilPattern}
-                    x="0"
-                    y="0"
-                    width="20"
-                    height="20"
-                    preserveAspectRatio="xMidYMid slice"
-                  />
+                  <image href={pencilPattern} x="0" y="0" width="20" height="20" preserveAspectRatio="xMidYMid slice" />
                 </pattern>
               </defs>
-              <circle
-                r={r}
-                cx="10"
-                cy="10"
-                fill="transparent"
-                stroke="url(#line-test-pattern)"
-                strokeWidth={strokeWidth}
-                pathLength={100}
-                strokeDasharray={100}
-                strokeDashoffset={0}
-                transform="rotate(-90 10 10)"
-              />
-              {/* Reference lines */}
-              {yPositions.map((y, i) => (
-                <line
-                  key={y}
-                  x1="0"
-                  y1={y}
-                  x2="20"
-                  y2={y}
-                  stroke={y === 10 ? "yellow" : "red"}
-                  strokeWidth="0.15"
-                  opacity="0.8"
-                />
-              ))}
+              <circle r={r} cx="10" cy="10" fill="transparent" stroke="url(#pattern-usou)" strokeWidth={strokeWidth} />
             </svg>
           </div>
-          <div className="text-xs text-muted-foreground">
-            Yellow = y:10 (center)<br/>
-            Red = y:5, 15, 17, 18, 19
+          <div className="text-xs text-muted-foreground max-w-[160px]">
+            Pattern grid fixed to page. Cutoff depends on SVG position.
           </div>
         </div>
 
+        {/* Test: objectBoundingBox */}
         <div className="grid gap-2">
-          <div className="text-sm font-medium">Pattern only (no lines)</div>
+          <div className="text-sm font-medium">Alternative: objectBoundingBox</div>
           <div
             className="grid place-items-center rounded-full"
-            style={{ width: 200, height: 200, background: "#E6EAF1", border: "solid 0.5px #41403E" }}
+            style={{ width: 160, height: 160, background: "#E6EAF1", border: "solid 0.5px #41403E" }}
           >
-            <svg width={200} height={200} viewBox="0 0 20 20">
+            <svg width={160} height={160} viewBox="0 0 20 20">
               <defs>
                 <pattern
-                  id="line-test-pattern-2"
+                  id="pattern-obb"
+                  patternUnits="objectBoundingBox"
+                  x="0"
+                  y="0"
+                  width="1"
+                  height="1"
+                >
+                  <image href={pencilPattern} x="0" y="0" width="20" height="20" preserveAspectRatio="xMidYMid slice" />
+                </pattern>
+              </defs>
+              <circle r={r} cx="10" cy="10" fill="transparent" stroke="url(#pattern-obb)" strokeWidth={strokeWidth} />
+            </svg>
+          </div>
+          <div className="text-xs text-muted-foreground max-w-[160px]">
+            Pattern scales to element bounding box. May distort on non-square strokes.
+          </div>
+        </div>
+
+        {/* Test: userSpaceOnUse with patternTransform */}
+        <div className="grid gap-2">
+          <div className="text-sm font-medium">Fix: patternContentUnits</div>
+          <div
+            className="grid place-items-center rounded-full"
+            style={{ width: 160, height: 160, background: "#E6EAF1", border: "solid 0.5px #41403E" }}
+          >
+            <svg width={160} height={160} viewBox="0 0 20 20">
+              <defs>
+                <pattern
+                  id="pattern-fixed"
                   patternUnits="userSpaceOnUse"
+                  patternContentUnits="objectBoundingBox"
                   x="0"
                   y="0"
                   width="20"
                   height="20"
                 >
-                  <image
-                    href={pencilPattern}
-                    x="0"
-                    y="0"
-                    width="20"
-                    height="20"
-                    preserveAspectRatio="xMidYMid slice"
-                  />
+                  <image href={pencilPattern} x="0" y="0" width="1" height="1" preserveAspectRatio="xMidYMid slice" />
                 </pattern>
               </defs>
-              <circle
-                r={r}
-                cx="10"
-                cy="10"
-                fill="transparent"
-                stroke="url(#line-test-pattern-2)"
-                strokeWidth={strokeWidth}
-                pathLength={100}
-                strokeDasharray={100}
-                strokeDashoffset={0}
-                transform="rotate(-90 10 10)"
-              />
+              <circle r={r} cx="10" cy="10" fill="transparent" stroke="url(#pattern-fixed)" strokeWidth={strokeWidth} />
             </svg>
+          </div>
+          <div className="text-xs text-muted-foreground max-w-[160px]">
+            Hybrid approach.
           </div>
         </div>
       </div>
 
-      <div className="rounded-md bg-muted/40 p-3 text-sm">
-        <strong>Geometry reference:</strong>
-        <ul className="mt-1 list-disc pl-4 text-muted-foreground">
-          <li>Circle center: (10, 10)</li>
-          <li>r = 4.75, strokeWidth = 9.5</li>
-          <li>Stroke inner edge: 10 - 4.75 = 5.25</li>
-          <li>Stroke outer edge: 10 + 4.75 + 4.75 = 19.5</li>
-          <li>If cutoff aligns with y=10 → clipping at circle center</li>
-          <li>If cutoff aligns with y=15 → clipping at r + center</li>
-        </ul>
+      <div className="grid gap-4 md:grid-cols-2 mt-4">
+        <div className="grid gap-2">
+          <div className="text-sm font-medium">Same pattern, different positions</div>
+          <div className="flex gap-4">
+            <div
+              className="grid place-items-center rounded-full"
+              style={{ width: 100, height: 100, background: "#E6EAF1", border: "solid 0.5px #41403E" }}
+            >
+              <svg width={100} height={100} viewBox="0 0 20 20">
+                <defs>
+                  <pattern id="pattern-pos1" patternUnits="userSpaceOnUse" x="0" y="0" width="20" height="20">
+                    <image href={pencilPattern} x="0" y="0" width="20" height="20" preserveAspectRatio="xMidYMid slice" />
+                  </pattern>
+                </defs>
+                <circle r={r} cx="10" cy="10" fill="transparent" stroke="url(#pattern-pos1)" strokeWidth={strokeWidth} />
+              </svg>
+            </div>
+            <div
+              className="grid place-items-center rounded-full"
+              style={{ width: 100, height: 100, background: "#E6EAF1", border: "solid 0.5px #41403E", marginLeft: 37 }}
+            >
+              <svg width={100} height={100} viewBox="0 0 20 20">
+                <defs>
+                  <pattern id="pattern-pos2" patternUnits="userSpaceOnUse" x="0" y="0" width="20" height="20">
+                    <image href={pencilPattern} x="0" y="0" width="20" height="20" preserveAspectRatio="xMidYMid slice" />
+                  </pattern>
+                </defs>
+                <circle r={r} cx="10" cy="10" fill="transparent" stroke="url(#pattern-pos2)" strokeWidth={strokeWidth} />
+              </svg>
+            </div>
+            <div
+              className="grid place-items-center rounded-full"
+              style={{ width: 100, height: 100, background: "#E6EAF1", border: "solid 0.5px #41403E", marginLeft: 73 }}
+            >
+              <svg width={100} height={100} viewBox="0 0 20 20">
+                <defs>
+                  <pattern id="pattern-pos3" patternUnits="userSpaceOnUse" x="0" y="0" width="20" height="20">
+                    <image href={pencilPattern} x="0" y="0" width="20" height="20" preserveAspectRatio="xMidYMid slice" />
+                  </pattern>
+                </defs>
+                <circle r={r} cx="10" cy="10" fill="transparent" stroke="url(#pattern-pos3)" strokeWidth={strokeWidth} />
+              </svg>
+            </div>
+          </div>
+          <div className="text-xs text-muted-foreground">
+            Different horizontal offsets → different cutoff positions within each circle
+          </div>
+        </div>
       </div>
     </section>
   );
 }
-
 /**
  * Test 4: Image element bounds test
  * Test if the issue is the <image> element's bounding box within the pattern
@@ -638,7 +661,7 @@ export default function DebugRingPage() {
         <ControlSection />
         <RotationTest />
         <FullCircleTest />
-        <HorizontalLineTest />
+        <PatternUnitsTest />
         <ImageElementTest />
         <StrokeEdgeTest />
         <ZoomedCropTest />
