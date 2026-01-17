@@ -12,7 +12,6 @@ interface NavItem {
 
 const publicNav: NavItem[] = [
   { label: "Home", href: "/", icon: Home },
-  { label: "About", href: "/about", icon: BookOpen },
   { label: "How It Works", href: "/how-it-works", icon: Users },
 ];
 
