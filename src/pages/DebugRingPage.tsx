@@ -1192,6 +1192,128 @@ function ObjectBoundingBoxPositionTest() {
   );
 }
 
+/**
+ * Test 11: ViewBox padding comparison
+ * Does adding padding to the viewBox fix the subpixel clipping issue?
+ */
+function ViewBoxPaddingTest() {
+  const viewBoxConfigs = [
+    { viewBox: "0 0 20 20", label: "Current: 0 0 20 20", description: "Stroke at 19.5, only 0.5 units from edge" },
+    { viewBox: "-0.5 -0.5 21 21", label: "Padded: -0.5 -0.5 21 21", description: "0.5 unit padding on all sides" },
+    { viewBox: "-1 -1 22 22", label: "More padding: -1 -1 22 22", description: "1 unit padding on all sides" },
+    { viewBox: "-2 -2 24 24", label: "Large padding: -2 -2 24 24", description: "2 unit padding on all sides" },
+  ];
+
+  return (
+    <section className="grid gap-4 rounded-lg border bg-card p-4">
+      <header className="grid gap-1">
+        <h2 className="text-lg font-semibold">Test 11 — ViewBox padding comparison</h2>
+        <p className="text-sm text-muted-foreground">
+          Testing if adding padding to the viewBox fixes subpixel clipping at problematic positions.
+        </p>
+      </header>
+
+      <div className="rounded-md bg-green-100 dark:bg-green-900/20 border-green-300 dark:border-green-700 border p-3 text-sm">
+        <strong>Hypothesis:</strong> The stroke extends to y ≈ 19.5 in a 20-unit viewBox. At certain pixel alignments, the 0.5-unit gap gets lost to rounding. Adding padding should fix this.
+      </div>
+
+      <div className="grid gap-6">
+        <div className="text-sm font-medium">At problematic position (no spacer, first in container)</div>
+        <div className="flex flex-wrap gap-6">
+          {viewBoxConfigs.map((config, i) => (
+            <div key={i} className="grid gap-2">
+              <div className="text-sm font-medium">{config.label}</div>
+              <div
+                className="grid place-items-center rounded-full"
+                style={{ width: 140, height: 140, background: "#E6EAF1", border: "solid 0.5px #41403E" }}
+              >
+                <svg width={140} height={140} viewBox={config.viewBox}>
+                  <defs>
+                    <pattern id={`vb-pad-${i}`} patternUnits="objectBoundingBox" x="0" y="0" width="1" height="1">
+                      <image href={pencilPattern} x="0" y="0" width="20" height="20" preserveAspectRatio="xMidYMid slice" />
+                    </pattern>
+                  </defs>
+                  <circle r={r} cx="10" cy="10" fill="transparent" stroke={`url(#vb-pad-${i})`} strokeWidth={strokeWidth} />
+                </svg>
+              </div>
+              <div className="text-xs text-muted-foreground max-w-[140px]">{config.description}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="grid gap-6 mt-4">
+        <div className="text-sm font-medium">Same viewBox configs with 75% fill (progress ring style)</div>
+        <div className="flex flex-wrap gap-6">
+          {viewBoxConfigs.map((config, i) => (
+            <div key={i} className="grid gap-2">
+              <div className="text-sm font-medium">{config.label}</div>
+              <div
+                className="grid place-items-center rounded-full"
+                style={{ width: 140, height: 140, background: "#E6EAF1", border: "solid 0.5px #41403E" }}
+              >
+                <svg width={140} height={140} viewBox={config.viewBox}>
+                  <defs>
+                    <pattern id={`vb-pad-prog-${i}`} patternUnits="objectBoundingBox" x="0" y="0" width="1" height="1">
+                      <image href={pencilPattern} x="0" y="0" width="20" height="20" preserveAspectRatio="xMidYMid slice" />
+                    </pattern>
+                  </defs>
+                  <circle
+                    r={r}
+                    cx="10"
+                    cy="10"
+                    fill="transparent"
+                    stroke={`url(#vb-pad-prog-${i})`}
+                    strokeWidth={strokeWidth}
+                    pathLength={100}
+                    strokeDasharray={100}
+                    strokeDashoffset={25}
+                    transform="rotate(-90 10 10)"
+                  />
+                </svg>
+              </div>
+              <div className="text-xs text-muted-foreground max-w-[140px]">75% fill</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="grid gap-6 mt-4">
+        <div className="text-sm font-medium">Stress test: Multiple circles at exact same position</div>
+        <div className="flex gap-2">
+          {[0, 1, 2, 3, 4].map((i) => (
+            <div key={i}>
+              <div
+                className="grid place-items-center rounded-full"
+                style={{ width: 80, height: 80, background: "#E6EAF1", border: "solid 0.5px #41403E" }}
+              >
+                <svg width={80} height={80} viewBox="-1 -1 22 22">
+                  <defs>
+                    <pattern id={`vb-stress-${i}`} patternUnits="objectBoundingBox" x="0" y="0" width="1" height="1">
+                      <image href={pencilPattern} x="0" y="0" width="20" height="20" preserveAspectRatio="xMidYMid slice" />
+                    </pattern>
+                  </defs>
+                  <circle r={r} cx="10" cy="10" fill="transparent" stroke={`url(#vb-stress-${i})`} strokeWidth={strokeWidth} />
+                </svg>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="text-xs text-muted-foreground">All using viewBox="-1 -1 22 22" — should all look identical</div>
+      </div>
+
+      <div className="rounded-md bg-muted/40 p-3 text-sm mt-4">
+        <strong>What to compare:</strong>
+        <ul className="list-disc pl-4 mt-1 text-muted-foreground">
+          <li>Does the "Current: 0 0 20 20" show cutoff while padded versions don't?</li>
+          <li>How much padding is needed to reliably fix the issue?</li>
+          <li>Do the stress test circles (all padded) look consistent?</li>
+        </ul>
+      </div>
+    </section>
+  );
+}
+
 export default function DebugRingPage() {
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -1223,6 +1345,7 @@ export default function DebugRingPage() {
         <PagePositionTest />
         <ContainerIsolationTest />
         <ObjectBoundingBoxPositionTest />
+        <ViewBoxPaddingTest />
 
         <section className="rounded-lg border bg-card p-4 text-sm">
           <h2 className="text-lg font-semibold">Summary: What to look for</h2>
@@ -1237,6 +1360,7 @@ export default function DebugRingPage() {
             <li><strong>Test 8:</strong> Same pattern at different page positions — proves userSpaceOnUse is position-dependent.</li>
             <li><strong>Test 9:</strong> Container isolation — is the cutoff from CSS or SVG?</li>
             <li><strong>Test 10:</strong> objectBoundingBox at different positions — is it truly position-independent?</li>
+            <li><strong>Test 11:</strong> ViewBox padding — does adding padding fix subpixel clipping?</li>
           </ul>
         </section>
       </div>
