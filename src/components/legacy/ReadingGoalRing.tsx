@@ -10,7 +10,7 @@ interface ReadingGoalRingProps {
   className?: string;
 }
 
-const CIRCUMFERENCE = 26.7; // radius 4.25 × 2π
+const CIRCUMFERENCE = 29.85; // radius 4.75 × 2π
 const CIRCLE_OFFSET = 20; // px offset for overlapping circles
 
 
@@ -123,8 +123,6 @@ const ReadingGoalRing = ({
             alignItems: 'center',
             background: 'radial-gradient(#E6EAF1 0% 35%, #C8C42D 35% 39%, #E6EAF1 39% 100%)',
             borderRadius: '50%',
-            border: 'none',
-            boxShadow: 'none',
           }}
         >
           <svg 
@@ -135,14 +133,14 @@ const ReadingGoalRing = ({
           >
             {/* Background circle */}
             <circle r="10" cx="10" cy="10" fill="transparent" stroke="none" />
-            {/* Progress arc - filled circle approach */}
+            {/* Progress arc */}
             <circle
-              r="4.25"
+              r="4.75"
               cx="10"
               cy="10"
-              fill="#3760AC"
+              fill="transparent"
               stroke="#3760AC"
-              strokeWidth="8.5"
+              strokeWidth="9.5"
               strokeDasharray={`${circle.dashArray} ${CIRCUMFERENCE}`}
               transform="rotate(-90) translate(-20)"
               className="transition-all duration-500 ease-out"
