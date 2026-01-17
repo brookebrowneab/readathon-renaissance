@@ -58,7 +58,7 @@ const HomePage = () => {
       </div>
 
       {/* Hero Section - Large left-aligned headline */}
-      <section className="relative pt-4 md:pt-6 pb-4 md:pb-6">
+      <section className="relative pt-4 md:pt-6 pb-4 md:pb-6 mt-[30px]">
         <div className="container">
           {/* Constrain hero content to ~2/3 page width, indent to align with data block */}
           <div className="max-w-4xl pl-9 md:pl-14 lg:pl-20 ml-10 text-left">
