@@ -156,19 +156,19 @@ const LoginPage = () => {
                         Student
                       </Button>
                     </Link>
-                    <Link to="/teacher-dashboard" className="block">
+                    <Link to="/teacher" className="block">
                       <Button variant="outline" className="w-full text-xs px-2">
                         <Users className="h-4 w-4 mr-1" />
                         Teacher
                       </Button>
                     </Link>
-                    <Link to="/sponsor-dashboard" className="block">
+                    <Link to="/sponsor/dashboard" className="block">
                       <Button variant="outline" className="w-full text-xs px-2">
                         <Heart className="h-4 w-4 mr-1" />
                         Sponsor
                       </Button>
                     </Link>
-                    <Link to="/admin-dashboard" className="block">
+                    <Link to="/admin" className="block">
                       <Button variant="outline" className="w-full text-xs px-2">
                         <Users className="h-4 w-4 mr-1" />
                         Admin

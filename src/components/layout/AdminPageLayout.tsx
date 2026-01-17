@@ -18,7 +18,7 @@ interface AdminPageLayoutProps {
 
 // Admin navigation items
 const adminNavItems = [
-  { label: "Dashboard", path: "/admin-dashboard", icon: LayoutDashboard },
+  { label: "Dashboard", path: "/admin", icon: LayoutDashboard },
   { label: "Users", path: "/admin-users", icon: Users },
   { label: "Finance", path: "/admin-finance", icon: DollarSign },
   { label: "Emails", path: "/admin/emails", icon: Mail },

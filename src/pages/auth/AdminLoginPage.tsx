@@ -49,7 +49,7 @@ export default function AdminLoginPage() {
   // Redirect if already logged in as admin
   useEffect(() => {
     if (!isLoading && user && isAdmin) {
-      navigate("/admin-dashboard");
+      navigate("/admin");
     }
   }, [user, isAdmin, isLoading, navigate]);
 
@@ -102,7 +102,7 @@ export default function AdminLoginPage() {
       }
 
       toast.success("Admin account created! You are now signed in.");
-      navigate("/admin-dashboard");
+      navigate("/admin");
     } catch {
       toast.error("An unexpected error occurred");
     } finally {
@@ -125,7 +125,7 @@ export default function AdminLoginPage() {
         return;
       }
 
-      navigate("/admin-dashboard");
+      navigate("/admin");
     } catch {
       toast.error("An unexpected error occurred");
     } finally {
