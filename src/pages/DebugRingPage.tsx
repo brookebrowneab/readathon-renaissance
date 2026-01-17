@@ -1101,17 +1101,17 @@ function ObjectBoundingBoxPositionTest() {
 
       <div className="grid gap-4 mt-4">
         <div className="text-sm font-medium">Vertical stack (different vertical positions with spacers)</div>
-        <div className="flex flex-col">
+        <div className="flex flex-col pt-2 overflow-visible">
           {[0, 1, 2, 3, 4].map((i) => (
-            <div key={i}>
-              {/* Spacer to push circle to different vertical position */}
+            <div key={i} className="overflow-visible">
+              {/* Spacer between circles */}
               {i > 0 && <div style={{ height: 20 + (i * 10) }} />}
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4 overflow-visible">
                 <div
-                  className="grid place-items-center rounded-full flex-shrink-0"
+                  className="grid place-items-center rounded-full flex-shrink-0 overflow-visible"
                   style={{ width: 100, height: 100, background: "#E6EAF1", border: "solid 0.5px #41403E" }}
                 >
-                  <svg width={100} height={100} viewBox="0 0 20 20">
+                  <svg width={100} height={100} viewBox="0 0 20 20" style={{ overflow: 'visible' }}>
                     <defs>
                       <pattern id={`obb-v-${i}`} patternUnits="objectBoundingBox" x="0" y="0" width="1" height="1">
                         <image href={pencilPattern} x="0" y="0" width="20" height="20" preserveAspectRatio="xMidYMid slice" />
