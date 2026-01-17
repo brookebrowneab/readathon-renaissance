@@ -144,7 +144,7 @@ const ReadingGoalRing = ({
                 <image 
                   href={pencilPattern} 
                   x="0"
-                  y="15"
+                  y="-15"
                   width="20" 
                   height="20"
                   preserveAspectRatio="xMidYMid slice"
