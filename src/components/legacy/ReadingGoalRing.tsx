@@ -123,6 +123,8 @@ const ReadingGoalRing = ({
             alignItems: 'center',
             background: 'radial-gradient(#E6EAF1 0% 35%, #C8C42D 35% 39%, #E6EAF1 39% 100%)',
             borderRadius: '50%',
+            border: 'none',
+            boxShadow: 'none',
           }}
         >
           <svg 
