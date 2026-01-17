@@ -1,7 +1,6 @@
 import { useState, useRef } from "react";
-import { Link } from "react-router-dom";
 import { format } from "date-fns";
-import AdminLayout from "@/components/layout/AdminLayout";
+import AdminPageLayout from "@/components/layout/AdminPageLayout";
 import { BookContainer } from "@/components/legacy";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -236,26 +235,18 @@ const AdminSettingsPage = () => {
   }, {} as Record<string, Teacher[]>);
 
   return (
-    <AdminLayout>
-      <div className="container py-8 max-w-3xl">
-        {/* Header */}
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h1 className="font-serif text-3xl font-normal tracking-tight text-foreground">
-                Event Settings
-              </h1>
-              <div className="flex items-center gap-2 mt-2">
-                <span className="text-muted-foreground">{eventName}</span>
-                {getStatusBadge()}
-              </div>
-            </div>
-            <Button onClick={handleSave} loading={isSaving}>
-              <Save className="h-4 w-4 mr-2" />
-              Save Changes
-            </Button>
-          </div>
-
-          <div className="space-y-8">
+    <AdminPageLayout
+      title="Event Settings"
+      subtitle={<span className="flex items-center gap-2">{eventName} {getStatusBadge()}</span>}
+      actions={
+        <Button onClick={handleSave} loading={isSaving}>
+          <Save className="h-4 w-4 mr-2" />
+          Save Changes
+        </Button>
+      }
+    >
+      <div className="max-w-3xl">
+        <div className="space-y-8">
             {/* Event Details */}
             <BookContainer variant="default" className="p-6">
               <h2 className="font-medium text-foreground mb-6">Event Details</h2>
@@ -754,7 +745,7 @@ const AdminSettingsPage = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </AdminLayout>
+    </AdminPageLayout>
   );
 };
 

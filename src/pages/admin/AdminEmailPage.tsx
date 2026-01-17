@@ -1,5 +1,5 @@
 import { useState } from "react";
-import AdminLayout from "@/components/layout/AdminLayout";
+import AdminPageLayout from "@/components/layout/AdminPageLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -457,38 +457,16 @@ const AdminEmailPage = () => {
   );
 
   return (
-    <AdminLayout>
-      <div className="container py-8">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-          <div>
-            <div className="relative inline-block mb-2">
-              <h1 className="font-serif text-3xl md:text-4xl font-normal tracking-tight text-foreground relative">
-                <span className="relative">
-                  Email Templates
-                  <span 
-                    className="absolute inset-0 -skew-y-1 bg-accent/30 -z-10 transform -rotate-[0.5deg]"
-                    style={{
-                      top: '50%',
-                      height: '50%',
-                      left: '-2%',
-                      right: '-2%',
-                      borderRadius: '4px 8px 4px 6px',
-                    }}
-                    aria-hidden="true"
-                  />
-                </span>
-              </h1>
-            </div>
-            <p className="text-muted-foreground">
-              Create, schedule, and send emails to sponsors, parents, and teachers
-            </p>
-          </div>
-          <Button onClick={openNewTemplate}>
-            <Plus className="h-4 w-4 mr-2" />
-            New Template
-          </Button>
-        </div>
+    <AdminPageLayout
+      title="Email Templates"
+      subtitle="Create, schedule, and send emails to sponsors, parents, and teachers"
+      actions={
+        <Button onClick={openNewTemplate}>
+          <Plus className="h-4 w-4 mr-2" />
+          New Template
+        </Button>
+      }
+    >
 
         {/* Templates List */}
         <Tabs defaultValue="all" className="space-y-6">
@@ -627,7 +605,6 @@ const AdminEmailPage = () => {
             </>
           )}
         </Tabs>
-      </div>
 
       {/* Email Editor Dialog */}
       <Dialog open={showEditor} onOpenChange={setShowEditor}>
@@ -994,7 +971,7 @@ const AdminEmailPage = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </AdminLayout>
+    </AdminPageLayout>
   );
 };
 
