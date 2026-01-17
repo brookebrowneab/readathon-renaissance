@@ -39,6 +39,7 @@ import { SponsorRequestsPage, ChildSettingsPage, SponsorMyChildPage, ManageChild
 import { VerifyLogsPage } from "./pages/reading-logs";
 import AdminUsersPage from "./pages/AdminUsersPage";
 import AdminFinancePage from "./pages/AdminFinancePage";
+import DebugRingPage from "./pages/DebugRingPage";
 import NotFound from "./pages/NotFound";
 import { RequireAdmin } from "./components/auth/RequireAdmin";
 
@@ -57,6 +58,7 @@ const App = () => (
           <Route path="/how-it-works" element={<HowItWorksPage />} />
           <Route path="/faq" element={<FAQPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/debug/progress-ring" element={<DebugRingPage />} />
           <Route path="/sponsor" element={<SponsorGatewayPage />} />
           <Route path="/sponsor/:childId" element={<SponsorPage />} />
           <Route path="/invite/:token" element={<SponsorLandingPage />} />
