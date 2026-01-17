@@ -104,10 +104,24 @@ export function useAuth() {
     return { error };
   };
 
+  const refreshAdmin = async () => {
+    const session = state.session ?? (await supabase.auth.getSession()).data.session;
+
+    if (!session?.user) {
+      setState(prev => ({ ...prev, isAdmin: false }));
+      return false;
+    }
+
+    const isAdmin = await checkAdminRole(session.user.id);
+    setState(prev => ({ ...prev, isAdmin }));
+    return isAdmin;
+  };
+
   return {
     ...state,
     signIn,
     signUp,
     signOut,
+    refreshAdmin,
   };
 }
