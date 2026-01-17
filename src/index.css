@@ -209,7 +209,21 @@
     @apply flex justify-center items-center rounded-full absolute;
     background-color: hsl(var(--progress-bg));
     box-shadow: var(--shadow-progress);
+    border: none;
+    position: relative;
+  }
+
+  .progress-ring-container::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
     border: 1px solid hsl(0 0% 44%);
+    mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='50' cy='50' r='49' fill='none' stroke='black' stroke-width='2' stroke-dasharray='3 1 5 2 4 1 6 2 3 1' /%3E%3C/svg%3E");
+    mask-size: 100% 100%;
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='50' cy='50' r='49' fill='none' stroke='black' stroke-width='2' stroke-dasharray='3 1 5 2 4 1 6 2 3 1' /%3E%3C/svg%3E");
+    -webkit-mask-size: 100% 100%;
+    pointer-events: none;
   }
 
   /* Hand-drawn Accent Text */
