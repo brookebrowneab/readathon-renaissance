@@ -132,7 +132,7 @@ const ReadingGoalRing = ({
             style={{ width: effectiveSize, height: 'auto' }}
           >
             {/* Background circle */}
-            <circle r="10" cx="10" cy="10" fill="transparent" />
+            <circle r="10" cx="10" cy="10" fill="transparent" stroke="none" />
             {/* Progress arc */}
             <circle
               r="4.75"
