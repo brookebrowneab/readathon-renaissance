@@ -89,6 +89,95 @@ export type Database = {
         }
         Relationships: []
       }
+      email_logs: {
+        Row: {
+          body: string
+          created_at: string
+          error_message: string | null
+          id: string
+          recipient_email: string
+          recipient_name: string | null
+          recipient_type: string | null
+          sent_at: string | null
+          status: Database["public"]["Enums"]["email_log_status"]
+          subject: string
+          template_id: string | null
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          recipient_email: string
+          recipient_name?: string | null
+          recipient_type?: string | null
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["email_log_status"]
+          subject: string
+          template_id?: string | null
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          recipient_email?: string
+          recipient_name?: string | null
+          recipient_type?: string | null
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["email_log_status"]
+          subject?: string
+          template_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_logs_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "email_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_templates: {
+        Row: {
+          body: string
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+          recipient_filter: string
+          scheduled_for: string | null
+          status: Database["public"]["Enums"]["email_template_status"]
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name: string
+          recipient_filter: string
+          scheduled_for?: string | null
+          status?: Database["public"]["Enums"]["email_template_status"]
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string
+          recipient_filter?: string
+          scheduled_for?: string | null
+          status?: Database["public"]["Enums"]["email_template_status"]
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       events: {
         Row: {
           created_at: string
@@ -298,6 +387,8 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user"
+      email_log_status: "pending" | "sent" | "failed"
+      email_template_status: "draft" | "scheduled" | "sent"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -426,6 +517,8 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      email_log_status: ["pending", "sent", "failed"],
+      email_template_status: ["draft", "scheduled", "sent"],
     },
   },
 } as const
