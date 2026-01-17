@@ -231,18 +231,6 @@ const AdminDashboardPage = () => {
         </div>
       </div>
 
-      {/* Decorative Divider - Tiled */}
-      <div 
-        className="w-full h-12 md:h-16"
-        style={{
-          backgroundImage: `url(${booksShelfDivider})`,
-          backgroundRepeat: 'repeat-x',
-          backgroundSize: 'auto 100%',
-          backgroundPosition: 'center',
-        }}
-        aria-hidden="true"
-      />
-
       <main className="flex-1 bg-background-warm">
         <div className="container py-8">
           {/* Header Section */}
@@ -356,6 +344,19 @@ const AdminDashboardPage = () => {
               )}
             </div>
           </div>
+
+          {/* Decorative Divider - Tiled */}
+          <div 
+            className="h-12 md:h-16 mb-8 -mx-4 md:-mx-6 lg:-mx-8"
+            style={{
+              backgroundImage: `url(${booksShelfDivider})`,
+              backgroundRepeat: 'repeat-x',
+              backgroundSize: 'auto 100%',
+              backgroundPosition: 'center',
+              width: 'calc(100% + 2rem)',
+            }}
+            aria-hidden="true"
+          />
 
           {/* Alerts */}
           {mockAlerts.length > 0 && (
