@@ -60,6 +60,9 @@ import {
   Mail,
   XCircle,
   History,
+  Search,
+  UserPlus,
+  X,
 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -73,6 +76,8 @@ import {
 } from "@/hooks/useEmailTemplates";
 import { useEmailRecipientCounts } from "@/hooks/useEmailRecipientCounts";
 import { useLogEmails, useEmailLogs } from "@/hooks/useEmailLogs";
+import { useEmailRecipients, type EmailRecipient } from "@/hooks/useEmailRecipients";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 // Hand-drawn border style
 const handDrawnBorder = {
@@ -116,6 +121,7 @@ const AdminEmailPage = () => {
   const { data: templates = [], isLoading: templatesLoading } = useEmailTemplates();
   const { data: recipientCounts, isLoading: countsLoading } = useEmailRecipientCounts();
   const { data: emailLogs = [], isLoading: logsLoading } = useEmailLogs();
+  const { data: allRecipients = [], isLoading: recipientsLoading } = useEmailRecipients();
   
   // Mutations
   const createTemplate = useCreateEmailTemplate();
@@ -128,6 +134,7 @@ const AdminEmailPage = () => {
   const [showPreview, setShowPreview] = useState(false);
   const [showScheduler, setShowScheduler] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<EmailTemplate | null>(null);
+  const [recipientSearch, setRecipientSearch] = useState("");
 
   // Editor state
   const [templateName, setTemplateName] = useState("");
@@ -138,6 +145,24 @@ const AdminEmailPage = () => {
   const [selectedRecipients, setSelectedRecipients] = useState<string[]>([]);
   const [scheduleDate, setScheduleDate] = useState<Date | undefined>();
 
+  // Filter recipients by search query
+  const filteredRecipients = allRecipients.filter((r) =>
+    r.name.toLowerCase().includes(recipientSearch.toLowerCase()) ||
+    r.email.toLowerCase().includes(recipientSearch.toLowerCase())
+  );
+
+  const toggleRecipient = (recipientId: string) => {
+    setSelectedRecipients((prev) =>
+      prev.includes(recipientId)
+        ? prev.filter((id) => id !== recipientId)
+        : [...prev, recipientId]
+    );
+  };
+
+  const getSelectedRecipientDetails = (): EmailRecipient[] => {
+    return allRecipients.filter((r) => selectedRecipients.includes(r.id));
+  };
+
   const openNewTemplate = () => {
     setEditingTemplate(null);
     setTemplateName("");
@@ -146,6 +171,7 @@ const AdminEmailPage = () => {
     setRecipientType("filter");
     setSelectedFilter("");
     setSelectedRecipients([]);
+    setRecipientSearch("");
     setShowEditor(true);
   };
 
@@ -157,6 +183,7 @@ const AdminEmailPage = () => {
     setRecipientType("filter");
     setSelectedFilter(template.recipient_filter);
     setSelectedRecipients([]);
+    setRecipientSearch("");
     setShowEditor(true);
   };
 
@@ -672,7 +699,7 @@ const AdminEmailPage = () => {
                 <Label className="text-base font-medium">Recipients</Label>
 
                 <div className="flex gap-4">
-                  <label className="flex items-center gap-2">
+                  <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="radio"
                       checked={recipientType === "filter"}
@@ -681,15 +708,14 @@ const AdminEmailPage = () => {
                     />
                     <span className="text-sm">Use Filter</span>
                   </label>
-                  <label className="flex items-center gap-2">
+                  <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="radio"
                       checked={recipientType === "manual"}
                       onChange={() => setRecipientType("manual")}
                       className="accent-primary"
-                      disabled
                     />
-                    <span className="text-sm text-muted-foreground">Select Manually (coming soon)</span>
+                    <span className="text-sm">Select Manually</span>
                   </label>
                 </div>
 
@@ -719,10 +745,92 @@ const AdminEmailPage = () => {
                   </Select>
                 )}
 
-                {selectedFilter && (
+                {recipientType === "manual" && (
+                  <div className="space-y-3">
+                    {/* Search input */}
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Search by name or email..."
+                        value={recipientSearch}
+                        onChange={(e) => setRecipientSearch(e.target.value)}
+                        className="pl-9"
+                      />
+                    </div>
+
+                    {/* Selected recipients chips */}
+                    {selectedRecipients.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {getSelectedRecipientDetails().map((recipient) => (
+                          <Badge
+                            key={recipient.id}
+                            variant="secondary"
+                            className="flex items-center gap-1 pr-1"
+                          >
+                            <span className="truncate max-w-[150px]">{recipient.name}</span>
+                            <button
+                              onClick={() => toggleRecipient(recipient.id)}
+                              className="ml-1 hover:bg-muted rounded-full p-0.5"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Recipients list */}
+                    <div className="border rounded-lg">
+                      {recipientsLoading ? (
+                        <div className="p-4 space-y-2">
+                          <Skeleton className="h-10 w-full" />
+                          <Skeleton className="h-10 w-full" />
+                          <Skeleton className="h-10 w-full" />
+                        </div>
+                      ) : filteredRecipients.length === 0 ? (
+                        <div className="p-8 text-center text-muted-foreground">
+                          <UserPlus className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                          <p className="text-sm">
+                            {allRecipients.length === 0
+                              ? "No recipients available"
+                              : "No recipients match your search"}
+                          </p>
+                        </div>
+                      ) : (
+                        <ScrollArea className="h-[200px]">
+                          <div className="divide-y">
+                            {filteredRecipients.map((recipient) => (
+                              <label
+                                key={recipient.id}
+                                className="flex items-center gap-3 p-3 hover:bg-muted/50 cursor-pointer transition-colors"
+                              >
+                                <Checkbox
+                                  checked={selectedRecipients.includes(recipient.id)}
+                                  onCheckedChange={() => toggleRecipient(recipient.id)}
+                                />
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-medium text-sm truncate">{recipient.name}</p>
+                                  <p className="text-xs text-muted-foreground truncate">
+                                    {recipient.email}
+                                  </p>
+                                </div>
+                                <Badge variant="outline" className="text-xs capitalize">
+                                  {recipient.type}
+                                </Badge>
+                              </label>
+                            ))}
+                          </div>
+                        </ScrollArea>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {((recipientType === "filter" && selectedFilter) || 
+                  (recipientType === "manual" && selectedRecipients.length > 0)) && (
                   <p className="text-sm text-muted-foreground flex items-center gap-2">
                     <Users className="h-4 w-4" />
-                    {countsLoading ? (
+                    {countsLoading && recipientType === "filter" ? (
                       <Skeleton className="h-4 w-24" />
                     ) : (
                       <>
