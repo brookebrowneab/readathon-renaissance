@@ -8,6 +8,7 @@ import { FormField } from "@/components/ui/form-field";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -35,14 +36,6 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
   Plus,
   Send,
   Clock,
@@ -60,6 +53,15 @@ import {
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import {
+  useEmailTemplates,
+  useCreateEmailTemplate,
+  useUpdateEmailTemplate,
+  useDeleteEmailTemplate,
+  type EmailTemplate,
+} from "@/hooks/useEmailTemplates";
+import { useEmailRecipientCounts } from "@/hooks/useEmailRecipientCounts";
+import { useLogEmails } from "@/hooks/useEmailLogs";
 
 // Hand-drawn border style
 const handDrawnBorder = {
@@ -98,67 +100,18 @@ const recipientFilters = [
   { id: "inactive_students", label: "Inactive Students' Parents", description: "Parents of students who haven't logged reading in 7+ days" },
 ];
 
-interface EmailTemplate {
-  id: string;
-  name: string;
-  subject: string;
-  body: string;
-  recipientFilter: string;
-  status: "draft" | "scheduled" | "sent";
-  scheduledFor?: Date;
-  sentAt?: Date;
-  recipientCount?: number;
-}
-
-const mockTemplates: EmailTemplate[] = [
-  {
-    id: "1",
-    name: "Payment Reminder",
-    subject: "Reminder: Your Read-a-thon Pledge for {{student_first_name}}",
-    body: "Hi {{sponsor_first_name}},\n\nThank you for sponsoring {{student_name}} in our Read-a-thon! They've read {{minutes_read}} minutes so far.\n\nYour pledge of {{pledge_amount}} totals {{total_owed}}.\n\nPay now: {{payment_link}}\n\nThank you for supporting literacy!\n\n- {{school_name}} PTA",
-    recipientFilter: "unpaid_sponsors",
-    status: "draft",
-  },
-  {
-    id: "2",
-    name: "Event Ending Soon",
-    subject: "Only {{days_remaining}} Days Left! {{event_name}}",
-    body: "Hi {{sponsor_first_name}},\n\n{{student_first_name}} is doing great! They've reached {{progress_percent}}% of their goal.\n\nThe event ends in {{days_remaining}} days. Payment reminders will be sent after the event concludes.\n\nThank you for your support!\n\n- {{school_name}}",
-    recipientFilter: "all_sponsors",
-    status: "scheduled",
-    scheduledFor: new Date("2025-01-10"),
-    recipientCount: 156,
-  },
-  {
-    id: "3",
-    name: "Thank You - Payment Received",
-    subject: "Thank You for Your Support! 📚",
-    body: "Hi {{sponsor_first_name}},\n\nThank you for your generous pledge of {{total_owed}} to support {{student_name}}!\n\nYour contribution helps fund literacy programs at {{school_name}}.\n\nWith gratitude,\n{{school_name}} PTA",
-    recipientFilter: "all_sponsors",
-    status: "sent",
-    sentAt: new Date("2024-12-20"),
-    recipientCount: 89,
-  },
-];
-
-interface ManualRecipient {
-  id: string;
-  name: string;
-  email: string;
-  type: "sponsor" | "parent" | "teacher";
-}
-
-const mockRecipients: ManualRecipient[] = [
-  { id: "1", name: "Betty Smith", email: "betty@example.com", type: "sponsor" },
-  { id: "2", name: "John Davis", email: "john@example.com", type: "sponsor" },
-  { id: "3", name: "Sarah Johnson", email: "sarah@example.com", type: "parent" },
-  { id: "4", name: "Mike Thompson", email: "mike@example.com", type: "sponsor" },
-  { id: "5", name: "Lisa Brown", email: "lisa@example.com", type: "parent" },
-  { id: "6", name: "Ms. Williams", email: "williams@school.edu", type: "teacher" },
-];
-
 const AdminEmailPage = () => {
-  const [templates, setTemplates] = useState<EmailTemplate[]>(mockTemplates);
+  // Data queries
+  const { data: templates = [], isLoading: templatesLoading } = useEmailTemplates();
+  const { data: recipientCounts, isLoading: countsLoading } = useEmailRecipientCounts();
+  
+  // Mutations
+  const createTemplate = useCreateEmailTemplate();
+  const updateTemplate = useUpdateEmailTemplate();
+  const deleteTemplate = useDeleteEmailTemplate();
+  const logEmails = useLogEmails();
+
+  // UI state
   const [showEditor, setShowEditor] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [showScheduler, setShowScheduler] = useState(false);
@@ -172,8 +125,6 @@ const AdminEmailPage = () => {
   const [selectedFilter, setSelectedFilter] = useState("");
   const [selectedRecipients, setSelectedRecipients] = useState<string[]>([]);
   const [scheduleDate, setScheduleDate] = useState<Date | undefined>();
-  const [isSaving, setIsSaving] = useState(false);
-  const [isSending, setIsSending] = useState(false);
 
   const openNewTemplate = () => {
     setEditingTemplate(null);
@@ -192,7 +143,7 @@ const AdminEmailPage = () => {
     setSubject(template.subject);
     setBody(template.body);
     setRecipientType("filter");
-    setSelectedFilter(template.recipientFilter);
+    setSelectedFilter(template.recipient_filter);
     setSelectedRecipients([]);
     setShowEditor(true);
   };
@@ -211,20 +162,85 @@ const AdminEmailPage = () => {
       return;
     }
 
-    setIsSaving(true);
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    setIsSaving(false);
-
-    toast.success(editingTemplate ? "Template updated!" : "Template saved!");
-    setShowEditor(false);
+    try {
+      if (editingTemplate) {
+        await updateTemplate.mutateAsync({
+          id: editingTemplate.id,
+          name: templateName,
+          subject,
+          body,
+          recipient_filter: selectedFilter || "all_sponsors",
+        });
+        toast.success("Template updated!");
+      } else {
+        await createTemplate.mutateAsync({
+          name: templateName,
+          subject,
+          body,
+          recipient_filter: selectedFilter || "all_sponsors",
+          status: "draft",
+        });
+        toast.success("Template saved!");
+      }
+      setShowEditor(false);
+    } catch (error: any) {
+      toast.error(error.message || "Failed to save template");
+    }
   };
 
   const handleSendNow = async () => {
-    setIsSending(true);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    setIsSending(false);
-    toast.success("Emails sent successfully!");
-    setShowEditor(false);
+    if (!templateName || !subject || !body) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    const count = getRecipientCount();
+    if (count === 0) {
+      toast.error("No recipients selected");
+      return;
+    }
+
+    try {
+      // First save/update the template
+      let templateId = editingTemplate?.id;
+      
+      if (editingTemplate) {
+        await updateTemplate.mutateAsync({
+          id: editingTemplate.id,
+          name: templateName,
+          subject,
+          body,
+          recipient_filter: selectedFilter || "all_sponsors",
+          status: "sent",
+        });
+      } else {
+        const newTemplate = await createTemplate.mutateAsync({
+          name: templateName,
+          subject,
+          body,
+          recipient_filter: selectedFilter || "all_sponsors",
+          status: "sent",
+        });
+        templateId = newTemplate.id;
+      }
+
+      // Log the emails (without actually sending - that comes later with Resend)
+      // For now, we'll create a single log entry as a placeholder
+      await logEmails.mutateAsync([{
+        template_id: templateId,
+        recipient_email: "placeholder@example.com",
+        recipient_name: "Batch Send",
+        recipient_type: selectedFilter,
+        subject: subject,
+        body: body,
+        status: "pending",
+      }]);
+
+      toast.success(`Email queued for ${count} recipients! (Email sending coming soon)`);
+      setShowEditor(false);
+    } catch (error: any) {
+      toast.error(error.message || "Failed to send emails");
+    }
   };
 
   const handleSchedule = async () => {
@@ -233,30 +249,66 @@ const AdminEmailPage = () => {
       return;
     }
 
-    setIsSaving(true);
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    setIsSaving(false);
+    try {
+      if (editingTemplate) {
+        await updateTemplate.mutateAsync({
+          id: editingTemplate.id,
+          name: templateName,
+          subject,
+          body,
+          recipient_filter: selectedFilter || "all_sponsors",
+          status: "scheduled",
+          scheduled_for: scheduleDate.toISOString(),
+        });
+      } else {
+        await createTemplate.mutateAsync({
+          name: templateName,
+          subject,
+          body,
+          recipient_filter: selectedFilter || "all_sponsors",
+          status: "scheduled",
+          scheduled_for: scheduleDate.toISOString(),
+        });
+      }
 
-    toast.success(`Email scheduled for ${format(scheduleDate, "PPP")}`);
-    setShowScheduler(false);
-    setShowEditor(false);
+      toast.success(`Email scheduled for ${format(scheduleDate, "PPP")}`);
+      setShowScheduler(false);
+      setShowEditor(false);
+    } catch (error: any) {
+      toast.error(error.message || "Failed to schedule email");
+    }
+  };
+
+  const handleDeleteTemplate = async (id: string) => {
+    try {
+      await deleteTemplate.mutateAsync(id);
+      toast.success("Template deleted");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to delete template");
+    }
+  };
+
+  const handleDuplicateTemplate = async (template: EmailTemplate) => {
+    try {
+      await createTemplate.mutateAsync({
+        name: `${template.name} (Copy)`,
+        subject: template.subject,
+        body: template.body,
+        recipient_filter: template.recipient_filter,
+        status: "draft",
+      });
+      toast.success("Template duplicated!");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to duplicate template");
+    }
   };
 
   const getRecipientCount = () => {
     if (recipientType === "manual") {
       return selectedRecipients.length;
     }
-    // Mock counts based on filter
-    const counts: Record<string, number> = {
-      all_sponsors: 156,
-      unpaid_sponsors: 45,
-      overdue_sponsors: 12,
-      check_sponsors: 8,
-      all_parents: 147,
-      all_teachers: 12,
-      inactive_students: 23,
-    };
-    return counts[selectedFilter] || 0;
+    if (!recipientCounts || !selectedFilter) return 0;
+    return recipientCounts[selectedFilter as keyof typeof recipientCounts] || 0;
   };
 
   const previewBody = body
@@ -291,6 +343,79 @@ const AdminEmailPage = () => {
         return <Badge variant="success">Sent</Badge>;
     }
   };
+
+  const TemplateCard = ({ template }: { template: EmailTemplate }) => (
+    <div
+      className="bg-background p-4 hover:shadow-md transition-shadow"
+      style={handDrawnBorder}
+    >
+      <div className="flex flex-col md:flex-row md:items-center gap-4">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1">
+            <h3 className="font-medium text-foreground">{template.name}</h3>
+            {getStatusBadge(template.status)}
+          </div>
+          <p className="text-sm text-muted-foreground truncate">
+            {template.subject}
+          </p>
+          {template.scheduled_for && (
+            <p className="text-xs text-muted-foreground mt-1">
+              <Clock className="h-3 w-3 inline mr-1" />
+              Scheduled for {format(new Date(template.scheduled_for), "PPP")}
+            </p>
+          )}
+          {template.status === "sent" && (
+            <p className="text-xs text-muted-foreground mt-1">
+              <CheckCircle className="h-3 w-3 inline mr-1" />
+              Sent {format(new Date(template.updated_at), "PPP")}
+            </p>
+          )}
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => openEditTemplate(template)}
+          >
+            <Edit className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleDuplicateTemplate(template)}
+          >
+            <Copy className="h-4 w-4" />
+          </Button>
+          {template.status === "draft" && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-destructive hover:text-destructive"
+              onClick={() => handleDeleteTemplate(template.id)}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
+  const TemplateListSkeleton = () => (
+    <div className="space-y-4">
+      {[1, 2, 3].map((i) => (
+        <div key={i} className="bg-background p-4" style={handDrawnBorder}>
+          <div className="flex items-center justify-between">
+            <div className="space-y-2">
+              <Skeleton className="h-5 w-48" />
+              <Skeleton className="h-4 w-64" />
+            </div>
+            <Skeleton className="h-8 w-20" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 
   return (
     <AdminLayout>
@@ -335,120 +460,59 @@ const AdminEmailPage = () => {
             <TabsTrigger value="sent">Sent</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="all" className="space-y-4">
-            {templates.map((template) => (
-              <div
-                key={template.id}
-                className="bg-background p-4 hover:shadow-md transition-shadow"
-                style={handDrawnBorder}
-              >
-                <div className="flex flex-col md:flex-row md:items-center gap-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-medium text-foreground">{template.name}</h3>
-                      {getStatusBadge(template.status)}
-                    </div>
-                    <p className="text-sm text-muted-foreground truncate">
-                      {template.subject}
-                    </p>
-                    {template.scheduledFor && (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        <Clock className="h-3 w-3 inline mr-1" />
-                        Scheduled for {format(template.scheduledFor, "PPP")} • {template.recipientCount} recipients
-                      </p>
-                    )}
-                    {template.sentAt && (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        <CheckCircle className="h-3 w-3 inline mr-1" />
-                        Sent {format(template.sentAt, "PPP")} • {template.recipientCount} recipients
-                      </p>
-                    )}
+          {templatesLoading ? (
+            <TemplateListSkeleton />
+          ) : (
+            <>
+              <TabsContent value="all" className="space-y-4">
+                {templates.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <p>No templates yet. Create your first email template!</p>
                   </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => openEditTemplate(template)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        toast.success("Template duplicated!");
-                      }}
-                    >
-                      <Copy className="h-4 w-4" />
-                    </Button>
-                    {template.status === "draft" && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-destructive hover:text-destructive"
-                        onClick={() => {
-                          toast.success("Template deleted");
-                        }}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </TabsContent>
+                ) : (
+                  templates.map((template) => (
+                    <TemplateCard key={template.id} template={template} />
+                  ))
+                )}
+              </TabsContent>
 
-          <TabsContent value="drafts">
-            {templates.filter((t) => t.status === "draft").map((template) => (
-              <div key={template.id} className="bg-background p-4" style={handDrawnBorder}>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-medium">{template.name}</h3>
-                    <p className="text-sm text-muted-foreground">{template.subject}</p>
+              <TabsContent value="drafts" className="space-y-4">
+                {templates.filter((t) => t.status === "draft").length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <p>No draft templates</p>
                   </div>
-                  <Button size="sm" onClick={() => openEditTemplate(template)}>
-                    Edit
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </TabsContent>
+                ) : (
+                  templates.filter((t) => t.status === "draft").map((template) => (
+                    <TemplateCard key={template.id} template={template} />
+                  ))
+                )}
+              </TabsContent>
 
-          <TabsContent value="scheduled">
-            {templates.filter((t) => t.status === "scheduled").map((template) => (
-              <div key={template.id} className="bg-background p-4" style={handDrawnBorder}>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-medium">{template.name}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Scheduled for {template.scheduledFor && format(template.scheduledFor, "PPP")}
-                    </p>
+              <TabsContent value="scheduled" className="space-y-4">
+                {templates.filter((t) => t.status === "scheduled").length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <p>No scheduled emails</p>
                   </div>
-                  <Button variant="outline" size="sm">Cancel</Button>
-                </div>
-              </div>
-            ))}
-          </TabsContent>
+                ) : (
+                  templates.filter((t) => t.status === "scheduled").map((template) => (
+                    <TemplateCard key={template.id} template={template} />
+                  ))
+                )}
+              </TabsContent>
 
-          <TabsContent value="sent">
-            {templates.filter((t) => t.status === "sent").map((template) => (
-              <div key={template.id} className="bg-background p-4" style={handDrawnBorder}>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-medium">{template.name}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Sent {template.sentAt && format(template.sentAt, "PPP")} to {template.recipientCount} recipients
-                    </p>
+              <TabsContent value="sent" className="space-y-4">
+                {templates.filter((t) => t.status === "sent").length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <p>No sent emails yet</p>
                   </div>
-                  <Button variant="ghost" size="sm" onClick={() => openEditTemplate(template)}>
-                    <Copy className="h-4 w-4 mr-2" />
-                    Duplicate
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </TabsContent>
+                ) : (
+                  templates.filter((t) => t.status === "sent").map((template) => (
+                    <TemplateCard key={template.id} template={template} />
+                  ))
+                )}
+              </TabsContent>
+            </>
+          )}
         </Tabs>
       </div>
 
@@ -537,12 +601,13 @@ const AdminEmailPage = () => {
                       checked={recipientType === "manual"}
                       onChange={() => setRecipientType("manual")}
                       className="accent-primary"
+                      disabled
                     />
-                    <span className="text-sm">Select Manually</span>
+                    <span className="text-sm text-muted-foreground">Select Manually (coming soon)</span>
                   </label>
                 </div>
 
-                {recipientType === "filter" ? (
+                {recipientType === "filter" && (
                   <Select value={selectedFilter} onValueChange={setSelectedFilter}>
                     <SelectTrigger>
                       <Filter className="h-4 w-4 mr-2" />
@@ -551,47 +616,33 @@ const AdminEmailPage = () => {
                     <SelectContent>
                       {recipientFilters.map((filter) => (
                         <SelectItem key={filter.id} value={filter.id}>
-                          <div>
-                            <p>{filter.label}</p>
-                            <p className="text-xs text-muted-foreground">{filter.description}</p>
+                          <div className="flex items-center justify-between w-full">
+                            <div>
+                              <p>{filter.label}</p>
+                              <p className="text-xs text-muted-foreground">{filter.description}</p>
+                            </div>
+                            {recipientCounts && !countsLoading && (
+                              <Badge variant="secondary" className="ml-2">
+                                {recipientCounts[filter.id as keyof typeof recipientCounts] || 0}
+                              </Badge>
+                            )}
                           </div>
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                ) : (
-                  <div className="border rounded-lg p-3 max-h-48 overflow-y-auto space-y-2">
-                    {mockRecipients.map((recipient) => (
-                      <label
-                        key={recipient.id}
-                        className="flex items-center gap-3 p-2 hover:bg-muted rounded cursor-pointer"
-                      >
-                        <Checkbox
-                          checked={selectedRecipients.includes(recipient.id)}
-                          onCheckedChange={(checked) => {
-                            setSelectedRecipients((prev) =>
-                              checked
-                                ? [...prev, recipient.id]
-                                : prev.filter((id) => id !== recipient.id)
-                            );
-                          }}
-                        />
-                        <div className="flex-1">
-                          <p className="text-sm font-medium">{recipient.name}</p>
-                          <p className="text-xs text-muted-foreground">{recipient.email}</p>
-                        </div>
-                        <Badge variant="secondary" className="text-xs">
-                          {recipient.type}
-                        </Badge>
-                      </label>
-                    ))}
-                  </div>
                 )}
 
-                {(selectedFilter || selectedRecipients.length > 0) && (
+                {selectedFilter && (
                   <p className="text-sm text-muted-foreground flex items-center gap-2">
                     <Users className="h-4 w-4" />
-                    {getRecipientCount()} recipient{getRecipientCount() !== 1 ? "s" : ""} selected
+                    {countsLoading ? (
+                      <Skeleton className="h-4 w-24" />
+                    ) : (
+                      <>
+                        {getRecipientCount()} recipient{getRecipientCount() !== 1 ? "s" : ""} selected
+                      </>
+                    )}
                   </p>
                 )}
               </div>
@@ -635,8 +686,12 @@ const AdminEmailPage = () => {
             <Button variant="outline" onClick={() => setShowEditor(false)}>
               Cancel
             </Button>
-            <Button variant="secondary" onClick={handleSaveTemplate} loading={isSaving}>
-              Save as Draft
+            <Button 
+              variant="secondary" 
+              onClick={handleSaveTemplate} 
+              disabled={createTemplate.isPending || updateTemplate.isPending}
+            >
+              {(createTemplate.isPending || updateTemplate.isPending) ? "Saving..." : "Save as Draft"}
             </Button>
             <Button
               variant="outline"
@@ -648,11 +703,10 @@ const AdminEmailPage = () => {
             </Button>
             <Button
               onClick={handleSendNow}
-              loading={isSending}
-              disabled={!templateName || !subject || !body || getRecipientCount() === 0}
+              disabled={!templateName || !subject || !body || getRecipientCount() === 0 || logEmails.isPending}
             >
               <Send className="h-4 w-4 mr-2" />
-              Send Now ({getRecipientCount()})
+              {logEmails.isPending ? "Sending..." : `Send Now (${getRecipientCount()})`}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -736,9 +790,12 @@ const AdminEmailPage = () => {
             <Button variant="outline" onClick={() => setShowScheduler(false)}>
               Cancel
             </Button>
-            <Button onClick={handleSchedule} loading={isSaving} disabled={!scheduleDate}>
+            <Button 
+              onClick={handleSchedule} 
+              disabled={!scheduleDate || createTemplate.isPending || updateTemplate.isPending}
+            >
               <Clock className="h-4 w-4 mr-2" />
-              Schedule Email
+              {(createTemplate.isPending || updateTemplate.isPending) ? "Scheduling..." : "Schedule Email"}
             </Button>
           </DialogFooter>
         </DialogContent>
