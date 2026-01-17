@@ -371,7 +371,7 @@ const TeacherDashboardPage = () => {
                 <h3 className="font-serif text-xl text-brand-blue mb-4">Quick Actions</h3>
                 <div className="space-y-3">
                   <Button className="w-full justify-start bg-brand-blue text-white hover:bg-brand-blue/90" asChild>
-                    <Link to="/teacher-log-reading">
+                    <Link to="/teacher/log">
                       <BookOpen className="h-4 w-4 mr-2" />
                       Log Reading for Student
                     </Link>

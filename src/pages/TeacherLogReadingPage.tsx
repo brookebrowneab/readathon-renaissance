@@ -218,7 +218,7 @@ const TeacherLogReadingPage = () => {
                   Log Another
                 </Button>
                 <Button variant="outline" size="lg" className="w-full" asChild>
-                  <Link to="/teacher-dashboard">
+                  <Link to="/teacher">
                     <ArrowLeft className="h-4 w-4 mr-2" />
                     Back to Class Overview
                   </Link>
@@ -241,7 +241,7 @@ const TeacherLogReadingPage = () => {
           {/* Header */}
           <div className="flex items-center gap-4 mb-8">
             <Button variant="ghost" size="icon" asChild>
-              <Link to="/teacher-dashboard">
+              <Link to="/teacher">
                 <ArrowLeft className="h-5 w-5" />
               </Link>
             </Button>
