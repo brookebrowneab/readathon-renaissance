@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { MainNav, Footer } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Form,
   FormControl,
@@ -16,6 +17,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { Shield, Loader2, ArrowLeft } from "lucide-react";
 
 const loginSchema = z.object({
@@ -35,8 +37,9 @@ const handDrawnBorder = {
 
 export default function AdminLoginPage() {
   const navigate = useNavigate();
-  const { user, isLoading, isAdmin, signIn } = useAuth();
+  const { user, isLoading, isAdmin, signIn, signUp } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [activeTab, setActiveTab] = useState("login");
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -63,6 +66,37 @@ export default function AdminLoginPage() {
         return;
       }
       // Auth state change will trigger redirect if admin
+    } catch {
+      toast.error("An unexpected error occurred");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const onSignUp = async (data: LoginFormData) => {
+    setIsSubmitting(true);
+    try {
+      const { error } = await signUp(data.email, data.password);
+      if (error) {
+        if (error.message.includes("already registered")) {
+          toast.error("This email is already registered");
+        } else {
+          toast.error(error.message);
+        }
+        return;
+      }
+      
+      // Get the newly created user and add admin role
+      const { data: { user: newUser } } = await supabase.auth.getUser();
+      if (newUser) {
+        await supabase.from('user_roles').insert({
+          user_id: newUser.id,
+          role: 'admin'
+        });
+      }
+      
+      toast.success("Admin account created! You are now signed in.");
+      navigate("/admin-dashboard");
     } catch {
       toast.error("An unexpected error occurred");
     } finally {
@@ -128,58 +162,122 @@ export default function AdminLoginPage() {
               <p className="text-muted-foreground mt-1">Sign in to manage the read-a-thon</p>
             </div>
 
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="email" 
-                          placeholder="admin@school.edu" 
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Password</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="password" 
-                          placeholder="••••••••" 
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <Button 
-                  type="submit" 
-                  className="w-full" 
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Signing in...
-                    </>
-                  ) : (
-                    "Sign In"
-                  )}
-                </Button>
-              </form>
-            </Form>
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-4">
+                <TabsTrigger value="login">Sign In</TabsTrigger>
+                <TabsTrigger value="signup">Create Admin</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="login">
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="email" 
+                              placeholder="admin@school.edu" 
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Password</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="password" 
+                              placeholder="••••••••" 
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <Button 
+                      type="submit" 
+                      className="w-full" 
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Signing in...
+                        </>
+                      ) : (
+                        "Sign In"
+                      )}
+                    </Button>
+                  </form>
+                </Form>
+              </TabsContent>
+              
+              <TabsContent value="signup">
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSignUp)} className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="email" 
+                              placeholder="admin@school.edu" 
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Password</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="password" 
+                              placeholder="••••••••" 
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <Button 
+                      type="submit" 
+                      className="w-full" 
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Creating account...
+                        </>
+                      ) : (
+                        "Create Admin Account"
+                      )}
+                    </Button>
+                  </form>
+                </Form>
+              </TabsContent>
+            </Tabs>
           </div>
         </div>
       </main>
