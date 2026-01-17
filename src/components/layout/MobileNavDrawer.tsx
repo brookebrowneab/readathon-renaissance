@@ -19,32 +19,32 @@ const publicNav: NavItem[] = [
 const parentNav: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: Home },
   { label: "Log Reading", href: "/log-reading", icon: Clock },
-  { label: "Pledges", href: "/dashboard#pledges", icon: Heart },
+  { label: "Children", href: "/family/manage", icon: Users },
 ];
 
 const studentNav: NavItem[] = [
-  { label: "Dashboard", href: "/student-dashboard", icon: Home },
-  { label: "Log Reading", href: "/student-log-reading", icon: BookOpen },
-  { label: "My Sponsors", href: "/student-dashboard#sponsors", icon: Heart },
+  { label: "Dashboard", href: "/student", icon: Home },
+  { label: "Log Reading", href: "/student/log", icon: BookOpen },
+  { label: "My Sponsors", href: "/student", icon: Heart },
 ];
 
 const teacherNav: NavItem[] = [
-  { label: "Dashboard", href: "/teacher-dashboard", icon: Home },
-  { label: "Log Reading", href: "/teacher-log-reading", icon: Clock },
-  { label: "My Class", href: "/teacher-dashboard#class", icon: Users },
+  { label: "Dashboard", href: "/teacher", icon: Home },
+  { label: "Log Reading", href: "/teacher/log", icon: Clock },
+  { label: "My Class", href: "/teacher", icon: Users },
 ];
 
 const sponsorNav: NavItem[] = [
-  { label: "Dashboard", href: "/sponsor-dashboard", icon: Home },
-  { label: "My Pledges", href: "/sponsor-dashboard#pledges", icon: Heart },
-  { label: "Payments", href: "/sponsor-dashboard#payments", icon: DollarSign },
+  { label: "Dashboard", href: "/sponsor/dashboard", icon: Home },
+  { label: "My Pledges", href: "/sponsor/dashboard", icon: Heart },
+  { label: "Payments", href: "/sponsor/pay", icon: DollarSign },
 ];
 
 const adminNav: NavItem[] = [
-  { label: "Dashboard", href: "/admin-dashboard", icon: LayoutDashboard },
+  { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { label: "Users", href: "/admin-users", icon: Users },
   { label: "Finance", href: "/admin-finance", icon: DollarSign },
-  { label: "Settings", href: "/admin-dashboard#settings", icon: Settings },
+  { label: "Settings", href: "/admin/settings", icon: Settings },
 ];
 
 const getNavForRole = (role: UserRole, isAuthenticated: boolean): NavItem[] => {

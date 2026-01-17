@@ -24,37 +24,37 @@ interface TabItem {
 
 const parentTabs: TabItem[] = [
   { label: "Home", href: "/dashboard", icon: Home },
-  { label: "Children", href: "/dashboard#children", icon: Users },
-  { label: "Pledges", href: "/dashboard#pledges", icon: Heart },
-  { label: "Profile", href: "/dashboard#profile", icon: User },
+  { label: "Children", href: "/family/manage", icon: Users },
+  { label: "Pledges", href: "/dashboard", icon: Heart },
+  { label: "Profile", href: "/dashboard", icon: User },
 ];
 
 const studentTabs: TabItem[] = [
-  { label: "Home", href: "/student-dashboard", icon: Home },
-  { label: "Log Reading", href: "/student-log-reading", icon: BookOpen },
-  { label: "Sponsors", href: "/student-dashboard#sponsors", icon: Star },
-  { label: "Profile", href: "/student-dashboard#profile", icon: User },
+  { label: "Home", href: "/student", icon: Home },
+  { label: "Log Reading", href: "/student/log", icon: BookOpen },
+  { label: "Sponsors", href: "/student", icon: Star },
+  { label: "Profile", href: "/student", icon: User },
 ];
 
 const teacherTabs: TabItem[] = [
-  { label: "Home", href: "/teacher-dashboard", icon: Home },
-  { label: "Students", href: "/teacher-dashboard#students", icon: Users },
-  { label: "Log", href: "/teacher-log-reading", icon: Clock },
-  { label: "Profile", href: "/teacher-dashboard#profile", icon: User },
+  { label: "Home", href: "/teacher", icon: Home },
+  { label: "Students", href: "/teacher", icon: Users },
+  { label: "Log", href: "/teacher/log", icon: Clock },
+  { label: "Profile", href: "/teacher", icon: User },
 ];
 
 const sponsorTabs: TabItem[] = [
-  { label: "Home", href: "/sponsor-dashboard", icon: Home },
-  { label: "Pledges", href: "/sponsor-dashboard#pledges", icon: Heart },
-  { label: "Payments", href: "/sponsor-dashboard#payments", icon: DollarSign },
-  { label: "Profile", href: "/sponsor-dashboard#profile", icon: User },
+  { label: "Home", href: "/sponsor/dashboard", icon: Home },
+  { label: "Pledges", href: "/sponsor/dashboard", icon: Heart },
+  { label: "Payments", href: "/sponsor/pay", icon: DollarSign },
+  { label: "Profile", href: "/sponsor/dashboard", icon: User },
 ];
 
 const adminTabs: TabItem[] = [
-  { label: "Dashboard", href: "/admin-dashboard", icon: LayoutDashboard },
+  { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { label: "Users", href: "/admin-users", icon: Users },
   { label: "Finance", href: "/admin-finance", icon: DollarSign },
-  { label: "Settings", href: "/admin-dashboard#settings", icon: Settings },
+  { label: "Settings", href: "/admin/settings", icon: Settings },
 ];
 
 const getTabsForRole = (role: UserRole): TabItem[] => {
