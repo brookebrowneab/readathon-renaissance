@@ -208,8 +208,6 @@
   .progress-ring-container {
     @apply flex justify-center items-center rounded-full absolute;
     background-color: hsl(var(--progress-bg));
-    box-shadow: var(--shadow-progress);
-    border: 1px solid hsl(0 0% 44%);
   }
 
   /* Hand-drawn Accent Text */
