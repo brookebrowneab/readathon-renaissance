@@ -870,6 +870,190 @@ function ControlSection() {
   );
 }
 
+/**
+ * Test 9: Container vs SVG isolation
+ * Is the cutoff happening at the SVG level or the container div level?
+ */
+function ContainerIsolationTest() {
+  return (
+    <section className="grid gap-4 rounded-lg border bg-card p-4">
+      <header className="grid gap-1">
+        <h2 className="text-lg font-semibold">Test 9 — Container vs SVG isolation</h2>
+        <p className="text-sm text-muted-foreground">
+          Comparing: full container styling vs bare SVG vs different container styles.
+        </p>
+      </header>
+
+      <div className="rounded-md bg-yellow-100 dark:bg-yellow-900/20 border-yellow-300 dark:border-yellow-700 border p-3 text-sm">
+        <strong>Hypothesis:</strong> If the cutoff disappears when we remove container styling (borderRadius, overflow, etc.), then the issue is CSS-based, not SVG-based.
+      </div>
+
+      <div className="flex flex-wrap gap-8">
+        {/* A: Full container styling (like the component) */}
+        <div className="grid gap-2">
+          <div className="text-sm font-medium">A: Full container styling</div>
+          <div
+            className="progress-ring-container"
+            style={{
+              width: 160,
+              height: 160,
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              background: '#E6EAF1',
+              borderRadius: '50%',
+              border: 'solid 0.5px #41403E',
+              position: 'relative',
+            }}
+          >
+            <svg width={160} height={160} viewBox="0 0 20 20" style={{ width: 160, height: 'auto' }}>
+              <defs>
+                <pattern id="iso-a" patternUnits="objectBoundingBox" x="0" y="0" width="1" height="1">
+                  <image href={pencilPattern} x="0" y="0" width="20" height="20" preserveAspectRatio="xMidYMid slice" />
+                </pattern>
+              </defs>
+              <circle r={r} cx="10" cy="10" fill="transparent" stroke="url(#iso-a)" strokeWidth={strokeWidth} />
+            </svg>
+          </div>
+          <code className="text-xs text-muted-foreground">borderRadius: 50%<br/>border, background</code>
+        </div>
+
+        {/* B: Bare SVG - no container */}
+        <div className="grid gap-2">
+          <div className="text-sm font-medium">B: Bare SVG (no container)</div>
+          <svg width={160} height={160} viewBox="0 0 20 20" style={{ background: '#E6EAF1' }}>
+            <defs>
+              <pattern id="iso-b" patternUnits="objectBoundingBox" x="0" y="0" width="1" height="1">
+                <image href={pencilPattern} x="0" y="0" width="20" height="20" preserveAspectRatio="xMidYMid slice" />
+              </pattern>
+            </defs>
+            <circle r={r} cx="10" cy="10" fill="transparent" stroke="url(#iso-b)" strokeWidth={strokeWidth} />
+          </svg>
+          <code className="text-xs text-muted-foreground">No container div<br/>SVG only</code>
+        </div>
+
+        {/* C: Container without borderRadius */}
+        <div className="grid gap-2">
+          <div className="text-sm font-medium">C: No borderRadius</div>
+          <div
+            style={{
+              width: 160,
+              height: 160,
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              background: '#E6EAF1',
+              border: 'solid 0.5px #41403E',
+            }}
+          >
+            <svg width={160} height={160} viewBox="0 0 20 20">
+              <defs>
+                <pattern id="iso-c" patternUnits="objectBoundingBox" x="0" y="0" width="1" height="1">
+                  <image href={pencilPattern} x="0" y="0" width="20" height="20" preserveAspectRatio="xMidYMid slice" />
+                </pattern>
+              </defs>
+              <circle r={r} cx="10" cy="10" fill="transparent" stroke="url(#iso-c)" strokeWidth={strokeWidth} />
+            </svg>
+          </div>
+          <code className="text-xs text-muted-foreground">Square container<br/>No borderRadius</code>
+        </div>
+
+        {/* D: Container with overflow:visible */}
+        <div className="grid gap-2">
+          <div className="text-sm font-medium">D: overflow: visible</div>
+          <div
+            style={{
+              width: 160,
+              height: 160,
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              background: '#E6EAF1',
+              borderRadius: '50%',
+              border: 'solid 0.5px #41403E',
+              overflow: 'visible',
+            }}
+          >
+            <svg width={160} height={160} viewBox="0 0 20 20" style={{ overflow: 'visible' }}>
+              <defs>
+                <pattern id="iso-d" patternUnits="objectBoundingBox" x="0" y="0" width="1" height="1">
+                  <image href={pencilPattern} x="0" y="0" width="20" height="20" preserveAspectRatio="xMidYMid slice" />
+                </pattern>
+              </defs>
+              <circle r={r} cx="10" cy="10" fill="transparent" stroke="url(#iso-d)" strokeWidth={strokeWidth} />
+            </svg>
+          </div>
+          <code className="text-xs text-muted-foreground">overflow: visible<br/>on both container & SVG</code>
+        </div>
+      </div>
+
+      <div className="grid gap-4 mt-4">
+        <div className="text-sm font-medium">SVG with explicit dimensions vs height:auto</div>
+        <div className="flex flex-wrap gap-8">
+          {/* E: Fixed width and height */}
+          <div className="grid gap-2">
+            <div className="text-sm font-medium">E: width=160, height=160</div>
+            <div style={{ background: '#E6EAF1', display: 'inline-block' }}>
+              <svg width={160} height={160} viewBox="0 0 20 20">
+                <defs>
+                  <pattern id="iso-e" patternUnits="objectBoundingBox" x="0" y="0" width="1" height="1">
+                    <image href={pencilPattern} x="0" y="0" width="20" height="20" preserveAspectRatio="xMidYMid slice" />
+                  </pattern>
+                </defs>
+                <circle r={r} cx="10" cy="10" fill="transparent" stroke="url(#iso-e)" strokeWidth={strokeWidth} />
+              </svg>
+            </div>
+            <code className="text-xs text-muted-foreground">Explicit dimensions</code>
+          </div>
+
+          {/* F: width with height:auto (like component) */}
+          <div className="grid gap-2">
+            <div className="text-sm font-medium">F: width=160, height=auto</div>
+            <div style={{ background: '#E6EAF1', display: 'inline-block' }}>
+              <svg width={160} viewBox="0 0 20 20" style={{ width: 160, height: 'auto' }}>
+                <defs>
+                  <pattern id="iso-f" patternUnits="objectBoundingBox" x="0" y="0" width="1" height="1">
+                    <image href={pencilPattern} x="0" y="0" width="20" height="20" preserveAspectRatio="xMidYMid slice" />
+                  </pattern>
+                </defs>
+                <circle r={r} cx="10" cy="10" fill="transparent" stroke="url(#iso-f)" strokeWidth={strokeWidth} />
+              </svg>
+            </div>
+            <code className="text-xs text-muted-foreground">height: auto (like component)</code>
+          </div>
+
+          {/* G: Larger viewBox with padding */}
+          <div className="grid gap-2">
+            <div className="text-sm font-medium">G: Larger viewBox (padding)</div>
+            <div style={{ background: '#E6EAF1', display: 'inline-block' }}>
+              <svg width={160} height={160} viewBox="-1 -1 22 22">
+                <defs>
+                  <pattern id="iso-g" patternUnits="objectBoundingBox" x="0" y="0" width="1" height="1">
+                    <image href={pencilPattern} x="0" y="0" width="20" height="20" preserveAspectRatio="xMidYMid slice" />
+                  </pattern>
+                </defs>
+                <circle r={r} cx="10" cy="10" fill="transparent" stroke="url(#iso-g)" strokeWidth={strokeWidth} />
+              </svg>
+            </div>
+            <code className="text-xs text-muted-foreground">viewBox="-1 -1 22 22"<br/>Extra padding</code>
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-md bg-muted/40 p-3 text-sm mt-4">
+        <strong>What to compare:</strong>
+        <ul className="list-disc pl-4 mt-1 text-muted-foreground">
+          <li><strong>A vs B:</strong> If B has no cutoff, container is causing it</li>
+          <li><strong>A vs C:</strong> If C has no cutoff, borderRadius is causing it</li>
+          <li><strong>A vs D:</strong> If D has no cutoff, overflow is causing it</li>
+          <li><strong>E vs F:</strong> If F has cutoff but E doesn't, height:auto is the issue</li>
+          <li><strong>G:</strong> If larger viewBox fixes it, the stroke is hitting viewBox edge</li>
+        </ul>
+      </div>
+    </section>
+  );
+}
+
 export default function DebugRingPage() {
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -899,6 +1083,7 @@ export default function DebugRingPage() {
         <AlternativeApproachesTest />
         <PatternOffsetTest />
         <PagePositionTest />
+        <ContainerIsolationTest />
 
         <section className="rounded-lg border bg-card p-4 text-sm">
           <h2 className="text-lg font-semibold">Summary: What to look for</h2>
@@ -911,6 +1096,7 @@ export default function DebugRingPage() {
             <li><strong>Test 6:</strong> Alternative approaches: 2×2 repeat, 3×3 repeat, objectBoundingBox, clip path.</li>
             <li><strong>Test 7:</strong> Pattern offset values — does centering the tile hide the boundary?</li>
             <li><strong>Test 8:</strong> Same pattern at different page positions — proves userSpaceOnUse is position-dependent.</li>
+            <li><strong>Test 9:</strong> Container isolation — is the cutoff from CSS or SVG?</li>
           </ul>
         </section>
       </div>
