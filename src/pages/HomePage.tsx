@@ -9,6 +9,7 @@ import booksShelfDivider from "@/assets/books-shelf-divider.png";
 import openBook from "@/assets/open-book.png";
 import bookStackAccent from "@/assets/book-stack-accent.png";
 import booksShelfBannerV2 from "@/assets/books-shelf-banner-v2.png";
+import bookStackLg from "@/assets/book-stack-lg.png";
 
 
 const HERO_HEADLINES = [
@@ -36,91 +37,62 @@ const HomePage = () => {
 
   return (
     <PublicLayout>
-      {/* Countdown - Top right below header */}
-      <div className="container pt-4 md:pt-6">
-        <div className="flex justify-end">
-          <div 
-            className="inline-flex items-baseline gap-1 bg-background px-4 py-2"
-            style={{
-              border: 'solid 1px #41403E',
-              borderTopLeftRadius: '255px 15px',
-              borderTopRightRadius: '15px 225px',
-              borderBottomRightRadius: '225px 15px',
-              borderBottomLeftRadius: '15px 255px',
-            }}
-          >
-            <span className="font-serif text-2xl md:text-3xl text-foreground">{daysRemaining.days}</span>
-            <span className="text-sm text-muted-foreground mr-2">days</span>
-            <span className="font-serif text-2xl md:text-3xl text-foreground">{daysRemaining.hours}</span>
-            <span className="text-sm text-muted-foreground">hours left</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Hero Section - Large left-aligned headline */}
-      <section className="relative pt-4 md:pt-6 pb-4 md:pb-6">
+      {/* Hero Section - Two column layout matching mockup */}
+      <section className="relative pt-16 md:pt-24 pb-12 md:pb-20">
         <div className="container">
-          {/* Constrain hero content to ~2/3 page width, indent to align with data block */}
-          <div className="max-w-4xl pl-9 md:pl-14 lg:pl-20 text-left">
-            {/* Large headline - left aligned with highlighter effect */}
-            <div className="relative inline-block mb-6">
-              <h1 className="font-serif text-5xl md:text-6xl lg:text-7xl font-normal tracking-tight text-foreground leading-[1.05] relative">
-                <span className="relative">
-                  {heroHeadline.includes(". ") ? (
-                    <>
-                      {heroHeadline.split(". ")[0]}.<br />
-                      {heroHeadline.split(". ")[1]}
-                    </>
-                  ) : (
-                    heroHeadline
-                  )}
-                  {/* Highlighter effect - sits behind text */}
-                  <span 
-                    className="absolute inset-0 -skew-y-1 bg-accent/30 -z-10 transform -rotate-[0.5deg]"
-                    style={{
-                      top: '45%',
-                      height: '55%',
-                      left: '-2%',
-                      right: '-2%',
-                      borderRadius: '4px 8px 4px 6px',
-                    }}
-                    aria-hidden="true"
-                  />
-                </span>
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+            {/* Left Column - Text Content */}
+            <div className="text-left">
+              {/* Event Label */}
+              <p className="text-sm tracking-widest text-muted-foreground uppercase mb-4">
+                Read-a-thon 2026
+              </p>
+              
+              {/* Large headline */}
+              <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl font-normal tracking-tight text-foreground leading-[1.1] mb-6">
+                {heroHeadline.includes(". ") ? (
+                  <>
+                    {heroHeadline.split(". ")[0]}.<br />
+                    {heroHeadline.split(". ")[1]}
+                  </>
+                ) : (
+                  heroHeadline
+                )}
               </h1>
+
+              <p className="text-base md:text-lg text-muted-foreground max-w-md leading-relaxed mb-8">
+                Join our school read-a-thon to inspire a love of reading and support our students.
+              </p>
+
+              {/* CTA Buttons */}
+              <div className="flex flex-wrap gap-4">
+                <Link to="/register">
+                  <Button 
+                    size="lg" 
+                    className="bg-primary text-primary-foreground hover:bg-primary-hover px-8 h-12"
+                  >
+                    Start Reading
+                  </Button>
+                </Link>
+                <Link to="/login">
+                  <Button 
+                    variant="outline" 
+                    size="lg"
+                    className="h-12 px-8"
+                  >
+                    Log In <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+              </div>
             </div>
 
-            <p className="text-base md:text-lg text-muted-foreground max-w-2xl leading-relaxed mb-6">
-              Janney Elementary Read-a-thon runs February 24–March 8. Students read to raise funds for our school. 
-              Ask friends and family to pledge per minute—or give a flat donation—and help fund the programs that make Janney exceptional.
-            </p>
-
-            {/* CTA Buttons */}
-            <div className="flex flex-wrap gap-3">
-              <Link to="/register">
-                <Button 
-                  size="lg" 
-                  className="bg-primary text-primary-foreground hover:bg-primary-hover px-8"
-                >
-                  Get Started
-                </Button>
-              </Link>
-              <Link to="/how-it-works">
-                <Button 
-                  variant="ghost" 
-                  size="lg"
-                  className="text-foreground hover:bg-muted"
-                  style={{
-                    border: 'solid 1px #41403E',
-                    borderTopLeftRadius: '255px 15px',
-                    borderTopRightRadius: '15px 225px',
-                    borderBottomRightRadius: '225px 15px',
-                    borderBottomLeftRadius: '15px 255px',
-                  }}
-                >
-                  Learn More <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
+            {/* Right Column - Book Stack Image */}
+            <div className="flex justify-center lg:justify-end">
+              <img 
+                src={bookStackLg} 
+                alt="Open book with stacked books illustration" 
+                className="w-full max-w-md lg:max-w-lg xl:max-w-xl h-auto"
+              />
             </div>
           </div>
         </div>
