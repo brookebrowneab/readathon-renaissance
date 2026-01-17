@@ -108,16 +108,15 @@ const ReadingGoalRing = ({
         </div>
       )}
 
-      {circles.map((circle) => (
+      {circles.map((circle, index) => (
         <div
-          key={circle.tierIndex}
+          key={index}
           className="progress-ring-container"
           style={{
             width: effectiveSize,
             height: effectiveSize,
-            left: circle.tierIndex * CIRCLE_OFFSET,
-            // Keep the first (base) ring on top so overflow rings sit behind it
-            zIndex: circles.length - circle.tierIndex,
+            left: index * CIRCLE_OFFSET,
+            zIndex: index + 1,
             top: 3,
             display: 'flex',
             justifyContent: 'center',
@@ -132,11 +131,10 @@ const ReadingGoalRing = ({
             width={effectiveSize} 
             viewBox="0 0 20 20"
             style={{ width: effectiveSize, height: 'auto' }}
-            overflow="visible"
           >
             <defs>
               <pattern 
-                id={`pencil-pattern-${circle.tierIndex}`}
+                id={`pencil-pattern-${index}`}
                 patternUnits="userSpaceOnUse" 
                 x="0"
                 y="0"
@@ -161,7 +159,7 @@ const ReadingGoalRing = ({
               cx="10"
               cy="10"
               fill="transparent"
-              stroke={`url(#pencil-pattern-${circle.tierIndex})`}
+              stroke={`url(#pencil-pattern-${index})`}
               strokeWidth="9.5"
               pathLength={PATH_LENGTH}
               strokeDasharray={PATH_LENGTH}
