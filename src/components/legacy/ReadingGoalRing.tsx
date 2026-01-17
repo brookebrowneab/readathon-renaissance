@@ -80,7 +80,7 @@ const ReadingGoalRing = ({
   return (
     <div
       className={cn("relative", className)}
-      style={{ width: containerWidth, height: effectiveSize + 70, paddingTop: 15 }}
+      style={{ width: containerWidth, height: effectiveSize + 70 }}
       role="progressbar"
       aria-valuenow={progress}
       aria-valuemin={0}
