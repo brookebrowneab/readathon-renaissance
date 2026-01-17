@@ -231,16 +231,16 @@ const AdminDashboardPage = () => {
       </div>
 
       <main className="flex-1 bg-background-warm">
-        <div className="container py-8">
+        <div className="container py-10 md:py-12">
           {/* Header Section */}
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center justify-between mb-10">
             <div className="relative inline-block">
               <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-normal tracking-tight text-foreground leading-[1.05] relative">
                 <span className="relative">
                   Admin Dashboard
                   {/* Highlighter effect */}
                   <span 
-                    className="absolute inset-0 -skew-y-1 bg-accent/30 -z-10 transform -rotate-[0.5deg]"
+                    className="absolute inset-0 -skew-y-1 bg-accent/50 -z-10 transform -rotate-[0.5deg]"
                     style={{
                       top: '45%',
                       height: '55%',
