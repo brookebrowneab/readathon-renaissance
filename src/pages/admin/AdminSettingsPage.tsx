@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { format } from "date-fns";
 import AdminPageLayout from "@/components/layout/AdminPageLayout";
-import { BookContainer } from "@/components/legacy";
+import { handDrawnBorder } from "@/lib/admin-styles";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -248,7 +248,7 @@ const AdminSettingsPage = () => {
       <div className="max-w-3xl">
         <div className="space-y-8">
             {/* Event Details */}
-            <BookContainer variant="default" className="p-6">
+            <div className="bg-background p-6" style={handDrawnBorder}>
               <h2 className="font-medium text-foreground mb-6">Event Details</h2>
 
               <div className="space-y-4">
@@ -337,10 +337,10 @@ const AdminSettingsPage = () => {
                   />
                 </FormField>
               </div>
-            </BookContainer>
+            </div>
 
             {/* Payment Settings */}
-            <BookContainer variant="default" className="p-6">
+            <div className="bg-background p-6" style={handDrawnBorder}>
               <h2 className="font-medium text-foreground mb-6">Payment Settings</h2>
 
               <div className="space-y-4">
@@ -381,10 +381,10 @@ const AdminSettingsPage = () => {
                   />
                 </div>
               </div>
-            </BookContainer>
+            </div>
 
             {/* Email Settings */}
-            <BookContainer variant="default" className="p-6">
+            <div className="bg-background p-6" style={handDrawnBorder}>
               <h2 className="font-medium text-foreground mb-6">Email Settings</h2>
 
               <div className="space-y-4">
@@ -418,10 +418,10 @@ const AdminSettingsPage = () => {
                   </FormField>
                 )}
               </div>
-            </BookContainer>
+            </div>
 
             {/* Teachers & Grades */}
-            <BookContainer variant="default" className="p-6">
+            <div className="bg-background p-6" style={handDrawnBorder}>
               <div className="flex items-center justify-between mb-6">
                 <div>
                   <h2 className="font-medium text-foreground">Teachers & Grades</h2>
@@ -540,10 +540,10 @@ const AdminSettingsPage = () => {
                   })}
                 </div>
               )}
-            </BookContainer>
+            </div>
 
             {/* Event Controls */}
-            <BookContainer variant="default" className="p-6">
+            <div className="bg-background p-6" style={handDrawnBorder}>
               <h2 className="font-medium text-foreground mb-6">Event Controls</h2>
 
               <div className="space-y-4">
@@ -610,7 +610,7 @@ const AdminSettingsPage = () => {
                   </Button>
                 </div>
               </div>
-            </BookContainer>
+            </div>
           </div>
         </div>
 
