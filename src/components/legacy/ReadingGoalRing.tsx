@@ -133,9 +133,21 @@ const ReadingGoalRing = ({
             viewBox="0 0 20 20"
             style={{ width: effectiveSize, height: 'auto' }}
           >
+            {/* Hand-drawn marker effect filter */}
+            <defs>
+              <filter id={`marker-effect-${index}`} x="-20%" y="-20%" width="140%" height="140%">
+                {/* Add slight turbulence for rough edges */}
+                <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="3" result="noise" seed={index + 1} />
+                <feDisplacementMap in="SourceGraphic" in2="noise" scale="0.3" xChannelSelector="R" yChannelSelector="G" result="displaced" />
+                {/* Add subtle texture overlay */}
+                <feTurbulence type="turbulence" baseFrequency="0.8" numOctaves="4" result="texture" seed={index + 10} />
+                <feColorMatrix in="texture" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.08 0" result="textureAlpha" />
+                <feBlend in="displaced" in2="textureAlpha" mode="multiply" result="textured" />
+              </filter>
+            </defs>
             {/* Background circle */}
             <circle r="10" cx="10" cy="10" fill="transparent" stroke="none" />
-            {/* Progress arc */}
+            {/* Progress arc with marker effect */}
             <circle
               r="4.75"
               cx="10"
@@ -146,6 +158,7 @@ const ReadingGoalRing = ({
               strokeDasharray={`${circle.dashArray} ${CIRCUMFERENCE}`}
               transform="rotate(-90) translate(-20)"
               className="transition-all duration-500 ease-out"
+              filter={`url(#marker-effect-${index})`}
             />
           </svg>
         </div>
