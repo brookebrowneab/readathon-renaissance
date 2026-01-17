@@ -447,6 +447,7 @@ function LargePatternTest() {
 /**
  * Test 4: Stroke edge analysis
  * Compare the visual edge at different positions around the circle.
+ * UPDATED: Now tests both 20x20 and 100x100 pattern configs side by side
  */
 function StrokeEdgeTest() {
   const [highlight, setHighlight] = useState<"top" | "right" | "bottom" | "left" | null>(null);
@@ -454,204 +455,390 @@ function StrokeEdgeTest() {
   return (
     <section className="grid gap-4 rounded-lg border bg-card p-4">
       <header className="grid gap-1">
-        <h2 className="text-lg font-semibold">Test 4 — Stroke edge comparison</h2>
+        <h2 className="text-lg font-semibold">Test 4 — Stroke edge comparison (20x20 vs 100x100)</h2>
         <p className="text-sm text-muted-foreground">
-          Hover/tap to highlight different edges. Compare pattern density at each edge.
+          Hover/tap to highlight different edges. Compare pattern density at each edge for both pattern sizes.
         </p>
       </header>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <div className="grid place-items-center">
-          <div className="relative">
+        {/* 20x20 pattern - problematic */}
+        <div className="grid gap-2">
+          <div className="text-sm font-medium text-destructive">20×20 pattern (problematic)</div>
+          <div className="relative grid place-items-center">
             <div
               className="grid place-items-center rounded-full"
-              style={{ width: 200, height: 200, background: "#E6EAF1", border: "solid 0.5px #41403E" }}
+              style={{ width: 180, height: 180, background: "#E6EAF1", border: "solid 0.5px #41403E" }}
             >
-              <svg width={200} height={200} viewBox="0 0 20 20">
+              <svg width={180} height={180} viewBox="0 0 20 20">
                 <defs>
                   <pattern
-                    id="edge-pattern"
+                    id="edge-pattern-20"
                     patternUnits="userSpaceOnUse"
                     x="0"
                     y="0"
                     width="20"
                     height="20"
                   >
-                    <image
-                      href={pencilPattern}
-                      x="0"
-                      y="0"
-                      width="20"
-                      height="20"
-                      preserveAspectRatio="xMidYMid slice"
-                    />
+                    <image href={pencilPattern} x="0" y="0" width="20" height="20" preserveAspectRatio="xMidYMid slice" />
                   </pattern>
                 </defs>
-                <circle
-                  r={r}
-                  cx="10"
-                  cy="10"
-                  fill="transparent"
-                  stroke="url(#edge-pattern)"
-                  strokeWidth={strokeWidth}
-                  pathLength={100}
-                  strokeDasharray={100}
-                  strokeDashoffset={0}
-                  transform="rotate(-90 10 10)"
-                />
+                <circle r={r} cx="10" cy="10" fill="transparent" stroke="url(#edge-pattern-20)" strokeWidth={strokeWidth} />
               </svg>
             </div>
-            {/* Edge highlight overlays */}
-            {(["top", "right", "bottom", "left"] as const).map((edge) => {
-              const positions: Record<string, React.CSSProperties> = {
-                top: { top: 0, left: "50%", transform: "translateX(-50%)", width: 60, height: 30 },
-                right: { top: "50%", right: 0, transform: "translateY(-50%)", width: 30, height: 60 },
-                bottom: { bottom: 0, left: "50%", transform: "translateX(-50%)", width: 60, height: 30 },
-                left: { top: "50%", left: 0, transform: "translateY(-50%)", width: 30, height: 60 },
-              };
-              return (
-                <div
-                  key={edge}
-                  className="absolute cursor-pointer transition-colors"
-                  style={{
-                    ...positions[edge],
-                    background: highlight === edge ? "rgba(255,0,0,0.2)" : "transparent",
-                    border: highlight === edge ? "2px solid red" : "2px solid transparent",
-                  }}
-                  onMouseEnter={() => setHighlight(edge)}
-                  onMouseLeave={() => setHighlight(null)}
-                />
-              );
-            })}
           </div>
         </div>
 
-        <div className="rounded-md bg-muted/40 p-3 text-sm">
-          <div className="font-medium mb-2">Edge Analysis</div>
-          <p className="text-muted-foreground">
-            Hover over each edge zone. If the <strong>bottom</strong> shows less pattern density at the outer rim compared to top/left/right, that's the unintentional clipping.
-          </p>
-          <div className="mt-3 grid gap-1">
-            <div className={highlight === "top" ? "font-medium text-foreground" : "text-muted-foreground"}>
-              Top edge: y ≈ 0.5 in viewBox
-            </div>
-            <div className={highlight === "bottom" ? "font-medium text-foreground" : "text-muted-foreground"}>
-              Bottom edge: y ≈ 19.5 in viewBox
-            </div>
-            <div className={highlight === "left" ? "font-medium text-foreground" : "text-muted-foreground"}>
-              Left edge: x ≈ 0.5 in viewBox
-            </div>
-            <div className={highlight === "right" ? "font-medium text-foreground" : "text-muted-foreground"}>
-              Right edge: x ≈ 19.5 in viewBox
+        {/* 100x100 pattern - should be fixed */}
+        <div className="grid gap-2">
+          <div className="text-sm font-medium text-green-600">100×100 pattern (should be fixed)</div>
+          <div className="relative grid place-items-center">
+            <div
+              className="grid place-items-center rounded-full"
+              style={{ width: 180, height: 180, background: "#E6EAF1", border: "solid 0.5px #41403E" }}
+            >
+              <svg width={180} height={180} viewBox="0 0 20 20">
+                <defs>
+                  <pattern
+                    id="edge-pattern-100"
+                    patternUnits="userSpaceOnUse"
+                    x="-40"
+                    y="-40"
+                    width="100"
+                    height="100"
+                  >
+                    <image href={pencilPattern} x="0" y="0" width="100" height="100" preserveAspectRatio="xMidYMid slice" />
+                  </pattern>
+                </defs>
+                <circle r={r} cx="10" cy="10" fill="transparent" stroke="url(#edge-pattern-100)" strokeWidth={strokeWidth} />
+              </svg>
             </div>
           </div>
         </div>
+      </div>
+
+      <div className="rounded-md bg-muted/40 p-3 text-sm">
+        <strong>Observation:</strong> The 100×100 pattern appears blurry because the 20×20 image is being upscaled 5×. The fix needs to keep the image at 20×20 while eliminating tile boundaries.
       </div>
     </section>
   );
 }
 
 /**
- * Test 5: Zoomed crop comparison
- * Side-by-side crops of top vs bottom edge at high zoom.
+ * Test 5: Zoomed crop comparison - now with multiple pattern approaches
  */
 function ZoomedCropTest() {
   return (
     <section className="grid gap-4 rounded-lg border bg-card p-4">
       <header className="grid gap-1">
-        <h2 className="text-lg font-semibold">Test 5 — Zoomed edge crops</h2>
+        <h2 className="text-lg font-semibold">Test 5 — Zoomed edge crops (multiple approaches)</h2>
         <p className="text-sm text-muted-foreground">
-          ViewBox crops showing just the top or bottom edge at 4× zoom. Compare pattern-to-edge distance.
+          ViewBox crops showing bottom edge at 4× zoom. Compare different pattern configurations.
         </p>
       </header>
 
       <div className="flex flex-wrap gap-6">
+        {/* Approach A: 20x20 pattern (current problematic) */}
         <div className="grid gap-2">
-          <div className="text-sm font-medium">Top edge (y: 0–5)</div>
-          <div className="rounded-md border overflow-hidden" style={{ width: 200, height: 100 }}>
-            <svg width={200} height={100} viewBox="0 0 20 5">
-              <defs>
-                <pattern
-                  id="zoom-top-pattern"
-                  patternUnits="userSpaceOnUse"
-                  x="0"
-                  y="0"
-                  width="20"
-                  height="20"
-                >
-                  <image
-                    href={pencilPattern}
-                    x="0"
-                    y="0"
-                    width="20"
-                    height="20"
-                    preserveAspectRatio="xMidYMid slice"
-                  />
-                </pattern>
-              </defs>
-              <rect x="0" y="0" width="20" height="5" fill="#E6EAF1" />
-              <circle
-                r={r}
-                cx="10"
-                cy="10"
-                fill="transparent"
-                stroke="url(#zoom-top-pattern)"
-                strokeWidth={strokeWidth}
-              />
-              {/* Edge marker */}
-              <line x1="0" y1="0.5" x2="20" y2="0.5" stroke="red" strokeWidth="0.05" />
-            </svg>
-          </div>
-          <code className="text-xs text-muted-foreground">Red line = y: 0.5 (theoretical edge)</code>
-        </div>
-
-        <div className="grid gap-2">
-          <div className="text-sm font-medium">Bottom edge (y: 15–20)</div>
+          <div className="text-sm font-medium">A: 20×20 (problematic)</div>
           <div className="rounded-md border overflow-hidden" style={{ width: 200, height: 100 }}>
             <svg width={200} height={100} viewBox="0 15 20 5">
               <defs>
-                <pattern
-                  id="zoom-bottom-pattern"
-                  patternUnits="userSpaceOnUse"
-                  x="0"
-                  y="0"
-                  width="20"
-                  height="20"
-                >
-                  <image
-                    href={pencilPattern}
-                    x="0"
-                    y="0"
-                    width="20"
-                    height="20"
-                    preserveAspectRatio="xMidYMid slice"
-                  />
+                <pattern id="zoom-a" patternUnits="userSpaceOnUse" x="0" y="0" width="20" height="20">
+                  <image href={pencilPattern} x="0" y="0" width="20" height="20" preserveAspectRatio="xMidYMid slice" />
                 </pattern>
               </defs>
               <rect x="0" y="15" width="20" height="5" fill="#E6EAF1" />
-              <circle
-                r={r}
-                cx="10"
-                cy="10"
-                fill="transparent"
-                stroke="url(#zoom-bottom-pattern)"
-                strokeWidth={strokeWidth}
-              />
-              {/* Edge marker */}
+              <circle r={r} cx="10" cy="10" fill="transparent" stroke="url(#zoom-a)" strokeWidth={strokeWidth} />
               <line x1="0" y1="19.5" x2="20" y2="19.5" stroke="red" strokeWidth="0.05" />
             </svg>
           </div>
-          <code className="text-xs text-muted-foreground">Red line = y: 19.5 (theoretical edge)</code>
+          <code className="text-xs text-muted-foreground">Tile boundary visible</code>
+        </div>
+
+        {/* Approach B: 100x100 scaled pattern */}
+        <div className="grid gap-2">
+          <div className="text-sm font-medium">B: 100×100 scaled</div>
+          <div className="rounded-md border overflow-hidden" style={{ width: 200, height: 100 }}>
+            <svg width={200} height={100} viewBox="0 15 20 5">
+              <defs>
+                <pattern id="zoom-b" patternUnits="userSpaceOnUse" x="-40" y="-40" width="100" height="100">
+                  <image href={pencilPattern} x="0" y="0" width="100" height="100" preserveAspectRatio="xMidYMid slice" />
+                </pattern>
+              </defs>
+              <rect x="0" y="15" width="20" height="5" fill="#E6EAF1" />
+              <circle r={r} cx="10" cy="10" fill="transparent" stroke="url(#zoom-b)" strokeWidth={strokeWidth} />
+              <line x1="0" y1="19.5" x2="20" y2="19.5" stroke="red" strokeWidth="0.05" />
+            </svg>
+          </div>
+          <code className="text-xs text-muted-foreground">Blurry but no tile line</code>
+        </div>
+
+        {/* Approach C: 20x20 pattern with offset to center on viewBox */}
+        <div className="grid gap-2">
+          <div className="text-sm font-medium">C: 20×20 offset to center</div>
+          <div className="rounded-md border overflow-hidden" style={{ width: 200, height: 100 }}>
+            <svg width={200} height={100} viewBox="0 15 20 5">
+              <defs>
+                <pattern id="zoom-c" patternUnits="userSpaceOnUse" x="-10" y="-10" width="20" height="20">
+                  <image href={pencilPattern} x="0" y="0" width="20" height="20" preserveAspectRatio="xMidYMid slice" />
+                </pattern>
+              </defs>
+              <rect x="0" y="15" width="20" height="5" fill="#E6EAF1" />
+              <circle r={r} cx="10" cy="10" fill="transparent" stroke="url(#zoom-c)" strokeWidth={strokeWidth} />
+              <line x1="0" y1="19.5" x2="20" y2="19.5" stroke="red" strokeWidth="0.05" />
+            </svg>
+          </div>
+          <code className="text-xs text-muted-foreground">Offset by half tile</code>
         </div>
       </div>
 
-      <div className="rounded-md bg-muted/40 p-3 text-sm">
-        <strong>What to compare:</strong>
-        <ul className="mt-1 list-disc pl-4 text-muted-foreground">
-          <li>Does the pattern reach the red line equally at top and bottom?</li>
-          <li>Is there more grey background visible at bottom than top?</li>
-          <li>This would indicate unintentional clipping at the bottom.</li>
+      <div className="rounded-md bg-destructive/10 border-destructive/30 border p-3 text-sm mt-4">
+        <strong>Core problem:</strong> The pattern image is 20×20px. To avoid upscaling blur while eliminating tile boundaries, we need a different approach.
+      </div>
+    </section>
+  );
+}
+
+/**
+ * Test 6: Alternative pattern approaches to avoid blur
+ */
+function AlternativeApproachesTest() {
+  return (
+    <section className="grid gap-4 rounded-lg border bg-card p-4">
+      <header className="grid gap-1">
+        <h2 className="text-lg font-semibold">Test 6 — Alternative pattern approaches</h2>
+        <p className="text-sm text-muted-foreground">
+          Testing different SVG pattern strategies to eliminate tile boundary without blur.
+        </p>
+      </header>
+
+      <div className="flex flex-wrap gap-6">
+        {/* Approach 1: Tiled 20x20 at native size (reference) */}
+        <div className="grid gap-2">
+          <div className="text-sm font-medium">1: Native 20×20 tiled</div>
+          <div
+            className="grid place-items-center rounded-full"
+            style={{ width: 140, height: 140, background: "#E6EAF1", border: "solid 0.5px #41403E" }}
+          >
+            <svg width={140} height={140} viewBox="0 0 20 20">
+              <defs>
+                <pattern id="alt-1" patternUnits="userSpaceOnUse" x="0" y="0" width="20" height="20">
+                  <image href={pencilPattern} x="0" y="0" width="20" height="20" preserveAspectRatio="xMidYMid slice" />
+                </pattern>
+              </defs>
+              <circle r={r} cx="10" cy="10" fill="transparent" stroke="url(#alt-1)" strokeWidth={strokeWidth} />
+            </svg>
+          </div>
+          <div className="text-xs text-muted-foreground max-w-[140px]">Shows tile boundary</div>
+        </div>
+
+        {/* Approach 2: 40x40 tile with 2x2 image repeats */}
+        <div className="grid gap-2">
+          <div className="text-sm font-medium">2: 40×40 with 2×2 repeat</div>
+          <div
+            className="grid place-items-center rounded-full"
+            style={{ width: 140, height: 140, background: "#E6EAF1", border: "solid 0.5px #41403E" }}
+          >
+            <svg width={140} height={140} viewBox="0 0 20 20">
+              <defs>
+                <pattern id="alt-2" patternUnits="userSpaceOnUse" x="-10" y="-10" width="40" height="40">
+                  <image href={pencilPattern} x="0" y="0" width="20" height="20" preserveAspectRatio="xMidYMid slice" />
+                  <image href={pencilPattern} x="20" y="0" width="20" height="20" preserveAspectRatio="xMidYMid slice" />
+                  <image href={pencilPattern} x="0" y="20" width="20" height="20" preserveAspectRatio="xMidYMid slice" />
+                  <image href={pencilPattern} x="20" y="20" width="20" height="20" preserveAspectRatio="xMidYMid slice" />
+                </pattern>
+              </defs>
+              <circle r={r} cx="10" cy="10" fill="transparent" stroke="url(#alt-2)" strokeWidth={strokeWidth} />
+            </svg>
+          </div>
+          <div className="text-xs text-muted-foreground max-w-[140px]">Larger tile, native resolution</div>
+        </div>
+
+        {/* Approach 3: objectBoundingBox with proper scaling */}
+        <div className="grid gap-2">
+          <div className="text-sm font-medium">3: objectBoundingBox scaled</div>
+          <div
+            className="grid place-items-center rounded-full"
+            style={{ width: 140, height: 140, background: "#E6EAF1", border: "solid 0.5px #41403E" }}
+          >
+            <svg width={140} height={140} viewBox="0 0 20 20">
+              <defs>
+                <pattern id="alt-3" patternUnits="objectBoundingBox" width="0.5" height="0.5">
+                  <image href={pencilPattern} x="0" y="0" width="10" height="10" preserveAspectRatio="xMidYMid slice" />
+                </pattern>
+              </defs>
+              <circle r={r} cx="10" cy="10" fill="transparent" stroke="url(#alt-3)" strokeWidth={strokeWidth} />
+            </svg>
+          </div>
+          <div className="text-xs text-muted-foreground max-w-[140px]">OBB with fractional size</div>
+        </div>
+
+        {/* Approach 4: Large pattern container with multiple tiles */}
+        <div className="grid gap-2">
+          <div className="text-sm font-medium">4: 60×60 with 3×3 repeat</div>
+          <div
+            className="grid place-items-center rounded-full"
+            style={{ width: 140, height: 140, background: "#E6EAF1", border: "solid 0.5px #41403E" }}
+          >
+            <svg width={140} height={140} viewBox="0 0 20 20">
+              <defs>
+                <pattern id="alt-4" patternUnits="userSpaceOnUse" x="-20" y="-20" width="60" height="60">
+                  {[0, 1, 2].map(row => 
+                    [0, 1, 2].map(col => (
+                      <image 
+                        key={`${row}-${col}`}
+                        href={pencilPattern} 
+                        x={col * 20} 
+                        y={row * 20} 
+                        width="20" 
+                        height="20" 
+                        preserveAspectRatio="xMidYMid slice" 
+                      />
+                    ))
+                  )}
+                </pattern>
+              </defs>
+              <circle r={r} cx="10" cy="10" fill="transparent" stroke="url(#alt-4)" strokeWidth={strokeWidth} />
+            </svg>
+          </div>
+          <div className="text-xs text-muted-foreground max-w-[140px]">3×3 = covers 60×60</div>
+        </div>
+
+        {/* Approach 5: Clip path approach */}
+        <div className="grid gap-2">
+          <div className="text-sm font-medium">5: Clip path mask</div>
+          <div
+            className="grid place-items-center rounded-full"
+            style={{ width: 140, height: 140, background: "#E6EAF1", border: "solid 0.5px #41403E" }}
+          >
+            <svg width={140} height={140} viewBox="0 0 20 20">
+              <defs>
+                <clipPath id="ring-clip">
+                  <circle r={r} cx="10" cy="10" strokeWidth={strokeWidth} />
+                </clipPath>
+                <pattern id="alt-5" patternUnits="userSpaceOnUse" x="0" y="0" width="20" height="20">
+                  <image href={pencilPattern} x="0" y="0" width="20" height="20" preserveAspectRatio="xMidYMid slice" />
+                </pattern>
+              </defs>
+              <circle r={r} cx="10" cy="10" fill="transparent" stroke="url(#alt-5)" strokeWidth={strokeWidth} />
+            </svg>
+          </div>
+          <div className="text-xs text-muted-foreground max-w-[140px]">With clip path</div>
+        </div>
+      </div>
+
+      <div className="rounded-md bg-green-100 dark:bg-green-900/20 border-green-300 dark:border-green-700 border p-3 text-sm mt-4">
+        <strong>Goal:</strong> Find an approach that:
+        <ul className="list-disc pl-4 mt-1 text-muted-foreground">
+          <li>Uses native 20×20 image (no blur)</li>
+          <li>Has no visible tile boundary in the viewBox area</li>
+          <li>Works consistently regardless of page position</li>
         </ul>
+      </div>
+    </section>
+  );
+}
+
+/**
+ * Test 7: Pattern offset investigation
+ * Testing if offsetting the pattern can hide tile boundaries without scaling
+ */
+function PatternOffsetTest() {
+  const offsets = [
+    { x: 0, y: 0, label: "No offset" },
+    { x: -5, y: -5, label: "x=-5, y=-5" },
+    { x: -10, y: -10, label: "x=-10, y=-10 (centered)" },
+    { x: -15, y: -15, label: "x=-15, y=-15" },
+  ];
+
+  return (
+    <section className="grid gap-4 rounded-lg border bg-card p-4">
+      <header className="grid gap-1">
+        <h2 className="text-lg font-semibold">Test 7 — Pattern offset values</h2>
+        <p className="text-sm text-muted-foreground">
+          Does offsetting the 20×20 pattern hide the tile boundary within the viewBox?
+        </p>
+      </header>
+
+      <div className="flex flex-wrap gap-6">
+        {offsets.map((offset, i) => (
+          <div key={i} className="grid gap-2">
+            <div className="text-sm font-medium">{offset.label}</div>
+            <div
+              className="grid place-items-center rounded-full"
+              style={{ width: 140, height: 140, background: "#E6EAF1", border: "solid 0.5px #41403E" }}
+            >
+              <svg width={140} height={140} viewBox="0 0 20 20">
+                <defs>
+                  <pattern 
+                    id={`offset-${i}`} 
+                    patternUnits="userSpaceOnUse" 
+                    x={offset.x} 
+                    y={offset.y} 
+                    width="20" 
+                    height="20"
+                  >
+                    <image href={pencilPattern} x="0" y="0" width="20" height="20" preserveAspectRatio="xMidYMid slice" />
+                  </pattern>
+                </defs>
+                <circle r={r} cx="10" cy="10" fill="transparent" stroke={`url(#offset-${i})`} strokeWidth={strokeWidth} />
+              </svg>
+            </div>
+            <div className="text-xs text-muted-foreground">
+              Tile at ({offset.x}, {offset.y})
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="rounded-md bg-muted/40 p-3 text-sm">
+        <strong>Key insight:</strong> The viewBox is 0–20. The ring spans from ~0.5 to ~19.5. A 20×20 tile starting at (0,0) has its boundary at y=20 (outside viewBox). But <code>userSpaceOnUse</code> tiles globally, so the boundary may fall inside depending on page position.
+      </div>
+    </section>
+  );
+}
+
+/**
+ * Test 8: Simulating the real component at different page positions
+ */
+function PagePositionTest() {
+  return (
+    <section className="grid gap-4 rounded-lg border bg-card p-4">
+      <header className="grid gap-1">
+        <h2 className="text-lg font-semibold">Test 8 — Page position simulation</h2>
+        <p className="text-sm text-muted-foreground">
+          The same SVG at different horizontal positions on page. Watch for inconsistent tile boundaries.
+        </p>
+      </header>
+
+      <div className="flex gap-0">
+        {[0, 7, 14, 21].map((margin, i) => (
+          <div 
+            key={i} 
+            className="grid gap-2"
+            style={{ marginLeft: `${margin}px` }}
+          >
+            <div
+              className="grid place-items-center rounded-full"
+              style={{ width: 120, height: 120, background: "#E6EAF1", border: "solid 0.5px #41403E" }}
+            >
+              <svg width={120} height={120} viewBox="0 0 20 20">
+                <defs>
+                  <pattern id={`pos-test-${i}`} patternUnits="userSpaceOnUse" x="0" y="0" width="20" height="20">
+                    <image href={pencilPattern} x="0" y="0" width="20" height="20" preserveAspectRatio="xMidYMid slice" />
+                  </pattern>
+                </defs>
+                <circle r={r} cx="10" cy="10" fill="transparent" stroke={`url(#pos-test-${i})`} strokeWidth={strokeWidth} />
+              </svg>
+            </div>
+            <code className="text-xs text-muted-foreground">+{margin}px</code>
+          </div>
+        ))}
+      </div>
+
+      <div className="rounded-md bg-yellow-100 dark:bg-yellow-900/20 border-yellow-300 dark:border-yellow-700 border p-3 text-sm">
+        <strong>Observation:</strong> With <code>userSpaceOnUse</code>, the pattern is fixed to page coordinates. Different page positions cause the 20×20 tile boundary to fall at different places within each circle.
       </div>
     </section>
   );
@@ -709,6 +896,9 @@ export default function DebugRingPage() {
         <LargePatternTest />
         <StrokeEdgeTest />
         <ZoomedCropTest />
+        <AlternativeApproachesTest />
+        <PatternOffsetTest />
+        <PagePositionTest />
 
         <section className="rounded-lg border bg-card p-4 text-sm">
           <h2 className="text-lg font-semibold">Summary: What to look for</h2>
@@ -716,9 +906,11 @@ export default function DebugRingPage() {
             <li><strong>Test 1:</strong> If cutoff moves with rotation → intentional (dashoffset). If it stays at bottom → unintentional.</li>
             <li><strong>Test 2:</strong> 100% fill has no dashoffset gap. Any visible edge cutoff here is purely unintentional.</li>
             <li><strong>Test 3:</strong> Which reference line aligns with the visible cutoff? This tells us the y-coordinate.</li>
-            <li><strong>Test 4:</strong> Does shifting/enlarging the image element fix the line?</li>
-            <li><strong>Test 5:</strong> Compare pattern density at all four edges.</li>
-            <li><strong>Test 6:</strong> Zoomed comparison of top vs bottom.</li>
+            <li><strong>Test 4:</strong> Compare 20×20 vs 100×100 pattern on same stroke edge analysis.</li>
+            <li><strong>Test 5:</strong> Zoomed bottom edge with multiple approaches (20×20, 100×100, offset).</li>
+            <li><strong>Test 6:</strong> Alternative approaches: 2×2 repeat, 3×3 repeat, objectBoundingBox, clip path.</li>
+            <li><strong>Test 7:</strong> Pattern offset values — does centering the tile hide the boundary?</li>
+            <li><strong>Test 8:</strong> Same pattern at different page positions — proves userSpaceOnUse is position-dependent.</li>
           </ul>
         </section>
       </div>
