@@ -11,7 +11,7 @@ interface ReadingGoalRingProps {
 }
 
 const CIRCUMFERENCE = 28.27; // radius 4.5 × 2π
-const CIRCLE_OFFSET = 10; // px offset for overlapping circles
+const CIRCLE_OFFSET = 20; // px offset for overlapping circles
 
 
 const ReadingGoalRing = ({
