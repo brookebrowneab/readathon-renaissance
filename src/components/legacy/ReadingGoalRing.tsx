@@ -137,7 +137,7 @@ const ReadingGoalRing = ({
                 id={`pencil-pattern-${index}`}
                 patternUnits="userSpaceOnUse" 
                 x="0"
-                y="0"
+                y="20"
                 width="20" 
                 height="20"
               >
