@@ -410,8 +410,8 @@ const ChildProgressCard = ({ child }: ChildProgressCardProps) => {
       className="bg-background p-6 shadow-md"
       style={handDrawnBorder}
     >
-      <div className="flex flex-col items-center gap-4" style={{ paddingTop: 10 }}>
-        <h2 className="w-full text-left font-serif text-xl md:text-2xl font-normal tracking-tight text-foreground bg-transparent pb-0" style={{ marginBottom: -15 }}>
+      <div className="flex flex-col items-center gap-4" style={{ paddingTop: 15 }}>
+        <h2 className="w-full text-left font-serif text-xl md:text-2xl font-normal tracking-tight text-foreground bg-transparent pb-0" style={{ marginBottom: -20 }}>
           {child.name.split(" ")[0]}'s Reading
         </h2>
         
