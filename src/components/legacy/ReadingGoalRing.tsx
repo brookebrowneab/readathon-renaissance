@@ -118,36 +118,33 @@ const ReadingGoalRing = ({
             left: index * CIRCLE_OFFSET,
             zIndex: index + 1,
             top: 3,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            background: 'radial-gradient(#E6EAF1 0% 35%, #C8C42D 35% 39%, #E6EAF1 39% 100%)',
+            borderRadius: '50%',
           }}
         >
-          <svg width={effectiveSize} height={effectiveSize} viewBox="0 0 32 32">
-            {/* Background circle - light gray */}
-            <circle r="16" cx="16" cy="16" fill="hsl(var(--muted))" />
-            {/* Pie slice showing progress */}
-            {circle.dashArray > 0 && (
-              <path
-                d={(() => {
-                  const currentPercent = Math.min((circle.dashArray / CIRCUMFERENCE) * 100, 100);
-                  const angle = (currentPercent / 100) * 360;
-                  const startAngle = -90; // Start from top
-                  const endAngle = startAngle + angle;
-                  const startRad = (startAngle * Math.PI) / 180;
-                  const endRad = (endAngle * Math.PI) / 180;
-                  const x1 = 16 + 16 * Math.cos(startRad);
-                  const y1 = 16 + 16 * Math.sin(startRad);
-                  const x2 = 16 + 16 * Math.cos(endRad);
-                  const y2 = 16 + 16 * Math.sin(endRad);
-                  const largeArc = angle > 180 ? 1 : 0;
-                  
-                  if (currentPercent >= 100) {
-                    return `M 16 16 m -16 0 a 16 16 0 1 0 32 0 a 16 16 0 1 0 -32 0`;
-                  }
-                  return `M 16 16 L ${x1} ${y1} A 16 16 0 ${largeArc} 1 ${x2} ${y2} Z`;
-                })()}
-                fill="hsl(var(--brand-blue))"
-                className="transition-all duration-500 ease-out"
-              />
-            )}
+          <svg 
+            height={effectiveSize} 
+            width={effectiveSize} 
+            viewBox="0 0 20 20"
+            style={{ width: effectiveSize, height: 'auto' }}
+          >
+            {/* Background circle */}
+            <circle r="10" cx="10" cy="10" fill="transparent" />
+            {/* Progress arc */}
+            <circle
+              r="5"
+              cx="10"
+              cy="10"
+              fill="transparent"
+              stroke="#3760AC"
+              strokeWidth="10"
+              strokeDasharray={`${circle.dashArray} ${CIRCUMFERENCE}`}
+              transform="rotate(-90) translate(-20)"
+              className="transition-all duration-500 ease-out"
+            />
           </svg>
         </div>
       ))}
