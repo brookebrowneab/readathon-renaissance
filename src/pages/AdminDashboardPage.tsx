@@ -240,13 +240,14 @@ const AdminDashboardPage = () => {
                   Admin Dashboard
                   {/* Highlighter effect */}
                   <span 
-                    className="absolute inset-0 -skew-y-1 bg-accent/50 -z-10 transform -rotate-[0.5deg]"
+                    className="absolute -skew-y-1 -z-10 transform -rotate-[0.5deg]"
                     style={{
-                      top: '45%',
-                      height: '55%',
+                      top: '50%',
+                      height: '50%',
                       left: '-2%',
                       right: '-2%',
                       borderRadius: '4px 8px 4px 6px',
+                      backgroundColor: 'hsl(38 70% 50% / 0.4)',
                     }}
                     aria-hidden="true"
                   />
