@@ -135,17 +135,20 @@ const ReadingGoalRing = ({
             <defs>
               <pattern 
                 id={`pencil-pattern-${index}`}
-                patternUnits="userSpaceOnUse" 
-                x="-10"
-                y="-10"
-                width="40" 
-                height="40"
+                patternUnits="objectBoundingBox" 
+                x="0"
+                y="0"
+                width="1" 
+                height="1"
               >
-                {/* 2×2 grid of native 20×20 images to avoid tile boundary in viewBox */}
-                <image href={pencilPattern} x="0" y="0" width="20" height="20" preserveAspectRatio="xMidYMid slice" />
-                <image href={pencilPattern} x="20" y="0" width="20" height="20" preserveAspectRatio="xMidYMid slice" />
-                <image href={pencilPattern} x="0" y="20" width="20" height="20" preserveAspectRatio="xMidYMid slice" />
-                <image href={pencilPattern} x="20" y="20" width="20" height="20" preserveAspectRatio="xMidYMid slice" />
+                <image 
+                  href={pencilPattern} 
+                  x="0"
+                  y="0"
+                  width="20" 
+                  height="20"
+                  preserveAspectRatio="xMidYMid slice"
+                />
               </pattern>
             </defs>
             {/* Background circle */}
