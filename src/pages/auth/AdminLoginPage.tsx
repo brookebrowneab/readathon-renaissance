@@ -37,7 +37,7 @@ const handDrawnBorder = {
 
 export default function AdminLoginPage() {
   const navigate = useNavigate();
-  const { user, isLoading, isAdmin, signIn, signUp } = useAuth();
+  const { user, isLoading, isAdmin, signIn, signUp, refreshAdmin } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState("login");
 
@@ -85,17 +85,46 @@ export default function AdminLoginPage() {
         }
         return;
       }
-      
-      // Get the newly created user and add admin role
-      const { data: { user: newUser } } = await supabase.auth.getUser();
-      if (newUser) {
-        await supabase.from('user_roles').insert({
-          user_id: newUser.id,
-          role: 'admin'
-        });
+
+      const { error: bootstrapError } = await supabase.functions.invoke("bootstrap-admin", {
+        body: {},
+      });
+
+      if (bootstrapError) {
+        toast.error(bootstrapError.message || "Failed to grant admin access");
+        return;
       }
-      
+
+      const nowAdmin = await refreshAdmin();
+      if (!nowAdmin) {
+        toast.error("Account created, but admin access was not granted.");
+        return;
+      }
+
       toast.success("Admin account created! You are now signed in.");
+      navigate("/admin-dashboard");
+    } catch {
+      toast.error("An unexpected error occurred");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleBootstrapAdmin = async () => {
+    setIsSubmitting(true);
+    try {
+      const { error } = await supabase.functions.invoke("bootstrap-admin", { body: {} });
+      if (error) {
+        toast.error(error.message || "Unable to grant admin access");
+        return;
+      }
+
+      const nowAdmin = await refreshAdmin();
+      if (!nowAdmin) {
+        toast.error("Admin access was not granted.");
+        return;
+      }
+
       navigate("/admin-dashboard");
     } catch {
       toast.error("An unexpected error occurred");
@@ -119,9 +148,21 @@ export default function AdminLoginPage() {
             <p className="text-muted-foreground mb-6">
               You don't have admin privileges. Please contact an administrator if you believe this is an error.
             </p>
-            <Button onClick={() => navigate("/")} variant="outline">
-              Return to Home
-            </Button>
+            <div className="space-y-3">
+              <Button onClick={handleBootstrapAdmin} className="w-full" disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Verifying...
+                  </>
+                ) : (
+                  "Complete Admin Setup"
+                )}
+              </Button>
+              <Button onClick={() => navigate("/")} variant="outline" className="w-full">
+                Return to Home
+              </Button>
+            </div>
           </div>
         </main>
         <Footer />
