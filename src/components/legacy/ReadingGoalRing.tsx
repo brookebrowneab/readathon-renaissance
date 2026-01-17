@@ -124,7 +124,7 @@ const ReadingGoalRing = ({
             alignItems: 'center',
             background: '#E6EAF1',
             borderRadius: '50%',
-            border: handDrawnBorder.border,
+            border: 'solid 0.5px #41403E',
           }}
         >
           <svg 
