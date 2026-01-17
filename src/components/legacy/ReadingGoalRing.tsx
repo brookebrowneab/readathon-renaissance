@@ -177,7 +177,7 @@ const ReadingGoalRing = ({
           className="absolute flex flex-col items-center text-center"
           style={{
             left: 0,
-            top: effectiveSize + 12,
+            top: effectiveSize + 32,
             width: effectiveSize,
             zIndex: circles.length + 1,
           }}
