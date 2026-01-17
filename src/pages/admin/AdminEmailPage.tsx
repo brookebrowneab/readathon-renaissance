@@ -36,6 +36,14 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs";
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
   Plus,
   Send,
   Clock,
@@ -49,6 +57,9 @@ import {
   Variable,
   CheckCircle,
   AlertTriangle,
+  Mail,
+  XCircle,
+  History,
 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -61,7 +72,7 @@ import {
   type EmailTemplate,
 } from "@/hooks/useEmailTemplates";
 import { useEmailRecipientCounts } from "@/hooks/useEmailRecipientCounts";
-import { useLogEmails } from "@/hooks/useEmailLogs";
+import { useLogEmails, useEmailLogs } from "@/hooks/useEmailLogs";
 
 // Hand-drawn border style
 const handDrawnBorder = {
@@ -104,6 +115,7 @@ const AdminEmailPage = () => {
   // Data queries
   const { data: templates = [], isLoading: templatesLoading } = useEmailTemplates();
   const { data: recipientCounts, isLoading: countsLoading } = useEmailRecipientCounts();
+  const { data: emailLogs = [], isLoading: logsLoading } = useEmailLogs();
   
   // Mutations
   const createTemplate = useCreateEmailTemplate();
@@ -458,6 +470,10 @@ const AdminEmailPage = () => {
             <TabsTrigger value="drafts">Drafts</TabsTrigger>
             <TabsTrigger value="scheduled">Scheduled</TabsTrigger>
             <TabsTrigger value="sent">Sent</TabsTrigger>
+            <TabsTrigger value="logs" className="flex items-center gap-1">
+              <History className="h-3.5 w-3.5" />
+              Email Logs
+            </TabsTrigger>
           </TabsList>
 
           {templatesLoading ? (
@@ -509,6 +525,76 @@ const AdminEmailPage = () => {
                   templates.filter((t) => t.status === "sent").map((template) => (
                     <TemplateCard key={template.id} template={template} />
                   ))
+                )}
+              </TabsContent>
+
+              <TabsContent value="logs" className="space-y-4">
+                {logsLoading ? (
+                  <div className="space-y-4">
+                    {[1, 2, 3].map((i) => (
+                      <Skeleton key={i} className="h-16 w-full" />
+                    ))}
+                  </div>
+                ) : emailLogs.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <Mail className="h-12 w-12 mx-auto mb-4 opacity-30" />
+                    <p>No emails sent yet</p>
+                    <p className="text-sm mt-1">Email logs will appear here after you send emails</p>
+                  </div>
+                ) : (
+                  <div className="bg-background rounded-lg border overflow-hidden">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Recipient</TableHead>
+                          <TableHead>Subject</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Sent At</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {emailLogs.map((log) => (
+                          <TableRow key={log.id}>
+                            <TableCell>
+                              <div>
+                                <p className="font-medium">{log.recipient_name || "—"}</p>
+                                <p className="text-sm text-muted-foreground">{log.recipient_email}</p>
+                              </div>
+                            </TableCell>
+                            <TableCell className="max-w-[300px] truncate">
+                              {log.subject}
+                            </TableCell>
+                            <TableCell>
+                              {log.status === "sent" && (
+                                <Badge variant="success" className="flex items-center gap-1 w-fit">
+                                  <CheckCircle className="h-3 w-3" />
+                                  Sent
+                                </Badge>
+                              )}
+                              {log.status === "pending" && (
+                                <Badge variant="secondary" className="flex items-center gap-1 w-fit">
+                                  <Clock className="h-3 w-3" />
+                                  Pending
+                                </Badge>
+                              )}
+                              {log.status === "failed" && (
+                                <Badge variant="destructive" className="flex items-center gap-1 w-fit">
+                                  <XCircle className="h-3 w-3" />
+                                  Failed
+                                </Badge>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-muted-foreground">
+                              {log.sent_at 
+                                ? format(new Date(log.sent_at), "PPp")
+                                : format(new Date(log.created_at), "PPp")
+                              }
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
                 )}
               </TabsContent>
             </>
