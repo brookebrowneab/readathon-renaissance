@@ -135,18 +135,18 @@ const ReadingGoalRing = ({
             <defs>
               <pattern 
                 id={`pencil-pattern-${index}`}
-                patternUnits="userSpaceOnUse" 
-                x="-40"
-                y="-40"
-                width="100" 
-                height="100"
+                patternUnits="objectBoundingBox" 
+                x="0"
+                y="0"
+                width="1" 
+                height="1"
               >
                 <image 
                   href={pencilPattern} 
                   x="0"
                   y="0"
-                  width="100" 
-                  height="100"
+                  width="20" 
+                  height="20"
                   preserveAspectRatio="xMidYMid slice"
                 />
               </pattern>
