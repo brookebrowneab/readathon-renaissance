@@ -7,12 +7,12 @@ interface LogoProps extends HTMLAttributes<HTMLImageElement> {
 }
 
 const sizeMap = {
-  favicon: 16,
-  small: 32,
-  medium: 64,
-  large: 128,
-  header: 180,
-  hero: 540,
+  favicon: 13,
+  small: 26,
+  medium: 51,
+  large: 102,
+  header: 144,
+  hero: 432,
 };
 
 const Logo = forwardRef<HTMLImageElement, LogoProps>(
