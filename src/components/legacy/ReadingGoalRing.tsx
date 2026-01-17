@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { useMemo, useEffect, useState } from "react";
-import { handDrawnBorder } from "@/lib/admin-styles";
+import pencilPattern from "@/assets/pencil-pattern-blue.png";
 
 interface ReadingGoalRingProps {
   progress: number;
@@ -133,6 +133,21 @@ const ReadingGoalRing = ({
             viewBox="0 0 20 20"
             style={{ width: effectiveSize, height: 'auto' }}
           >
+            <defs>
+              <pattern 
+                id={`pencil-pattern-${index}`}
+                patternUnits="userSpaceOnUse" 
+                width="20" 
+                height="20"
+              >
+                <image 
+                  href={pencilPattern} 
+                  width="20" 
+                  height="20"
+                  preserveAspectRatio="xMidYMid slice"
+                />
+              </pattern>
+            </defs>
             {/* Background circle */}
             <circle r="10" cx="10" cy="10" fill="transparent" stroke="none" />
             {/* Progress arc */}
@@ -141,7 +156,7 @@ const ReadingGoalRing = ({
               cx="10"
               cy="10"
               fill="transparent"
-              stroke="#3760AC"
+              stroke={`url(#pencil-pattern-${index})`}
               strokeWidth="9.5"
               strokeDasharray={`${circle.dashArray} ${CIRCUMFERENCE}`}
               transform="rotate(-90) translate(-20)"
