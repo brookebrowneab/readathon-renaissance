@@ -79,8 +79,8 @@ const ReadingGoalRing = ({
 
   return (
     <div
-      className={cn("relative", className)}
-      style={{ width: containerWidth, height: effectiveSize + 70 }}
+      className={cn("relative overflow-visible", className)}
+      style={{ width: containerWidth, height: effectiveSize + 70, overflow: 'visible' }}
       role="progressbar"
       aria-valuenow={progress}
       aria-valuemin={0}
@@ -111,7 +111,7 @@ const ReadingGoalRing = ({
       {circles.map((circle, index) => (
         <div
           key={index}
-          className="progress-ring-container"
+          className="progress-ring-container overflow-visible"
           style={{
             width: effectiveSize,
             height: effectiveSize,
@@ -124,13 +124,14 @@ const ReadingGoalRing = ({
             background: '#E6EAF1',
             borderRadius: '50%',
             border: 'solid 0.5px #41403E',
+            overflow: 'visible',
           }}
         >
           <svg 
             height={effectiveSize} 
             width={effectiveSize} 
             viewBox="0 0 20 20"
-            style={{ width: effectiveSize, height: 'auto' }}
+            style={{ width: effectiveSize, height: 'auto', overflow: 'visible' }}
           >
             <defs>
               <pattern 
