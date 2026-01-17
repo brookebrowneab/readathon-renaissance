@@ -144,7 +144,7 @@ export default function AdminLoginPage() {
             style={handDrawnBorder}
           >
             <Shield className="h-12 w-12 text-destructive mx-auto mb-4" />
-            <h1 className="font-serif text-2xl mb-2">Access Denied</h1>
+            <h1 className="font-serif text-3xl md:text-4xl text-foreground mb-2">Access Denied</h1>
             <p className="text-muted-foreground mb-6">
               You don't have admin privileges. Please contact an administrator if you believe this is an error.
             </p>
@@ -199,8 +199,8 @@ export default function AdminLoginPage() {
               <div className="h-14 w-14 rounded-2xl bg-primary/20 flex items-center justify-center mx-auto mb-4">
                 <Shield className="h-7 w-7 text-primary" />
               </div>
-              <h1 className="font-serif text-3xl text-foreground">Admin Access</h1>
-              <p className="text-muted-foreground mt-1">Sign in to manage the read-a-thon</p>
+              <h1 className="font-serif text-3xl md:text-4xl text-foreground">Admin Access</h1>
+              <p className="text-sm text-muted-foreground mt-2">Sign in to manage the read-a-thon</p>
             </div>
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
