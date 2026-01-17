@@ -60,11 +60,11 @@ const MainNav = () => {
       {/* Desktop Header */}
       <header className={cn(
         "sticky top-0 z-50 w-full bg-white/90 backdrop-blur-sm hidden md:block shadow-[0_4px_6px_-1px_rgba(0,0,0,0.15)]",
-        location.pathname === "/" ? "py-6 border-b border-[#1e3a5f]/30" : "border-b border-slate-100"
+        location.pathname === "/" ? "py-4 border-b border-[#1e3a5f]/30" : "border-b border-slate-100"
       )}>
         <div className={cn(
           "container flex items-center justify-between",
-          location.pathname === "/" ? "h-28 py-4" : "h-22 py-2"
+          location.pathname === "/" ? "h-20 py-2" : "h-22 py-2"
         )}>
 
           {/* Logo - Left (larger on home page) */}
