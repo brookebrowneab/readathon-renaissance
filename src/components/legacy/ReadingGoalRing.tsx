@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { useMemo, useEffect, useState } from "react";
+import { handDrawnBorder } from "@/lib/admin-styles";
 
 interface ReadingGoalRingProps {
   progress: number;
@@ -123,6 +124,7 @@ const ReadingGoalRing = ({
             alignItems: 'center',
             background: '#E6EAF1',
             borderRadius: '50%',
+            border: handDrawnBorder.border,
           }}
         >
           <svg 
