@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
-import { MainNav, Footer, BottomTabBar } from "@/components/layout";
+import AdminPageLayout from "@/components/layout/AdminPageLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -44,12 +44,9 @@ import {
   School,
   Filter,
   Plus,
-  LayoutDashboard,
-  FileText,
-  Settings,
-  Mail,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { handDrawnBorder } from "@/lib/admin-styles";
 import {
   LineChart,
   Line,
@@ -63,24 +60,6 @@ import {
 } from "recharts";
 import { EditEventDialog } from "@/components/admin/EditEventDialog";
 import { useActiveEvent, formatEventDates } from "@/hooks/useActiveEvent";
-
-// Admin navigation items
-const adminNavItems = [
-  { label: "Dashboard", path: "/admin-dashboard", icon: LayoutDashboard },
-  { label: "Users", path: "/admin-users", icon: Users },
-  { label: "Finance", path: "/admin-finance", icon: DollarSign },
-  { label: "Emails", path: "/admin/emails", icon: Mail },
-  { label: "Settings", path: "/admin/settings", icon: Settings },
-];
-
-// Hand-drawn border style (consistent with DashboardPage)
-const handDrawnBorder = {
-  border: 'solid 1px #41403E',
-  borderTopLeftRadius: '255px 15px',
-  borderTopRightRadius: '15px 225px',
-  borderBottomRightRadius: '225px 15px',
-  borderBottomLeftRadius: '15px 255px',
-};
 
 const mockMetrics = {
   totalStudents: 487,
@@ -192,484 +171,425 @@ const AdminDashboardPage = () => {
     queryClient.invalidateQueries({ queryKey: ['active-event'] });
   };
 
-  const location = useLocation();
+  const headerActions = (
+    <Link to="/login">
+      <Button 
+        variant="ghost" 
+        size="sm"
+        style={handDrawnBorder}
+      >
+        <LogOut className="mr-2 h-4 w-4" />
+        Exit Demo
+      </Button>
+    </Link>
+  );
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <MainNav />
+    <AdminPageLayout 
+      title="Admin Dashboard"
+      actions={headerActions}
+    >
+      {/* Event Status Hero */}
+      <div className="mb-8">
+        <div 
+          className="bg-background p-6"
+          style={handDrawnBorder}
+        >
+          {activeEvent ? (
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+              <div className="flex items-start gap-4">
+                <div className="h-16 w-16 rounded-2xl bg-primary/20 flex items-center justify-center shrink-0">
+                  <Calendar className="h-8 w-8 text-primary" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-3 mb-1">
+                    <h2 className="font-serif text-2xl font-normal text-foreground md:text-3xl">
+                      {activeEvent.name}
+                    </h2>
+                    {getStatusBadge(eventDates.status)}
+                  </div>
+                  <p className="text-muted-foreground">
+                    {eventDates.startDate} – {eventDates.endDate}
+                  </p>
+                </div>
+              </div>
 
-      {/* Admin Navigation Bar */}
-      <div className="border-b-2 border-foreground/20 bg-background">
-        <div className="container">
-          <nav className="flex overflow-x-auto gap-1 py-2">
-            {adminNavItems.map((item) => {
-              const isActive = location.pathname === item.path;
-              return (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={cn(
-                    "flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors whitespace-nowrap rounded-md",
-                    isActive
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                  )}
-                  style={isActive ? {
-                    borderTopLeftRadius: '255px 15px',
-                    borderTopRightRadius: '15px 225px',
-                    borderBottomRightRadius: '225px 15px',
-                    borderBottomLeftRadius: '15px 255px',
-                  } : undefined}
-                >
-                  <item.icon className="h-4 w-4" />
-                  {item.label}
-                </Link>
-              );
-            })}
-          </nav>
+              <div className="flex items-center gap-6">
+                <div className="text-center">
+                  <p className="font-handwritten text-4xl text-primary">{eventDates.daysRemaining}</p>
+                  <p className="text-sm text-muted-foreground">days left</p>
+                </div>
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    style={handDrawnBorder}
+                    onClick={() => setEditEventOpen(true)}
+                  >
+                    <Edit className="h-4 w-4 mr-2" />
+                    Edit Event
+                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="outline" className="text-destructive hover:text-destructive" style={handDrawnBorder}>
+                        <StopCircle className="h-4 w-4 mr-2" />
+                        End Event
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>End this event?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will close the event for new reading logs and begin the pledge collection process.
+                          This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                          End Event
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-8 text-center">
+              <Calendar className="h-12 w-12 text-muted-foreground mb-4" />
+              <h2 className="font-serif text-2xl text-foreground mb-2">No Active Read-a-thon</h2>
+              <p className="text-muted-foreground mb-4">Create a new event to get started</p>
+              <Button onClick={() => setEditEventOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Create New Read-a-thon
+              </Button>
+            </div>
+          )}
         </div>
       </div>
 
-      <main className="flex-1 bg-background-warm">
-        <div className="container py-10 md:py-12">
-          {/* Header Section */}
-          <div className="flex items-center justify-between mb-10">
-            <div className="relative inline-block">
-              <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-normal tracking-tight text-foreground leading-[1.05]">
-                <span className="relative inline-block isolate">
-                  <span className="relative z-10">Admin Dashboard</span>
-                  {/* Highlighter effect */}
-                  <span
-                    className="absolute left-[-2%] right-[-2%] -skew-y-1 z-0 transform -rotate-[0.5deg]"
-                    style={{
-                      top: "50%",
-                      bottom: "0",
-                      borderRadius: "4px 8px 4px 6px",
-                      backgroundColor: "hsl(var(--warning) / 0.45)",
-                    }}
-                    aria-hidden="true"
-                  />
-                </span>
-              </h1>
-            </div>
-            <Link to="/login">
-              <Button 
-                variant="ghost" 
-                size="sm"
-                style={handDrawnBorder}
-              >
-                <LogOut className="mr-2 h-4 w-4" />
-                Exit Demo
-              </Button>
-            </Link>
-          </div>
-
-          {/* Event Status Hero */}
-          <div className="mb-8">
-            <div 
-              className="bg-background p-6 shadow-md"
+      {/* Alerts */}
+      {mockAlerts.length > 0 && (
+        <div className="mb-8 space-y-2">
+          {mockAlerts.map((alert) => (
+            <div
+              key={alert.id}
+              className="flex items-center gap-3 p-4 bg-background"
               style={handDrawnBorder}
             >
-              {activeEvent ? (
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-                  <div className="flex items-start gap-4">
-                    <div className="h-16 w-16 rounded-2xl bg-primary/20 flex items-center justify-center shrink-0">
-                      <Calendar className="h-8 w-8 text-primary" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-3 mb-1">
-                        <h2 className="font-serif text-2xl font-normal text-foreground md:text-3xl">
-                          {activeEvent.name}
-                        </h2>
-                        {getStatusBadge(eventDates.status)}
-                      </div>
-                      <p className="text-muted-foreground">
-                        {eventDates.startDate} – {eventDates.endDate}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-6">
-                    <div className="text-center">
-                      <p className="font-handwritten text-4xl text-primary">{eventDates.daysRemaining}</p>
-                      <p className="text-sm text-muted-foreground">days left</p>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button 
-                        variant="outline" 
-                        style={handDrawnBorder}
-                        onClick={() => setEditEventOpen(true)}
-                      >
-                        <Edit className="h-4 w-4 mr-2" />
-                        Edit Event
-                      </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="outline" className="text-destructive hover:text-destructive" style={handDrawnBorder}>
-                            <StopCircle className="h-4 w-4 mr-2" />
-                            End Event
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>End this event?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              This will close the event for new reading logs and begin the pledge collection process.
-                              This action cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                              End Event
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  </div>
-                </div>
+              {alert.severity === "warning" ? (
+                <AlertTriangle className="h-5 w-5 text-accent shrink-0" />
               ) : (
-                <div className="flex flex-col items-center justify-center py-8 text-center">
-                  <Calendar className="h-12 w-12 text-muted-foreground mb-4" />
-                  <h2 className="font-serif text-2xl text-foreground mb-2">No Active Read-a-thon</h2>
-                  <p className="text-muted-foreground mb-4">Create a new event to get started</p>
-                  <Button onClick={() => setEditEventOpen(true)}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create New Read-a-thon
-                  </Button>
-                </div>
+                <Bell className="h-5 w-5 text-primary shrink-0" />
               )}
+              <p className="flex-1 text-sm text-foreground">{alert.message}</p>
+              <Button variant="ghost" size="sm">
+                View <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Key Metrics */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5 mb-8">
+        <MetricCard
+          label="Total Students"
+          value={mockMetrics.totalStudents.toLocaleString()}
+          icon={Users}
+          color="blue"
+        />
+        <MetricCard
+          label="Total Minutes"
+          value={mockMetrics.totalMinutes.toLocaleString()}
+          icon={Clock}
+          color="blue"
+          subtext={`${Math.round(mockMetrics.totalMinutes / mockMetrics.totalStudents)} avg/student`}
+        />
+        <MetricCard
+          label="Total Pledges"
+          value={mockMetrics.totalPledges.toLocaleString()}
+          icon={TrendingUp}
+          color="green"
+        />
+        <MetricCard
+          label="Amount Pledged"
+          value={`$${mockMetrics.amountPledged.toLocaleString()}`}
+          icon={DollarSign}
+          color="green"
+        />
+        <MetricCard
+          label="Amount Collected"
+          value={`$${mockMetrics.amountCollected.toLocaleString()}`}
+          icon={CreditCard}
+          color="green"
+          subtext={`${Math.round((mockMetrics.amountCollected / mockMetrics.amountPledged) * 100)}% of pledged`}
+        />
+      </div>
+
+      <div className="grid gap-8 lg:grid-cols-3">
+        {/* Charts - 2 columns */}
+        <div className="lg:col-span-2 space-y-8">
+          {/* Daily Activity Chart */}
+          <div 
+            className="bg-background p-6"
+            style={handDrawnBorder}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-serif text-xl text-foreground">Daily Activity</h2>
+              <div className="flex gap-2">
+                <Button
+                  variant={chartMetric === "minutes" ? "default" : "outline"}
+                  size="sm"
+                  className={cn(chartMetric === "minutes" && "bg-primary text-primary-foreground hover:bg-primary/90")}
+                  onClick={() => setChartMetric("minutes")}
+                  style={chartMetric !== "minutes" ? handDrawnBorder : undefined}
+                >
+                  Minutes
+                </Button>
+                <Button
+                  variant={chartMetric === "students" ? "default" : "outline"}
+                  size="sm"
+                  className={cn(chartMetric === "students" && "bg-primary text-primary-foreground hover:bg-primary/90")}
+                  onClick={() => setChartMetric("students")}
+                  style={chartMetric !== "students" ? handDrawnBorder : undefined}
+                >
+                  Students
+                </Button>
+              </div>
+            </div>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={mockDailyData}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis dataKey="date" className="text-xs" />
+                  <YAxis className="text-xs" />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: 'hsl(var(--card))', 
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px'
+                    }} 
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey={chartMetric}
+                    stroke="hsl(var(--primary))"
+                    strokeWidth={2}
+                    dot={{ fill: "hsl(var(--primary))" }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
             </div>
           </div>
 
-          {/* Alerts */}
-          {mockAlerts.length > 0 && (
-            <div className="mb-8 space-y-2">
-              {mockAlerts.map((alert) => (
-                <div
-                  key={alert.id}
-                  className="flex items-center gap-3 p-4 bg-background shadow-sm"
-                  style={handDrawnBorder}
-                >
-                  {alert.severity === "warning" ? (
-                    <AlertTriangle className="h-5 w-5 text-accent shrink-0" />
-                  ) : (
-                    <Bell className="h-5 w-5 text-primary shrink-0" />
-                  )}
-                  <p className="flex-1 text-sm text-foreground">{alert.message}</p>
-                  <Button variant="ghost" size="sm">
-                    View <ChevronRight className="h-4 w-4 ml-1" />
-                  </Button>
-                </div>
-              ))}
+          {/* Grade Distribution Chart */}
+          <div 
+            className="bg-background-warm p-6"
+            style={handDrawnBorder}
+          >
+            <h2 className="font-serif text-xl text-foreground mb-4">Participation by Grade</h2>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={mockGradeData}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis dataKey="grade" className="text-xs" />
+                  <YAxis className="text-xs" />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: 'hsl(var(--card))', 
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px'
+                    }} 
+                  />
+                  <Bar dataKey="minutes" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
-          )}
-
-          {/* Key Metrics */}
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5 mb-8">
-            <MetricCard
-              label="Total Students"
-              value={mockMetrics.totalStudents.toLocaleString()}
-              icon={Users}
-              color="blue"
-            />
-            <MetricCard
-              label="Total Minutes"
-              value={mockMetrics.totalMinutes.toLocaleString()}
-              icon={Clock}
-              color="blue"
-              subtext={`${Math.round(mockMetrics.totalMinutes / mockMetrics.totalStudents)} avg/student`}
-            />
-            <MetricCard
-              label="Total Pledges"
-              value={mockMetrics.totalPledges.toLocaleString()}
-              icon={TrendingUp}
-              color="green"
-            />
-            <MetricCard
-              label="Amount Pledged"
-              value={`$${mockMetrics.amountPledged.toLocaleString()}`}
-              icon={DollarSign}
-              color="green"
-            />
-            <MetricCard
-              label="Amount Collected"
-              value={`$${mockMetrics.amountCollected.toLocaleString()}`}
-              icon={CreditCard}
-              color="green"
-              subtext={`${Math.round((mockMetrics.amountCollected / mockMetrics.amountPledged) * 100)}% of pledged`}
-            />
           </div>
 
-          <div className="grid gap-8 lg:grid-cols-3">
-            {/* Charts - 2 columns */}
-            <div className="lg:col-span-2 space-y-8">
-              {/* Daily Activity Chart */}
-              <div 
-                className="bg-background p-6 shadow-md"
-                style={handDrawnBorder}
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="font-serif text-xl text-foreground">Daily Activity</h2>
-                  <div className="flex gap-2">
-                    <Button
-                      variant={chartMetric === "minutes" ? "default" : "outline"}
-                      size="sm"
-                      className={cn(chartMetric === "minutes" && "bg-primary text-primary-foreground hover:bg-primary/90")}
-                      onClick={() => setChartMetric("minutes")}
-                    >
-                      Minutes
-                    </Button>
-                    <Button
-                      variant={chartMetric === "students" ? "default" : "outline"}
-                      size="sm"
-                      className={cn(chartMetric === "students" && "bg-primary text-primary-foreground hover:bg-primary/90")}
-                      onClick={() => setChartMetric("students")}
-                    >
-                      Students
-                    </Button>
-                  </div>
-                </div>
-                <div className="h-64">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={mockDailyData}>
-                      <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                      <XAxis dataKey="date" className="text-xs" />
-                      <YAxis className="text-xs" />
-                      <Tooltip 
-                        contentStyle={{ 
-                          backgroundColor: 'hsl(var(--card))', 
-                          border: '1px solid hsl(var(--border))',
-                          borderRadius: '8px'
-                        }} 
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey={chartMetric}
-                        stroke="hsl(var(--primary))"
-                        strokeWidth={2}
-                        dot={{ fill: "hsl(var(--primary))" }}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
+          {/* Top Performers */}
+          <div className="grid gap-6 md:grid-cols-3">
+            {/* Top Students */}
+            <div 
+              className="bg-background p-4"
+              style={handDrawnBorder}
+            >
+              <div className="flex items-center gap-2 mb-3">
+                <Trophy className="h-5 w-5 text-accent" />
+                <h3 className="font-serif text-lg text-foreground">Top Students</h3>
               </div>
-
-              {/* Grade Distribution Chart */}
-              <div 
-                className="bg-muted/30 p-6 shadow-md"
-                style={handDrawnBorder}
-              >
-                <h2 className="font-serif text-xl text-foreground mb-4">Participation by Grade</h2>
-                <div className="h-64">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={mockGradeData}>
-                      <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                      <XAxis dataKey="grade" className="text-xs" />
-                      <YAxis className="text-xs" />
-                      <Tooltip 
-                        contentStyle={{ 
-                          backgroundColor: 'hsl(var(--card))', 
-                          border: '1px solid hsl(var(--border))',
-                          borderRadius: '8px'
-                        }} 
-                      />
-                      <Bar dataKey="minutes" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-
-              {/* Top Performers */}
-              <div className="grid gap-6 md:grid-cols-3">
-                {/* Top Students */}
-                <div 
-                  className="bg-background p-4 shadow-md"
-                  style={handDrawnBorder}
-                >
-                  <div className="flex items-center gap-2 mb-3">
-                    <Trophy className="h-5 w-5 text-accent" />
-                    <h3 className="font-serif text-lg text-foreground">Top Students</h3>
+              <div className="space-y-2">
+                {mockTopStudents.slice(0, 5).map((student, i) => (
+                  <div key={i} className="flex items-center gap-2 text-sm">
+                    <span className={cn(
+                      "w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold",
+                      i === 0 ? "bg-accent text-foreground" :
+                      i === 1 ? "bg-gray-300 text-foreground" :
+                      i === 2 ? "bg-amber-600 text-white" : "bg-muted text-muted-foreground"
+                    )}>
+                      {i + 1}
+                    </span>
+                    <span className="flex-1 truncate">{student.name}</span>
+                    <span className="font-handwritten text-primary">{student.minutes}</span>
                   </div>
-                  <div className="space-y-2">
-                    {mockTopStudents.slice(0, 5).map((student, i) => (
-                      <div key={i} className="flex items-center gap-2 text-sm">
-                        <span className={cn(
-                          "w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold",
-                          i === 0 ? "bg-accent text-foreground" :
-                          i === 1 ? "bg-gray-300 text-foreground" :
-                          i === 2 ? "bg-amber-600 text-white" : "bg-muted text-muted-foreground"
-                        )}>
-                          {i + 1}
-                        </span>
-                        <span className="flex-1 truncate">{student.name}</span>
-                        <span className="font-handwritten text-primary">{student.minutes}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Top Classes */}
-                <div 
-                  className="bg-muted/30 p-4 shadow-md"
-                  style={handDrawnBorder}
-                >
-                  <div className="flex items-center gap-2 mb-3">
-                    <School className="h-5 w-5 text-primary" />
-                    <h3 className="font-serif text-lg text-foreground">Top Classes</h3>
-                  </div>
-                  <div className="space-y-2">
-                    {mockTopClasses.slice(0, 5).map((cls, i) => (
-                      <div key={i} className="flex items-center gap-2 text-sm">
-                        <span className={cn(
-                          "w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold",
-                          i === 0 ? "bg-accent text-foreground" :
-                          i === 1 ? "bg-gray-300 text-foreground" :
-                          i === 2 ? "bg-amber-600 text-white" : "bg-muted text-muted-foreground"
-                        )}>
-                          {i + 1}
-                        </span>
-                        <span className="flex-1 truncate">{cls.name}</span>
-                        <span className="font-handwritten text-primary">{cls.avgMinutes}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Top Sponsors */}
-                <div 
-                  className="bg-background p-4 shadow-md"
-                  style={handDrawnBorder}
-                >
-                  <div className="flex items-center gap-2 mb-3">
-                    <Star className="h-5 w-5 text-accent fill-accent" />
-                    <h3 className="font-serif text-lg text-foreground">Top Sponsors</h3>
-                  </div>
-                  <div className="space-y-2">
-                    {mockTopSponsors.slice(0, 5).map((sponsor, i) => (
-                      <div key={i} className="flex items-center gap-2 text-sm">
-                        <span className={cn(
-                          "w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold",
-                          i === 0 ? "bg-accent text-foreground" :
-                          i === 1 ? "bg-gray-300 text-foreground" :
-                          i === 2 ? "bg-amber-600 text-white" : "bg-muted text-muted-foreground"
-                        )}>
-                          {i + 1}
-                        </span>
-                        <span className="flex-1 truncate">{sponsor.name}</span>
-                        <span className="font-handwritten text-accent">${sponsor.amount}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
 
-            {/* Activity Feed - 1 column */}
-            <div className="space-y-6">
-              <div 
-                className="bg-background p-6 shadow-md"
-                style={handDrawnBorder}
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="font-serif text-xl text-foreground">Recent Activity</h2>
-                  <Select value={activityFilter} onValueChange={(v) => setActivityFilter(v as ActivityFilter)}>
-                    <SelectTrigger className="w-32">
-                      <Filter className="h-4 w-4 mr-2" />
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All</SelectItem>
-                      <SelectItem value="reading">Reading</SelectItem>
-                      <SelectItem value="pledge">Pledges</SelectItem>
-                      <SelectItem value="registration">Registrations</SelectItem>
-                      <SelectItem value="payment">Payments</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="space-y-3 max-h-[600px] overflow-y-auto">
-                  {filteredActivity.map((item) => (
-                    <div key={item.id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/30">
-                      <div className="h-8 w-8 rounded-full bg-background flex items-center justify-center shrink-0">
-                        {getActivityIcon(item.type)}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm text-foreground">{item.message}</p>
-                        <p className="text-xs text-muted-foreground">{item.time}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+            {/* Top Classes */}
+            <div 
+              className="bg-background-warm p-4"
+              style={handDrawnBorder}
+            >
+              <div className="flex items-center gap-2 mb-3">
+                <School className="h-5 w-5 text-primary" />
+                <h3 className="font-serif text-lg text-foreground">Top Classes</h3>
               </div>
-
-              {/* Quick Stats */}
-              <div 
-                className="bg-muted/30 p-6 shadow-md"
-                style={handDrawnBorder}
-              >
-                <h3 className="font-serif text-lg text-foreground mb-4">Today's Highlights</h3>
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">New readings</span>
-                    <span className="font-handwritten text-xl text-primary">142</span>
+              <div className="space-y-2">
+                {mockTopClasses.slice(0, 5).map((cls, i) => (
+                  <div key={i} className="flex items-center gap-2 text-sm">
+                    <span className={cn(
+                      "w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold",
+                      i === 0 ? "bg-accent text-foreground" :
+                      i === 1 ? "bg-gray-300 text-foreground" :
+                      i === 2 ? "bg-amber-600 text-white" : "bg-muted text-muted-foreground"
+                    )}>
+                      {i + 1}
+                    </span>
+                    <span className="flex-1 truncate">{cls.name}</span>
+                    <span className="font-handwritten text-primary">{cls.avgMinutes}</span>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Minutes logged</span>
-                    <span className="font-handwritten text-xl text-primary">3,450</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">New pledges</span>
-                    <span className="font-handwritten text-xl text-accent">18</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Payments received</span>
-                    <span className="font-handwritten text-xl text-accent">$425</span>
-                  </div>
-                </div>
+                ))}
               </div>
+            </div>
 
-              {/* Admin Actions */}
-              <div 
-                className="bg-background p-6 shadow-md"
-                style={handDrawnBorder}
-              >
-                <h3 className="font-serif text-xl text-foreground mb-4">
-                  Quick Actions
-                </h3>
-                <div className="space-y-2">
-                  <Button 
-                    className="w-full justify-start bg-primary text-primary-foreground hover:bg-primary/90" 
-                    asChild
-                  >
-                    <Link to="/admin-users">
-                      <Users className="h-4 w-4 mr-2" />
-                      Manage Users
-                    </Link>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start"
-                    asChild
-                  >
-                    <Link to="/admin-finance">
-                      <DollarSign className="h-4 w-4 mr-2" />
-                      Financial Management
-                    </Link>
-                  </Button>
-                </div>
+            {/* Top Sponsors */}
+            <div 
+              className="bg-background p-4"
+              style={handDrawnBorder}
+            >
+              <div className="flex items-center gap-2 mb-3">
+                <Star className="h-5 w-5 text-accent fill-accent" />
+                <h3 className="font-serif text-lg text-foreground">Top Sponsors</h3>
+              </div>
+              <div className="space-y-2">
+                {mockTopSponsors.slice(0, 5).map((sponsor, i) => (
+                  <div key={i} className="flex items-center gap-2 text-sm">
+                    <span className={cn(
+                      "w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold",
+                      i === 0 ? "bg-accent text-foreground" :
+                      i === 1 ? "bg-gray-300 text-foreground" :
+                      i === 2 ? "bg-amber-600 text-white" : "bg-muted text-muted-foreground"
+                    )}>
+                      {i + 1}
+                    </span>
+                    <span className="flex-1 truncate">{sponsor.name}</span>
+                    <span className="font-handwritten text-accent">${sponsor.amount}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
         </div>
-        
-        {/* Spacer for bottom tab bar */}
-        <div className="h-20 md:hidden" />
-      </main>
 
-      <Footer />
-      <BottomTabBar role="admin" />
+        {/* Activity Feed - 1 column */}
+        <div className="space-y-6">
+          <div 
+            className="bg-background p-6"
+            style={handDrawnBorder}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-serif text-xl text-foreground">Recent Activity</h2>
+              <Select value={activityFilter} onValueChange={(v) => setActivityFilter(v as ActivityFilter)}>
+                <SelectTrigger className="w-32">
+                  <Filter className="h-4 w-4 mr-2" />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All</SelectItem>
+                  <SelectItem value="reading">Reading</SelectItem>
+                  <SelectItem value="pledge">Pledges</SelectItem>
+                  <SelectItem value="registration">Registrations</SelectItem>
+                  <SelectItem value="payment">Payments</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-3 max-h-[600px] overflow-y-auto">
+              {filteredActivity.map((item) => (
+                <div key={item.id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/30">
+                  <div className="h-8 w-8 rounded-full bg-background flex items-center justify-center shrink-0">
+                    {getActivityIcon(item.type)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-foreground">{item.message}</p>
+                    <p className="text-xs text-muted-foreground">{item.time}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Quick Stats */}
+          <div 
+            className="bg-background-warm p-6"
+            style={handDrawnBorder}
+          >
+            <h3 className="font-serif text-lg text-foreground mb-4">Today's Highlights</h3>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">New readings</span>
+                <span className="font-handwritten text-xl text-primary">142</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">Minutes logged</span>
+                <span className="font-handwritten text-xl text-primary">3,450</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">New pledges</span>
+                <span className="font-handwritten text-xl text-accent">18</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">Payments received</span>
+                <span className="font-handwritten text-xl text-accent">$425</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Admin Actions */}
+          <div 
+            className="bg-background p-6"
+            style={handDrawnBorder}
+          >
+            <h3 className="font-serif text-xl text-foreground mb-4">
+              Quick Actions
+            </h3>
+            <div className="space-y-2">
+              <Button 
+                className="w-full justify-start bg-primary text-primary-foreground hover:bg-primary/90" 
+                asChild
+              >
+                <Link to="/admin-users">
+                  <Users className="h-4 w-4 mr-2" />
+                  Manage Users
+                </Link>
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                style={handDrawnBorder}
+                asChild
+              >
+                <Link to="/admin-finance">
+                  <DollarSign className="h-4 w-4 mr-2" />
+                  Financial Management
+                </Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <EditEventDialog 
         open={editEventOpen} 
@@ -684,7 +604,7 @@ const AdminDashboardPage = () => {
         } : null}
         onSave={handleEventSave}
       />
-    </div>
+    </AdminPageLayout>
   );
 };
 
@@ -699,7 +619,7 @@ interface MetricCardProps {
 
 const MetricCard = ({ label, value, icon: Icon, color, subtext }: MetricCardProps) => (
   <div 
-    className="bg-background p-4 shadow-md"
+    className="bg-background p-4"
     style={handDrawnBorder}
   >
     <div className="flex items-start justify-between">
