@@ -1100,24 +1100,30 @@ function ObjectBoundingBoxPositionTest() {
       </div>
 
       <div className="grid gap-4 mt-4">
-        <div className="text-sm font-medium">Vertical stack (different vertical positions)</div>
-        <div className="grid gap-2">
-          {verticalOffsets.map((offset, i) => (
-            <div key={i} className="flex items-center gap-4" style={{ marginTop: i === 0 ? 0 : offset - verticalOffsets[i-1] - 100 - 8 }}>
-              <div
-                className="grid place-items-center rounded-full"
-                style={{ width: 100, height: 100, background: "#E6EAF1", border: "solid 0.5px #41403E" }}
-              >
-                <svg width={100} height={100} viewBox="0 0 20 20">
-                  <defs>
-                    <pattern id={`obb-v-${i}`} patternUnits="objectBoundingBox" x="0" y="0" width="1" height="1">
-                      <image href={pencilPattern} x="0" y="0" width="20" height="20" preserveAspectRatio="xMidYMid slice" />
-                    </pattern>
-                  </defs>
-                  <circle r={r} cx="10" cy="10" fill="transparent" stroke={`url(#obb-v-${i})`} strokeWidth={strokeWidth} />
-                </svg>
+        <div className="text-sm font-medium">Vertical stack (different vertical positions with spacers)</div>
+        <div className="flex flex-col">
+          {[0, 1, 2, 3, 4].map((i) => (
+            <div key={i}>
+              {/* Spacer to push circle to different vertical position */}
+              {i > 0 && <div style={{ height: 20 + (i * 10) }} />}
+              <div className="flex items-center gap-4">
+                <div
+                  className="grid place-items-center rounded-full flex-shrink-0"
+                  style={{ width: 100, height: 100, background: "#E6EAF1", border: "solid 0.5px #41403E" }}
+                >
+                  <svg width={100} height={100} viewBox="0 0 20 20">
+                    <defs>
+                      <pattern id={`obb-v-${i}`} patternUnits="objectBoundingBox" x="0" y="0" width="1" height="1">
+                        <image href={pencilPattern} x="0" y="0" width="20" height="20" preserveAspectRatio="xMidYMid slice" />
+                      </pattern>
+                    </defs>
+                    <circle r={r} cx="10" cy="10" fill="transparent" stroke={`url(#obb-v-${i})`} strokeWidth={strokeWidth} />
+                  </svg>
+                </div>
+                <code className="text-xs text-muted-foreground">
+                  Position #{i + 1} (spacer: {i > 0 ? `${20 + (i * 10)}px` : 'none'})
+                </code>
               </div>
-              <code className="text-xs text-muted-foreground">Vertical position #{i + 1}</code>
             </div>
           ))}
         </div>
