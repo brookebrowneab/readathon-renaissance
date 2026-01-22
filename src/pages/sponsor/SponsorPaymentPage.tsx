@@ -15,7 +15,7 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
-import bookAbstractBorder from "@/assets/book-abstract-border.png";
+
 
 // Hand-drawn border style
 const handDrawnBorder = {
@@ -135,17 +135,6 @@ const SponsorPaymentPage = () => {
           </div>
         </section>
 
-        {/* Decorative Divider - moved up to overlap hero */}
-        <div 
-          className="w-full h-12 md:h-16 relative z-10 -mt-6 md:-mt-8"
-          style={{
-            backgroundImage: `url(${bookAbstractBorder})`,
-            backgroundRepeat: 'repeat-x',
-            backgroundSize: 'auto 100%',
-            backgroundPosition: 'center',
-          }}
-          aria-hidden="true"
-        />
 
         {/* Success Content */}
         <section className="py-10 md:py-14 bg-background-warm">
@@ -187,7 +176,7 @@ const SponsorPaymentPage = () => {
             <div className="relative inline-block mb-4">
               <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-normal tracking-tight text-foreground leading-[1.05] relative">
                 <span className="relative">
-                  Complete Your<br />Pledge
+                  Complete Your Pledge
                   {/* Highlighter effect */}
                   <span 
                     className="absolute inset-0 -skew-y-1 bg-accent/30 -z-10 transform -rotate-[0.5deg]"
@@ -210,20 +199,8 @@ const SponsorPaymentPage = () => {
         </div>
       </section>
 
-      {/* Decorative Divider - moved up to overlap hero */}
-      <div 
-        className="w-full h-12 md:h-16 relative z-10 -mt-6 md:-mt-8"
-        style={{
-          backgroundImage: `url(${bookAbstractBorder})`,
-          backgroundRepeat: 'repeat-x',
-          backgroundSize: 'auto 100%',
-          backgroundPosition: 'center',
-        }}
-        aria-hidden="true"
-      />
-
-      {/* Payment Form Section */}
-      <section className="py-10 md:py-14 bg-background-warm">
+      {/* Payment Form Section - with shadow at top to create depth */}
+      <section className="py-10 md:py-14 bg-background-warm shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
         <div className="container">
           <div className="max-w-xl mx-auto space-y-6">
             {/* Select Pledges */}
