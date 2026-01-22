@@ -1,15 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { MainNav, Footer } from "@/components/layout";
-import { BookContainer } from "@/components/legacy";
+import { PublicLayout } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/sonner";
-import {
-  Card,
-  CardContent,
-} from "@/components/ui/card";
+import booksShelfDivider from "@/assets/books-shelf-divider.png";
 import {
   LogOut,
   DollarSign,
@@ -22,9 +18,17 @@ import {
   Mail,
   Link as LinkIcon,
   Send,
-  BookOpen,
   Shield,
 } from "lucide-react";
+
+// Hand-drawn border style matching FAQ/Privacy pages
+const handDrawnBorder = {
+  border: 'solid 1px #41403E',
+  borderTopLeftRadius: '255px 15px',
+  borderTopRightRadius: '15px 225px',
+  borderBottomRightRadius: '225px 15px',
+  borderBottomLeftRadius: '15px 255px',
+};
 
 // Mock data - COPPA compliant (no child names without authorization)
 const mockSponsor = {
@@ -114,172 +118,205 @@ const SponsorDashboardPage = () => {
   };
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <MainNav />
-
-      <main className="flex-1 bg-background-warm">
-        <div className="container py-8 max-w-3xl">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <h1 className="font-serif text-4xl font-normal tracking-tight text-foreground">
-                  Welcome back, {mockSponsor.name.split(" ")[0]}!
-                </h1>
+    <PublicLayout>
+      {/* Hero Section */}
+      <section className="relative pt-8 md:pt-12 pb-6 md:pb-8">
+        <div className="container">
+          <div className="max-w-4xl pl-9 md:pl-14 lg:pl-20">
+            <div className="flex items-start justify-between gap-4 flex-wrap">
+              <div>
+                {/* Large headline with highlighter effect */}
+                <div className="relative inline-block mb-4">
+                  <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-normal tracking-tight text-foreground leading-[1.05] relative">
+                    <span className="relative">
+                      Welcome back,<br />{mockSponsor.name.split(" ")[0]}!
+                      {/* Highlighter effect */}
+                      <span 
+                        className="absolute inset-0 -skew-y-1 bg-accent/30 -z-10 transform -rotate-[0.5deg]"
+                        style={{
+                          top: '45%',
+                          height: '55%',
+                          left: '-2%',
+                          right: '-2%',
+                          borderRadius: '4px 8px 4px 6px',
+                        }}
+                        aria-hidden="true"
+                      />
+                    </span>
+                  </h1>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="gap-1 text-base py-1 px-3">
+                    <Sparkles className="h-4 w-4" />
+                    Returning Sponsor
+                  </Badge>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Badge variant="outline" className="gap-1 text-base py-1 px-3">
-                  <Sparkles className="h-4 w-4" />
-                  Returning Sponsor
-                </Badge>
-              </div>
+              <Button variant="ghost" size="lg" className="text-muted-foreground">
+                <LogOut className="h-5 w-5 mr-2" />
+                Sign out
+              </Button>
             </div>
-            <Button variant="ghost" size="lg" className="text-lg text-muted-foreground h-14">
-              <LogOut className="h-5 w-5 mr-2" />
-              Sign out
-            </Button>
           </div>
+        </div>
+      </section>
 
-          {/* Stats Overview */}
-          <div className="grid sm:grid-cols-3 gap-4 mb-8">
-            <Card>
-              <CardContent className="p-5 flex items-center gap-4">
-                <div className="p-3 rounded-full bg-primary/10">
+      {/* Decorative Divider */}
+      <div 
+        className="w-full h-16 md:h-20 relative z-10"
+        style={{
+          backgroundImage: `url(${booksShelfDivider})`,
+          backgroundRepeat: 'repeat-x',
+          backgroundSize: 'auto 100%',
+          backgroundPosition: 'center',
+        }}
+        aria-hidden="true"
+      />
+
+      {/* Stats Section */}
+      <section className="py-10 md:py-14 bg-background-warm">
+        <div className="container">
+          <div className="max-w-3xl mx-auto">
+            {/* Stats Grid */}
+            <div 
+              className="grid sm:grid-cols-3 gap-0 bg-background mb-10"
+              style={handDrawnBorder}
+            >
+              <div className="p-6 text-center border-b sm:border-b-0 sm:border-r border-border">
+                <div className="p-3 rounded-full bg-primary/10 w-fit mx-auto mb-3">
                   <DollarSign className="h-6 w-6 text-primary" />
                 </div>
-                <div>
-                  <p className="text-lg text-muted-foreground">Total Given</p>
-                  <p className="text-3xl font-bold">${totalGiven.toFixed(2)}</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-5 flex items-center gap-4">
-                <div className="p-3 rounded-full bg-success/10">
+                <p className="font-handwritten text-4xl text-primary mb-1">
+                  ${totalGiven.toFixed(0)}
+                </p>
+                <p className="text-sm text-muted-foreground">Total Given</p>
+              </div>
+              <div className="p-6 text-center border-b sm:border-b-0 sm:border-r border-border">
+                <div className="p-3 rounded-full bg-success/10 w-fit mx-auto mb-3">
                   <Users className="h-6 w-6 text-success" />
                 </div>
-                <div>
-                  <p className="text-lg text-muted-foreground">Sponsorships</p>
-                  <p className="text-3xl font-bold">{mockPastSponsorships.length}</p>
+                <p className="font-handwritten text-4xl text-success mb-1">
+                  {mockPastSponsorships.length}
+                </p>
+                <p className="text-sm text-muted-foreground">Sponsorships</p>
+              </div>
+              <div className="p-6 text-center">
+                <div className="p-3 rounded-full bg-accent/10 w-fit mx-auto mb-3">
+                  <Calendar className="h-6 w-6 text-accent" />
                 </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-5 flex items-center gap-4">
-                <div className="p-3 rounded-full bg-accent-gold/10">
-                  <Calendar className="h-6 w-6 text-accent-gold" />
-                </div>
-                <div>
-                  <p className="text-lg text-muted-foreground">Years Sponsoring</p>
-                  <p className="text-3xl font-bold">{yearsSponsoring}</p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+                <p className="font-handwritten text-4xl text-accent mb-1">
+                  {yearsSponsoring}
+                </p>
+                <p className="text-sm text-muted-foreground">Years Sponsoring</p>
+              </div>
+            </div>
 
-          {/* Your Past Sponsorships */}
-          <section className="mb-10">
-            <h2 className="text-2xl font-medium text-foreground mb-4">
+            {/* Past Sponsorships */}
+            <h2 className="font-serif text-2xl md:text-3xl text-foreground mb-4 pb-2 border-b border-foreground/20">
               Your Past Sponsorships
             </h2>
 
-            <div className="space-y-4">
+            <div className="space-y-4 mb-10">
               {mockPastSponsorships.map((sponsorship) => (
-                <BookContainer key={sponsorship.id} variant="default" className="p-6">
-                  <div className="flex items-start justify-between gap-4 flex-wrap">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-3 mb-3">
-                        <h3 className="text-xl font-medium text-foreground">
-                          {sponsorship.year} {sponsorship.eventName}
-                        </h3>
-                        <Badge variant="success" className="gap-1 text-base">
-                          <CheckCircle className="h-4 w-4" />
-                          {sponsorship.status === "paid" ? "Paid" : "Pending"}
-                        </Badge>
-                      </div>
-
-                      <p className="text-lg text-muted-foreground mb-4">
-                        You sponsored a student:
+                <div 
+                  key={sponsorship.id} 
+                  className="p-6 bg-background"
+                  style={handDrawnBorder}
+                >
+                  <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
+                    <div>
+                      <h3 className="font-serif text-xl text-foreground">
+                        {sponsorship.year} {sponsorship.eventName}
+                      </h3>
+                      <p className="text-muted-foreground">
+                        You sponsored a student
                       </p>
+                    </div>
+                    <Badge variant="success" className="gap-1">
+                      <CheckCircle className="h-3.5 w-3.5" />
+                      {sponsorship.status === "paid" ? "Paid" : "Pending"}
+                    </Badge>
+                  </div>
 
-                      <div className="grid sm:grid-cols-3 gap-4">
-                        <div className="bg-muted/50 rounded-lg p-4">
-                          <p className="text-muted-foreground mb-1">Your pledge</p>
-                          <p className="text-xl font-semibold text-foreground">
-                            {sponsorship.pledgeType === "per-minute"
-                              ? `$${sponsorship.pledgeAmount}/min`
-                              : `$${sponsorship.pledgeAmount}`}
-                          </p>
-                        </div>
-                        <div className="bg-muted/50 rounded-lg p-4">
-                          <p className="text-muted-foreground mb-1">They read</p>
-                          <p className="text-xl font-semibold text-foreground">
-                            {sponsorship.minutesRead} minutes
-                          </p>
-                        </div>
-                        <div className="bg-muted/50 rounded-lg p-4">
-                          <p className="text-muted-foreground mb-1">Status</p>
-                          <p className="text-xl font-semibold text-success">
-                            Paid ✓
-                          </p>
-                        </div>
-                      </div>
+                  <div className="grid sm:grid-cols-3 gap-4">
+                    <div className="bg-muted/30 rounded-lg p-4 text-center">
+                      <p className="text-xs text-muted-foreground mb-1">Your pledge</p>
+                      <p className="font-handwritten text-2xl text-foreground">
+                        {sponsorship.pledgeType === "per-minute"
+                          ? `$${sponsorship.pledgeAmount}/min`
+                          : `$${sponsorship.pledgeAmount}`}
+                      </p>
+                    </div>
+                    <div className="bg-muted/30 rounded-lg p-4 text-center">
+                      <p className="text-xs text-muted-foreground mb-1">They read</p>
+                      <p className="font-handwritten text-2xl text-foreground">
+                        {sponsorship.minutesRead} min
+                      </p>
+                    </div>
+                    <div className="bg-muted/30 rounded-lg p-4 text-center">
+                      <p className="text-xs text-muted-foreground mb-1">Total</p>
+                      <p className="font-handwritten text-2xl text-success">
+                        ${sponsorship.totalAmount}
+                      </p>
                     </div>
                   </div>
-                </BookContainer>
+                </div>
               ))}
             </div>
-          </section>
 
-          {/* Sponsor Again Section */}
-          <section>
-            <h2 className="text-2xl font-medium text-foreground mb-4 flex items-center gap-2">
-              <Heart className="h-6 w-6 text-primary" />
+            {/* Sponsor Again Section */}
+            <h2 className="font-serif text-2xl md:text-3xl text-foreground mb-4 pb-2 border-b border-foreground/20 flex items-center gap-3">
+              <Heart className="h-7 w-7 text-primary" />
               Sponsor Again in {currentYear}
             </h2>
 
             {/* Privacy Notice */}
-            <BookContainer variant="warm" className="p-6 mb-6">
-              <div className="flex items-start gap-4">
-                <div className="p-3 rounded-full bg-primary/10 flex-shrink-0">
-                  <Shield className="h-6 w-6 text-primary" />
-                </div>
-                <p className="text-lg text-foreground">
-                  To protect student privacy, we check with families each year before sharing their child's information.
-                </p>
+            <div 
+              className="p-5 bg-primary/5 mb-6 flex items-start gap-4"
+              style={handDrawnBorder}
+            >
+              <div className="p-2 rounded-full bg-primary/10 flex-shrink-0">
+                <Shield className="h-5 w-5 text-primary" />
               </div>
-            </BookContainer>
+              <p className="text-sm text-foreground">
+                To protect student privacy, we check with families each year before sharing their child's information.
+              </p>
+            </div>
 
             <div className="space-y-4">
               {/* Option 1: Wait for invitation */}
-              <BookContainer variant="default" className="p-6">
-                <div className="flex items-start gap-4">
-                  <div className="p-3 rounded-full bg-muted flex-shrink-0">
-                    <Clock className="h-6 w-6 text-muted-foreground" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-medium text-foreground mb-2">
-                      Wait for an invitation
-                    </h3>
-                    <p className="text-lg text-muted-foreground">
-                      The family may send you one when they enroll their child.
-                    </p>
-                  </div>
+              <div 
+                className="p-5 bg-background flex items-start gap-4"
+                style={handDrawnBorder}
+              >
+                <div className="p-2 rounded-full bg-muted flex-shrink-0">
+                  <Clock className="h-5 w-5 text-muted-foreground" />
                 </div>
-              </BookContainer>
+                <div>
+                  <h3 className="font-serif text-lg text-foreground mb-1">
+                    Wait for an invitation
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    The family may send you one when they enroll their child.
+                  </p>
+                </div>
+              </div>
 
               {/* Option 2: Request Access */}
-              <BookContainer variant="default" className="p-6">
+              <div 
+                className="p-5 bg-background"
+                style={handDrawnBorder}
+              >
                 {accessRequested ? (
                   <div className="flex items-start gap-4">
-                    <div className="p-3 rounded-full bg-success/10 flex-shrink-0">
-                      <CheckCircle className="h-6 w-6 text-success" />
+                    <div className="p-2 rounded-full bg-success/10 flex-shrink-0">
+                      <CheckCircle className="h-5 w-5 text-success" />
                     </div>
                     <div>
-                      <h3 className="text-xl font-medium text-foreground mb-2">
+                      <h3 className="font-serif text-lg text-foreground mb-1">
                         Request sent!
                       </h3>
-                      <p className="text-lg text-muted-foreground">
+                      <p className="text-sm text-muted-foreground">
                         We've notified the family. You'll get an email when they respond.
                       </p>
                     </div>
@@ -287,37 +324,29 @@ const SponsorDashboardPage = () => {
                 ) : showRequestConfirm ? (
                   <div className="space-y-4">
                     <div className="flex items-start gap-4">
-                      <div className="p-3 rounded-full bg-primary/10 flex-shrink-0">
-                        <Mail className="h-6 w-6 text-primary" />
+                      <div className="p-2 rounded-full bg-primary/10 flex-shrink-0">
+                        <Mail className="h-5 w-5 text-primary" />
                       </div>
                       <div>
-                        <h3 className="text-xl font-medium text-foreground mb-2">
+                        <h3 className="font-serif text-lg text-foreground mb-1">
                           Confirm your request
                         </h3>
-                        <p className="text-lg text-muted-foreground">
+                        <p className="text-sm text-muted-foreground">
                           We'll send a message to the family letting them know you'd like to sponsor their child again.
-                        </p>
-                        <p className="text-lg text-muted-foreground mt-2">
-                          You'll receive an email when they respond.
                         </p>
                       </div>
                     </div>
-                    <div className="flex gap-3 ml-16">
+                    <div className="flex gap-3 ml-11">
                       <Button
                         onClick={handleRequestAccess}
-                        loading={isRequestingAccess}
                         disabled={isRequestingAccess}
-                        className="h-14 text-lg px-8"
-                        size="lg"
                       >
-                        <Send className="h-5 w-5 mr-2" />
-                        Send Request
+                        <Send className="h-4 w-4 mr-2" />
+                        {isRequestingAccess ? "Sending..." : "Send Request"}
                       </Button>
                       <Button
                         variant="outline"
                         onClick={() => setShowRequestConfirm(false)}
-                        className="h-14 text-lg"
-                        size="lg"
                       >
                         Cancel
                       </Button>
@@ -325,77 +354,72 @@ const SponsorDashboardPage = () => {
                   </div>
                 ) : (
                   <div className="flex items-start gap-4">
-                    <div className="p-3 rounded-full bg-primary/10 flex-shrink-0">
-                      <Mail className="h-6 w-6 text-primary" />
+                    <div className="p-2 rounded-full bg-primary/10 flex-shrink-0">
+                      <Mail className="h-5 w-5 text-primary" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-xl font-medium text-foreground mb-2">
+                      <h3 className="font-serif text-lg text-foreground mb-1">
                         Request access
                       </h3>
-                      <p className="text-lg text-muted-foreground mb-4">
+                      <p className="text-sm text-muted-foreground mb-3">
                         We'll ask the family if they'd like your support.
                       </p>
-                      <Button
-                        onClick={() => setShowRequestConfirm(true)}
-                        className="h-14 text-lg"
-                        size="lg"
-                      >
+                      <Button onClick={() => setShowRequestConfirm(true)}>
                         Request Access
                       </Button>
                     </div>
                   </div>
                 )}
-              </BookContainer>
+              </div>
 
               {/* Option 3: Enter sponsor link */}
-              <BookContainer variant="default" className="p-6">
+              <div 
+                className="p-5 bg-background"
+                style={handDrawnBorder}
+              >
                 <div className="flex items-start gap-4">
-                  <div className="p-3 rounded-full bg-muted flex-shrink-0">
-                    <LinkIcon className="h-6 w-6 text-muted-foreground" />
+                  <div className="p-2 rounded-full bg-muted flex-shrink-0">
+                    <LinkIcon className="h-5 w-5 text-muted-foreground" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-xl font-medium text-foreground mb-2">
+                    <h3 className="font-serif text-lg text-foreground mb-1">
                       I have a sponsor link
                     </h3>
-                    <p className="text-lg text-muted-foreground mb-4">
+                    <p className="text-sm text-muted-foreground mb-3">
                       Enter the code or link the family shared with you.
                     </p>
-                    <form onSubmit={handleSubmitCode} className="flex gap-3">
+                    <form onSubmit={handleSubmitCode} className="flex gap-2">
                       <Input
                         placeholder="Enter code or paste link"
                         value={sponsorCode}
                         onChange={(e) => setSponsorCode(e.target.value)}
-                        className="h-14 text-lg flex-1"
+                        className="flex-1"
                       />
                       <Button
                         type="submit"
                         disabled={!sponsorCode.trim()}
-                        className="h-14 text-lg px-6"
-                        size="lg"
                       >
                         Go
                       </Button>
                     </form>
                   </div>
                 </div>
-              </BookContainer>
+              </div>
             </div>
-          </section>
 
-          {/* Footer Help */}
-          <div className="mt-10 pt-6 border-t border-border">
-            <p className="text-lg text-center text-muted-foreground">
-              Questions? Contact us at{" "}
-              <a href="mailto:help@school.org" className="text-primary hover:underline">
-                help@school.org
-              </a>
-            </p>
+            {/* Footer Help */}
+            <div className="mt-10 pt-6 border-t border-border text-center">
+              <p className="text-sm text-muted-foreground">
+                Questions? Contact us at{" "}
+                <a href="mailto:help@school.org" className="text-primary hover:underline">
+                  help@school.org
+                </a>
+              </p>
+            </div>
           </div>
         </div>
-      </main>
-
-      <Footer />
-    </div>
+      </section>
+    </PublicLayout>
   );
 };
 
