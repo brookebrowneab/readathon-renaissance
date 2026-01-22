@@ -2,3 +2,6 @@ project_id = "coztgcgliytrmgfkjaoo"
 
 [functions.bootstrap-admin]
 verify_jwt = false
+
+[functions.notify-check-payment]
+verify_jwt = false

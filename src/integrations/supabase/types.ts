@@ -216,8 +216,10 @@ export type Database = {
           amount: number
           created_at: string
           event_id: string | null
+          expected_payment_method: string | null
           id: string
           is_paid: boolean
+          payment_status: string
           pledge_type: string
           sponsor_id: string | null
           student_name: string
@@ -226,8 +228,10 @@ export type Database = {
           amount: number
           created_at?: string
           event_id?: string | null
+          expected_payment_method?: string | null
           id?: string
           is_paid?: boolean
+          payment_status?: string
           pledge_type: string
           sponsor_id?: string | null
           student_name: string
@@ -236,8 +240,10 @@ export type Database = {
           amount?: number
           created_at?: string
           event_id?: string | null
+          expected_payment_method?: string | null
           id?: string
           is_paid?: boolean
+          payment_status?: string
           pledge_type?: string
           sponsor_id?: string | null
           student_name?: string
