@@ -15,7 +15,7 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
-import pencilBorderTile from "@/assets/pencil-border-tile.png";
+import bookAbstractBorder from "@/assets/book-abstract-border.png";
 
 // Hand-drawn border style
 const handDrawnBorder = {
@@ -139,7 +139,7 @@ const SponsorPaymentPage = () => {
         <div 
           className="w-full h-12 md:h-16 relative z-10 -mt-6 md:-mt-8"
           style={{
-            backgroundImage: `url(${pencilBorderTile})`,
+            backgroundImage: `url(${bookAbstractBorder})`,
             backgroundRepeat: 'repeat-x',
             backgroundSize: 'auto 100%',
             backgroundPosition: 'center',
@@ -214,7 +214,7 @@ const SponsorPaymentPage = () => {
       <div 
         className="w-full h-12 md:h-16 relative z-10 -mt-6 md:-mt-8"
         style={{
-          backgroundImage: `url(${pencilBorderTile})`,
+          backgroundImage: `url(${bookAbstractBorder})`,
           backgroundRepeat: 'repeat-x',
           backgroundSize: 'auto 100%',
           backgroundPosition: 'center',
