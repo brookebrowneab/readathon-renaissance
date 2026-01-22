@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 import booksShelfDivider from "@/assets/books-shelf-divider.png";
 
 // Hand-drawn border style
@@ -412,16 +413,51 @@ const SponsorPaymentPage = () => {
                   </div>
 
                   <Button
-                    onClick={() => {
-                      toast.success("We'll mark your pledge as pending check payment.");
-                      navigate("/sponsor/dashboard");
+                    onClick={async () => {
+                      setIsSubmitting(true);
+                      try {
+                        // Get selected pledge details
+                        const selectedPledgeDetails = mockUnpaidPledges.filter(
+                          (p) => selectedPledges.includes(p.id)
+                        );
+                        const childNames = selectedPledgeDetails.map(
+                          (p) => `${p.childFirstName} ${p.childLastInitial}.`
+                        );
+
+                        // Call edge function to update database and notify organizers
+                        const { data, error } = await supabase.functions.invoke(
+                          "notify-check-payment",
+                          {
+                            body: {
+                              pledgeIds: selectedPledges,
+                              sponsorName: "Sponsor Name", // In real app, get from auth context
+                              sponsorEmail: "sponsor@example.com", // In real app, get from auth context
+                              totalAmount: selectedTotal,
+                              childNames,
+                            },
+                          }
+                        );
+
+                        if (error) throw error;
+
+                        toast.success(
+                          "Thank you! We've notified the organizers about your check payment."
+                        );
+                        navigate("/sponsor/dashboard");
+                      } catch (error: any) {
+                        console.error("Error notifying about check payment:", error);
+                        toast.error("Something went wrong. Please try again.");
+                      } finally {
+                        setIsSubmitting(false);
+                      }
                     }}
+                    disabled={selectedPledges.length === 0 || isSubmitting}
                     variant="outline"
                     className="w-full"
                     size="lg"
                     style={handDrawnBorder}
                   >
-                    I'll mail a check
+                    {isSubmitting ? "Submitting..." : "I'll mail a check"}
                   </Button>
                 </div>
               )}
