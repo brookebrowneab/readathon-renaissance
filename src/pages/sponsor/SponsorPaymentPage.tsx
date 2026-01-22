@@ -43,6 +43,15 @@ const SponsorPaymentPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const preselectedIds = location.state?.pledgeIds || [];
+  
+  // Determine dashboard URL based on referrer (from state or query param)
+  const searchParams = new URLSearchParams(location.search);
+  const referrerFromQuery = searchParams.get("from");
+  const referrerFromState = location.state?.from;
+  const referrer = referrerFromState || referrerFromQuery;
+  
+  // Default to sponsor dashboard, but redirect to family dashboard if came from parent
+  const dashboardUrl = referrer === "parent" ? "/dashboard" : "/sponsor/dashboard";
 
   const [selectedPledges, setSelectedPledges] = useState<string[]>(
     preselectedIds.length > 0 ? preselectedIds : mockUnpaidPledges.map((p) => p.id)
@@ -156,7 +165,7 @@ const SponsorPaymentPage = () => {
                 </p>
 
                 <Button asChild className="w-full" size="lg">
-                  <Link to="/sponsor/dashboard">Back to Dashboard</Link>
+                  <Link to={dashboardUrl}>Back to Dashboard</Link>
                 </Button>
               </div>
             </div>
@@ -195,6 +204,15 @@ const SponsorPaymentPage = () => {
             <p className="text-base md:text-lg text-muted-foreground max-w-2xl leading-relaxed">
               Select your pledges and choose a payment method to complete your contribution.
             </p>
+            
+            {/* Back to Dashboard link */}
+            <Link 
+              to={dashboardUrl}
+              className="inline-flex items-center gap-2 mt-4 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to Dashboard
+            </Link>
           </div>
         </div>
       </section>
@@ -411,7 +429,7 @@ const SponsorPaymentPage = () => {
                         toast.success(
                           "Thank you! We've notified the organizers about your check payment."
                         );
-                        navigate("/sponsor/dashboard");
+                        navigate(dashboardUrl);
                       } catch (error: any) {
                         console.error("Error notifying about check payment:", error);
                         toast.error("Something went wrong. Please try again.");
