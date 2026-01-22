@@ -7,7 +7,7 @@ import { FormField } from "@/components/ui/form-field";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
-import { Eye, EyeOff, Mail, Lock, BookOpen, Users, Heart } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, Users, Heart } from "lucide-react";
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -27,28 +27,7 @@ const LoginPage = () => {
 
   return (
     <PublicLayout>
-      <section className="min-h-[calc(100vh-8rem)] flex">
-        {/* Left Side - Illustration (Desktop Only) */}
-        <div className="hidden lg:flex lg:w-[40%] bg-primary items-center justify-center p-12 relative overflow-hidden">
-          {/* Decorative Background */}
-          <div className="absolute inset-0 bg-gradient-to-br from-primary to-primary-hover" />
-          <div className="absolute top-10 left-10 w-32 h-32 bg-accent/20 rounded-full blur-3xl" />
-          <div className="absolute bottom-20 right-10 w-48 h-48 bg-primary-foreground/10 rounded-full blur-3xl" />
-          
-          {/* Content */}
-          <div className="relative z-10 text-center text-primary-foreground">
-            <div className="mb-8">
-              <BookOpen className="h-24 w-24 mx-auto mb-6 opacity-90" />
-            </div>
-            <h2 className="text-3xl font-bold mb-4">Welcome to Read-a-thon</h2>
-            <p className="text-lg opacity-90 max-w-sm">
-              Track reading progress, collect pledges, and celebrate achievements together.
-            </p>
-          </div>
-        </div>
-
-        {/* Right Side - Form */}
-        <div className="flex-1 flex items-center justify-center bg-background-warm p-6 lg:p-12">
+      <section className="min-h-[calc(100vh-8rem)] flex items-center justify-center bg-background-warm p-6 lg:p-12">
           <div className="w-full max-w-md">
             <div 
               className="animate-fade-in bg-card p-8 shadow-book"
@@ -190,7 +169,6 @@ const LoginPage = () => {
               </div>
             </div>
           </div>
-        </div>
       </section>
     </PublicLayout>
   );
