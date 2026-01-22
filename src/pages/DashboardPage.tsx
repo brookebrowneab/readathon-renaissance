@@ -14,7 +14,7 @@ import {
   Bell,
   Heart,
 } from "lucide-react";
-import openBookBanner from "@/assets/open-book-banner.png";
+
 
 // Hand-drawn border style (consistent with HomePage)
 const handDrawnBorder = {
@@ -137,11 +137,6 @@ const DashboardPage = () => {
                       Exit Demo
                     </Button>
                   </Link>
-                </div>
-
-                {/* Banner Image */}
-                <div className="relative">
-                  <img src={openBookBanner} alt="Open book illustration" className="w-full h-auto max-h-40 object-contain" />
                 </div>
               </div>
 
