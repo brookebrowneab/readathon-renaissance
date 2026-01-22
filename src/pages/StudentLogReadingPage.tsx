@@ -54,7 +54,6 @@ const StudentLogReadingPage = () => {
   const [bookTitle, setBookTitle] = useState("");
   const [showCalendar, setShowCalendar] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [showConfetti, setShowConfetti] = useState(false);
   const [filteredBooks, setFilteredBooks] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
@@ -91,11 +90,7 @@ const StudentLogReadingPage = () => {
   };
 
   const handleSubmit = () => {
-    setShowConfetti(true);
-    setTimeout(() => {
-      setIsSubmitted(true);
-      setShowConfetti(false);
-    }, 1500);
+    setIsSubmitted(true);
   };
 
   const getEncouragingMessage = () => {
@@ -176,27 +171,6 @@ const StudentLogReadingPage = () => {
       <MainNav />
       
       <main className="flex-1 bg-background-warm pb-24 lg:pb-8">
-        {/* Confetti Animation */}
-        {showConfetti && (
-          <div className="fixed inset-0 pointer-events-none z-50">
-            {[...Array(30)].map((_, i) => (
-              <div
-                key={i}
-                className="absolute animate-confetti"
-                style={{
-                  left: `${Math.random() * 100}%`,
-                  top: `-5%`,
-                  animationDelay: `${Math.random() * 0.5}s`,
-                  backgroundColor: ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#A855F7'][i % 7],
-                  width: `${8 + Math.random() * 8}px`,
-                  height: `${8 + Math.random() * 8}px`,
-                  borderRadius: Math.random() > 0.5 ? '50%' : '3px',
-                }}
-              />
-            ))}
-          </div>
-        )}
-
         <div className="container py-8">
           {/* Header */}
           <div className="flex items-center gap-4 mb-8">

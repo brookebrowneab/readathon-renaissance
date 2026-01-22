@@ -4,7 +4,6 @@ import { BookContainer, ReadingGoalRing } from "@/components/legacy";
 import { PageHeader } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Heart, BookOpen, LogOut, Sparkles } from "lucide-react";
-import Confetti from "@/components/ui/confetti";
 
 interface StudentData {
   firstName: string;
@@ -31,19 +30,11 @@ const StudentDashboardPage = () => {
   const navigate = useNavigate();
   const [studentData, setStudentData] = useState<StudentData | null>(null);
   const [recentLogs] = useState(getMockRecentLogs);
-  const [showConfetti, setShowConfetti] = useState(false);
-
   useEffect(() => {
     const stored = sessionStorage.getItem("studentData");
     if (stored) {
       const data = JSON.parse(stored);
       setStudentData(data);
-      
-      // Check if they hit 100%
-      if (data.minutesRead >= data.readingGoal) {
-        setShowConfetti(true);
-        setTimeout(() => setShowConfetti(false), 5000);
-      }
     } else {
       // Demo data if not logged in
       setStudentData({
@@ -76,9 +67,7 @@ const StudentDashboardPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-brand-yellow/20 to-background-warm">
-      {showConfetti && <Confetti />}
-      
-      <PageHeader 
+      <PageHeader
         rightContent={
           <Button variant="ghost" size="sm" onClick={handleLogout}>
             <LogOut className="h-5 w-5 mr-2" />

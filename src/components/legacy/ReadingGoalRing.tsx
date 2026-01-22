@@ -35,20 +35,6 @@ const ReadingGoalRing = ({
   }, []);
   
   const effectiveSize = isMobile && mobileSize ? mobileSize : size;
-  const [showConfetti, setShowConfetti] = useState(false);
-  const [lastMilestone, setLastMilestone] = useState(0);
-
-  // Check for milestone crossings
-  const currentMilestone = Math.floor(percentage / 100);
-  
-  useEffect(() => {
-    if (currentMilestone > lastMilestone && currentMilestone > 0) {
-      setShowConfetti(true);
-      setLastMilestone(currentMilestone);
-      const timer = setTimeout(() => setShowConfetti(false), 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [currentMilestone, lastMilestone]);
 
   // Calculate circles needed for overflow behavior
   const circles = useMemo(() => {
@@ -87,27 +73,6 @@ const ReadingGoalRing = ({
       aria-valuemax={goal}
       aria-label={`Reading progress: ${progress} of ${goal} minutes`}
     >
-      {/* Confetti Animation */}
-      {showConfetti && (
-        <div className="pointer-events-none absolute inset-0 z-50">
-          {[...Array(20)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute animate-confetti"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 30}%`,
-                animationDelay: `${Math.random() * 0.5}s`,
-                backgroundColor: ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7'][i % 6],
-                width: `${6 + Math.random() * 6}px`,
-                height: `${6 + Math.random() * 6}px`,
-                borderRadius: Math.random() > 0.5 ? '50%' : '2px',
-              }}
-            />
-          ))}
-        </div>
-      )}
-
       {circles.map((circle, index) => (
         <div
           key={index}

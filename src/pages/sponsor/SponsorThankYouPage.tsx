@@ -12,7 +12,6 @@ import {
   ExternalLink,
   X
 } from "lucide-react";
-import Confetti from "@/components/ui/confetti";
 
 // Mock data - in real app would come from session/API
 const getMockData = () => ({
@@ -28,12 +27,6 @@ const getMockData = () => ({
 const SponsorThankYouPage = () => {
   const [searchParams] = useSearchParams();
   const [data] = useState(() => getMockData());
-  const [showConfetti, setShowConfetti] = useState(true);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setShowConfetti(false), 5000);
-    return () => clearTimeout(timer);
-  }, []);
 
   const shareMessage = `I just pledged to support ${data.childFirstName}'s reading journey! Join me in supporting young readers.`;
   const shareUrl = window.location.origin;
@@ -48,9 +41,7 @@ const SponsorThankYouPage = () => {
 
   return (
     <div className="min-h-screen bg-background-warm flex flex-col">
-      {showConfetti && <Confetti />}
-      
-      <PageHeader 
+      <PageHeader
         rightContent={
           <Link to="/" className="text-muted-foreground hover:text-foreground">
             <X className="h-6 w-6" />
