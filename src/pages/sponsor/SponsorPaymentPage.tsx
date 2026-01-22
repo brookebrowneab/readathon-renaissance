@@ -15,7 +15,7 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
-import booksShelfDivider from "@/assets/books-shelf-divider.png";
+import pencilBorderTile from "@/assets/pencil-border-tile.png";
 
 // Hand-drawn border style
 const handDrawnBorder = {
@@ -135,11 +135,11 @@ const SponsorPaymentPage = () => {
           </div>
         </section>
 
-        {/* Decorative Divider */}
+        {/* Decorative Divider - moved up to overlap hero */}
         <div 
-          className="w-full h-16 md:h-20 relative z-10"
+          className="w-full h-12 md:h-16 relative z-10 -mt-6 md:-mt-8"
           style={{
-            backgroundImage: `url(${booksShelfDivider})`,
+            backgroundImage: `url(${pencilBorderTile})`,
             backgroundRepeat: 'repeat-x',
             backgroundSize: 'auto 100%',
             backgroundPosition: 'center',
@@ -210,11 +210,11 @@ const SponsorPaymentPage = () => {
         </div>
       </section>
 
-      {/* Decorative Divider */}
+      {/* Decorative Divider - moved up to overlap hero */}
       <div 
-        className="w-full h-16 md:h-20 relative z-10"
+        className="w-full h-12 md:h-16 relative z-10 -mt-6 md:-mt-8"
         style={{
-          backgroundImage: `url(${booksShelfDivider})`,
+          backgroundImage: `url(${pencilBorderTile})`,
           backgroundRepeat: 'repeat-x',
           backgroundSize: 'auto 100%',
           backgroundPosition: 'center',
