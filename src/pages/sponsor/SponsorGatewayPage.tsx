@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { MainNav, Footer } from "@/components/layout";
 import { BookContainer } from "@/components/legacy";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Heart,
   UserPlus,
@@ -15,6 +16,23 @@ import {
 const SponsorGatewayPage = () => {
   const navigate = useNavigate();
   const [sponsorCode, setSponsorCode] = useState("");
+  const [isChecking, setIsChecking] = useState(true);
+
+  // Check if user is already signed in
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (user) {
+        // User is signed in - redirect to sponsor dashboard
+        navigate("/sponsor/dashboard", { replace: true });
+      } else {
+        setIsChecking(false);
+      }
+    };
+
+    checkAuth();
+  }, [navigate]);
 
   const handleSubmitCode = (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,6 +40,18 @@ const SponsorGatewayPage = () => {
       navigate(`/s/${sponsorCode.trim()}`);
     }
   };
+
+  // Show loading while checking auth
+  if (isChecking) {
+    return (
+      <div className="flex min-h-screen flex-col">
+        <MainNav />
+        <main className="flex-1 bg-background-warm flex items-center justify-center">
+          <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full" />
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen flex-col">
