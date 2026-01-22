@@ -225,7 +225,7 @@ const DashboardPage = () => {
                     asChild
                     className="text-muted-foreground hover:text-foreground"
                   >
-                    <Link to="/pledges">
+                    <Link to="/family/sponsor-requests">
                       View all pledges
                       <ChevronRight className="h-4 w-4 ml-1" />
                     </Link>
@@ -314,7 +314,7 @@ const DashboardPage = () => {
                       className="w-full justify-start"
                       asChild
                     >
-                      <Link to="/pledges">
+                      <Link to="/family/sponsor-requests">
                         <DollarSign className="h-4 w-4 mr-2" />
                         View All Pledges
                       </Link>
