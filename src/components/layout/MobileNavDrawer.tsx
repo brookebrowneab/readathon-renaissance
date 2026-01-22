@@ -35,7 +35,7 @@ const teacherNav: NavItem[] = [
 
 const sponsorNav: NavItem[] = [
   { label: "Dashboard", href: "/sponsor/dashboard", icon: Home },
-  { label: "My Pledges", href: "/sponsor/dashboard", icon: Heart },
+  { label: "My Pledges", href: "/my-pledges", icon: Heart },
   { label: "Payments", href: "/sponsor/pay", icon: DollarSign },
 ];
 
