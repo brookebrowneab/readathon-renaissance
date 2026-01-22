@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { PublicLayout } from "@/components/layout";
-import { BookContainer, BookIcon } from "@/components/legacy";
+import { BookIcon } from "@/components/legacy";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormField } from "@/components/ui/form-field";
@@ -8,20 +8,30 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { Eye, EyeOff, Mail, Lock, Users, Heart } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { signIn } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle login logic
-    console.log("Login:", { email, password });
-  };
-
-  const handleDemoMode = () => {
+    setIsLoading(true);
+    
+    const { error } = await signIn(email, password);
+    
+    if (error) {
+      toast.error(error.message);
+      setIsLoading(false);
+      return;
+    }
+    
+    toast.success("Signed in successfully!");
     navigate("/dashboard");
   };
 
@@ -104,8 +114,8 @@ const LoginPage = () => {
                     </Label>
                   </div>
 
-                  <Button type="submit" className="w-full">
-                    Sign In
+                  <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading ? "Signing in..." : "Sign In"}
                   </Button>
                 </form>
 
@@ -119,12 +129,12 @@ const LoginPage = () => {
                   </div>
                 </div>
 
-                {/* Demo Modes */}
                 <div className="space-y-2">
+                  <p className="text-xs text-center text-muted-foreground mb-2">Demo modes (no login required)</p>
                   <Button
                     variant="secondary"
                     className="w-full"
-                    onClick={handleDemoMode}
+                    onClick={() => navigate("/dashboard")}
                   >
                     Parent Demo
                   </Button>
