@@ -18,6 +18,7 @@ import DashboardPage from "./pages/DashboardPage";
 import InviteSponsorsPage from "./pages/InviteSponsorsPage";
 import AddSponsorPage from "./pages/AddSponsorPage";
 import LogReadingPage from "./pages/LogReadingPage";
+import MyPledgesPage from "./pages/MyPledgesPage";
 import SponsorPage from "./pages/SponsorPage";
 import SponsorLandingPage from "./pages/SponsorLandingPage";
 import { 
@@ -95,6 +96,7 @@ const App = () => (
           <Route path="/invite" element={<InviteSponsorsPage />} />
           <Route path="/children/:id/add-sponsor" element={<AddSponsorPage />} />
           <Route path="/log-reading" element={<LogReadingPage />} />
+          <Route path="/my-pledges" element={<MyPledgesPage />} />
           
           {/* Sponsor Dashboard */}
           <Route path="/sponsor/login" element={<SponsorLoginPage />} />
