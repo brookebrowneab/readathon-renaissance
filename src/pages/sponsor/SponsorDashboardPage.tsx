@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { PublicLayout } from "@/components/layout";
+import { MainNav, Footer } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/sonner";
-import booksShelfDivider from "@/assets/books-shelf-divider.png";
 import {
   LogOut,
   DollarSign,
@@ -119,69 +118,45 @@ const SponsorDashboardPage = () => {
   };
 
   return (
-    <PublicLayout>
-      {/* Hero Section */}
-      <section className="relative pt-8 md:pt-12 pb-6 md:pb-8 bg-background">
-        <div className="container">
-          <div className="max-w-4xl pl-9 md:pl-14 lg:pl-20">
-            <div className="flex items-start justify-between gap-4 flex-wrap">
-              <div>
-                {/* Large headline with highlighter effect */}
-                <div className="relative inline-block mb-4">
-                  <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-normal tracking-tight text-foreground leading-[1.05] relative">
-                    <span className="relative">
-                      {isReturning ? `Welcome back, ${mockSponsor.name.split(" ")[0]}!` : `Welcome, ${mockSponsor.name.split(" ")[0]}!`}
-                      {/* Highlighter effect */}
-                      <span 
-                        className="absolute inset-0 -skew-y-1 bg-accent/30 -z-10 transform -rotate-[0.5deg]"
-                        style={{
-                          top: '45%',
-                          height: '55%',
-                          left: '-2%',
-                          right: '-2%',
-                          borderRadius: '4px 8px 4px 6px',
-                        }}
-                        aria-hidden="true"
-                      />
-                    </span>
+    <div className="flex min-h-screen flex-col">
+      <MainNav />
+      
+      {/* Main Content */}
+      <main className="flex-1 bg-background-warm shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+        <div className="container py-8">
+          <div className="max-w-3xl mx-auto space-y-8">
+            {/* Header Section */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h1 className="font-serif text-3xl font-normal tracking-tight text-foreground md:text-4xl">
+                    <span className="font-handwritten text-4xl text-primary">
+                      {isReturning ? "Welcome back," : "Welcome,"}
+                    </span>{" "}
+                    {mockSponsor.name.split(" ")[0]}!
                   </h1>
+                  <div className="flex items-center gap-2 mt-2">
+                    <Badge variant="outline" className="gap-1">
+                      <Sparkles className="h-3 w-3" />
+                      {isReturning ? "Returning Sponsor" : "New Sponsor"}
+                    </Badge>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="gap-1 text-base py-1 px-3">
-                    <Sparkles className="h-4 w-4" />
-                    {isReturning ? "Returning Sponsor" : "New Sponsor"}
-                  </Badge>
-                </div>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  style={handDrawnBorder}
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Sign out
+                </Button>
               </div>
-              <Button variant="ghost" size="lg" className="text-muted-foreground">
-                <LogOut className="h-5 w-5 mr-2" />
-                Sign out
-              </Button>
             </div>
-          </div>
-        </div>
-      </section>
 
-      {/* Decorative Divider */}
-      <div 
-        className="w-full h-16 md:h-20 relative z-10"
-        style={{
-          backgroundImage: `url(${booksShelfDivider})`,
-          backgroundRepeat: 'repeat-x',
-          backgroundSize: 'auto 100%',
-          backgroundPosition: 'center',
-        }}
-        aria-hidden="true"
-      />
-
-      {/* Stats Section */}
-      <section className="py-10 md:py-14 bg-background-warm">
-        <div className="container">
-          <div className="max-w-3xl mx-auto">
             {/* Stats Grid - Only show for returning sponsors */}
             {isReturning && (
               <div 
-                className="grid sm:grid-cols-3 gap-0 bg-background mb-10"
+                className="grid sm:grid-cols-3 gap-0 bg-background shadow-md"
                 style={handDrawnBorder}
               >
                 <div className="p-6 text-center border-b sm:border-b-0 sm:border-r border-border">
@@ -433,7 +408,7 @@ const SponsorDashboardPage = () => {
             </div>
 
             {/* Footer Help */}
-            <div className="mt-10 pt-6 border-t border-border text-center">
+            <div className="pt-6 border-t border-border text-center">
               <p className="text-sm text-muted-foreground">
                 Questions? Contact us at{" "}
                 <a href="mailto:help@school.org" className="text-primary hover:underline">
@@ -443,8 +418,10 @@ const SponsorDashboardPage = () => {
             </div>
           </div>
         </div>
-      </section>
-    </PublicLayout>
+      </main>
+      
+      <Footer />
+    </div>
   );
 };
 
