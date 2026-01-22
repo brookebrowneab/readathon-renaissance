@@ -183,15 +183,6 @@ const SponsorPaymentPage = () => {
       <section className="relative pt-8 md:pt-12 pb-6 md:pb-8">
         <div className="container">
           <div className="max-w-4xl pl-9 md:pl-14 lg:pl-20">
-            {/* Back Link */}
-            <Link
-              to="/sponsor/dashboard"
-              className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back to Dashboard
-            </Link>
-
             {/* Large headline with highlighter effect */}
             <div className="relative inline-block mb-4">
               <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-normal tracking-tight text-foreground leading-[1.05] relative">

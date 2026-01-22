@@ -21,6 +21,10 @@ const publicNav: NavItem[] = [
   { label: "HOW THE READ-A-THON WORKS", href: "/how-it-works" },
 ];
 
+const authenticatedNav: NavItem[] = [
+  { label: "DASHBOARD", href: "/dashboard" },
+];
+
 // Mock notification data - replace with real data
 const mockNotifications = {
   pendingLogApprovals: [
@@ -87,15 +91,15 @@ const MainNav = () => {
               {isAuthenticated ? (
                 <>
                   <Link to="/dashboard">
-                    <Button variant="ghost" size="sm" className="text-slate-600 hover:text-slate-800 hover:bg-slate-50">
+                    <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground hover:bg-muted">
                       <User className="mr-2 h-4 w-4" />
-                      Dashboard
+                      Account
                     </Button>
                   </Link>
                   <Button 
                     variant="ghost" 
                     size="sm" 
-                    className="text-slate-600 hover:text-slate-800 hover:bg-slate-50"
+                    className="text-muted-foreground hover:text-foreground hover:bg-muted"
                     onClick={handleLogout}
                   >
                     <LogOut className="mr-2 h-4 w-4" />
@@ -107,7 +111,7 @@ const MainNav = () => {
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="border-slate-300 text-slate-700 hover:bg-slate-50 rounded-md"
+                    className="border-border text-foreground hover:bg-muted rounded-md"
                   >
                     Sign In
                   </Button>
@@ -117,13 +121,13 @@ const MainNav = () => {
 
             {/* Nav Links - Below Sign In */}
             <nav className="flex items-center gap-8">
-              {publicNav.map((item) => (
+              {(isAuthenticated ? authenticatedNav : publicNav).map((item) => (
                 <Link
                   key={item.href}
                   to={item.href}
                   className={cn(
-                    "text-xs font-semibold tracking-widest text-slate-600 transition-colors hover:text-slate-900 hover:underline",
-                    location.pathname === item.href && "text-slate-900"
+                    "text-xs font-semibold tracking-widest text-muted-foreground transition-colors hover:text-foreground hover:underline",
+                    location.pathname === item.href && "text-foreground"
                   )}
                 >
                   {item.label}
