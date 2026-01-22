@@ -265,31 +265,6 @@ const LogReadingPage = () => {
                 className="bg-background p-6 text-center relative overflow-hidden shadow-md"
                 style={handDrawnBorder}
               >
-                {/* Confetti Effect */}
-                <div className="absolute inset-0 pointer-events-none">
-                  {[...Array(20)].map((_, i) => (
-                    <div
-                      key={i}
-                      className="absolute animate-confetti"
-                      style={{
-                        left: `${Math.random() * 100}%`,
-                        top: `${Math.random() * 20}%`,
-                        animationDelay: `${Math.random() * 0.5}s`,
-                        backgroundColor: [
-                          "#FFD700",
-                          "#FF6B6B",
-                          "#4ECDC4",
-                          "#45B7D1",
-                          "#96CEB4",
-                        ][i % 5],
-                        width: `${6 + Math.random() * 6}px`,
-                        height: `${6 + Math.random() * 6}px`,
-                        borderRadius: Math.random() > 0.5 ? "50%" : "2px",
-                      }}
-                    />
-                  ))}
-                </div>
-
                 <div className="relative z-10">
                   <div className="mx-auto w-16 h-16 bg-accent/20 rounded-full flex items-center justify-center mb-4">
                     {willReachGoal ? (
