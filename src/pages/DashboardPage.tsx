@@ -356,12 +356,16 @@ const DashboardPage = () => {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="flex flex-col items-center rounded-lg bg-muted/30 p-3">
                       <span className="text-xs text-muted-foreground">Total Minutes</span>
-                      <span className="font-serif text-2xl text-primary">425</span>
+                      <span className="font-serif text-2xl text-primary">
+                        {mockChildren.reduce((sum, child) => sum + child.minutesRead, 0).toLocaleString()}
+                      </span>
                     </div>
                     <div className="relative flex flex-col items-center rounded-lg bg-muted/30 p-3">
                       <Star className="absolute -right-1 -top-1 h-4 w-4 fill-accent text-accent" />
                       <span className="text-xs text-muted-foreground">Sponsors</span>
-                      <span className="font-serif text-2xl text-primary">7</span>
+                      <span className="font-serif text-2xl text-primary">
+                        {mockSponsorshipData.byChild.reduce((sum, child) => sum + child.sponsors, 0)}
+                      </span>
                     </div>
                   </div>
                 </div>
