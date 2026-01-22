@@ -1,12 +1,10 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { MainNav, Footer } from "@/components/layout";
-import { BookContainer } from "@/components/legacy";
+import { PublicLayout } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormField } from "@/components/ui/form-field";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 import {
   ArrowLeft,
   CreditCard,
@@ -16,6 +14,16 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import booksShelfDivider from "@/assets/books-shelf-divider.png";
+
+// Hand-drawn border style
+const handDrawnBorder = {
+  border: 'solid 1px #41403E',
+  borderTopLeftRadius: '255px 15px',
+  borderTopRightRadius: '15px 225px',
+  borderBottomRightRadius: '225px 15px',
+  borderBottomLeftRadius: '15px 255px',
+};
 
 interface Pledge {
   id: string;
@@ -96,63 +104,142 @@ const SponsorPaymentPage = () => {
 
   if (isSuccess) {
     return (
-      <div className="flex min-h-screen flex-col">
-        <MainNav />
-
-        <main className="flex-1 bg-background-warm flex items-center justify-center py-12">
-          <div className="container max-w-md">
-            <BookContainer variant="default" className="p-8 text-center">
-              <div className="w-20 h-20 rounded-full bg-success/20 flex items-center justify-center mx-auto mb-6">
-                <CheckCircle className="h-10 w-10 text-success" />
+      <PublicLayout>
+        {/* Hero Section */}
+        <section className="relative pt-8 md:pt-12 pb-6 md:pb-8">
+          <div className="container">
+            <div className="max-w-4xl pl-9 md:pl-14 lg:pl-20">
+              <div className="relative inline-block mb-4">
+                <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-normal tracking-tight text-foreground leading-[1.05] relative">
+                  <span className="relative">
+                    Thank You!
+                    <span 
+                      className="absolute inset-0 -skew-y-1 bg-accent/30 -z-10 transform -rotate-[0.5deg]"
+                      style={{
+                        top: '45%',
+                        height: '55%',
+                        left: '-2%',
+                        right: '-2%',
+                        borderRadius: '4px 8px 4px 6px',
+                      }}
+                      aria-hidden="true"
+                    />
+                  </span>
+                </h1>
               </div>
-
-              <h1 className="font-serif text-3xl font-normal tracking-tight text-foreground mb-2">
-                Thank you!
-              </h1>
-              <p className="text-xl text-muted-foreground mb-2">
-                Your payment of ${selectedTotal.toFixed(2)} was successful.
+              <p className="text-base md:text-lg text-muted-foreground max-w-2xl leading-relaxed">
+                Your payment was successful.
               </p>
-              <p className="text-muted-foreground">
-                You're helping kids discover the joy of reading!
-              </p>
+            </div>
+          </div>
+        </section>
 
-              <div className="mt-8">
+        {/* Decorative Divider */}
+        <div 
+          className="w-full h-16 md:h-20 relative z-10"
+          style={{
+            backgroundImage: `url(${booksShelfDivider})`,
+            backgroundRepeat: 'repeat-x',
+            backgroundSize: 'auto 100%',
+            backgroundPosition: 'center',
+          }}
+          aria-hidden="true"
+        />
+
+        {/* Success Content */}
+        <section className="py-10 md:py-14 bg-background-warm">
+          <div className="container">
+            <div className="max-w-md mx-auto">
+              <div 
+                className="bg-background p-8 text-center"
+                style={handDrawnBorder}
+              >
+                <div className="w-20 h-20 rounded-full bg-success/20 flex items-center justify-center mx-auto mb-6">
+                  <CheckCircle className="h-10 w-10 text-success" />
+                </div>
+
+                <p className="text-xl text-foreground font-medium mb-2">
+                  ${selectedTotal.toFixed(2)} received
+                </p>
+                <p className="text-muted-foreground mb-8">
+                  You're helping kids discover the joy of reading!
+                </p>
+
                 <Button asChild className="w-full" size="lg">
                   <Link to="/sponsor/dashboard">Back to Dashboard</Link>
                 </Button>
               </div>
-            </BookContainer>
+            </div>
           </div>
-        </main>
-
-        <Footer />
-      </div>
+        </section>
+      </PublicLayout>
     );
   }
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <MainNav />
+    <PublicLayout>
+      {/* Hero Section */}
+      <section className="relative pt-8 md:pt-12 pb-6 md:pb-8">
+        <div className="container">
+          <div className="max-w-4xl pl-9 md:pl-14 lg:pl-20">
+            {/* Back Link */}
+            <Link
+              to="/sponsor/dashboard"
+              className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to Dashboard
+            </Link>
 
-      <main className="flex-1 bg-background-warm">
-        <div className="container py-8 max-w-xl">
-          {/* Back Link */}
-          <Link
-            to="/sponsor/dashboard"
-            className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Dashboard
-          </Link>
+            {/* Large headline with highlighter effect */}
+            <div className="relative inline-block mb-4">
+              <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-normal tracking-tight text-foreground leading-[1.05] relative">
+                <span className="relative">
+                  Complete Your<br />Pledge
+                  {/* Highlighter effect */}
+                  <span 
+                    className="absolute inset-0 -skew-y-1 bg-accent/30 -z-10 transform -rotate-[0.5deg]"
+                    style={{
+                      top: '45%',
+                      height: '55%',
+                      left: '-2%',
+                      right: '-2%',
+                      borderRadius: '4px 8px 4px 6px',
+                    }}
+                    aria-hidden="true"
+                  />
+                </span>
+              </h1>
+            </div>
+            <p className="text-base md:text-lg text-muted-foreground max-w-2xl leading-relaxed">
+              Select your pledges and choose a payment method to complete your contribution.
+            </p>
+          </div>
+        </div>
+      </section>
 
-          <h1 className="font-serif text-3xl font-normal tracking-tight text-foreground mb-6">
-            Complete Your Pledge
-          </h1>
+      {/* Decorative Divider */}
+      <div 
+        className="w-full h-16 md:h-20 relative z-10"
+        style={{
+          backgroundImage: `url(${booksShelfDivider})`,
+          backgroundRepeat: 'repeat-x',
+          backgroundSize: 'auto 100%',
+          backgroundPosition: 'center',
+        }}
+        aria-hidden="true"
+      />
 
-          <div className="space-y-6">
+      {/* Payment Form Section */}
+      <section className="py-10 md:py-14 bg-background-warm">
+        <div className="container">
+          <div className="max-w-xl mx-auto space-y-6">
             {/* Select Pledges */}
-            <BookContainer variant="default" className="p-6">
-              <h2 className="font-medium text-foreground mb-4">
+            <div 
+              className="bg-background p-6"
+              style={handDrawnBorder}
+            >
+              <h2 className="font-serif text-xl md:text-2xl text-foreground mb-4">
                 Select pledges to pay
               </h2>
               <div className="space-y-3">
@@ -184,15 +271,18 @@ const SponsorPaymentPage = () => {
 
               <div className="mt-4 pt-4 border-t border-border flex items-center justify-between">
                 <span className="font-medium text-foreground">Total</span>
-                <span className="text-2xl font-bold text-foreground">
+                <span className="text-2xl font-serif font-bold text-foreground">
                   ${selectedTotal.toFixed(2)}
                 </span>
               </div>
-            </BookContainer>
+            </div>
 
             {/* Payment Method */}
-            <BookContainer variant="default" className="p-6">
-              <h2 className="font-medium text-foreground mb-4">
+            <div 
+              className="bg-background p-6"
+              style={handDrawnBorder}
+            >
+              <h2 className="font-serif text-xl md:text-2xl text-foreground mb-4">
                 Payment method
               </h2>
 
@@ -284,17 +374,19 @@ const SponsorPaymentPage = () => {
                   <Button
                     type="submit"
                     disabled={!isCardFormValid || selectedPledges.length === 0 || isSubmitting}
-                    loading={isSubmitting}
-                    className="w-full bg-accent-gold hover:bg-accent-gold/90 text-accent-gold-foreground"
+                    className="w-full"
                     size="lg"
                   >
-                    Pay ${selectedTotal.toFixed(2)}
+                    {isSubmitting ? "Processing..." : `Pay $${selectedTotal.toFixed(2)}`}
                   </Button>
                 </form>
               ) : (
                 <div className="space-y-4">
-                  <div className="bg-muted/50 rounded-lg p-4">
-                    <h3 className="font-medium text-foreground mb-2">
+                  <div 
+                    className="bg-muted/30 p-4"
+                    style={handDrawnBorder}
+                  >
+                    <h3 className="font-serif text-lg text-foreground mb-2">
                       Mail your check to:
                     </h3>
                     <address className="text-muted-foreground not-italic">
@@ -305,8 +397,11 @@ const SponsorPaymentPage = () => {
                     </address>
                   </div>
 
-                  <div className="bg-muted/50 rounded-lg p-4">
-                    <h3 className="font-medium text-foreground mb-2">
+                  <div 
+                    className="bg-muted/30 p-4"
+                    style={handDrawnBorder}
+                  >
+                    <h3 className="font-serif text-lg text-foreground mb-2">
                       Please include:
                     </h3>
                     <ul className="text-sm text-muted-foreground space-y-1">
@@ -324,18 +419,45 @@ const SponsorPaymentPage = () => {
                     variant="outline"
                     className="w-full"
                     size="lg"
+                    style={handDrawnBorder}
                   >
                     I'll mail a check
                   </Button>
                 </div>
               )}
-            </BookContainer>
+            </div>
           </div>
         </div>
-      </main>
+      </section>
 
-      <Footer />
-    </div>
+      {/* Hand-drawn section divider */}
+      <div 
+        className="w-full"
+        style={{
+          borderTop: 'solid 2px #41403E',
+        }}
+      />
+
+      {/* CTA Section */}
+      <section className="py-10 md:py-14 bg-primary">
+        <div className="container text-center">
+          <h2 className="font-serif text-2xl md:text-3xl text-primary-foreground mb-3">
+            Questions About Payment?
+          </h2>
+          <p className="text-sm md:text-base text-primary-foreground/80 mb-6 max-w-lg mx-auto leading-relaxed">
+            Contact our Read-a-thon coordinators if you need any assistance.
+          </p>
+          <a href="mailto:janneyreadathon@janneyschool.org">
+            <Button 
+              size="lg" 
+              className="bg-background text-foreground hover:bg-background/90 px-8"
+            >
+              Contact Us
+            </Button>
+          </a>
+        </div>
+      </section>
+    </PublicLayout>
   );
 };
 
