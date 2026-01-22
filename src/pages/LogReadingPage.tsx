@@ -29,6 +29,7 @@ import {
   BookOpen,
   Sparkles,
   PartyPopper,
+  ArrowLeft,
 } from "lucide-react";
 
 // Hand-drawn border style (consistent with HomePage)
@@ -179,14 +180,14 @@ const LogReadingPage = () => {
 
       <main className="flex-1 bg-background-warm">
         <div className="container py-8 max-w-2xl">
-          {/* Breadcrumbs */}
-          <AppBreadcrumbs
-            items={[
-              { label: "Dashboard", href: "/dashboard" },
-              { label: "Log Reading" },
-            ]}
-            className="mb-6"
-          />
+          {/* Back to Dashboard */}
+          <Link 
+            to="/dashboard" 
+            className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-6"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span>Back to Dashboard</span>
+          </Link>
 
           {/* Page Header */}
           <div className="mb-8">
