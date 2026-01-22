@@ -45,7 +45,7 @@ const teacherTabs: TabItem[] = [
 
 const sponsorTabs: TabItem[] = [
   { label: "Home", href: "/sponsor/dashboard", icon: Home },
-  { label: "Pledges", href: "/sponsor/dashboard", icon: Heart },
+  { label: "Pledges", href: "/my-pledges", icon: Heart },
   { label: "Payments", href: "/sponsor/pay", icon: DollarSign },
   { label: "Profile", href: "/sponsor/dashboard", icon: User },
 ];
