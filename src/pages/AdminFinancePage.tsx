@@ -88,7 +88,9 @@ export default function AdminFinancePage() {
     markAsPaid, 
     markAsUnpaid,
     bulkMarkAsPaid,
-    isUpdating 
+    sendReminders,
+    isUpdating,
+    isSendingReminders,
   } = useAdminFinance();
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -114,14 +116,15 @@ export default function AdminFinancePage() {
     return matchesSearch && matchesStatus && matchesDateFrom && matchesDateTo;
   });
 
-  const handleSendReminder = (pledgeId: string) => {
-    toast({
-      title: "Reminder Sent",
-      description: "A payment reminder has been sent to the sponsor.",
-    });
+  const handleSendReminder = async (pledgeId: string) => {
+    try {
+      await sendReminders([pledgeId]);
+    } catch (error) {
+      // Error is handled in the mutation
+    }
   };
 
-  const handleBulkReminder = () => {
+  const handleBulkReminder = async () => {
     if (selectedPledges.length === 0) {
       toast({
         title: "No Pledges Selected",
@@ -130,11 +133,12 @@ export default function AdminFinancePage() {
       });
       return;
     }
-    toast({
-      title: "Reminders Sent",
-      description: `Payment reminders sent to ${selectedPledges.length} sponsors.`,
-    });
-    setSelectedPledges([]);
+    try {
+      await sendReminders(selectedPledges);
+      setSelectedPledges([]);
+    } catch (error) {
+      // Error is handled in the mutation
+    }
   };
 
   const handleMarkAsPaid = async (pledgeId: string) => {
@@ -566,10 +570,14 @@ export default function AdminFinancePage() {
                     <Button
                       variant="outline"
                       onClick={handleBulkReminder}
-                      disabled={selectedPledges.length === 0}
+                      disabled={selectedPledges.length === 0 || isSendingReminders}
                     >
-                      <Mail className="mr-2 h-4 w-4" />
-                      Send Reminder ({selectedPledges.length})
+                      {isSendingReminders ? (
+                        <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <Mail className="mr-2 h-4 w-4" />
+                      )}
+                      {isSendingReminders ? "Sending..." : `Send Reminder (${selectedPledges.length})`}
                     </Button>
                     <Button
                       onClick={handleBulkMarkAsPaid}
@@ -639,6 +647,7 @@ export default function AdminFinancePage() {
                               variant="ghost"
                               size="sm"
                               onClick={() => handleSendReminder(pledge.id)}
+                              disabled={isSendingReminders}
                             >
                               <Send className="h-4 w-4" />
                             </Button>

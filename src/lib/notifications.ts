@@ -34,3 +34,43 @@ export const sendPledgeNotification = async (
     return { success: false, error: err.message };
   }
 };
+
+interface PaymentReminderPledge {
+  pledgeId: string;
+  recipientEmail: string;
+  recipientName: string;
+  studentName: string;
+  amount: number;
+  pledgeType: "flat" | "per_minute";
+  totalMinutes?: number;
+  daysSincePledge: number;
+}
+
+interface SendPaymentRemindersResult {
+  success: boolean;
+  summary?: { sent: number; failed: number };
+  error?: string;
+}
+
+export const sendPaymentReminders = async (
+  pledges: PaymentReminderPledge[]
+): Promise<SendPaymentRemindersResult> => {
+  try {
+    const { data, error } = await supabase.functions.invoke(
+      "send-payment-reminder",
+      {
+        body: { pledges },
+      }
+    );
+
+    if (error) {
+      console.error("Error sending payment reminders:", error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true, summary: data.summary };
+  } catch (err: any) {
+    console.error("Error invoking reminder function:", err);
+    return { success: false, error: err.message };
+  }
+};
