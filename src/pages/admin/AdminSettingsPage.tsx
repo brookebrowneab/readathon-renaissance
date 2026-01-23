@@ -1,5 +1,5 @@
-import { useState, useRef } from "react";
-import { format } from "date-fns";
+import { useState, useRef, useEffect } from "react";
+import { format, parseISO } from "date-fns";
 import AdminPageLayout from "@/components/layout/AdminPageLayout";
 import { handDrawnBorder } from "@/lib/admin-styles";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { FormField } from "@/components/ui/form-field";
 import { Calendar } from "@/components/ui/calendar";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -39,7 +40,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  ArrowLeft,
   Calendar as CalendarIcon,
   Save,
   AlertTriangle,
@@ -55,6 +55,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useEventSettings } from "@/hooks/useEventSettings";
+import { EditEventDialog } from "@/components/admin/EditEventDialog";
 
 interface Teacher {
   id: string;
@@ -65,13 +67,18 @@ interface Teacher {
 const GRADES = ["Pre-K", "Kindergarten", "1st", "2nd", "3rd", "4th", "5th"];
 
 const AdminSettingsPage = () => {
-  // Event details
-  const [eventName, setEventName] = useState("Spring Read-a-thon 2024");
+  const { event, isLoading, updateEvent, endEvent, isUpdating, isEnding } = useEventSettings();
+  
+  // Event details - initialized from database
+  const [eventName, setEventName] = useState("");
   const [schoolName, setSchoolName] = useState("Lincoln Elementary");
-  const [startDate, setStartDate] = useState<Date>(new Date("2024-12-01"));
-  const [endDate, setEndDate] = useState<Date>(new Date("2025-01-15"));
+  const [startDate, setStartDate] = useState<Date | undefined>();
+  const [endDate, setEndDate] = useState<Date | undefined>();
+  const [lastLogDate, setLastLogDate] = useState<Date | undefined>();
   const [goalMinutes, setGoalMinutes] = useState("500");
-  const [eventStatus, setEventStatus] = useState<"active" | "paused" | "ended">("active");
+
+  // Create new event dialog
+  const [showCreateEvent, setShowCreateEvent] = useState(false);
 
   // Payment settings
   const [paymentAddress, setPaymentAddress] = useState(
@@ -102,39 +109,81 @@ const AdminSettingsPage = () => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showUploadPreview, setShowUploadPreview] = useState(false);
   const [pendingUpload, setPendingUpload] = useState<Teacher[]>([]);
-  const [isSaving, setIsSaving] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
+  // Initialize form from database
+  useEffect(() => {
+    if (event) {
+      setEventName(event.name);
+      setStartDate(parseISO(event.start_date));
+      setEndDate(parseISO(event.end_date));
+      setLastLogDate(parseISO(event.last_log_date));
+      setHasUnsavedChanges(false);
+    }
+  }, [event]);
+
+  // Track changes
+  const handleFieldChange = () => {
+    setHasUnsavedChanges(true);
+  };
 
   const handleSave = async () => {
-    setIsSaving(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsSaving(false);
-    toast.success("Event settings saved successfully!");
+    if (!event?.id || !startDate || !endDate || !lastLogDate) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    if (endDate < startDate) {
+      toast.error("End date must be after start date");
+      return;
+    }
+
+    if (lastLogDate < startDate) {
+      toast.error("Last log date must be on or after start date");
+      return;
+    }
+
+    try {
+      await updateEvent({
+        id: event.id,
+        name: eventName,
+        start_date: startDate,
+        end_date: endDate,
+        last_log_date: lastLogDate,
+      });
+      setHasUnsavedChanges(false);
+      toast.success("Event settings saved successfully!");
+    } catch (error) {
+      // Error is handled in the hook
+    }
   };
 
   const handleEndEvent = async () => {
-    setEventStatus("ended");
-    setShowEndEventDialog(false);
-    toast.success("Event has been ended. Payment collection emails will be sent.");
-  };
-
-  const handlePauseResume = () => {
-    if (eventStatus === "active") {
-      setEventStatus("paused");
-      toast.success("Event paused. Students can still log reading.");
-    } else if (eventStatus === "paused") {
-      setEventStatus("active");
-      toast.success("Event resumed!");
+    if (!event?.id) return;
+    
+    try {
+      await endEvent(event.id);
+      setShowEndEventDialog(false);
+      toast.success("Event has been ended. Payment collection emails will be sent.");
+    } catch (error) {
+      // Error is handled in the hook
     }
   };
 
   const getStatusBadge = () => {
-    switch (eventStatus) {
-      case "active":
-        return <Badge variant="success">Active</Badge>;
-      case "paused":
-        return <Badge variant="warning">Paused</Badge>;
-      case "ended":
-        return <Badge variant="secondary">Ended</Badge>;
+    if (!event) return <Badge variant="secondary">No Event</Badge>;
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const end = parseISO(event.end_date);
+    const start = parseISO(event.start_date);
+
+    if (!event.is_active || today > end) {
+      return <Badge variant="secondary">Ended</Badge>;
+    } else if (today < start) {
+      return <Badge variant="outline">Upcoming</Badge>;
+    } else {
+      return <Badge variant="success">Active</Badge>;
     }
   };
 
@@ -234,19 +283,57 @@ const AdminSettingsPage = () => {
     return acc;
   }, {} as Record<string, Teacher[]>);
 
+  if (isLoading) {
+    return (
+      <AdminPageLayout
+        title="Event Settings"
+        subtitle="Loading..."
+      >
+        <div className="max-w-3xl space-y-8">
+          <Skeleton className="h-64 w-full" />
+          <Skeleton className="h-48 w-full" />
+          <Skeleton className="h-32 w-full" />
+        </div>
+      </AdminPageLayout>
+    );
+  }
+
   return (
     <AdminPageLayout
       title="Event Settings"
-      subtitle={<span className="flex items-center gap-2">{eventName} {getStatusBadge()}</span>}
+      subtitle={<span className="flex items-center gap-2">{event?.name || "No Active Event"} {getStatusBadge()}</span>}
       actions={
-        <Button onClick={handleSave} loading={isSaving}>
-          <Save className="h-4 w-4 mr-2" />
-          Save Changes
-        </Button>
+        <div className="flex gap-2">
+          {!event && (
+            <Button onClick={() => setShowCreateEvent(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Create Event
+            </Button>
+          )}
+          {event && (
+            <Button onClick={handleSave} disabled={isUpdating || !hasUnsavedChanges}>
+              <Save className="h-4 w-4 mr-2" />
+              {isUpdating ? "Saving..." : hasUnsavedChanges ? "Save Changes" : "Saved"}
+            </Button>
+          )}
+        </div>
       }
     >
       <div className="max-w-3xl">
-        <div className="space-y-8">
+        {!event ? (
+          <div className="bg-background p-8 text-center" style={handDrawnBorder}>
+            <FileText className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+            <h2 className="font-serif text-2xl mb-2">No Active Event</h2>
+            <p className="text-muted-foreground mb-6">
+              Create a new read-a-thon event to get started. You can set dates, goals, and manage all settings.
+            </p>
+            <Button onClick={() => setShowCreateEvent(true)} size="lg">
+              <Plus className="h-4 w-4 mr-2" />
+              Create New Read-a-thon
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-8">
             {/* Event Details */}
             <div className="bg-background p-6" style={handDrawnBorder}>
               <h2 className="font-medium text-foreground mb-6">Event Details</h2>
@@ -256,7 +343,10 @@ const AdminSettingsPage = () => {
                   <Input
                     id="eventName"
                     value={eventName}
-                    onChange={(e) => setEventName(e.target.value)}
+                    onChange={(e) => {
+                      setEventName(e.target.value);
+                      handleFieldChange();
+                    }}
                   />
                 </FormField>
 
@@ -283,11 +373,16 @@ const AdminSettingsPage = () => {
                           {startDate ? format(startDate, "PPP") : "Pick a date"}
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
+                      <PopoverContent className="w-auto p-0 pointer-events-auto" align="start">
                         <Calendar
                           mode="single"
                           selected={startDate}
-                          onSelect={(date) => date && setStartDate(date)}
+                          onSelect={(date) => {
+                            if (date) {
+                              setStartDate(date);
+                              handleFieldChange();
+                            }
+                          }}
                           initialFocus
                           className="p-3 pointer-events-auto"
                         />
@@ -309,11 +404,16 @@ const AdminSettingsPage = () => {
                           {endDate ? format(endDate, "PPP") : "Pick a date"}
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
+                      <PopoverContent className="w-auto p-0 pointer-events-auto" align="start">
                         <Calendar
                           mode="single"
                           selected={endDate}
-                          onSelect={(date) => date && setEndDate(date)}
+                          onSelect={(date) => {
+                            if (date) {
+                              setEndDate(date);
+                              handleFieldChange();
+                            }
+                          }}
                           initialFocus
                           className="p-3 pointer-events-auto"
                         />
@@ -321,6 +421,40 @@ const AdminSettingsPage = () => {
                     </Popover>
                   </FormField>
                 </div>
+
+                <FormField label="Last Day to Log Reading" htmlFor="lastLogDate" required>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !lastLogDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {lastLogDate ? format(lastLogDate, "PPP") : "Pick a date"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0 pointer-events-auto" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={lastLogDate}
+                        onSelect={(date) => {
+                          if (date) {
+                            setLastLogDate(date);
+                            handleFieldChange();
+                          }
+                        }}
+                        initialFocus
+                        className="p-3 pointer-events-auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Students can log reading until this date
+                  </p>
+                </FormField>
 
                 <FormField
                   label="Default Reading Goal (minutes)"
@@ -547,35 +681,7 @@ const AdminSettingsPage = () => {
               <h2 className="font-medium text-foreground mb-6">Event Controls</h2>
 
               <div className="space-y-4">
-                {eventStatus !== "ended" && (
-                  <div className="flex items-center justify-between py-3 border-b border-border">
-                    <div>
-                      <p className="font-medium text-foreground">
-                        {eventStatus === "active" ? "Pause Event" : "Resume Event"}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {eventStatus === "active"
-                          ? "Temporarily pause the event (students can still log reading)"
-                          : "Resume accepting pledges and normal operation"}
-                      </p>
-                    </div>
-                    <Button variant="outline" onClick={handlePauseResume}>
-                      {eventStatus === "active" ? (
-                        <>
-                          <Pause className="h-4 w-4 mr-2" />
-                          Pause
-                        </>
-                      ) : (
-                        <>
-                          <Play className="h-4 w-4 mr-2" />
-                          Resume
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                )}
-
-                {eventStatus !== "ended" && (
+                {event.is_active && (
                   <div className="flex items-center justify-between py-3 border-b border-border">
                     <div>
                       <p className="font-medium text-foreground">End Event</p>
@@ -593,6 +699,19 @@ const AdminSettingsPage = () => {
                     </Button>
                   </div>
                 )}
+
+                <div className="flex items-center justify-between py-3 border-b border-border">
+                  <div>
+                    <p className="font-medium text-foreground">Create New Event</p>
+                    <p className="text-sm text-muted-foreground">
+                      Start a new read-a-thon (will end current event)
+                    </p>
+                  </div>
+                  <Button variant="outline" onClick={() => setShowCreateEvent(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    New Event
+                  </Button>
+                </div>
 
                 <div className="flex items-center justify-between py-3">
                   <div>
@@ -612,9 +731,10 @@ const AdminSettingsPage = () => {
               </div>
             </div>
           </div>
-        </div>
+        )}
+      </div>
 
-        {/* End Event Dialog */}
+      {/* End Event Dialog */}
       <Dialog open={showEndEventDialog} onOpenChange={setShowEndEventDialog}>
         <DialogContent>
           <DialogHeader>
@@ -642,9 +762,9 @@ const AdminSettingsPage = () => {
             <Button variant="outline" onClick={() => setShowEndEventDialog(false)}>
               Cancel
             </Button>
-            <Button onClick={handleEndEvent}>
+            <Button onClick={handleEndEvent} disabled={isEnding}>
               <CheckCircle className="h-4 w-4 mr-2" />
-              End Event
+              {isEnding ? "Ending..." : "End Event"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -745,6 +865,16 @@ const AdminSettingsPage = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Create Event Dialog */}
+      <EditEventDialog
+        open={showCreateEvent}
+        onOpenChange={setShowCreateEvent}
+        event={null}
+        onSave={() => {
+          setShowCreateEvent(false);
+        }}
+      />
     </AdminPageLayout>
   );
 };
