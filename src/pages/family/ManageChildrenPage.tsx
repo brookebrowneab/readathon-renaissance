@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { MainNav, Footer, BottomTabBar } from "@/components/layout";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,8 @@ import {
   Trash2,
   MoreVertical,
   Star,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -20,6 +23,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { ReadingLogsTable, ReadingLog } from "@/components/family/ReadingLogsTable";
+import { toast } from "sonner";
 import openBookBanner from "@/assets/open-book-banner.png";
 
 // Hand-drawn border style (consistent with other pages)
@@ -29,6 +39,22 @@ const handDrawnBorder = {
   borderTopRightRadius: '15px 225px',
   borderBottomRightRadius: '225px 15px',
   borderBottomLeftRadius: '15px 255px',
+};
+
+// Mock reading logs data
+const mockReadingLogs: Record<string, ReadingLog[]> = {
+  "1": [
+    { id: "log1", logged_at: "2026-01-22", minutes: 30, book_title: "Harry Potter", student_name: "Emma Johnson" },
+    { id: "log2", logged_at: "2026-01-21", minutes: 45, book_title: "Percy Jackson", student_name: "Emma Johnson" },
+    { id: "log3", logged_at: "2026-01-20", minutes: 25, book_title: null, student_name: "Emma Johnson" },
+    { id: "log4", logged_at: "2026-01-19", minutes: 40, book_title: "The Hobbit", student_name: "Emma Johnson" },
+    { id: "log5", logged_at: "2026-01-18", minutes: 35, book_title: "Harry Potter", student_name: "Emma Johnson" },
+  ],
+  "2": [
+    { id: "log6", logged_at: "2026-01-22", minutes: 20, book_title: "Diary of a Wimpy Kid", student_name: "Lucas Johnson" },
+    { id: "log7", logged_at: "2026-01-21", minutes: 25, book_title: "Dog Man", student_name: "Lucas Johnson" },
+    { id: "log8", logged_at: "2026-01-19", minutes: 30, book_title: null, student_name: "Lucas Johnson" },
+  ],
 };
 
 // Mock data (same as DashboardPage for consistency)
@@ -66,11 +92,32 @@ const mockChildren = [
 ];
 
 const ManageChildrenPage = () => {
+  const [readingLogs, setReadingLogs] = useState<Record<string, ReadingLog[]>>(mockReadingLogs);
+  const [expandedChild, setExpandedChild] = useState<string | null>(null);
+
+  const handleEditLog = (childId: string, logId: string, minutes: number, bookTitle: string) => {
+    setReadingLogs((prev) => ({
+      ...prev,
+      [childId]: prev[childId].map((log) =>
+        log.id === logId ? { ...log, minutes, book_title: bookTitle || null } : log
+      ),
+    }));
+    toast.success("Reading log updated");
+  };
+
+  const handleDeleteLog = (childId: string, logId: string) => {
+    setReadingLogs((prev) => ({
+      ...prev,
+      [childId]: prev[childId].filter((log) => log.id !== logId),
+    }));
+    toast.success("Reading log deleted");
+  };
+
   return (
     <div className="flex min-h-screen flex-col">
       <MainNav />
       
-      <main className="flex-1 bg-background-warm">
+      <main className="flex-1 bg-background-warm shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
         <div className="container py-8">
           {/* Header */}
           <div className="space-y-4 mb-8">
@@ -89,7 +136,7 @@ const ManageChildrenPage = () => {
                   <span className="font-handwritten text-4xl text-primary">Your</span> Readers
                 </h1>
                 <p className="text-muted-foreground mt-1 text-sm md:text-base">
-                  Manage your children's profiles and reading progress
+                  Manage your children's profiles and reading logs
                 </p>
               </div>
               <Button asChild style={handDrawnBorder}>
@@ -106,11 +153,136 @@ const ManageChildrenPage = () => {
             </div>
           </div>
 
-          {/* Children Grid */}
+          {/* Children List with Reading Logs */}
           {mockChildren.length > 0 ? (
-            <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="space-y-6">
               {mockChildren.map((child) => (
-                <ChildCard key={child.id} child={child} />
+                <Collapsible
+                  key={child.id}
+                  open={expandedChild === child.id}
+                  onOpenChange={(open) => setExpandedChild(open ? child.id : null)}
+                >
+                  <div 
+                    className="bg-background shadow-md"
+                    style={handDrawnBorder}
+                  >
+                    {/* Child Header - Always Visible */}
+                    <div className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center font-serif text-xl text-primary">
+                            {child.avatarInitials}
+                          </div>
+                          <div>
+                            <h3 className="font-serif text-xl font-normal text-foreground">
+                              {child.name}
+                            </h3>
+                            <p className="text-sm text-muted-foreground">
+                              {child.gradeInfo} • {child.className}
+                            </p>
+                          </div>
+                          <div className="hidden md:flex items-center gap-6 ml-8">
+                            <div className="text-center">
+                              <p className="text-2xl font-serif text-primary">{child.minutesRead}</p>
+                              <p className="text-xs text-muted-foreground">mins read</p>
+                            </div>
+                            <ReadingGoalRing progress={child.minutesRead} goal={child.goalMinutes} size={60} />
+                            <div className="text-center">
+                              <p className="text-2xl font-serif text-accent">{child.sponsors}</p>
+                              <p className="text-xs text-muted-foreground">sponsors</p>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-2">
+                          <Button variant="outline" size="sm" asChild className="hidden md:inline-flex">
+                            <Link to={`/log-reading?child=${child.id}`}>
+                              <BookOpen className="h-4 w-4 mr-1" />
+                              Log Reading
+                            </Link>
+                          </Button>
+                          
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8">
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="bg-background">
+                              <DropdownMenuItem asChild>
+                                <Link to={`/family/children/${child.id}/settings`}>
+                                  <Settings className="h-4 w-4 mr-2" />
+                                  Settings
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem asChild>
+                                <Link to={`/children/${child.id}/invite`}>
+                                  <UserPlus className="h-4 w-4 mr-2" />
+                                  Invite Sponsors
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem className="text-destructive focus:text-destructive">
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Remove from Program
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+
+                          <CollapsibleTrigger asChild>
+                            <Button variant="ghost" size="sm" className="gap-1">
+                              {expandedChild === child.id ? (
+                                <>
+                                  Hide Logs
+                                  <ChevronUp className="h-4 w-4" />
+                                </>
+                              ) : (
+                                <>
+                                  View Logs
+                                  <ChevronDown className="h-4 w-4" />
+                                </>
+                              )}
+                            </Button>
+                          </CollapsibleTrigger>
+                        </div>
+                      </div>
+
+                      {/* Mobile Stats */}
+                      <div className="flex items-center justify-around mt-4 md:hidden">
+                        <div className="text-center">
+                          <p className="text-xl font-serif text-primary">{child.minutesRead}</p>
+                          <p className="text-xs text-muted-foreground">mins read</p>
+                        </div>
+                        <ReadingGoalRing progress={child.minutesRead} goal={child.goalMinutes} size={50} />
+                        <div className="text-center">
+                          <p className="text-xl font-serif text-accent">{child.sponsors}</p>
+                          <p className="text-xs text-muted-foreground">sponsors</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Collapsible Reading Logs Table */}
+                    <CollapsibleContent>
+                      <div className="border-t border-border p-6 bg-muted/20">
+                        <div className="flex items-center justify-between mb-4">
+                          <h4 className="font-serif text-lg text-foreground">Reading Logs</h4>
+                          <Button size="sm" asChild className="md:hidden">
+                            <Link to={`/log-reading?child=${child.id}`}>
+                              <BookOpen className="h-4 w-4 mr-1" />
+                              Log Reading
+                            </Link>
+                          </Button>
+                        </div>
+                        <ReadingLogsTable
+                          logs={readingLogs[child.id] || []}
+                          childName={child.name}
+                          onEdit={(logId, minutes, bookTitle) => handleEditLog(child.id, logId, minutes, bookTitle)}
+                          onDelete={(logId) => handleDeleteLog(child.id, logId)}
+                        />
+                      </div>
+                    </CollapsibleContent>
+                  </div>
+                </Collapsible>
               ))}
             </div>
           ) : (
@@ -128,120 +300,6 @@ const ManageChildrenPage = () => {
   );
 };
 
-// Child Card Component
-interface ChildCardProps {
-  child: {
-    id: string;
-    name: string;
-    avatarInitials: string;
-    minutesRead: number;
-    goalMinutes: number;
-    gradeInfo: string;
-    className: string;
-    minutesToday: number;
-    longestStreak: number;
-    daysActive: number;
-    sponsors: number;
-  };
-}
-
-const ChildCard = ({ child }: ChildCardProps) => {
-  return (
-    <div 
-      className="bg-background p-6 shadow-md"
-      style={handDrawnBorder}
-    >
-      {/* Header */}
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center font-serif text-lg text-primary">
-            {child.avatarInitials}
-          </div>
-          <div>
-            <h3 className="font-serif text-xl font-normal text-foreground">
-              {child.name}
-            </h3>
-            <p className="text-xs text-muted-foreground">
-              {child.gradeInfo} • {child.className}
-            </p>
-          </div>
-        </div>
-        
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
-              <MoreVertical className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem asChild>
-              <Link to={`/family/children/${child.id}/settings`}>
-                <Settings className="h-4 w-4 mr-2" />
-                Settings
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link to={`/children/${child.id}/invite`}>
-                <UserPlus className="h-4 w-4 mr-2" />
-                Invite Sponsors
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive focus:text-destructive">
-              <Trash2 className="h-4 w-4 mr-2" />
-              Remove from Program
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-      
-      {/* Progress */}
-      <div className="flex justify-center mb-4">
-        <ReadingGoalRing progress={child.minutesRead} goal={child.goalMinutes} size={100} />
-      </div>
-      
-      {/* Quick Stats */}
-      <div className="grid grid-cols-2 gap-3 mb-4">
-        <div className="flex flex-col items-center rounded-lg bg-accent/10 p-3 border border-accent/20">
-          <span className="text-xs text-muted-foreground">Read Today</span>
-          <span className="font-serif text-lg text-accent">{child.minutesToday} min</span>
-        </div>
-        <div className="relative flex flex-col items-center rounded-lg bg-muted/30 p-3">
-          <Star className="absolute -right-1 -top-1 h-4 w-4 fill-accent text-accent" />
-          <span className="text-xs text-muted-foreground">Longest Streak</span>
-          <span className="font-serif text-lg text-primary">{child.longestStreak} min</span>
-        </div>
-      </div>
-      
-      <div className="grid grid-cols-2 gap-3 mb-4">
-        <div className="flex flex-col items-center rounded-lg bg-muted/30 p-2">
-          <span className="text-xs text-muted-foreground">Days Active</span>
-          <span className="font-serif text-lg text-foreground">{child.daysActive}</span>
-        </div>
-        <div className="flex flex-col items-center rounded-lg bg-muted/30 p-2">
-          <span className="text-xs text-muted-foreground">Sponsors</span>
-          <span className="font-serif text-lg text-foreground">{child.sponsors}</span>
-        </div>
-      </div>
-      
-      {/* Actions */}
-      <div className="flex gap-2">
-        <Button variant="outline" size="sm" className="flex-1" asChild>
-          <Link to={`/children/${child.id}`}>
-            Details
-            <ChevronRight className="h-4 w-4 ml-1" />
-          </Link>
-        </Button>
-        <Button size="sm" className="flex-1" asChild>
-          <Link to={`/log-reading?child=${child.id}`}>
-            <BookOpen className="h-4 w-4 mr-1" />
-            Log Reading
-          </Link>
-        </Button>
-      </div>
-    </div>
-  );
-};
 
 // Empty State Component
 const EmptyState = () => {
