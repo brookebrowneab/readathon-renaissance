@@ -82,16 +82,45 @@ const OnboardingComplete = () => {
     
     switch (method) {
       case "email":
-        window.open(`mailto:?subject=Support ${childData?.firstName}'s Reading Journey!&body=${encodeURIComponent(message)}`);
+        window.location.href = `mailto:?subject=${encodeURIComponent(`Support ${childData?.firstName}'s Reading Journey!`)}&body=${encodeURIComponent(message)}`;
         break;
       case "sms":
-        window.open(`sms:?body=${encodeURIComponent(message)}`);
+        window.location.href = `sms:?body=${encodeURIComponent(message)}`;
         break;
       case "facebook":
-        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(sponsorLink)}`);
+        // Open Facebook share dialog in a new window with proper dimensions
+        const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(sponsorLink)}&quote=${encodeURIComponent(message)}`;
+        window.open(fbUrl, 'facebook-share', 'width=580,height=400,menubar=no,toolbar=no,resizable=yes,scrollbars=yes');
         break;
       case "print":
-        window.print();
+        // Create a printable version in a new window
+        const printWindow = window.open('', '_blank');
+        if (printWindow) {
+          printWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <title>Sponsor ${childData?.firstName}'s Reading Journey</title>
+              <style>
+                body { font-family: Georgia, serif; max-width: 600px; margin: 40px auto; padding: 20px; }
+                h1 { color: #1a365d; margin-bottom: 10px; }
+                .link { background: #f0f4f8; padding: 15px; border-radius: 8px; word-break: break-all; margin: 20px 0; }
+                .goal { color: #666; margin-bottom: 30px; }
+                .qr-note { color: #888; font-size: 14px; margin-top: 30px; }
+              </style>
+            </head>
+            <body>
+              <h1>Help ${childData?.firstName} ${childData?.lastInitial}. reach their reading goal!</h1>
+              <p class="goal">Reading Goal: ${childData?.readingGoal} minutes</p>
+              <p>Pledge to support their reading journey by visiting:</p>
+              <div class="link">${sponsorLink}</div>
+              <p class="qr-note">Scan or type the link above to make a pledge.</p>
+            </body>
+            </html>
+          `);
+          printWindow.document.close();
+          printWindow.print();
+        }
         break;
     }
   };
