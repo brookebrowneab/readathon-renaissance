@@ -173,16 +173,16 @@ export const EditChildDialog = ({
           <div className="space-y-4">
             <h4 className="text-sm font-medium text-foreground flex items-center gap-2">
               <LinkIcon className="h-4 w-4" />
-              Social Sharing
+              Sponsor Link Access
             </h4>
 
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label htmlFor="shareLink" className="text-sm font-normal">
-                  Enable Public Share Link
+                  Allow Public Signups
                 </Label>
                 <p className="text-xs text-muted-foreground">
-                  Create a shareable link to post on Facebook, Twitter, etc.
+                  Anyone with the link can sign up as a sponsor (no invitation needed)
                 </p>
               </div>
               <Switch
