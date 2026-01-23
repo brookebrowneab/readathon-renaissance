@@ -33,7 +33,7 @@ import {
   SponsorPaymentPage,
   ReturningSponsorPage,
 } from "./pages/sponsor";
-import { StudentLoginPage, StudentDashboardPage as StudentDashboard, StudentLogReadingPage as StudentLogReading } from "./pages/student";
+import { StudentLoginPage, StudentDashboardPage as StudentDashboard, StudentLogReadingPage as StudentLogReading, StudentBooksPage } from "./pages/student";
 import StudentPinLoginPage from "./pages/student/StudentPinLoginPage";
 import StudentPinDashboardPage from "./pages/student/StudentPinDashboardPage";
 import { TeacherDashboard, TeacherLogReading } from "./pages/teacher";
@@ -109,6 +109,7 @@ const App = () => (
           {/* Student Dashboard */}
           <Route path="/student/login" element={<StudentPinLoginPage />} />
           <Route path="/student/dashboard" element={<StudentPinDashboardPage />} />
+          <Route path="/student/books" element={<StudentBooksPage />} />
           <Route path="/student" element={<StudentDashboard />} />
           <Route path="/student/log" element={<StudentLogReading />} />
           
