@@ -114,7 +114,7 @@ const MainNav = () => {
                     ACCOUNT
                   </button>
                   {/* Dropdown menu */}
-                  <div className="absolute right-0 top-full pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50">
+                  <div className="absolute right-0 top-full pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-[70]">
                     <div className="bg-background border border-border rounded-lg shadow-lg py-1 min-w-[140px]">
                       <button
                         onClick={handleLogout}
