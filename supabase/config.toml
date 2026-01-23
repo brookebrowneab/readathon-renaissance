@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.student-set-password]
 verify_jwt = false
+
+[functions.student-forgot-password]
+verify_jwt = false
