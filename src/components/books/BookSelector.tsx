@@ -11,7 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Camera, BookOpen, Search, X, Loader2 } from "lucide-react";
+import { Camera, BookOpen, Search, X, Loader2, Hash } from "lucide-react";
 import { BarcodeScanner } from "./BarcodeScanner";
 import { useBooks, Book } from "@/hooks/useBooks";
 import { cn } from "@/lib/utils";
@@ -44,6 +44,10 @@ export const BookSelector = ({
   const [searchQuery, setSearchQuery] = useState("");
   const [isScanning, setIsScanning] = useState(false);
   const [filteredBooks, setFilteredBooks] = useState<Book[]>([]);
+  
+  // Manual ISBN entry state
+  const [manualIsbn, setManualIsbn] = useState("");
+  const [isbnError, setIsbnError] = useState("");
   
   // Autocomplete state
   const [showAutocomplete, setShowAutocomplete] = useState(false);
@@ -167,6 +171,30 @@ export const BookSelector = ({
       onManualTitleChange("");
     }
     
+    setIsScanning(false);
+  };
+
+  const handleManualIsbnSubmit = async () => {
+    // Clean and validate ISBN
+    const cleanIsbn = manualIsbn.replace(/[-\s]/g, '');
+    
+    // Validate ISBN format (10 or 13 digits)
+    if (!/^(97[89])?\d{9}[\dXx]$/.test(cleanIsbn)) {
+      setIsbnError("Please enter a valid ISBN (10 or 13 digits)");
+      return;
+    }
+    
+    setIsbnError("");
+    setShowScanner(false);
+    setIsScanning(true);
+    
+    const book = await scanAndAddBook(cleanIsbn);
+    if (book) {
+      onSelectBook(book);
+      onManualTitleChange("");
+    }
+    
+    setManualIsbn("");
     setIsScanning(false);
   };
 
@@ -352,12 +380,53 @@ export const BookSelector = ({
 
       {/* Barcode scanner modal */}
       {showScanner && (
-        <Dialog open={showScanner} onOpenChange={setShowScanner}>
-          <DialogContent className="p-0 max-w-sm">
+        <Dialog open={showScanner} onOpenChange={(open) => {
+          setShowScanner(open);
+          if (!open) {
+            setManualIsbn("");
+            setIsbnError("");
+          }
+        }}>
+          <DialogContent className="p-0 max-w-sm overflow-hidden">
             <BarcodeScanner
               onScan={handleScan}
               onClose={() => setShowScanner(false)}
             />
+            {/* Manual ISBN entry */}
+            <div className="p-4 border-t bg-background">
+              <Label className="text-sm font-medium mb-2 block">Or enter ISBN manually</Label>
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Hash className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="e.g., 978-0-13-468599-1"
+                    value={manualIsbn}
+                    onChange={(e) => {
+                      setManualIsbn(e.target.value);
+                      setIsbnError("");
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleManualIsbnSubmit();
+                      }
+                    }}
+                    className="pl-9"
+                    maxLength={17}
+                  />
+                </div>
+                <Button
+                  type="button"
+                  onClick={handleManualIsbnSubmit}
+                  disabled={!manualIsbn.trim()}
+                >
+                  Look Up
+                </Button>
+              </div>
+              {isbnError && (
+                <p className="text-xs text-destructive mt-1">{isbnError}</p>
+              )}
+            </div>
           </DialogContent>
         </Dialog>
       )}
