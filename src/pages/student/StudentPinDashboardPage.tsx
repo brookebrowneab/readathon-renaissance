@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { useStudentSession } from "@/hooks/useStudentSession";
 import { supabase } from "@/integrations/supabase/client";
 import { useActiveEvent } from "@/hooks/useActiveEvent";
@@ -19,7 +20,8 @@ import {
   Minus,
   Trophy,
   Calendar,
-  Sparkles
+  Sparkles,
+  Library
 } from "lucide-react";
 import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
@@ -205,6 +207,16 @@ const StudentPinDashboardPage = () => {
                 ? "Amazing work! Keep reading to go even further!"
                 : `${session.goalMinutes - session.totalMinutes} minutes to go!`}
             </p>
+            
+            {/* My Books Link */}
+            <div className="mt-4 pt-4 border-t">
+              <Button asChild variant="outline" className="w-full">
+                <Link to="/student/books" className="flex items-center gap-2">
+                  <Library className="h-4 w-4" />
+                  View My Books
+                </Link>
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
