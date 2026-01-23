@@ -16,22 +16,30 @@ export const BarcodeScanner = ({ onScan, onClose }: BarcodeScannerProps) => {
   const [facingMode, setFacingMode] = useState<"environment" | "user">("environment");
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const isRunningRef = useRef(false);
+  const isMountedRef = useRef(true);
+
+  const stopScanner = async () => {
+    if (scannerRef.current && isRunningRef.current) {
+      try {
+        isRunningRef.current = false;
+        await scannerRef.current.stop();
+      } catch (e) {
+        // Scanner may already be stopped - ignore
+        console.debug("Scanner stop ignored:", e);
+      }
+    }
+  };
 
   const startScanner = async () => {
-    if (!containerRef.current) return;
+    if (!containerRef.current || !isMountedRef.current) return;
 
     try {
       setIsStarting(true);
       setError(null);
 
-      // Stop existing scanner if any
-      if (scannerRef.current) {
-        try {
-          await scannerRef.current.stop();
-        } catch (e) {
-          // Ignore stop errors
-        }
-      }
+      // Stop existing scanner if running
+      await stopScanner();
 
       const scanner = new Html5Qrcode("barcode-reader");
       scannerRef.current = scanner;
@@ -47,9 +55,12 @@ export const BarcodeScanner = ({ onScan, onClose }: BarcodeScannerProps) => {
           // Check if it looks like an ISBN (10 or 13 digits)
           const cleanCode = decodedText.replace(/[-\s]/g, '');
           if (/^(97[89])?\d{9}[\dXx]$/.test(cleanCode)) {
+            isRunningRef.current = false;
             scanner.stop().then(() => {
-              onScan(cleanCode);
-            });
+              if (isMountedRef.current) {
+                onScan(cleanCode);
+              }
+            }).catch(() => {});
           }
         },
         () => {
@@ -57,11 +68,17 @@ export const BarcodeScanner = ({ onScan, onClose }: BarcodeScannerProps) => {
         }
       );
 
-      setIsStarting(false);
+      isRunningRef.current = true;
+      if (isMountedRef.current) {
+        setIsStarting(false);
+      }
     } catch (err) {
       console.error("Scanner error:", err);
-      setError("Couldn't access camera. Please check permissions.");
-      setIsStarting(false);
+      isRunningRef.current = false;
+      if (isMountedRef.current) {
+        setError("Couldn't access camera. Please check permissions.");
+        setIsStarting(false);
+      }
     }
   };
 
@@ -70,23 +87,17 @@ export const BarcodeScanner = ({ onScan, onClose }: BarcodeScannerProps) => {
   };
 
   useEffect(() => {
+    isMountedRef.current = true;
     startScanner();
 
     return () => {
-      if (scannerRef.current) {
-        scannerRef.current.stop().catch(() => {});
-      }
+      isMountedRef.current = false;
+      stopScanner();
     };
   }, [facingMode]);
 
   const handleClose = async () => {
-    if (scannerRef.current) {
-      try {
-        await scannerRef.current.stop();
-      } catch (e) {
-        // Ignore
-      }
-    }
+    await stopScanner();
     onClose();
   };
 
