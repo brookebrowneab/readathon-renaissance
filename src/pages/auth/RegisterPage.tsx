@@ -1,6 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
 import { PublicLayout } from "@/components/layout";
-import { BookContainer } from "@/components/legacy";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormField } from "@/components/ui/form-field";
@@ -8,9 +7,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { useState, useMemo } from "react";
 import { Eye, EyeOff, Mail, Lock, User, Users, Check, X } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 const RegisterPage = () => {
   const navigate = useNavigate();
+  const { signUp } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
@@ -101,20 +103,24 @@ const RegisterPage = () => {
 
     setIsSubmitting(true);
     
-    // Simulate account creation - in real app this would call auth API
-    console.log("Register:", formData);
+    const displayName = `${formData.firstName} ${formData.lastName}`;
+    const { error } = await signUp(formData.email, formData.password, displayName);
     
-    // Store user data temporarily (in real app this would be in session)
+    if (error) {
+      toast.error(error.message);
+      setIsSubmitting(false);
+      return;
+    }
+    
+    // Store parent data for onboarding flow
     sessionStorage.setItem('parentData', JSON.stringify({
       firstName: formData.firstName,
       lastName: formData.lastName,
       email: formData.email,
     }));
     
-    // Redirect to onboarding
-    setTimeout(() => {
-      navigate('/onboarding/add-child');
-    }, 500);
+    toast.success("Account created! Let's add your child.");
+    navigate('/onboarding/add-child');
   };
 
   const PasswordCheck = ({ met, label }: { met: boolean; label: string }) => (
@@ -353,9 +359,8 @@ const RegisterPage = () => {
                     type="submit" 
                     className="w-full" 
                     disabled={!isFormValid || isSubmitting}
-                    loading={isSubmitting}
                   >
-                    Create Account
+                    {isSubmitting ? "Creating Account..." : "Create Account"}
                   </Button>
                 </form>
 

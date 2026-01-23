@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { PublicLayout } from "@/components/layout";
-import { Logo, ReadingGoalRing } from "@/components/legacy";
+import { ReadingGoalRing } from "@/components/legacy";
 import { Button } from "@/components/ui/button";
 import { 
   Check, 
@@ -15,11 +15,14 @@ import {
   CheckCircle
 } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
 
 const OnboardingComplete = () => {
   const navigate = useNavigate();
+  const { user, isLoading: authLoading } = useAuth();
   const [copied, setCopied] = useState(false);
   const [childData, setChildData] = useState<{
+    id: string;
     firstName: string;
     lastInitial: string;
     readingGoal: number;
@@ -51,8 +54,15 @@ const OnboardingComplete = () => {
     }
   }, [navigate]);
 
-  const sponsorLink = childData 
-    ? `${window.location.origin}/sponsor/${childData.firstName.toLowerCase()}-${childData.lastInitial.toLowerCase()}`
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate('/login');
+    }
+  }, [user, authLoading, navigate]);
+
+  // Generate sponsor link using child ID for uniqueness
+  const sponsorLink = childData?.id 
+    ? `${window.location.origin}/sponsor/${childData.id}`
     : '';
 
   const handleCopyLink = async () => {
@@ -89,10 +99,29 @@ const OnboardingComplete = () => {
     // Clear current child data but keep parent data
     sessionStorage.removeItem('childData');
     sessionStorage.removeItem('pledgeData');
+    sessionStorage.removeItem('onboardingChildId');
     navigate('/onboarding/add-child');
   };
 
-  if (!childData) return null;
+  const handleGoToDashboard = () => {
+    // Clean up all onboarding session data
+    sessionStorage.removeItem('childData');
+    sessionStorage.removeItem('pledgeData');
+    sessionStorage.removeItem('onboardingChildId');
+    sessionStorage.removeItem('hasMultipleChildren');
+    sessionStorage.removeItem('parentData');
+    navigate('/dashboard');
+  };
+
+  if (!childData || authLoading) {
+    return (
+      <PublicLayout>
+        <section className="min-h-[calc(100vh-8rem)] flex items-center justify-center">
+          <div className="animate-pulse text-muted-foreground">Loading...</div>
+        </section>
+      </PublicLayout>
+    );
+  }
 
   return (
     <PublicLayout>
@@ -238,11 +267,9 @@ const OnboardingComplete = () => {
                   </Button>
                 )}
                 
-                <Button asChild className="w-full">
-                  <Link to="/dashboard">
-                    Go to Dashboard
-                    <ArrowRight className="h-4 w-4 ml-2" />
-                  </Link>
+                <Button className="w-full" onClick={handleGoToDashboard}>
+                  Go to Dashboard
+                  <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
               </div>
             </div>
