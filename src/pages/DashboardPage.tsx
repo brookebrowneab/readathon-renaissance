@@ -18,10 +18,12 @@ import {
 import { useChildren } from "@/hooks/useChildren";
 import { useParentPledges } from "@/hooks/useParentPledges";
 import { usePledges } from "@/hooks/usePledges";
+import { useAllChildrenReadingLogs } from "@/hooks/useReadingLogs";
 import { PledgesSection } from "@/components/dashboard/PledgesSection";
 import { supabase } from "@/integrations/supabase/client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { toast } from "sonner";
+import { format, isToday, isYesterday, parseISO } from "date-fns";
 
 // Hand-drawn border style (consistent with HomePage)
 const handDrawnBorder = {
@@ -32,26 +34,16 @@ const handDrawnBorder = {
   borderBottomLeftRadius: '15px 255px',
 };
 
-// Mock data for recent activity (will be replaced with real data later)
-const mockRecentActivity = [
-  {
-    id: "1",
-    childName: "Emma",
-    minutes: 25,
-    date: "Today",
-    bookTitle: "Charlotte's Web",
-  },
-  {
-    id: "2",
-    childName: "Lucas",
-    minutes: 15,
-    date: "Today",
-    bookTitle: "Diary of a Wimpy Kid",
-  },
-];
-
 // Mock pending sponsor requests
 const mockPendingSponsorRequests = 2;
+
+// Helper to format date for display
+const formatLogDate = (dateStr: string): string => {
+  const date = parseISO(dateStr);
+  if (isToday(date)) return "Today";
+  if (isYesterday(date)) return "Yesterday";
+  return format(date, "MMM d");
+};
 
 const DashboardPage = () => {
   const navigate = useNavigate();
@@ -59,6 +51,32 @@ const DashboardPage = () => {
   const { children, isLoading: childrenLoading } = useChildren();
   const { pledgesByChild, totalPledges, totalSponsors, isLoading: pledgesLoading } = useParentPledges();
   const { deletePledge } = usePledges();
+  const { data: logsByChild, isLoading: logsLoading } = useAllChildrenReadingLogs();
+
+  // Build recent activity from real reading logs
+  const recentActivity = useMemo(() => {
+    if (!logsByChild || !children.length) return [];
+
+    // Create a map of child id to name
+    const childNameMap = new Map(children.map(c => [c.id, c.name]));
+
+    // Flatten all logs, add child name, sort by date
+    const allLogs = Object.entries(logsByChild).flatMap(([childId, logs]) =>
+      logs.map(log => ({
+        id: log.id,
+        childName: childNameMap.get(childId) || log.student_name,
+        minutes: log.minutes,
+        date: formatLogDate(log.logged_at),
+        bookTitle: log.book_title,
+        loggedAt: log.logged_at,
+      }))
+    );
+
+    // Sort by logged_at descending and take top 5
+    return allLogs
+      .sort((a, b) => new Date(b.loggedAt).getTime() - new Date(a.loggedAt).getTime())
+      .slice(0, 5);
+  }, [logsByChild, children]);
 
   useEffect(() => {
     const getUser = async () => {
@@ -209,28 +227,50 @@ const DashboardPage = () => {
                     </Button>
                   </div>
                   <div className="space-y-3">
-                    {mockRecentActivity.map((activity) => (
-                      <div
-                        key={activity.id}
-                        className="flex items-center gap-4 rounded-lg bg-muted/30 p-3"
-                      >
-                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                          <BookOpen className="h-5 w-5 text-primary" />
+                    {logsLoading ? (
+                      <>
+                        {[1, 2, 3].map((i) => (
+                          <div key={i} className="flex items-center gap-4 rounded-lg bg-muted/30 p-3">
+                            <Skeleton className="h-10 w-10 rounded-full" />
+                            <div className="flex-1 space-y-2">
+                              <Skeleton className="h-4 w-32" />
+                              <Skeleton className="h-3 w-24" />
+                            </div>
+                          </div>
+                        ))}
+                      </>
+                    ) : recentActivity.length > 0 ? (
+                      recentActivity.map((activity) => (
+                        <div
+                          key={activity.id}
+                          className="flex items-center gap-4 rounded-lg bg-muted/30 p-3"
+                        >
+                          <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                            <BookOpen className="h-5 w-5 text-primary" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-foreground text-sm md:text-base">
+                              {activity.childName} read for {activity.minutes} min
+                            </p>
+                            <p className="text-xs md:text-sm text-muted-foreground truncate">
+                              {activity.bookTitle || "No book specified"} •{" "}
+                              {activity.date}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-1 font-serif text-lg text-primary">
+                            {activity.minutes}m
+                          </div>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-foreground text-sm md:text-base">
-                            {activity.childName} read for {activity.minutes} min
-                          </p>
-                          <p className="text-xs md:text-sm text-muted-foreground truncate">
-                            {activity.bookTitle || "No book specified"} •{" "}
-                            {activity.date}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-1 font-serif text-lg text-primary">
-                          {activity.minutes}m
-                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-6 text-muted-foreground">
+                        <BookOpen className="h-8 w-8 mx-auto mb-2 opacity-40" />
+                        <p className="text-sm">No reading logged yet</p>
+                        <Button asChild size="sm" variant="link" className="mt-1">
+                          <Link to="/log-reading">Log your first session</Link>
+                        </Button>
                       </div>
-                    ))}
+                    )}
                   </div>
                 </div>
               </section>
