@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { User, Shield } from "lucide-react";
+import { User, Link as LinkIcon } from "lucide-react";
 
 export interface ChildProfile {
   id: string;
@@ -27,11 +27,7 @@ export interface ChildProfile {
   gradeInfo: string;
   className: string;
   goalMinutes: number;
-  privacy: {
-    showOnLeaderboard: boolean;
-    allowSponsorsToSeeProgress: boolean;
-    shareReadingStats: boolean;
-  };
+  sharePublicLink: boolean;
 }
 
 interface EditChildDialogProps {
@@ -89,18 +85,6 @@ export const EditChildDialog = ({
     }
   };
 
-  const updatePrivacy = (
-    field: keyof ChildProfile["privacy"],
-    value: boolean
-  ) => {
-    if (formData) {
-      setFormData({
-        ...formData,
-        privacy: { ...formData.privacy, [field]: value },
-      });
-    }
-  };
-
   if (!formData) return null;
 
   return (
@@ -112,7 +96,7 @@ export const EditChildDialog = ({
             Edit Child Profile
           </DialogTitle>
           <DialogDescription>
-            Update {child?.name}'s profile information and privacy settings.
+            Update {child?.name}'s profile information and sharing settings.
           </DialogDescription>
         </DialogHeader>
 
@@ -184,67 +168,29 @@ export const EditChildDialog = ({
 
           <Separator />
 
-          {/* Privacy Settings Section */}
+          {/* Sharing Settings Section */}
           <div className="space-y-4">
             <h4 className="text-sm font-medium text-foreground flex items-center gap-2">
-              <Shield className="h-4 w-4" />
-              Privacy Settings
+              <LinkIcon className="h-4 w-4" />
+              Sharing
             </h4>
 
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="leaderboard" className="text-sm font-normal">
-                    Show on Leaderboard
-                  </Label>
-                  <p className="text-xs text-muted-foreground">
-                    Display child's name on class and school leaderboards
-                  </p>
-                </div>
-                <Switch
-                  id="leaderboard"
-                  checked={formData.privacy.showOnLeaderboard}
-                  onCheckedChange={(checked) =>
-                    updatePrivacy("showOnLeaderboard", checked)
-                  }
-                />
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="shareLink" className="text-sm font-normal">
+                  Share Public Link
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Allow sponsors to view progress via a shareable link
+                </p>
               </div>
-
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="sponsors" className="text-sm font-normal">
-                    Sponsors Can See Progress
-                  </Label>
-                  <p className="text-xs text-muted-foreground">
-                    Allow sponsors to view detailed reading progress
-                  </p>
-                </div>
-                <Switch
-                  id="sponsors"
-                  checked={formData.privacy.allowSponsorsToSeeProgress}
-                  onCheckedChange={(checked) =>
-                    updatePrivacy("allowSponsorsToSeeProgress", checked)
-                  }
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="stats" className="text-sm font-normal">
-                    Share Reading Stats
-                  </Label>
-                  <p className="text-xs text-muted-foreground">
-                    Include in aggregate school statistics and reports
-                  </p>
-                </div>
-                <Switch
-                  id="stats"
-                  checked={formData.privacy.shareReadingStats}
-                  onCheckedChange={(checked) =>
-                    updatePrivacy("shareReadingStats", checked)
-                  }
-                />
-              </div>
+              <Switch
+                id="shareLink"
+                checked={formData.sharePublicLink}
+                onCheckedChange={(checked) =>
+                  updateField("sharePublicLink", checked)
+                }
+              />
             </div>
           </div>
         </div>

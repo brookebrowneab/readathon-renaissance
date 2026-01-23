@@ -54,7 +54,7 @@ const mockReadingLogs: Record<string, ReadingLog[]> = {
   ],
 };
 
-// Extended child type with privacy settings
+// Extended child type with sharing settings
 interface ChildData {
   id: string;
   name: string;
@@ -69,14 +69,10 @@ interface ChildData {
   longestStreak: number;
   daysActive: number;
   sponsors: number;
-  privacy: {
-    showOnLeaderboard: boolean;
-    allowSponsorsToSeeProgress: boolean;
-    shareReadingStats: boolean;
-  };
+  sharePublicLink: boolean;
 }
 
-// Mock data with privacy settings
+// Mock data with sharing settings
 const initialChildren: ChildData[] = [
   {
     id: "1",
@@ -92,11 +88,7 @@ const initialChildren: ChildData[] = [
     longestStreak: 45,
     daysActive: 18,
     sponsors: 4,
-    privacy: {
-      showOnLeaderboard: true,
-      allowSponsorsToSeeProgress: true,
-      shareReadingStats: true,
-    },
+    sharePublicLink: true,
   },
   {
     id: "2",
@@ -112,11 +104,7 @@ const initialChildren: ChildData[] = [
     longestStreak: 30,
     daysActive: 12,
     sponsors: 3,
-    privacy: {
-      showOnLeaderboard: true,
-      allowSponsorsToSeeProgress: true,
-      shareReadingStats: false,
-    },
+    sharePublicLink: true,
   },
 ];
 
@@ -152,7 +140,7 @@ const ManageChildrenPage = () => {
       gradeInfo: child.gradeInfo,
       className: child.className,
       goalMinutes: child.goalMinutes,
-      privacy: child.privacy,
+      sharePublicLink: child.sharePublicLink,
     });
     setIsEditDialogOpen(true);
   };
@@ -173,7 +161,7 @@ const ManageChildrenPage = () => {
                 .join("")
                 .toUpperCase()
                 .slice(0, 2),
-              privacy: updatedProfile.privacy,
+              sharePublicLink: updatedProfile.sharePublicLink,
             }
           : child
       )
