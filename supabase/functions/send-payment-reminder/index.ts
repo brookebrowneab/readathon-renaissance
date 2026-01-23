@@ -41,7 +41,14 @@ const handler = async (req: Request): Promise<Response> => {
 
     const results: { pledgeId: string; success: boolean; error?: string }[] = [];
 
-    for (const pledge of pledges) {
+    for (let i = 0; i < pledges.length; i++) {
+      const pledge = pledges[i];
+      
+      // Add delay between emails to avoid rate limiting (2 req/sec limit)
+      if (i > 0) {
+        await new Promise(resolve => setTimeout(resolve, 600));
+      }
+      
       const {
         pledgeId,
         recipientEmail,
