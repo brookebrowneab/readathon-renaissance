@@ -11,6 +11,7 @@ import {
   Facebook, 
   Printer,
   Plus,
+  DollarSign,
   ArrowRight,
   CheckCircle
 } from "lucide-react";
@@ -95,12 +96,17 @@ const OnboardingComplete = () => {
     }
   };
 
-  const handleAddAnother = () => {
+  const handleAddAnotherChild = () => {
     // Clear current child data but keep parent data
     sessionStorage.removeItem('childData');
     sessionStorage.removeItem('pledgeData');
     sessionStorage.removeItem('onboardingChildId');
     navigate('/onboarding/add-child');
+  };
+
+  const handleAddAnotherPledge = () => {
+    // Keep child data, just go back to pledge page
+    navigate('/onboarding/pledge');
   };
 
   const handleGoToDashboard = () => {
@@ -260,12 +266,21 @@ const OnboardingComplete = () => {
                   <Button
                     variant="outline"
                     className="w-full"
-                    onClick={handleAddAnother}
+                    onClick={handleAddAnotherChild}
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     Add Another Child
                   </Button>
                 )}
+
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={handleAddAnotherPledge}
+                >
+                  <DollarSign className="h-4 w-4 mr-2" />
+                  Add Another Pledge
+                </Button>
                 
                 <Button className="w-full" onClick={handleGoToDashboard}>
                   Go to Dashboard
