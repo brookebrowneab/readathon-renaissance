@@ -8,7 +8,6 @@ import {
   Plus,
   ArrowLeft,
   Settings,
-  UserPlus,
   Trash2,
   MoreVertical,
   Star,
@@ -202,12 +201,6 @@ const ManageChildrenPage = () => {
                                 <Link to={`/family/children/${child.id}/settings`}>
                                   <Settings className="h-4 w-4 mr-2" />
                                   Settings
-                                </Link>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem asChild>
-                                <Link to={`/children/${child.id}/invite`}>
-                                  <UserPlus className="h-4 w-4 mr-2" />
-                                  Invite Sponsors
                                 </Link>
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
