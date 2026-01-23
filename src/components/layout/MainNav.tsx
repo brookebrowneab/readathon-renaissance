@@ -87,12 +87,12 @@ const MainNav = () => {
           {/* Desktop Nav - Right side */}
           <nav className="flex items-center">
             {isAuthenticated ? (
-              <div className="flex items-center gap-6">
+              <div className="flex items-start gap-6">
                 {/* Dashboard Link */}
                 <Link
                   to="/dashboard"
                   className={cn(
-                    "text-xs font-semibold tracking-widest text-muted-foreground transition-colors hover:text-foreground hover:underline",
+                    "text-xs font-semibold tracking-widest text-muted-foreground transition-colors hover:text-foreground hover:underline py-2 px-0 m-0",
                     location.pathname === "/dashboard" && "text-foreground"
                   )}
                 >
@@ -103,7 +103,7 @@ const MainNav = () => {
                 <div className="relative group">
                   <button
                     className={cn(
-                      "text-xs font-semibold tracking-widest text-muted-foreground transition-colors hover:text-foreground",
+                      "text-xs font-semibold tracking-widest text-muted-foreground transition-colors hover:text-foreground py-2 px-0 m-0",
                       location.pathname === "/account" && "text-foreground"
                     )}
                   >
