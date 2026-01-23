@@ -1,8 +1,9 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { MainNav, Footer, BottomTabBar } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { ReadingGoalRing } from "@/components/legacy";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   BookOpen,
   Plus,
@@ -14,7 +15,13 @@ import {
   Bell,
   Heart,
 } from "lucide-react";
-
+import { useChildren } from "@/hooks/useChildren";
+import { useParentPledges } from "@/hooks/useParentPledges";
+import { usePledges } from "@/hooks/usePledges";
+import { PledgesSection } from "@/components/dashboard/PledgesSection";
+import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 // Hand-drawn border style (consistent with HomePage)
 const handDrawnBorder = {
@@ -25,41 +32,7 @@ const handDrawnBorder = {
   borderBottomLeftRadius: '15px 255px',
 };
 
-// Mock data
-const mockUser = {
-  name: "Sarah Johnson",
-  email: "sarah@example.com",
-};
-
-const mockChildren = [
-  {
-    id: "1",
-    name: "Emma Johnson",
-    avatarInitials: "EJ",
-    minutesRead: 546,
-    goalMinutes: 300,
-    gradeInfo: "3rd Grade",
-    className: "Mrs. Peterson's Class",
-    classMinutesRead: 4280,
-    gradeMinutesRead: 12450,
-    minutesToday: 25,
-    longestStreak: 45,
-  },
-  {
-    id: "2",
-    name: "Lucas Johnson",
-    avatarInitials: "LJ",
-    minutesRead: 430,
-    goalMinutes: 250,
-    gradeInfo: "1st Grade",
-    className: "Mr. Garcia's Class",
-    classMinutesRead: 3150,
-    gradeMinutesRead: 9820,
-    minutesToday: 15,
-    longestStreak: 30,
-  },
-];
-
+// Mock data for recent activity (will be replaced with real data later)
 const mockRecentActivity = [
   {
     id: "1",
@@ -75,34 +48,63 @@ const mockRecentActivity = [
     date: "Today",
     bookTitle: "Diary of a Wimpy Kid",
   },
-  {
-    id: "3",
-    childName: "Emma",
-    minutes: 30,
-    date: "Yesterday",
-    bookTitle: "Charlotte's Web",
-  },
-  {
-    id: "4",
-    childName: "Lucas",
-    minutes: 20,
-    date: "Yesterday",
-    bookTitle: null,
-  },
 ];
-
-const mockSponsorshipData = {
-  totalPledges: 145.5,
-  byChild: [
-    { name: "Emma", amount: 85.0, sponsors: 4 },
-    { name: "Lucas", amount: 60.5, sponsors: 3 },
-  ],
-};
 
 // Mock pending sponsor requests
 const mockPendingSponsorRequests = 2;
 
 const DashboardPage = () => {
+  const navigate = useNavigate();
+  const [userName, setUserName] = useState<string>("");
+  const { children, isLoading: childrenLoading } = useChildren();
+  const { pledgesByChild, totalPledges, totalSponsors, isLoading: pledgesLoading } = useParentPledges();
+  const { deletePledge } = usePledges();
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        // Try to get display name from profile or metadata
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("display_name")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        
+        setUserName(profile?.display_name || user.email?.split("@")[0] || "Reader");
+      }
+    };
+    getUser();
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    toast.success("Logged out successfully");
+    navigate("/login");
+  };
+
+  const handleDeletePledge = (pledgeId: string) => {
+    deletePledge.mutate(pledgeId);
+  };
+
+  // Calculate total minutes from real children data
+  const totalMinutes = children.reduce((sum, child) => sum + child.total_minutes, 0);
+
+  // Transform children data for ChildProgressCard
+  const transformedChildren = children.map((child) => ({
+    id: child.id,
+    name: child.name,
+    avatarInitials: child.name.split(" ").map((n) => n[0]).join("").toUpperCase(),
+    minutesRead: child.total_minutes,
+    goalMinutes: child.goal_minutes,
+    gradeInfo: child.grade_info || "Not specified",
+    className: child.class_name || "Not specified",
+    classMinutesRead: 0, // Would need additional query
+    gradeMinutesRead: 0, // Would need additional query
+    minutesToday: 0, // Would need to calculate from reading logs
+    longestStreak: 0, // Would need to calculate from reading logs
+  }));
+
   return (
     <div className="flex min-h-screen flex-col">
       <MainNav />
@@ -121,22 +123,21 @@ const DashboardPage = () => {
                       <span className="font-handwritten text-4xl text-primary">
                         Welcome,
                       </span>{" "}
-                      {mockUser.name.split(" ")[0]}!
+                      {userName || "Reader"}!
                     </h1>
                     <p className="text-muted-foreground mt-1 text-sm md:text-base">
                       Here's how your readers are doing this week
                     </p>
                   </div>
-                  <Link to="/login">
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      style={handDrawnBorder}
-                    >
-                      <LogOut className="mr-2 h-4 w-4" />
-                      Exit Demo
-                    </Button>
-                  </Link>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    style={handDrawnBorder}
+                    onClick={handleLogout}
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Log Out
+                  </Button>
                 </div>
               </div>
 
@@ -159,11 +160,32 @@ const DashboardPage = () => {
                   </Button>
                 </div>
 
-                <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-                  {mockChildren.map((child) => (
-                    <ChildProgressCard key={child.id} child={child} />
-                  ))}
-                </div>
+                {childrenLoading ? (
+                  <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+                    {[1, 2].map((i) => (
+                      <div key={i} className="bg-background p-6 shadow-md" style={handDrawnBorder}>
+                        <Skeleton className="h-40 w-full" />
+                      </div>
+                    ))}
+                  </div>
+                ) : transformedChildren.length > 0 ? (
+                  <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+                    {transformedChildren.map((child) => (
+                      <ChildProgressCard key={child.id} child={child} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="bg-background p-6 shadow-md text-center" style={handDrawnBorder}>
+                    <BookOpen className="h-10 w-10 text-muted-foreground/40 mx-auto mb-3" />
+                    <p className="text-muted-foreground mb-4">No children added yet</p>
+                    <Button asChild>
+                      <Link to="/onboarding/add-child">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Your First Reader
+                      </Link>
+                    </Button>
+                  </div>
+                )}
               </section>
 
               {/* Recent Activity */}
@@ -213,70 +235,13 @@ const DashboardPage = () => {
                 </div>
               </section>
 
-              {/* Sponsorship Summary */}
-              <section>
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="font-serif text-xl md:text-2xl font-normal text-foreground">
-                    Sponsorship Summary
-                  </h2>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    asChild
-                    className="text-muted-foreground hover:text-foreground"
-                  >
-                    <Link to="/my-pledges">
-                      View all pledges
-                      <ChevronRight className="h-4 w-4 ml-1" />
-                    </Link>
-                  </Button>
-                </div>
-                
-                <div 
-                  className="bg-background p-6 shadow-md"
-                  style={handDrawnBorder}
-                >
-                  <div className="grid grid-cols-3 gap-6">
-                    <div className="text-center">
-                      <p className="font-serif text-2xl md:text-3xl text-foreground tracking-tight">
-                        ${mockSponsorshipData.totalPledges.toFixed(2)}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1 tracking-wide">
-                        Total Pledges
-                      </p>
-                    </div>
-                    {mockSponsorshipData.byChild.map((child) => (
-                      <div 
-                        key={child.name} 
-                        className="text-center"
-                        style={{
-                          borderLeft: 'solid 1px #41403E',
-                        }}
-                      >
-                        <p className="font-serif text-2xl md:text-3xl text-foreground tracking-tight">
-                          ${child.amount.toFixed(2)}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1 tracking-wide">
-                          {child.name} ({child.sponsors})
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="mt-4">
-                  <Button 
-                    className="w-full bg-primary text-primary-foreground hover:bg-primary/90" 
-                    asChild
-                    style={handDrawnBorder}
-                  >
-                    <Link to="/invite">
-                      <UserPlus className="h-4 w-4 mr-2" />
-                      Invite More Sponsors
-                    </Link>
-                  </Button>
-                </div>
-              </section>
+              {/* Pledges & Sponsors Section */}
+              <PledgesSection
+                pledgesByChild={pledgesByChild}
+                totalPledges={totalPledges}
+                isLoading={pledgesLoading}
+                onDeletePledge={handleDeletePledge}
+              />
             </div>
 
             {/* Quick Actions Sidebar (Desktop) */}
@@ -357,14 +322,14 @@ const DashboardPage = () => {
                     <div className="flex flex-col items-center rounded-lg bg-muted/30 p-3">
                       <span className="text-xs text-muted-foreground">Total Minutes</span>
                       <span className="font-serif text-2xl text-primary">
-                        {mockChildren.reduce((sum, child) => sum + child.minutesRead, 0).toLocaleString()}
+                        {totalMinutes.toLocaleString()}
                       </span>
                     </div>
                     <div className="relative flex flex-col items-center rounded-lg bg-muted/30 p-3">
                       <Star className="absolute -right-1 -top-1 h-4 w-4 fill-accent text-accent" />
                       <span className="text-xs text-muted-foreground">Sponsors</span>
                       <span className="font-serif text-2xl text-primary">
-                        {mockSponsorshipData.byChild.reduce((sum, child) => sum + child.sponsors, 0)}
+                        {totalSponsors}
                       </span>
                     </div>
                   </div>
