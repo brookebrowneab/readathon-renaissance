@@ -52,6 +52,10 @@ const LoginPage = () => {
               <div className="space-y-6">
                 {/* Header */}
                 <div className="text-center">
+                  <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium mb-3">
+                    <Users className="h-4 w-4" />
+                    Parent / Sponsor Login
+                  </div>
                   <h1 className="font-serif text-2xl text-foreground">Welcome Back</h1>
                   <p className="text-muted-foreground">Sign in to your account</p>
                 </div>
@@ -139,7 +143,7 @@ const LoginPage = () => {
                     Parent Demo
                   </Button>
                   <div className="grid grid-cols-4 gap-2">
-                    <Link to="/student-login" className="block">
+                    <Link to="/student/login" className="block">
                       <Button variant="outline" className="w-full text-xs px-2">
                         <BookIcon size="small" variant="primary" className="mr-1" />
                         Student

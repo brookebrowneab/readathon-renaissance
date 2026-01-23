@@ -11,6 +11,7 @@ export interface Child {
   goal_minutes: number;
   share_public_link: boolean;
   total_minutes: number;
+  student_pin: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -21,6 +22,7 @@ export interface ChildInsert {
   class_name?: string | null;
   goal_minutes?: number;
   share_public_link?: boolean;
+  student_pin?: string | null;
 }
 
 export interface ChildUpdate {
@@ -31,6 +33,7 @@ export interface ChildUpdate {
   goal_minutes?: number;
   share_public_link?: boolean;
   total_minutes?: number;
+  student_pin?: string | null;
 }
 
 export const useChildren = () => {
