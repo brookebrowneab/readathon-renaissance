@@ -20,9 +20,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { User, Link as LinkIcon, Loader2, KeyRound, Eye, EyeOff } from "lucide-react";
+import { User, Link as LinkIcon, Loader2, KeyRound, Eye, EyeOff, GraduationCap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Child, ChildUpdate } from "@/hooks/useChildren";
+import { useHomeroomTeachers } from "@/hooks/useTeachers";
 
 export interface ChildProfile {
   id: string;
@@ -62,10 +63,11 @@ export const EditChildDialog = ({
   onSave,
   isSaving = false,
 }: EditChildDialogProps) => {
+  const { data: homeroomTeachers = [], isLoading: teachersLoading } = useHomeroomTeachers();
   const [formData, setFormData] = useState({
     name: "",
     gradeInfo: "",
-    className: "",
+    homeroomTeacherId: "",
     goalMinutes: 300,
     sharePublicLink: true,
     studentUsername: "",
@@ -81,7 +83,7 @@ export const EditChildDialog = ({
       setFormData({
         name: child.name,
         gradeInfo: child.grade_info || "",
-        className: child.class_name || "",
+        homeroomTeacherId: child.homeroom_teacher_id || "",
         goalMinutes: child.goal_minutes,
         sharePublicLink: child.share_public_link,
         studentUsername: child.student_username || "",
@@ -126,16 +128,20 @@ export const EditChildDialog = ({
       setIsSettingPassword(false);
     }
 
+    // Get teacher name for class_name field
+    const selectedTeacher = homeroomTeachers.find(t => t.id === formData.homeroomTeacherId);
+    
     // Save other fields
     onSave({
       id: child.id,
       name: formData.name,
       grade_info: formData.gradeInfo || null,
-      class_name: formData.className || null,
+      class_name: selectedTeacher?.name || null,
       goal_minutes: formData.goalMinutes,
       share_public_link: formData.sharePublicLink,
       student_username: formData.studentUsername || null,
       student_login_enabled: formData.studentLoginEnabled,
+      homeroom_teacher_id: formData.homeroomTeacherId || null,
     });
   };
 
@@ -154,6 +160,7 @@ export const EditChildDialog = ({
 
   if (!child) return null;
 
+  const availableTeachers = homeroomTeachers.filter(t => t.is_active);
   const hasValidCredentials = formData.studentUsername.length >= 3 && child.student_password_hash;
   const needsPassword = formData.studentUsername.length >= 3 && !child.student_password_hash && !password;
 
@@ -225,13 +232,26 @@ export const EditChildDialog = ({
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="className">Teacher/Classroom</Label>
-                <Input
-                  id="className"
-                  value={formData.className}
-                  onChange={(e) => updateField("className", e.target.value)}
-                  placeholder="e.g., Mrs. Peterson's Class"
-                />
+                <Label htmlFor="homeroomTeacher" className="flex items-center gap-1">
+                  <GraduationCap className="h-3.5 w-3.5" />
+                  Homeroom Teacher
+                </Label>
+                <Select
+                  value={formData.homeroomTeacherId}
+                  onValueChange={(value) => updateField("homeroomTeacherId", value)}
+                  disabled={teachersLoading}
+                >
+                  <SelectTrigger id="homeroomTeacher">
+                    <SelectValue placeholder={teachersLoading ? "Loading..." : "Select homeroom teacher"} />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background">
+                    {availableTeachers.map((teacher) => (
+                      <SelectItem key={teacher.id} value={teacher.id}>
+                        {teacher.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </div>

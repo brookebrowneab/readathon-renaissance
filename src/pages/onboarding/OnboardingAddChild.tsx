@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/select";
 import { User, GraduationCap, BookOpen, Shield } from "lucide-react";
 import { useChildren } from "@/hooks/useChildren";
+import { useHomeroomTeachers } from "@/hooks/useTeachers";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
@@ -29,23 +30,13 @@ const GRADES = [
   "5th Grade",
 ];
 
-// Mock teachers by grade
-const TEACHERS_BY_GRADE: Record<string, string[]> = {
-  "Pre-K": ["Ms. Adams", "Mr. Brown"],
-  "Kindergarten": ["Ms. Carter", "Mrs. Davis"],
-  "1st Grade": ["Mr. Evans", "Ms. Foster"],
-  "2nd Grade": ["Mrs. Garcia", "Mr. Harris"],
-  "3rd Grade": ["Ms. Johnson", "Mr. Kim"],
-  "4th Grade": ["Mrs. Lee", "Ms. Martinez"],
-  "5th Grade": ["Mr. Nelson", "Mrs. O'Brien"],
-};
-
 const GOAL_PRESETS = [300, 500, 750, 1000];
 
 const OnboardingAddChild = () => {
   const navigate = useNavigate();
   const { user, isLoading: authLoading } = useAuth();
   const { addChild } = useChildren();
+  const { data: homeroomTeachers = [], isLoading: teachersLoading } = useHomeroomTeachers();
   const [hasMultipleChildren, setHasMultipleChildren] = useState(false);
   const [teacherNotListed, setTeacherNotListed] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -54,7 +45,7 @@ const OnboardingAddChild = () => {
     firstName: "",
     lastName: "",
     grade: "",
-    teacher: "",
+    teacherId: "",
     customTeacher: "",
     readingGoal: 500,
     allowPublicLink: true,
@@ -72,13 +63,16 @@ const OnboardingAddChild = () => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const availableTeachers = formData.grade ? TEACHERS_BY_GRADE[formData.grade] || [] : [];
+  // Filter teachers by grade if they have a grade-like pattern in their name or no filtering needed
+  const availableTeachers = homeroomTeachers.filter(t => t.is_active);
+
+  const selectedTeacher = availableTeachers.find(t => t.id === formData.teacherId);
 
   const isFormValid = 
     formData.firstName.trim() && 
     formData.lastName.trim() && 
     formData.grade && 
-    (formData.teacher || (teacherNotListed && formData.customTeacher.trim())) &&
+    (formData.teacherId || (teacherNotListed && formData.customTeacher.trim())) &&
     formData.readingGoal > 0;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -89,7 +83,9 @@ const OnboardingAddChild = () => {
 
     try {
       const childName = `${formData.firstName} ${formData.lastName.charAt(0).toUpperCase()}.`;
-      const className = teacherNotListed ? formData.customTeacher : formData.teacher;
+      const className = teacherNotListed 
+        ? formData.customTeacher 
+        : selectedTeacher?.name || "";
       
       const result = await addChild.mutateAsync({
         name: childName,
@@ -97,6 +93,7 @@ const OnboardingAddChild = () => {
         class_name: className,
         goal_minutes: formData.readingGoal,
         share_public_link: formData.allowPublicLink,
+        homeroom_teacher_id: teacherNotListed ? null : formData.teacherId || null,
       });
 
       // Store child data for next steps in onboarding
@@ -207,8 +204,6 @@ const OnboardingAddChild = () => {
                     value={formData.grade} 
                     onValueChange={(value) => {
                       updateField("grade", value);
-                      updateField("teacher", ""); // Reset teacher when grade changes
-                      setTeacherNotListed(false);
                     }}
                   >
                     <SelectTrigger>
@@ -225,56 +220,55 @@ const OnboardingAddChild = () => {
                   </Select>
                 </FormField>
 
-                {formData.grade && (
-                  <FormField label="Teacher" htmlFor="teacher" required>
-                    {!teacherNotListed ? (
-                      <>
-                        <Select 
-                          value={formData.teacher} 
-                          onValueChange={(value) => updateField("teacher", value)}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select teacher" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {availableTeachers.map((teacher) => (
-                              <SelectItem key={teacher} value={teacher}>
-                                {teacher}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <button
-                          type="button"
-                          onClick={() => setTeacherNotListed(true)}
-                          className="text-xs text-primary hover:underline mt-1 inline-link"
-                        >
-                          Teacher not listed? Enter name manually
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <Input
-                          id="customTeacher"
-                          placeholder="Enter teacher's name"
-                          value={formData.customTeacher}
-                          onChange={(e) => updateField("customTeacher", e.target.value)}
-                          required
-                        />
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setTeacherNotListed(false);
-                            updateField("customTeacher", "");
-                          }}
-                          className="text-xs text-primary hover:underline mt-1 inline-link"
-                        >
-                          Back to teacher list
-                        </button>
-                      </>
-                    )}
-                  </FormField>
-                )}
+                <FormField label="Homeroom Teacher" htmlFor="teacher" required>
+                  {!teacherNotListed ? (
+                    <>
+                      <Select 
+                        value={formData.teacherId} 
+                        onValueChange={(value) => updateField("teacherId", value)}
+                        disabled={teachersLoading}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder={teachersLoading ? "Loading teachers..." : "Select homeroom teacher"} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {availableTeachers.map((teacher) => (
+                            <SelectItem key={teacher.id} value={teacher.id}>
+                              {teacher.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <button
+                        type="button"
+                        onClick={() => setTeacherNotListed(true)}
+                        className="text-xs text-primary hover:underline mt-1 inline-link"
+                      >
+                        Teacher not listed? Enter name manually
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <Input
+                        id="customTeacher"
+                        placeholder="Enter teacher's name"
+                        value={formData.customTeacher}
+                        onChange={(e) => updateField("customTeacher", e.target.value)}
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setTeacherNotListed(false);
+                          updateField("customTeacher", "");
+                        }}
+                        className="text-xs text-primary hover:underline mt-1 inline-link"
+                      >
+                        Back to teacher list
+                      </button>
+                    </>
+                  )}
+                </FormField>
 
                 <FormField 
                   label="Reading Goal (minutes)" 

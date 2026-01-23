@@ -14,6 +14,7 @@ export interface Child {
   student_username: string | null;
   student_password_hash: string | null;
   student_login_enabled: boolean;
+  homeroom_teacher_id: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -26,6 +27,7 @@ export interface ChildInsert {
   share_public_link?: boolean;
   student_username?: string | null;
   student_login_enabled?: boolean;
+  homeroom_teacher_id?: string | null;
 }
 
 export interface ChildUpdate {
@@ -38,6 +40,7 @@ export interface ChildUpdate {
   total_minutes?: number;
   student_username?: string | null;
   student_login_enabled?: boolean;
+  homeroom_teacher_id?: string | null;
 }
 
 export const useChildren = () => {
