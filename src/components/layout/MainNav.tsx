@@ -85,7 +85,7 @@ const MainNav = () => {
           </Link>
 
           {/* Desktop Nav - Right side */}
-          <nav className="flex items-center gap-6">
+          <nav className="flex items-center gap-6 whitespace-nowrap">
             {isAuthenticated ? (
               <>
                 {/* Dashboard Link */}
