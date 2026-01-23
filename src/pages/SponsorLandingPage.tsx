@@ -8,7 +8,9 @@ import { FormField } from "@/components/ui/form-field";
 import { useSponsorAuth } from "@/hooks/useSponsorAuth";
 import { useChildById } from "@/hooks/useChildren";
 import { usePledges } from "@/hooks/usePledges";
+import { useReadingLogs } from "@/hooks/useReadingLogs";
 import { useActiveEvent, formatEventDates } from "@/hooks/useActiveEvent";
+import { format, isToday, isYesterday, parseISO } from "date-fns";
 import { 
   CreditCard, 
   Mail, 
@@ -17,6 +19,7 @@ import {
   Users,
   Heart,
   LogOut,
+  BookOpen,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -46,8 +49,20 @@ const SponsorLandingPage = () => {
   // Fetch real data from database
   const { data: child, isLoading: childLoading, error: childError } = useChildById(childId);
   const { pledges, isLoading: pledgesLoading, addPledge } = usePledges(childId);
+  const { logs, isLoading: logsLoading } = useReadingLogs(childId);
   const { data: activeEvent } = useActiveEvent();
   const eventDates = formatEventDates(activeEvent);
+
+  // Format reading log date for display
+  const formatLogDate = (dateStr: string) => {
+    const date = parseISO(dateStr);
+    if (isToday(date)) return "Today";
+    if (isYesterday(date)) return "Yesterday";
+    return format(date, "MMM d");
+  };
+
+  // Recent reading logs (last 3 for sponsors)
+  const recentLogs = logs.slice(0, 3);
   
   // Derived data from child
   const childData = useMemo(() => ({
@@ -140,7 +155,7 @@ const SponsorLandingPage = () => {
     navigate("/");
   };
 
-  const isLoading = authLoading || childLoading || pledgesLoading;
+  const isLoading = authLoading || childLoading || pledgesLoading || logsLoading;
 
   // Show loading state
   if (isLoading) {
@@ -282,17 +297,49 @@ const SponsorLandingPage = () => {
         <div className="container">
           <div className="max-w-4xl mx-auto">
             <div className="grid md:grid-cols-5 gap-8">
-              {/* Progress Ring - Left */}
-              <div className="md:col-span-2 flex flex-col items-center justify-start">
+              {/* Progress Ring & Recent Activity - Left */}
+              <div className="md:col-span-2 flex flex-col items-center justify-start space-y-6">
                 <ReadingGoalRing 
                   progress={childData.minutesRead} 
                   goal={childData.readingGoal} 
                   size={180}
                   mobileSize={160}
                 />
-                <p className="text-sm text-muted-foreground mt-4 text-center">
+                <p className="text-sm text-muted-foreground text-center">
                   {childData.childFirstName} has already read <span className="font-handwritten text-xl text-primary">{childData.minutesRead}</span> minutes!
                 </p>
+
+                {/* Recent Activity */}
+                {recentLogs.length > 0 && (
+                  <div 
+                    className="w-full bg-background p-4 shadow-sm"
+                    style={handDrawnBorder}
+                  >
+                    <h3 className="font-serif text-lg text-foreground mb-3">
+                      Recent Reading
+                    </h3>
+                    <div className="space-y-2">
+                      {recentLogs.map((log) => (
+                        <div
+                          key={log.id}
+                          className="flex items-center gap-3 rounded-lg bg-muted/30 p-2"
+                        >
+                          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                            <BookOpen className="h-4 w-4 text-primary" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-foreground">
+                              {log.minutes} min
+                            </p>
+                            <p className="text-xs text-muted-foreground truncate">
+                              {log.book_title || "Reading"} • {formatLogDate(log.logged_at)}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Pledge Form - Right */}

@@ -1,8 +1,15 @@
+import { useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
 import { MainNav, Footer, BottomTabBar } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ReadingGoalRing } from "@/components/legacy";
+import { useChildById } from "@/hooks/useChildren";
+import { useReadingLogs } from "@/hooks/useReadingLogs";
+import { usePledges } from "@/hooks/usePledges";
+import { useActiveEvent, formatEventDates } from "@/hooks/useActiveEvent";
+import { format, isToday, isYesterday, differenceInDays, parseISO } from "date-fns";
 import {
   BookOpen,
   Plus,
@@ -27,74 +34,82 @@ const handDrawnBorder = {
   borderBottomLeftRadius: '15px 255px',
 };
 
-// Mock data (expanded from DashboardPage)
-const mockChildren: Record<string, {
-  id: string;
-  name: string;
-  avatarInitials: string;
-  minutesRead: number;
-  goalMinutes: number;
-  gradeInfo: string;
-  className: string;
-  teacher: string;
-  classMinutesRead: number;
-  gradeMinutesRead: number;
-  minutesToday: number;
-  longestStreak: number;
-  daysActive: number;
-}> = {
-  "1": {
-    id: "1",
-    name: "Emma Johnson",
-    avatarInitials: "EJ",
-    minutesRead: 245,
-    goalMinutes: 300,
-    gradeInfo: "3rd Grade",
-    className: "Mrs. Peterson's Class",
-    teacher: "Mrs. Peterson",
-    classMinutesRead: 4280,
-    gradeMinutesRead: 12450,
-    minutesToday: 25,
-    longestStreak: 45,
-    daysActive: 18,
-  },
-  "2": {
-    id: "2",
-    name: "Lucas Johnson",
-    avatarInitials: "LJ",
-    minutesRead: 180,
-    goalMinutes: 250,
-    gradeInfo: "1st Grade",
-    className: "Mr. Garcia's Class",
-    teacher: "Mr. Garcia",
-    classMinutesRead: 3150,
-    gradeMinutesRead: 9820,
-    minutesToday: 15,
-    longestStreak: 30,
-    daysActive: 12,
-  },
-};
-
-const mockReadingHistory = [
-  { id: "1", date: "Today", minutes: 25, bookTitle: "Charlotte's Web" },
-  { id: "2", date: "Yesterday", minutes: 30, bookTitle: "Charlotte's Web" },
-  { id: "3", date: "Jan 14", minutes: 20, bookTitle: "Diary of a Wimpy Kid" },
-  { id: "4", date: "Jan 13", minutes: 35, bookTitle: null },
-  { id: "5", date: "Jan 12", minutes: 15, bookTitle: "Diary of a Wimpy Kid" },
-];
-
-const mockSponsors = [
-  { id: "1", name: "Grandma Mary", relationship: "Grandmother", pledgeType: "per-minute" as const, pledgeAmount: 0.10, status: "pledged" as const },
-  { id: "2", name: "Uncle Bob", relationship: "Uncle", pledgeType: "flat" as const, pledgeAmount: 25, status: "paid" as const },
-  { id: "3", name: "Aunt Sarah", relationship: "Aunt", pledgeType: "per-minute" as const, pledgeAmount: 0.05, status: "pledged" as const },
-  { id: "4", name: "Coach Williams", relationship: "Coach", pledgeType: "flat" as const, pledgeAmount: 50, status: "pledged" as const },
-];
-
 const ChildDetailsPage = () => {
   const { id } = useParams<{ id: string }>();
-  const child = mockChildren[id || "1"];
   
-  if (!child) {
+  // Fetch real data from database
+  const { data: child, isLoading: childLoading, error: childError } = useChildById(id);
+  const { logs, isLoading: logsLoading } = useReadingLogs(id);
+  const { pledges, isLoading: pledgesLoading } = usePledges(id);
+  const { data: activeEvent } = useActiveEvent();
+  const eventDates = formatEventDates(activeEvent);
+
+  // Format reading log date for display
+  const formatLogDate = (dateStr: string) => {
+    const date = parseISO(dateStr);
+    if (isToday(date)) return "Today";
+    if (isYesterday(date)) return "Yesterday";
+    return format(date, "MMM d");
+  };
+
+  // Calculate stats from logs
+  const stats = useMemo(() => {
+    if (!logs.length) {
+      return { minutesToday: 0, longestStreak: 0, daysActive: 0 };
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Minutes read today
+    const minutesToday = logs
+      .filter(log => isToday(parseISO(log.logged_at)))
+      .reduce((sum, log) => sum + log.minutes, 0);
+
+    // Days active (unique dates with logs)
+    const uniqueDates = new Set(logs.map(log => log.logged_at));
+    const daysActive = uniqueDates.size;
+
+    // Calculate longest reading session (or streak logic could be more complex)
+    const longestStreak = Math.max(...logs.map(log => log.minutes), 0);
+
+    return { minutesToday, longestStreak, daysActive };
+  }, [logs]);
+
+  // Recent reading logs (last 5)
+  const recentLogs = logs.slice(0, 5);
+
+  // Calculate total pledged amount
+  const totalPledged = useMemo(() => {
+    if (!pledges.length || !child) return 0;
+    return pledges.reduce((sum, p) => {
+      if (p.pledge_type === "flat") return sum + Number(p.amount);
+      // For per-minute, calculate based on current minutes
+      return sum + (Number(p.amount) * child.total_minutes);
+    }, 0);
+  }, [pledges, child]);
+
+  const isLoading = childLoading || logsLoading || pledgesLoading;
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen flex-col">
+        <MainNav />
+        <main className="flex-1 bg-background-warm">
+          <div className="container py-8">
+            <div className="space-y-6">
+              <Skeleton className="h-16 w-64" />
+              <Skeleton className="h-48 w-full" />
+              <Skeleton className="h-64 w-full" />
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (childError || !child) {
     return (
       <div className="flex min-h-screen flex-col">
         <MainNav />
@@ -111,11 +126,12 @@ const ChildDetailsPage = () => {
     );
   }
 
-  // Calculate sponsor totals
-  const totalPledged = mockSponsors.reduce((sum, s) => {
-    if (s.pledgeType === "flat") return sum + s.pledgeAmount;
-    return sum + (s.pledgeAmount * child.minutesRead);
-  }, 0);
+  const avatarInitials = child.name
+    .split(' ')
+    .map(n => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -140,14 +156,16 @@ const ChildDetailsPage = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center font-serif text-2xl text-primary">
-                      {child.avatarInitials}
+                      {avatarInitials}
                     </div>
                     <div>
                       <h1 className="font-serif text-3xl font-normal tracking-tight text-foreground md:text-4xl">
                         {child.name}
                       </h1>
                       <p className="text-muted-foreground text-sm md:text-base">
-                        {child.gradeInfo} • {child.className}
+                        {child.grade_info && `${child.grade_info}`}
+                        {child.grade_info && child.class_name && " • "}
+                        {child.class_name}
                       </p>
                     </div>
                   </div>
@@ -172,33 +190,39 @@ const ChildDetailsPage = () => {
                   
                   <div className="flex flex-col md:flex-row items-center gap-8">
                     <div className="flex justify-center">
-                      <ReadingGoalRing progress={child.minutesRead} goal={child.goalMinutes} size={140} />
+                      <ReadingGoalRing progress={child.total_minutes} goal={child.goal_minutes} size={140} />
                     </div>
                     
                     <div className="flex-1 grid grid-cols-2 gap-4">
                       <div className="flex flex-col items-center rounded-lg bg-accent/10 p-4 border border-accent/20">
                         <Clock className="h-5 w-5 text-accent mb-1" />
                         <span className="text-xs text-muted-foreground">Read Today</span>
-                        <span className="font-serif text-2xl text-accent">{child.minutesToday} min</span>
+                        <span className="font-serif text-2xl text-accent">{stats.minutesToday} min</span>
                       </div>
                       <div className="relative flex flex-col items-center rounded-lg bg-muted/30 p-4">
                         <Star className="absolute -right-1 -top-1 h-4 w-4 fill-accent text-accent" />
                         <Flame className="h-5 w-5 text-primary mb-1" />
-                        <span className="text-xs text-muted-foreground">Longest Streak</span>
-                        <span className="font-serif text-2xl text-primary">{child.longestStreak} min</span>
+                        <span className="text-xs text-muted-foreground">Best Session</span>
+                        <span className="font-serif text-2xl text-primary">{stats.longestStreak} min</span>
                       </div>
                       <div className="flex flex-col items-center rounded-lg bg-muted/30 p-4">
                         <Calendar className="h-5 w-5 text-muted-foreground mb-1" />
                         <span className="text-xs text-muted-foreground">Days Active</span>
-                        <span className="font-serif text-2xl text-foreground">{child.daysActive}</span>
+                        <span className="font-serif text-2xl text-foreground">{stats.daysActive}</span>
                       </div>
                       <div className="flex flex-col items-center rounded-lg bg-muted/30 p-4">
                         <BookOpen className="h-5 w-5 text-muted-foreground mb-1" />
                         <span className="text-xs text-muted-foreground">Goal</span>
-                        <span className="font-serif text-2xl text-foreground">{child.goalMinutes} min</span>
+                        <span className="font-serif text-2xl text-foreground">{child.goal_minutes} min</span>
                       </div>
                     </div>
                   </div>
+
+                  {eventDates.daysRemaining > 0 && (
+                    <p className="text-center text-sm text-muted-foreground mt-4">
+                      {eventDates.daysRemaining} days left in the read-a-thon
+                    </p>
+                  )}
                 </div>
               </section>
 
@@ -213,36 +237,44 @@ const ChildDetailsPage = () => {
                       Reading Log
                     </h2>
                     <Button variant="ghost" size="sm" asChild className="text-muted-foreground hover:text-foreground">
-                      <Link to="/reading-logs">
+                      <Link to="/reading-logs/approve">
                         View All
                         <ChevronRight className="h-4 w-4 ml-1" />
                       </Link>
                     </Button>
                   </div>
                   
-                  <div className="space-y-3 mb-4">
-                    {mockReadingHistory.map((entry) => (
-                      <div
-                        key={entry.id}
-                        className="flex items-center gap-4 rounded-lg bg-muted/30 p-3"
-                      >
-                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                          <BookOpen className="h-5 w-5 text-primary" />
+                  {recentLogs.length === 0 ? (
+                    <div className="text-center py-8">
+                      <BookOpen className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
+                      <p className="text-muted-foreground">No reading logged yet</p>
+                      <p className="text-sm text-muted-foreground">Start logging reading to track progress!</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3 mb-4">
+                      {recentLogs.map((entry) => (
+                        <div
+                          key={entry.id}
+                          className="flex items-center gap-4 rounded-lg bg-muted/30 p-3"
+                        >
+                          <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                            <BookOpen className="h-5 w-5 text-primary" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-foreground text-sm md:text-base">
+                              {entry.minutes} minutes
+                            </p>
+                            <p className="text-xs md:text-sm text-muted-foreground truncate">
+                              {entry.book_title || "No book specified"} • {formatLogDate(entry.logged_at)}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-1 font-serif text-lg text-primary">
+                            {entry.minutes}m
+                          </div>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-foreground text-sm md:text-base">
-                            {entry.minutes} minutes
-                          </p>
-                          <p className="text-xs md:text-sm text-muted-foreground truncate">
-                            {entry.bookTitle || "No book specified"} • {entry.date}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-1 font-serif text-lg text-primary">
-                          {entry.minutes}m
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                   
                   <Button className="w-full" asChild>
                     <Link to={`/log-reading?child=${child.id}`}>
@@ -263,42 +295,54 @@ const ChildDetailsPage = () => {
                     <h2 className="font-serif text-xl md:text-2xl text-foreground">
                       Sponsors
                       <Badge variant="secondary" className="ml-2">
-                        {mockSponsors.length}
+                        {pledges.length}
                       </Badge>
                     </h2>
                   </div>
                   
-                  <div className="space-y-3 mb-4">
-                    {mockSponsors.map((sponsor) => (
-                      <div
-                        key={sponsor.id}
-                        className="flex items-center gap-4 rounded-lg bg-muted/30 p-3"
-                      >
-                        <div className="h-10 w-10 rounded-full bg-secondary/20 flex items-center justify-center shrink-0">
-                          <Users className="h-5 w-5 text-secondary-foreground" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-foreground text-sm md:text-base">
-                            {sponsor.name}
-                          </p>
-                          <p className="text-xs md:text-sm text-muted-foreground">
-                            {sponsor.relationship} • {sponsor.pledgeType === "per-minute" ? `$${sponsor.pledgeAmount.toFixed(2)}/min` : `$${sponsor.pledgeAmount} flat`}
-                          </p>
-                        </div>
-                        <Badge variant={sponsor.status === "paid" ? "default" : "outline"}>
-                          {sponsor.status === "paid" ? "Paid" : "Pledged"}
-                        </Badge>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 rounded-lg bg-primary/5 border border-primary/10 mb-4">
-                    <div>
-                      <p className="text-xs text-muted-foreground">Total Pledged</p>
-                      <p className="font-serif text-2xl text-primary">${totalPledged.toFixed(2)}</p>
+                  {pledges.length === 0 ? (
+                    <div className="text-center py-8">
+                      <Users className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
+                      <p className="text-muted-foreground">No sponsors yet</p>
+                      <p className="text-sm text-muted-foreground">Invite family and friends to sponsor {child.name.split(' ')[0]}!</p>
                     </div>
-                    <DollarSign className="h-8 w-8 text-primary/30" />
-                  </div>
+                  ) : (
+                    <div className="space-y-3 mb-4">
+                      {pledges.map((pledge) => (
+                        <div
+                          key={pledge.id}
+                          className="flex items-center gap-4 rounded-lg bg-muted/30 p-3"
+                        >
+                          <div className="h-10 w-10 rounded-full bg-secondary/20 flex items-center justify-center shrink-0">
+                            <Users className="h-5 w-5 text-secondary-foreground" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-foreground text-sm md:text-base">
+                              Sponsor
+                            </p>
+                            <p className="text-xs md:text-sm text-muted-foreground">
+                              {pledge.pledge_type === "per_minute" 
+                                ? `$${Number(pledge.amount).toFixed(2)}/min` 
+                                : `$${Number(pledge.amount).toFixed(2)} flat`}
+                            </p>
+                          </div>
+                          <Badge variant={pledge.is_paid ? "default" : "outline"}>
+                            {pledge.is_paid ? "Paid" : "Pledged"}
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {pledges.length > 0 && (
+                    <div className="flex items-center justify-between p-4 rounded-lg bg-primary/5 border border-primary/10 mb-4">
+                      <div>
+                        <p className="text-xs text-muted-foreground">Total Pledged</p>
+                        <p className="font-serif text-2xl text-primary">${totalPledged.toFixed(2)}</p>
+                      </div>
+                      <DollarSign className="h-8 w-8 text-primary/30" />
+                    </div>
+                  )}
                   
                   <Button variant="outline" className="w-full" asChild>
                     <Link to={`/children/${child.id}/invite`}>
@@ -306,38 +350,6 @@ const ChildDetailsPage = () => {
                       Invite More Sponsors
                     </Link>
                   </Button>
-                </div>
-              </section>
-
-              {/* Class & Grade Context */}
-              <section>
-                <div 
-                  className="bg-background p-6 shadow-md"
-                  style={handDrawnBorder}
-                >
-                  <h2 className="font-serif text-xl md:text-2xl text-foreground mb-4">
-                    Class & Grade
-                  </h2>
-                  
-                  <div className="space-y-4">
-                    <div className="text-center pb-4 border-b border-border">
-                      <p className="text-muted-foreground text-sm">{child.className}</p>
-                      <p className="text-xs text-muted-foreground">Teacher: {child.teacher}</p>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="flex flex-col items-center rounded-lg bg-muted/20 p-4">
-                        <span className="text-xs text-muted-foreground uppercase tracking-wide">Class Total</span>
-                        <span className="font-serif text-2xl text-foreground">{child.classMinutesRead.toLocaleString()}</span>
-                        <span className="text-xs text-muted-foreground">minutes</span>
-                      </div>
-                      <div className="flex flex-col items-center rounded-lg bg-muted/20 p-4">
-                        <span className="text-xs text-muted-foreground uppercase tracking-wide">Grade Total</span>
-                        <span className="font-serif text-2xl text-foreground">{child.gradeMinutesRead.toLocaleString()}</span>
-                        <span className="text-xs text-muted-foreground">minutes</span>
-                      </div>
-                    </div>
-                  </div>
                 </div>
               </section>
             </div>
@@ -383,12 +395,12 @@ const ChildDetailsPage = () => {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="flex flex-col items-center rounded-lg bg-muted/30 p-3">
                       <span className="text-xs text-muted-foreground">Total Minutes</span>
-                      <span className="font-serif text-2xl text-primary">{child.minutesRead}</span>
+                      <span className="font-serif text-2xl text-primary">{child.total_minutes}</span>
                     </div>
                     <div className="relative flex flex-col items-center rounded-lg bg-muted/30 p-3">
                       <Star className="absolute -right-1 -top-1 h-4 w-4 fill-accent text-accent" />
                       <span className="text-xs text-muted-foreground">Sponsors</span>
-                      <span className="font-serif text-2xl text-primary">{mockSponsors.length}</span>
+                      <span className="font-serif text-2xl text-primary">{pledges.length}</span>
                     </div>
                   </div>
                 </div>
