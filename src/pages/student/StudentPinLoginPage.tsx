@@ -4,10 +4,17 @@ import { PublicLayout } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormField } from "@/components/ui/form-field";
-import { BookOpen, User, KeyRound, ArrowLeft, Eye, EyeOff } from "lucide-react";
+import { BookOpen, User, KeyRound, ArrowLeft, Eye, EyeOff, Mail, CheckCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const StudentLoginPage = () => {
   const navigate = useNavigate();
@@ -16,6 +23,12 @@ const StudentLoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | undefined>();
+  
+  // Forgot password state
+  const [forgotOpen, setForgotOpen] = useState(false);
+  const [forgotUsername, setForgotUsername] = useState("");
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotSent, setForgotSent] = useState(false);
 
   const handleUsernameChange = (value: string) => {
     // Lowercase, no spaces
@@ -81,6 +94,41 @@ const StudentLoginPage = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (forgotUsername.length < 3) {
+      toast.error("Please enter your username");
+      return;
+    }
+
+    setForgotLoading(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke("student-forgot-password", {
+        body: { username: forgotUsername },
+      });
+
+      if (error) {
+        console.error("Forgot password error:", error);
+        toast.error("Something went wrong. Please try again.");
+      } else {
+        setForgotSent(true);
+      }
+    } catch (err) {
+      console.error("Forgot password error:", err);
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setForgotLoading(false);
+    }
+  };
+
+  const openForgotDialog = () => {
+    setForgotUsername(username); // Pre-fill with current username
+    setForgotSent(false);
+    setForgotOpen(true);
   };
 
   return (
@@ -176,8 +224,15 @@ const StudentLoginPage = () => {
 
               {/* Help text */}
               <div className="text-center space-y-3">
+                <button
+                  type="button"
+                  onClick={openForgotDialog}
+                  className="text-sm text-primary hover:underline"
+                >
+                  Forgot your password?
+                </button>
                 <p className="text-sm text-muted-foreground">
-                  Don't know your login? Ask your parent!
+                  Don't have a login yet? Ask your parent to set one up!
                 </p>
                 <Link
                   to="/login"
@@ -190,6 +245,85 @@ const StudentLoginPage = () => {
             </div>
           </div>
         </div>
+
+        {/* Forgot Password Dialog */}
+        <Dialog open={forgotOpen} onOpenChange={setForgotOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <KeyRound className="h-5 w-5 text-primary" />
+                Forgot Password?
+              </DialogTitle>
+              <DialogDescription>
+                {forgotSent 
+                  ? "We've sent a message to your parent!"
+                  : "Enter your username and we'll let your parent know you need help."
+                }
+              </DialogDescription>
+            </DialogHeader>
+
+            {forgotSent ? (
+              <div className="py-6 text-center space-y-4">
+                <div className="w-16 h-16 rounded-full bg-success/10 flex items-center justify-center mx-auto">
+                  <CheckCircle className="h-8 w-8 text-success" />
+                </div>
+                <div className="space-y-2">
+                  <p className="font-medium">Email Sent!</p>
+                  <p className="text-sm text-muted-foreground">
+                    Your parent will get an email with instructions to reset your password.
+                    Ask them to check their inbox!
+                  </p>
+                </div>
+                <Button onClick={() => setForgotOpen(false)} className="w-full">
+                  Got it!
+                </Button>
+              </div>
+            ) : (
+              <form onSubmit={handleForgotPassword} className="space-y-4">
+                <FormField label="Your Username" htmlFor="forgot-username" required>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      id="forgot-username"
+                      type="text"
+                      placeholder="Enter your username"
+                      value={forgotUsername}
+                      onChange={(e) => setForgotUsername(e.target.value.toLowerCase().replace(/\s/g, ""))}
+                      className="pl-11"
+                      autoComplete="username"
+                      autoCapitalize="off"
+                    />
+                  </div>
+                </FormField>
+
+                <div className="flex gap-2">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => setForgotOpen(false)}
+                    className="flex-1"
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    disabled={forgotUsername.length < 3 || forgotLoading}
+                    className="flex-1"
+                  >
+                    {forgotLoading ? (
+                      "Sending..."
+                    ) : (
+                      <>
+                        <Mail className="h-4 w-4 mr-2" />
+                        Notify Parent
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </form>
+            )}
+          </DialogContent>
+        </Dialog>
       </section>
     </PublicLayout>
   );
