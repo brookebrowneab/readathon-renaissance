@@ -66,6 +66,18 @@ const TeacherLoginPage = () => {
           if (!updateError) {
             teacherRecord = { ...teacherByEmail, user_id: user.id };
             toast.success("Your account has been linked to your teacher profile!");
+            
+            // Send welcome email
+            const dashboardUrl = `${window.location.origin}/teacher`;
+            supabase.functions.invoke("send-teacher-welcome", {
+              body: {
+                teacherName: teacherByEmail.name,
+                teacherEmail: teacherByEmail.email,
+                dashboardUrl,
+              },
+            }).catch((err) => {
+              console.error("Failed to send welcome email:", err);
+            });
           }
         }
       }
