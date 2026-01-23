@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -60,125 +61,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { handDrawnBorder } from "@/lib/admin-styles";
 import { cn } from "@/lib/utils";
-
-type PaymentStatus = "completed" | "pending" | "failed" | "refunded";
-type PaymentMethod = "card" | "cash" | "check" | "online";
-
-interface Payment {
-  id: string;
-  date: string;
-  payerName: string;
-  payerEmail: string;
-  amount: number;
-  status: PaymentStatus;
-  method: PaymentMethod;
-  pledgeId?: string;
-  studentName?: string;
-  transactionId?: string;
-  receiptUrl?: string;
-}
-
-interface OutstandingPledge {
-  id: string;
-  sponsorName: string;
-  sponsorEmail: string;
-  studentName: string;
-  amount: number;
-  pledgeDate: string;
-  daysSincePledge: number;
-  remindersSent: number;
-}
-
-// Mock data
-const mockPayments: Payment[] = [
-  {
-    id: "1",
-    date: "2024-01-15",
-    payerName: "John Smith",
-    payerEmail: "john@example.com",
-    amount: 50.00,
-    status: "completed",
-    method: "card",
-    studentName: "Emma Smith",
-    transactionId: "sq_txn_12345",
-    receiptUrl: "https://square.com/receipt/12345",
-  },
-  {
-    id: "2",
-    date: "2024-01-14",
-    payerName: "Sarah Johnson",
-    payerEmail: "sarah@example.com",
-    amount: 25.00,
-    status: "pending",
-    method: "online",
-    studentName: "Michael Johnson",
-  },
-  {
-    id: "3",
-    date: "2024-01-13",
-    payerName: "Robert Davis",
-    payerEmail: "robert@example.com",
-    amount: 100.00,
-    status: "completed",
-    method: "check",
-    studentName: "Sophia Davis",
-    transactionId: "chk_67890",
-  },
-  {
-    id: "4",
-    date: "2024-01-12",
-    payerName: "Emily Wilson",
-    payerEmail: "emily@example.com",
-    amount: 75.00,
-    status: "failed",
-    method: "card",
-    studentName: "Oliver Wilson",
-  },
-  {
-    id: "5",
-    date: "2024-01-11",
-    payerName: "Michael Brown",
-    payerEmail: "michael@example.com",
-    amount: 30.00,
-    status: "refunded",
-    method: "card",
-    studentName: "Ava Brown",
-    transactionId: "sq_txn_11111",
-  },
-];
-
-const mockOutstandingPledges: OutstandingPledge[] = [
-  {
-    id: "1",
-    sponsorName: "Jennifer Lee",
-    sponsorEmail: "jennifer@example.com",
-    studentName: "Lucas Lee",
-    amount: 45.00,
-    pledgeDate: "2024-01-05",
-    daysSincePledge: 10,
-    remindersSent: 1,
-  },
-  {
-    id: "2",
-    sponsorName: "David Martinez",
-    sponsorEmail: "david@example.com",
-    studentName: "Isabella Martinez",
-    amount: 60.00,
-    pledgeDate: "2024-01-02",
-    daysSincePledge: 13,
-    remindersSent: 2,
-  },
-  {
-    id: "3",
-    sponsorName: "Amanda Taylor",
-    sponsorEmail: "amanda@example.com",
-    studentName: "Ethan Taylor",
-    amount: 35.00,
-    pledgeDate: "2024-01-08",
-    daysSincePledge: 7,
-    remindersSent: 0,
-  },
-];
+import { useAdminFinance, Payment, PaymentStatus, PaymentMethod } from "@/hooks/useAdminFinance";
+import { format } from "date-fns";
 
 const statusConfig: Record<PaymentStatus, { label: string; variant: "default" | "secondary" | "destructive" | "outline"; icon: React.ReactNode }> = {
   completed: { label: "Completed", variant: "default", icon: <CheckCircle2 className="h-3 w-3" /> },
@@ -196,6 +80,17 @@ const methodLabels: Record<PaymentMethod, string> = {
 
 export default function AdminFinancePage() {
   const { toast } = useToast();
+  const { 
+    payments, 
+    outstandingPledges, 
+    summary, 
+    isLoading, 
+    markAsPaid, 
+    markAsUnpaid,
+    bulkMarkAsPaid,
+    isUpdating 
+  } = useAdminFinance();
+
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [dateFrom, setDateFrom] = useState("");
@@ -206,20 +101,16 @@ export default function AdminFinancePage() {
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [isRefundDialogOpen, setIsRefundDialogOpen] = useState(false);
 
-  // Financial summary calculations
-  const totalPledged = 2450.00;
-  const totalCollected = 1875.00;
-  const outstanding = totalPledged - totalCollected;
-  const collectionRate = Math.round((totalCollected / totalPledged) * 100);
-
   // Filter payments
-  const filteredPayments = mockPayments.filter((payment) => {
+  const filteredPayments = payments.filter((payment) => {
     const matchesSearch =
       payment.payerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      payment.payerEmail.toLowerCase().includes(searchQuery.toLowerCase());
+      payment.payerEmail.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      payment.studentName.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === "all" || payment.status === statusFilter;
-    const matchesDateFrom = !dateFrom || payment.date >= dateFrom;
-    const matchesDateTo = !dateTo || payment.date <= dateTo;
+    const paymentDate = format(new Date(payment.date), 'yyyy-MM-dd');
+    const matchesDateFrom = !dateFrom || paymentDate >= dateFrom;
+    const matchesDateTo = !dateTo || paymentDate <= dateTo;
     return matchesSearch && matchesStatus && matchesDateFrom && matchesDateTo;
   });
 
@@ -246,6 +137,29 @@ export default function AdminFinancePage() {
     setSelectedPledges([]);
   };
 
+  const handleMarkAsPaid = async (pledgeId: string) => {
+    await markAsPaid(pledgeId);
+    setSelectedPayment(null);
+  };
+
+  const handleMarkAsUnpaid = async (pledgeId: string) => {
+    await markAsUnpaid(pledgeId);
+    setSelectedPayment(null);
+  };
+
+  const handleBulkMarkAsPaid = async () => {
+    if (selectedPledges.length === 0) {
+      toast({
+        title: "No Pledges Selected",
+        description: "Please select at least one pledge to mark as paid.",
+        variant: "destructive",
+      });
+      return;
+    }
+    await bulkMarkAsPaid(selectedPledges);
+    setSelectedPledges([]);
+  };
+
   const handleRefund = () => {
     toast({
       title: "Refund Processed",
@@ -266,9 +180,30 @@ export default function AdminFinancePage() {
 
   const handleExport = (e: React.FormEvent) => {
     e.preventDefault();
+    // Generate CSV
+    const headers = ['Date', 'Sponsor', 'Email', 'Student', 'Amount', 'Status', 'Method'];
+    const rows = payments.map(p => [
+      format(new Date(p.date), 'yyyy-MM-dd'),
+      p.payerName,
+      p.payerEmail,
+      p.studentName,
+      p.amount.toFixed(2),
+      p.status,
+      methodLabels[p.method],
+    ]);
+    
+    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `financial-report-${format(new Date(), 'yyyy-MM-dd')}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+
     toast({
-      title: "Export Started",
-      description: "Your financial report is being generated.",
+      title: "Export Complete",
+      description: "Your financial report has been downloaded.",
     });
     setIsExportOpen(false);
   };
@@ -282,10 +217,10 @@ export default function AdminFinancePage() {
   };
 
   const toggleAllPledges = () => {
-    if (selectedPledges.length === mockOutstandingPledges.length) {
+    if (selectedPledges.length === outstandingPledges.length) {
       setSelectedPledges([]);
     } else {
-      setSelectedPledges(mockOutstandingPledges.map((p) => p.id));
+      setSelectedPledges(outstandingPledges.map((p) => p.id));
     }
   };
 
@@ -343,7 +278,7 @@ export default function AdminFinancePage() {
                   <SelectValue placeholder="Select a pledge" />
                 </SelectTrigger>
                 <SelectContent>
-                  {mockOutstandingPledges.map((pledge) => (
+                  {outstandingPledges.map((pledge) => (
                     <SelectItem key={pledge.id} value={pledge.id}>
                       {pledge.sponsorName} - ${pledge.amount.toFixed(2)} ({pledge.studentName})
                     </SelectItem>
@@ -433,6 +368,23 @@ export default function AdminFinancePage() {
     </>
   );
 
+  if (isLoading) {
+    return (
+      <AdminPageLayout 
+        title="Financial Management" 
+        subtitle="Track payments, pledges, and generate reports"
+        actions={headerActions}
+      >
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
+          {[1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} className="h-28" />
+          ))}
+        </div>
+        <Skeleton className="h-96" />
+      </AdminPageLayout>
+    );
+  }
+
   return (
     <AdminPageLayout 
       title="Financial Management" 
@@ -446,7 +398,7 @@ export default function AdminFinancePage() {
               <p className="text-sm text-muted-foreground">Total Pledged</p>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </div>
-            <p className="font-handwritten text-2xl text-primary">${totalPledged.toFixed(2)}</p>
+            <p className="font-handwritten text-2xl text-primary">${summary.totalPledged.toFixed(2)}</p>
             <p className="text-xs text-muted-foreground mt-1">From all sponsors</p>
           </div>
           <div className="bg-background p-4" style={handDrawnBorder}>
@@ -454,7 +406,7 @@ export default function AdminFinancePage() {
               <p className="text-sm text-muted-foreground">Total Collected</p>
               <CheckCircle2 className="h-4 w-4 text-accent" />
             </div>
-            <p className="font-handwritten text-2xl text-accent">${totalCollected.toFixed(2)}</p>
+            <p className="font-handwritten text-2xl text-accent">${summary.totalCollected.toFixed(2)}</p>
             <p className="text-xs text-muted-foreground mt-1">Payments received</p>
           </div>
           <div className="bg-background p-4" style={handDrawnBorder}>
@@ -462,7 +414,7 @@ export default function AdminFinancePage() {
               <p className="text-sm text-muted-foreground">Outstanding</p>
               <AlertCircle className="h-4 w-4 text-warning" />
             </div>
-            <p className="font-handwritten text-2xl text-warning">${outstanding.toFixed(2)}</p>
+            <p className="font-handwritten text-2xl text-warning">${summary.outstanding.toFixed(2)}</p>
             <p className="text-xs text-muted-foreground mt-1">Awaiting payment</p>
           </div>
           <div className="bg-background p-4" style={handDrawnBorder}>
@@ -470,11 +422,11 @@ export default function AdminFinancePage() {
               <p className="text-sm text-muted-foreground">Collection Rate</p>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </div>
-            <p className="font-handwritten text-2xl text-primary">{collectionRate}%</p>
+            <p className="font-handwritten text-2xl text-primary">{summary.collectionRate}%</p>
             <div className="mt-2 h-2 w-full bg-muted rounded-full overflow-hidden">
               <div 
                 className="h-full bg-primary transition-all"
-                style={{ width: `${collectionRate}%` }}
+                style={{ width: `${summary.collectionRate}%` }}
               />
             </div>
           </div>
@@ -483,11 +435,11 @@ export default function AdminFinancePage() {
         {/* Tabs for Payments and Outstanding Pledges */}
         <Tabs defaultValue="payments" className="space-y-4">
           <TabsList>
-            <TabsTrigger value="payments">All Payments</TabsTrigger>
+            <TabsTrigger value="payments">All Payments ({payments.length})</TabsTrigger>
             <TabsTrigger value="outstanding">
               Outstanding Pledges
               <Badge variant="secondary" className="ml-2">
-                {mockOutstandingPledges.length}
+                {outstandingPledges.length}
               </Badge>
             </TabsTrigger>
           </TabsList>
@@ -544,7 +496,7 @@ export default function AdminFinancePage() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Date</TableHead>
-                      <TableHead>Payer</TableHead>
+                      <TableHead>Sponsor</TableHead>
                       <TableHead>Student</TableHead>
                       <TableHead>Amount</TableHead>
                       <TableHead>Method</TableHead>
@@ -556,7 +508,7 @@ export default function AdminFinancePage() {
                     {filteredPayments.map((payment) => (
                       <TableRow key={payment.id}>
                         <TableCell className="font-medium">
-                          {new Date(payment.date).toLocaleDateString()}
+                          {format(new Date(payment.date), 'MMM d, yyyy')}
                         </TableCell>
                         <TableCell>
                           <div>
@@ -564,9 +516,14 @@ export default function AdminFinancePage() {
                             <p className="text-sm text-muted-foreground">{payment.payerEmail}</p>
                           </div>
                         </TableCell>
-                        <TableCell>{payment.studentName || "—"}</TableCell>
+                        <TableCell>{payment.studentName}</TableCell>
                         <TableCell className="font-medium">
                           ${payment.amount.toFixed(2)}
+                          {payment.pledgeType === 'per_minute' && (
+                            <span className="text-xs text-muted-foreground block">
+                              ({payment.childMinutes} min)
+                            </span>
+                          )}
                         </TableCell>
                         <TableCell>{methodLabels[payment.method]}</TableCell>
                         <TableCell>
@@ -603,75 +560,102 @@ export default function AdminFinancePage() {
           <TabsContent value="outstanding" className="space-y-4">
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                   <CardTitle>Outstanding Pledges</CardTitle>
-                  <Button
-                    variant="outline"
-                    onClick={handleBulkReminder}
-                    disabled={selectedPledges.length === 0}
-                  >
-                    <Mail className="mr-2 h-4 w-4" />
-                    Send Bulk Reminder ({selectedPledges.length})
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={handleBulkReminder}
+                      disabled={selectedPledges.length === 0}
+                    >
+                      <Mail className="mr-2 h-4 w-4" />
+                      Send Reminder ({selectedPledges.length})
+                    </Button>
+                    <Button
+                      onClick={handleBulkMarkAsPaid}
+                      disabled={selectedPledges.length === 0 || isUpdating}
+                    >
+                      <CheckCircle2 className="mr-2 h-4 w-4" />
+                      Mark Paid ({selectedPledges.length})
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-12">
-                        <Checkbox
-                          checked={selectedPledges.length === mockOutstandingPledges.length}
-                          onCheckedChange={toggleAllPledges}
-                        />
-                      </TableHead>
-                      <TableHead>Sponsor</TableHead>
-                      <TableHead>Student</TableHead>
-                      <TableHead>Amount</TableHead>
-                      <TableHead>Days Since Pledge</TableHead>
-                      <TableHead>Reminders Sent</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {mockOutstandingPledges.map((pledge) => (
-                      <TableRow key={pledge.id}>
-                        <TableCell>
+                {outstandingPledges.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <CheckCircle2 className="h-12 w-12 mx-auto mb-3 opacity-50 text-success" />
+                    <p className="font-medium">All payments collected!</p>
+                    <p className="text-sm mt-1">No outstanding pledges at this time.</p>
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-12">
                           <Checkbox
-                            checked={selectedPledges.includes(pledge.id)}
-                            onCheckedChange={() => togglePledgeSelection(pledge.id)}
+                            checked={selectedPledges.length === outstandingPledges.length && outstandingPledges.length > 0}
+                            onCheckedChange={toggleAllPledges}
                           />
-                        </TableCell>
-                        <TableCell>
-                          <div>
-                            <p className="font-medium">{pledge.sponsorName}</p>
-                            <p className="text-sm text-muted-foreground">{pledge.sponsorEmail}</p>
-                          </div>
-                        </TableCell>
-                        <TableCell>{pledge.studentName}</TableCell>
-                        <TableCell className="font-medium">
-                          ${pledge.amount.toFixed(2)}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={pledge.daysSincePledge > 10 ? "destructive" : "secondary"}>
-                            {pledge.daysSincePledge} days
-                          </Badge>
-                        </TableCell>
-                        <TableCell>{pledge.remindersSent}</TableCell>
-                        <TableCell className="text-right">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleSendReminder(pledge.id)}
-                          >
-                            <Send className="h-4 w-4 mr-1" />
-                            Remind
-                          </Button>
-                        </TableCell>
+                        </TableHead>
+                        <TableHead>Sponsor</TableHead>
+                        <TableHead>Student</TableHead>
+                        <TableHead>Amount</TableHead>
+                        <TableHead>Days Outstanding</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {outstandingPledges.map((pledge) => (
+                        <TableRow key={pledge.id}>
+                          <TableCell>
+                            <Checkbox
+                              checked={selectedPledges.includes(pledge.id)}
+                              onCheckedChange={() => togglePledgeSelection(pledge.id)}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <div>
+                              <p className="font-medium">{pledge.sponsorName}</p>
+                              <p className="text-sm text-muted-foreground">{pledge.sponsorEmail}</p>
+                            </div>
+                          </TableCell>
+                          <TableCell>{pledge.studentName}</TableCell>
+                          <TableCell className="font-medium">
+                            ${pledge.amount.toFixed(2)}
+                            {pledge.pledgeType === 'per_minute' && (
+                              <span className="text-xs text-muted-foreground block">
+                                ({pledge.childMinutes} min)
+                              </span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={pledge.daysSincePledge > 10 ? "destructive" : "secondary"}>
+                              {pledge.daysSincePledge} days
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right space-x-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleSendReminder(pledge.id)}
+                            >
+                              <Send className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => markAsPaid(pledge.id)}
+                              disabled={isUpdating}
+                            >
+                              <CheckCircle2 className="h-4 w-4 text-success" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -700,7 +684,7 @@ export default function AdminFinancePage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label className="text-muted-foreground">Date</Label>
-                    <p className="font-medium">{new Date(selectedPayment.date).toLocaleDateString()}</p>
+                    <p className="font-medium">{format(new Date(selectedPayment.date), 'MMM d, yyyy')}</p>
                   </div>
                   <div>
                     <Label className="text-muted-foreground">Method</Label>
@@ -709,65 +693,77 @@ export default function AdminFinancePage() {
                 </div>
 
                 <div>
-                  <Label className="text-muted-foreground">Payer</Label>
+                  <Label className="text-muted-foreground">Sponsor</Label>
                   <p className="font-medium">{selectedPayment.payerName}</p>
                   <p className="text-sm text-muted-foreground">{selectedPayment.payerEmail}</p>
                 </div>
 
-                {selectedPayment.studentName && (
-                  <div>
-                    <Label className="text-muted-foreground">Student</Label>
-                    <p className="font-medium">{selectedPayment.studentName}</p>
-                  </div>
-                )}
+                <div>
+                  <Label className="text-muted-foreground">Student</Label>
+                  <p className="font-medium">{selectedPayment.studentName}</p>
+                </div>
 
-                {selectedPayment.transactionId && (
+                {selectedPayment.pledgeType === 'per_minute' && (
                   <div>
-                    <Label className="text-muted-foreground">Transaction ID</Label>
-                    <p className="font-mono text-sm">{selectedPayment.transactionId}</p>
-                  </div>
-                )}
-
-                {selectedPayment.receiptUrl && (
-                  <div>
-                    <Label className="text-muted-foreground">Receipt</Label>
-                    <Button variant="link" className="p-0 h-auto" asChild>
-                      <a href={selectedPayment.receiptUrl} target="_blank" rel="noopener noreferrer">
-                        View Receipt
-                      </a>
-                    </Button>
+                    <Label className="text-muted-foreground">Calculation</Label>
+                    <p className="font-medium">
+                      ${(selectedPayment.amount / selectedPayment.childMinutes).toFixed(2)}/min × {selectedPayment.childMinutes} min
+                    </p>
                   </div>
                 )}
               </div>
 
-              {selectedPayment.status === "completed" && (
-                <div className="pt-4 border-t">
-                  <Dialog open={isRefundDialogOpen} onOpenChange={setIsRefundDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button variant="outline" className="w-full">
-                        <RotateCcw className="mr-2 h-4 w-4" />
-                        Process Refund
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Confirm Refund</DialogTitle>
-                        <DialogDescription>
-                          Are you sure you want to refund ${selectedPayment.amount.toFixed(2)} to {selectedPayment.payerName}? This action cannot be undone.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <DialogFooter>
-                        <Button variant="outline" onClick={() => setIsRefundDialogOpen(false)}>
-                          Cancel
+              <div className="pt-4 border-t space-y-2">
+                {selectedPayment.status === "pending" && (
+                  <Button 
+                    className="w-full" 
+                    onClick={() => handleMarkAsPaid(selectedPayment.id)}
+                    disabled={isUpdating}
+                  >
+                    <CheckCircle2 className="mr-2 h-4 w-4" />
+                    Mark as Paid
+                  </Button>
+                )}
+                
+                {selectedPayment.status === "completed" && (
+                  <>
+                    <Button 
+                      variant="outline" 
+                      className="w-full"
+                      onClick={() => handleMarkAsUnpaid(selectedPayment.id)}
+                      disabled={isUpdating}
+                    >
+                      <RotateCcw className="mr-2 h-4 w-4" />
+                      Mark as Unpaid
+                    </Button>
+                    
+                    <Dialog open={isRefundDialogOpen} onOpenChange={setIsRefundDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" className="w-full text-destructive">
+                          <RotateCcw className="mr-2 h-4 w-4" />
+                          Process Refund
                         </Button>
-                        <Button variant="destructive" onClick={handleRefund}>
-                          Confirm Refund
-                        </Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
-                </div>
-              )}
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Confirm Refund</DialogTitle>
+                          <DialogDescription>
+                            Are you sure you want to refund ${selectedPayment.amount.toFixed(2)} to {selectedPayment.payerName}? This action cannot be undone.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <DialogFooter>
+                          <Button variant="outline" onClick={() => setIsRefundDialogOpen(false)}>
+                            Cancel
+                          </Button>
+                          <Button variant="destructive" onClick={handleRefund}>
+                            Confirm Refund
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                  </>
+                )}
+              </div>
             </div>
           )}
         </SheetContent>
