@@ -6,6 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormField } from "@/components/ui/form-field";
 import { useSponsorAuth } from "@/hooks/useSponsorAuth";
+import { useChildById } from "@/hooks/useChildren";
+import { usePledges } from "@/hooks/usePledges";
+import { useActiveEvent, formatEventDates } from "@/hooks/useActiveEvent";
 import { 
   CreditCard, 
   Mail, 
@@ -28,25 +31,6 @@ const handDrawnBorder = {
   borderBottomLeftRadius: '15px 255px',
 };
 
-// Mock data - in real app this would come from API based on token/code
-const getMockData = (code: string) => ({
-  parentFirstName: "Sarah",
-  childFirstName: "Emma",
-  childLastInitial: "J",
-  grade: "3rd",
-  schoolName: "Lincoln Elementary",
-  readingGoal: 500,
-  minutesRead: 335,
-  daysLeft: 12,
-  sponsorCount: 4,
-  inviteeName: code.includes("grandma") ? "Grandma Betty" : "",
-  gradeStats: {
-    avgMinutes: 412,
-    maxMinutes: 687,
-    participantCount: 48,
-  },
-});
-
 const AMOUNT_OPTIONS = [25, 50, 100];
 
 type PaymentMethod = "card" | "later" | "check" | null;
@@ -55,11 +39,26 @@ const SponsorLandingPage = () => {
   const { token, code } = useParams<{ token?: string; code?: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const identifier = token || code || "demo";
+  const childId = token || code;
   
-  const { isAuthenticated, loading, sponsor, signOut } = useSponsorAuth();
+  const { isAuthenticated, loading: authLoading, sponsor, signOut } = useSponsorAuth();
   
-  const [data] = useState(() => getMockData(identifier));
+  // Fetch real data from database
+  const { data: child, isLoading: childLoading, error: childError } = useChildById(childId);
+  const { pledges, isLoading: pledgesLoading, addPledge } = usePledges(childId);
+  const { data: activeEvent } = useActiveEvent();
+  const eventDates = formatEventDates(activeEvent);
+  
+  // Derived data from child
+  const childData = useMemo(() => ({
+    childFirstName: child?.name?.split(' ')[0] || 'Reader',
+    grade: child?.grade_info || '',
+    className: child?.class_name || '',
+    readingGoal: child?.goal_minutes || 300,
+    minutesRead: child?.total_minutes || 0,
+    daysLeft: eventDates.daysRemaining,
+    sponsorCount: pledges.length,
+  }), [child, pledges.length, eventDates.daysRemaining]);
   const [sponsorName, setSponsorName] = useState("");
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
   const [customAmount, setCustomAmount] = useState("");
@@ -78,31 +77,29 @@ const SponsorLandingPage = () => {
   useEffect(() => {
     if (sponsor?.name) {
       setSponsorName(sponsor.name);
-    } else if (data.inviteeName) {
-      setSponsorName(data.inviteeName);
     }
-  }, [sponsor, data.inviteeName]);
+  }, [sponsor]);
 
   // Redirect to auth if not authenticated
   useEffect(() => {
-    if (!loading && !isAuthenticated) {
+    if (!authLoading && !isAuthenticated) {
       navigate("/sponsor/auth", { 
         state: { from: location.pathname },
         replace: true 
       });
     }
-  }, [loading, isAuthenticated, navigate, location.pathname]);
+  }, [authLoading, isAuthenticated, navigate, location.pathname]);
 
   const effectiveAmount = useMemo(() => {
     if (usePerMinute) {
-      return parseFloat(perMinuteRate) * data.readingGoal;
+      return parseFloat(perMinuteRate) * childData.readingGoal;
     }
     return customAmount ? parseFloat(customAmount) : selectedAmount;
-  }, [selectedAmount, customAmount, usePerMinute, perMinuteRate, data.readingGoal]);
+  }, [selectedAmount, customAmount, usePerMinute, perMinuteRate, childData.readingGoal]);
 
   const calculatedPerMinute = useMemo(() => {
-    return parseFloat(perMinuteRate || "0") * data.readingGoal;
-  }, [perMinuteRate, data.readingGoal]);
+    return parseFloat(perMinuteRate || "0") * childData.readingGoal;
+  }, [perMinuteRate, childData.readingGoal]);
 
   const isFormValid = useMemo(() => {
     if (!sponsorName.trim()) return false;
@@ -116,15 +113,26 @@ const SponsorLandingPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isFormValid) return;
+    if (!isFormValid || !childId || !child) return;
 
     setIsSubmitting(true);
     
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    toast.success(`Thank you for your $${effectiveAmount?.toFixed(2)} pledge!`);
-    setIsSubmitting(false);
-    navigate("/sponsor/pledged");
+    try {
+      await addPledge.mutateAsync({
+        child_id: childId,
+        student_name: child.name,
+        pledge_type: usePerMinute ? "per_minute" : "flat",
+        amount: effectiveAmount || 0,
+        event_id: activeEvent?.id || null,
+        sponsor_id: sponsor?.id || null,
+        expected_payment_method: paymentMethod,
+      });
+      
+      navigate("/sponsor/pledged");
+    } catch (error) {
+      // Error toast handled by mutation
+      setIsSubmitting(false);
+    }
   };
 
   const handleSignOut = async () => {
@@ -132,10 +140,10 @@ const SponsorLandingPage = () => {
     navigate("/");
   };
 
-  const progress = Math.round((data.minutesRead / data.readingGoal) * 100);
+  const isLoading = authLoading || childLoading || pledgesLoading;
 
   // Show loading state
-  if (loading) {
+  if (isLoading) {
     return (
       <PublicLayout>
         <div className="container py-20 flex items-center justify-center">
@@ -148,6 +156,23 @@ const SponsorLandingPage = () => {
   // Don't render if not authenticated (will redirect)
   if (!isAuthenticated) {
     return null;
+  }
+
+  // Show error if child not found
+  if (childError || !child) {
+    return (
+      <PublicLayout>
+        <div className="container py-20 text-center">
+          <h1 className="font-serif text-3xl text-foreground mb-4">Reader Not Found</h1>
+          <p className="text-muted-foreground mb-6">
+            This sponsor link may be invalid or the reader is no longer accepting sponsors.
+          </p>
+          <Button onClick={() => navigate("/sponsor")}>
+            Return to Sponsor Gateway
+          </Button>
+        </div>
+      </PublicLayout>
+    );
   }
 
   return (
@@ -181,23 +206,11 @@ const SponsorLandingPage = () => {
 
         <div className="container relative">
           <div className="max-w-4xl mx-auto">
-            {/* Invited by badge */}
-            <div className="flex justify-end mb-4">
-              <div 
-                className="inline-flex items-baseline gap-1 bg-background px-4 py-2"
-                style={handDrawnBorder}
-              >
-                <Heart className="h-4 w-4 text-primary mr-1" />
-                <span className="text-sm text-muted-foreground">Invited by</span>
-                <span className="font-medium text-foreground">{data.parentFirstName}</span>
-              </div>
-            </div>
-
             {/* Main Hero */}
             <div className="text-left mb-8">
               <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-normal tracking-tight text-foreground leading-tight mb-4">
                 <span className="relative">
-                  Support {data.childFirstName}'s Reading!
+                  Support {childData.childFirstName}'s Reading!
                   {/* Highlighter effect */}
                   <span 
                     className="absolute inset-0 -skew-y-1 bg-accent/30 -z-10 transform -rotate-[0.5deg]"
@@ -213,7 +226,7 @@ const SponsorLandingPage = () => {
                 </span>
               </h1>
               <p className="text-base md:text-lg text-muted-foreground max-w-2xl leading-relaxed">
-                {data.childFirstName} is a {data.grade} grader at {data.schoolName} participating in the Read-a-thon. 
+                {childData.childFirstName}{childData.grade ? ` is a ${childData.grade} grader` : ''} participating in the Read-a-thon. 
                 Your pledge helps encourage reading and raises funds for our school.
               </p>
             </div>
@@ -225,7 +238,7 @@ const SponsorLandingPage = () => {
             >
               <div className="text-center">
                 <p className="font-serif text-3xl md:text-4xl text-foreground tracking-tight">
-                  {data.readingGoal}
+                  {childData.readingGoal}
                 </p>
                 <p className="text-xs md:text-sm text-muted-foreground mt-1">
                   Minute Goal
@@ -239,7 +252,7 @@ const SponsorLandingPage = () => {
                 }}
               >
                 <p className="font-serif text-3xl md:text-4xl text-foreground tracking-tight">
-                  {data.daysLeft}
+                  {childData.daysLeft}
                 </p>
                 <p className="text-xs md:text-sm text-muted-foreground mt-1">
                   Days Left
@@ -249,7 +262,7 @@ const SponsorLandingPage = () => {
                 <div className="flex items-center justify-center gap-1">
                   <Users className="h-5 w-5 text-primary" />
                   <p className="font-serif text-3xl md:text-4xl text-foreground tracking-tight">
-                    {data.sponsorCount}
+                    {childData.sponsorCount}
                   </p>
                 </div>
                 <p className="text-xs md:text-sm text-muted-foreground mt-1">
@@ -272,13 +285,13 @@ const SponsorLandingPage = () => {
               {/* Progress Ring - Left */}
               <div className="md:col-span-2 flex flex-col items-center justify-start">
                 <ReadingGoalRing 
-                  progress={data.minutesRead} 
-                  goal={data.readingGoal} 
+                  progress={childData.minutesRead} 
+                  goal={childData.readingGoal} 
                   size={180}
                   mobileSize={160}
                 />
                 <p className="text-sm text-muted-foreground mt-4 text-center">
-                  {data.childFirstName} has already read <span className="font-handwritten text-xl text-primary">{data.minutesRead}</span> minutes!
+                  {childData.childFirstName} has already read <span className="font-handwritten text-xl text-primary">{childData.minutesRead}</span> minutes!
                 </p>
               </div>
 
@@ -377,7 +390,7 @@ const SponsorLandingPage = () => {
                         <div className="bg-muted/30 rounded-lg p-3">
                           <div className="flex items-center justify-between">
                             <span className="text-sm text-muted-foreground">
-                              If goal met ({data.readingGoal} min):
+                              If goal met ({childData.readingGoal} min):
                             </span>
                             <span className="font-handwritten text-2xl text-primary">
                               ${calculatedPerMinute.toFixed(2)}
