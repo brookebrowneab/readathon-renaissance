@@ -122,6 +122,7 @@ export type Database = {
           created_at: string
           goal_minutes: number
           grade_info: string | null
+          homeroom_teacher_id: string | null
           id: string
           name: string
           share_public_link: boolean
@@ -137,6 +138,7 @@ export type Database = {
           created_at?: string
           goal_minutes?: number
           grade_info?: string | null
+          homeroom_teacher_id?: string | null
           id?: string
           name: string
           share_public_link?: boolean
@@ -152,6 +154,7 @@ export type Database = {
           created_at?: string
           goal_minutes?: number
           grade_info?: string | null
+          homeroom_teacher_id?: string | null
           id?: string
           name?: string
           share_public_link?: boolean
@@ -162,7 +165,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "children_homeroom_teacher_id_fkey"
+            columns: ["homeroom_teacher_id"]
+            isOneToOne: false
+            referencedRelation: "teachers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       email_logs: {
         Row: {
@@ -462,6 +473,78 @@ export type Database = {
         }
         Relationships: []
       }
+      teacher_class_assignments: {
+        Row: {
+          created_at: string
+          homeroom_teacher_id: string
+          id: string
+          teacher_id: string
+        }
+        Insert: {
+          created_at?: string
+          homeroom_teacher_id: string
+          id?: string
+          teacher_id: string
+        }
+        Update: {
+          created_at?: string
+          homeroom_teacher_id?: string
+          id?: string
+          teacher_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "teacher_class_assignments_homeroom_teacher_id_fkey"
+            columns: ["homeroom_teacher_id"]
+            isOneToOne: false
+            referencedRelation: "teachers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teacher_class_assignments_teacher_id_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "teachers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      teachers: {
+        Row: {
+          created_at: string
+          email: string | null
+          has_full_access: boolean
+          id: string
+          is_active: boolean
+          name: string
+          teacher_type: Database["public"]["Enums"]["teacher_type"]
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          has_full_access?: boolean
+          id?: string
+          is_active?: boolean
+          name: string
+          teacher_type?: Database["public"]["Enums"]["teacher_type"]
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          has_full_access?: boolean
+          id?: string
+          is_active?: boolean
+          name?: string
+          teacher_type?: Database["public"]["Enums"]["teacher_type"]
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -488,6 +571,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_teacher_view_child: {
+        Args: { child_id: string; teacher_user_id: string }
+        Returns: boolean
+      }
       get_class_total_minutes: {
         Args: { p_class_name: string }
         Returns: number
@@ -505,9 +592,10 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "user"
+      app_role: "admin" | "user" | "teacher"
       email_log_status: "pending" | "sent" | "failed"
       email_template_status: "draft" | "scheduled" | "sent"
+      teacher_type: "homeroom" | "partner" | "specials" | "staff"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -635,9 +723,10 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "user"],
+      app_role: ["admin", "user", "teacher"],
       email_log_status: ["pending", "sent", "failed"],
       email_template_status: ["draft", "scheduled", "sent"],
+      teacher_type: ["homeroom", "partner", "specials", "staff"],
     },
   },
 } as const
