@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { toast } from "@/components/ui/sonner";
 import {
   Dialog,
   DialogContent,
@@ -192,6 +193,27 @@ export const EditChildDialog = ({
                 }
               />
             </div>
+
+            {formData.sharePublicLink && (
+              <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
+                <Input
+                  readOnly
+                  value={`${window.location.origin}/sponsor/${child?.id}`}
+                  className="text-xs bg-background"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    navigator.clipboard.writeText(`${window.location.origin}/sponsor/${child?.id}`);
+                    toast.success("Link copied to clipboard!");
+                  }}
+                >
+                  Copy
+                </Button>
+              </div>
+            )}
           </div>
         </div>
 
