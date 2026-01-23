@@ -271,21 +271,74 @@ const AdminEmailPage = () => {
       // Get recipients based on selection type
       let recipients: { email: string; name: string; type: string; variables?: Record<string, string> }[] = [];
       
+      // Base URL for payment links
+      const baseUrl = window.location.origin;
+      
+      // Helper to build variables for a recipient
+      const buildVariables = (r: EmailRecipient): Record<string, string> => {
+        const pledgeAmount = r.pledgeType === "per_minute" 
+          ? `$${(r.pledgeAmount || 0).toFixed(2)}/min` 
+          : `$${(r.pledgeAmount || 0).toFixed(2)}`;
+        
+        const totalOwed = r.pledgeType === "per_minute"
+          ? ((r.pledgeAmount || 0) * (r.minutesRead || 0)).toFixed(2)
+          : (r.pledgeAmount || 0).toFixed(2);
+        
+        const progressPercent = r.goalMinutes && r.goalMinutes > 0
+          ? Math.min(100, Math.round(((r.minutesRead || 0) / r.goalMinutes) * 100))
+          : 0;
+
+        // Calculate days remaining from event end date
+        let daysRemaining = "the end of the event";
+        if (r.eventEndDate) {
+          const endDate = new Date(r.eventEndDate);
+          const today = new Date();
+          const diffTime = endDate.getTime() - today.getTime();
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+          if (diffDays > 0) {
+            daysRemaining = `${diffDays} day${diffDays === 1 ? '' : 's'}`;
+          } else if (diffDays === 0) {
+            daysRemaining = "today";
+          } else {
+            daysRemaining = "ended";
+          }
+        }
+
+        return {
+          sponsor_name: r.name,
+          sponsor_first_name: r.name.split(' ')[0],
+          student_name: r.studentName || "Student",
+          student_first_name: (r.studentName || "Student").split(' ')[0],
+          pledge_amount: pledgeAmount,
+          total_owed: `$${totalOwed}`,
+          minutes_read: String(r.minutesRead || 0),
+          goal_minutes: String(r.goalMinutes || 300),
+          progress_percent: `${progressPercent}%`,
+          payment_link: r.childId ? `${baseUrl}/sponsor/pay?child=${r.childId}` : `${baseUrl}/sponsor/pay`,
+          event_name: r.eventName || "Read-a-thon",
+          school_name: "Our School", // Could be made configurable
+          days_remaining: daysRemaining,
+        };
+      };
+      
       if (recipientType === "manual") {
         recipients = getSelectedRecipientDetails().map(r => ({
           email: r.email,
           name: r.name,
           type: r.type,
-          variables: {
-            sponsor_name: r.name,
-            sponsor_first_name: r.name.split(' ')[0],
-          }
+          variables: buildVariables(r),
         }));
       } else {
         // For filter-based recipients, get all matching recipients
         const filteredByType = allRecipients.filter(r => {
-          if (selectedFilter === "all_sponsors" || selectedFilter === "unpaid_sponsors") {
+          if (selectedFilter === "all_sponsors") {
             return r.type === "sponsor";
+          }
+          if (selectedFilter === "unpaid_sponsors") {
+            return r.type === "sponsor" && !r.isPaid;
+          }
+          if (selectedFilter === "check_sponsors") {
+            return r.type === "sponsor" && r.expectedPaymentMethod === "check";
           }
           if (selectedFilter === "all_parents") {
             return r.type === "parent";
@@ -297,10 +350,7 @@ const AdminEmailPage = () => {
           email: r.email,
           name: r.name,
           type: r.type,
-          variables: {
-            sponsor_name: r.name,
-            sponsor_first_name: r.name.split(' ')[0],
-          }
+          variables: buildVariables(r),
         }));
       }
 
