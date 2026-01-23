@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.notify-check-payment]
 verify_jwt = false
+
+[functions.send-pledge-notification]
+verify_jwt = false
