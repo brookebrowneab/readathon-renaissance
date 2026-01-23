@@ -32,6 +32,8 @@ import { format, parseISO, isToday, isYesterday } from "date-fns";
 import { useChildren, Child } from "@/hooks/useChildren";
 import { useReadingLogs } from "@/hooks/useReadingLogs";
 import { useActiveEvent } from "@/hooks/useActiveEvent";
+import { BookSelector } from "@/components/books";
+import { Book } from "@/hooks/useBooks";
 import { z } from "zod";
 import {
   CalendarIcon,
@@ -90,6 +92,7 @@ const LogReadingPage = () => {
   const [date, setDate] = useState<Date>(new Date());
   const [minutes, setMinutes] = useState(0);
   const [bookTitle, setBookTitle] = useState("");
+  const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [notes, setNotes] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -160,11 +163,14 @@ const LogReadingPage = () => {
     setValidationErrors({});
 
     try {
+      // Use selected book title if available, otherwise manual title
+      const finalBookTitle = selectedBook?.title || bookTitle.trim() || null;
+      
       await addLog.mutateAsync({
         child_id: selectedChild.id,
         student_name: selectedChild.name,
         minutes,
-        book_title: bookTitle.trim() || null,
+        book_title: finalBookTitle,
         logged_at: format(date, "yyyy-MM-dd"),
         event_id: activeEvent?.id || null,
       });
@@ -175,6 +181,7 @@ const LogReadingPage = () => {
       setTimeout(() => {
         setMinutes(0);
         setBookTitle("");
+        setSelectedBook(null);
         setNotes("");
         setIsSuccess(false);
       }, 3000);
@@ -464,53 +471,16 @@ const LogReadingPage = () => {
                   </div>
                 </FormField>
 
-                {/* Book Title with Autocomplete */}
-                <FormField
-                  label="Book Title"
-                  htmlFor="bookTitle"
-                  helperText="Optional - helps track what they're reading"
-                  error={validationErrors.bookTitle}
-                >
-                  <div className="relative">
-                    <BookOpen className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input
-                      id="bookTitle"
-                      placeholder="Enter book title..."
-                      value={bookTitle}
-                      onChange={(e) => {
-                        const val = e.target.value.slice(0, 200);
-                        setBookTitle(val);
-                        setShowSuggestions(true);
-                        setValidationErrors((prev) => ({ ...prev, bookTitle: "" }));
-                      }}
-                      onFocus={() => setShowSuggestions(true)}
-                      onBlur={() =>
-                        setTimeout(() => setShowSuggestions(false), 200)
-                      }
-                      className="pl-10"
-                      maxLength={200}
-                    />
-                    {showSuggestions &&
-                      bookTitle &&
-                      filteredSuggestions.length > 0 && (
-                        <div className="absolute top-full left-0 right-0 mt-1 bg-popover border border-border rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
-                          {filteredSuggestions.map((suggestion) => (
-                            <button
-                              key={suggestion}
-                              type="button"
-                              className="w-full px-4 py-2 text-left text-sm hover:bg-muted transition-colors"
-                              onClick={() => {
-                                setBookTitle(suggestion);
-                                setShowSuggestions(false);
-                              }}
-                            >
-                              {suggestion}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                  </div>
-                </FormField>
+                {/* Book Selector with Barcode Scanning */}
+                <BookSelector
+                  selectedBook={selectedBook}
+                  onSelectBook={setSelectedBook}
+                  manualTitle={bookTitle}
+                  onManualTitleChange={(val) => {
+                    setBookTitle(val.slice(0, 200));
+                    setValidationErrors((prev) => ({ ...prev, bookTitle: "" }));
+                  }}
+                />
 
                 {/* Progress Preview */}
                 {minutes > 0 && (

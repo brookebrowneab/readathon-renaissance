@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
+import { BookSelector } from "@/components/books";
+import { Book, useBooks } from "@/hooks/useBooks";
 import { 
   BookOpen, 
   Clock, 
@@ -27,11 +29,20 @@ interface ReadingLog {
   minutes: number;
   book_title: string | null;
   logged_at: string;
+  book_id: string | null;
+}
+
+interface BookInfo {
+  id: string;
+  title: string;
+  author: string | null;
+  cover_url: string | null;
 }
 
 const StudentPinDashboardPage = () => {
   const { session, isLoading: sessionLoading, logout, refreshData, requireAuth } = useStudentSession();
   const { data: activeEvent } = useActiveEvent();
+  const { books } = useBooks();
   
   const [readingLogs, setReadingLogs] = useState<ReadingLog[]>([]);
   const [isLoadingLogs, setIsLoadingLogs] = useState(true);
@@ -40,20 +51,21 @@ const StudentPinDashboardPage = () => {
   // Log reading form state
   const [minutes, setMinutes] = useState(15);
   const [bookTitle, setBookTitle] = useState("");
+  const [selectedBook, setSelectedBook] = useState<Book | null>(null);
 
   // Redirect if not authenticated
   useEffect(() => {
     requireAuth();
   }, [requireAuth]);
 
-  // Fetch reading logs
+  // Fetch reading logs with book info
   useEffect(() => {
     const fetchLogs = async () => {
       if (!session?.childId) return;
 
       const { data, error } = await supabase
         .from("reading_logs")
-        .select("id, minutes, book_title, logged_at")
+        .select("id, minutes, book_title, logged_at, book_id")
         .eq("child_id", session.childId)
         .order("logged_at", { ascending: false })
         .limit(10);
@@ -75,13 +87,17 @@ const StudentPinDashboardPage = () => {
 
     setIsSubmitting(true);
 
+    // Use selected book's title if available, otherwise manual input
+    const finalBookTitle = selectedBook?.title || bookTitle.trim() || null;
+
     const { data, error } = await supabase
       .from("reading_logs")
       .insert({
         child_id: session.childId,
         student_name: session.name,
         minutes,
-        book_title: bookTitle.trim() || null,
+        book_title: finalBookTitle,
+        book_id: selectedBook?.id || null,
         event_id: activeEvent.id,
         logged_at: new Date().toISOString().split("T")[0],
       })
@@ -96,10 +112,20 @@ const StudentPinDashboardPage = () => {
       setReadingLogs((prev) => [data, ...prev]);
       setMinutes(15);
       setBookTitle("");
+      setSelectedBook(null);
       refreshData();
     }
 
     setIsSubmitting(false);
+  };
+
+  // Get book info for a log
+  const getBookForLog = (log: ReadingLog): BookInfo | null => {
+    if (log.book_id) {
+      const book = books.find(b => b.id === log.book_id);
+      if (book) return book;
+    }
+    return null;
   };
 
   const adjustMinutes = (delta: number) => {
@@ -228,16 +254,13 @@ const StudentPinDashboardPage = () => {
                 </div>
               </div>
 
-              {/* Book Title (optional) */}
-              <div className="space-y-2">
-                <Label htmlFor="bookTitle">What book? (optional)</Label>
-                <Input
-                  id="bookTitle"
-                  placeholder="Enter book title..."
-                  value={bookTitle}
-                  onChange={(e) => setBookTitle(e.target.value)}
-                />
-              </div>
+              {/* Book Selector with Barcode Scanning */}
+              <BookSelector
+                selectedBook={selectedBook}
+                onSelectBook={setSelectedBook}
+                manualTitle={bookTitle}
+                onManualTitleChange={setBookTitle}
+              />
 
               <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
                 {isSubmitting ? "Saving..." : "Log My Reading! 📖"}
@@ -267,22 +290,43 @@ const StudentPinDashboardPage = () => {
               </p>
             ) : (
               <div className="space-y-2">
-                {readingLogs.map((log) => (
-                  <div
-                    key={log.id}
-                    className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
-                  >
-                    <div>
-                      <p className="font-medium">{log.minutes} minutes</p>
-                      {log.book_title && (
-                        <p className="text-sm text-muted-foreground">{log.book_title}</p>
+                {readingLogs.map((log) => {
+                  const bookInfo = getBookForLog(log);
+                  return (
+                    <div
+                      key={log.id}
+                      className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg"
+                    >
+                      {bookInfo?.cover_url ? (
+                        <img
+                          src={bookInfo.cover_url}
+                          alt={bookInfo.title}
+                          className="w-10 h-14 object-cover rounded shadow-sm"
+                        />
+                      ) : (
+                        <div className="w-10 h-14 bg-muted rounded flex items-center justify-center shrink-0">
+                          <BookOpen className="h-4 w-4 text-muted-foreground" />
+                        </div>
                       )}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium">{log.minutes} minutes</p>
+                        {(bookInfo?.title || log.book_title) && (
+                          <p className="text-sm text-muted-foreground truncate">
+                            {bookInfo?.title || log.book_title}
+                          </p>
+                        )}
+                        {bookInfo?.author && (
+                          <p className="text-xs text-muted-foreground/70 truncate">
+                            by {bookInfo.author}
+                          </p>
+                        )}
+                      </div>
+                      <span className="text-sm text-muted-foreground shrink-0">
+                        {format(parseISO(log.logged_at), "MMM d")}
+                      </span>
                     </div>
-                    <span className="text-sm text-muted-foreground">
-                      {format(parseISO(log.logged_at), "MMM d")}
-                    </span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </CardContent>
