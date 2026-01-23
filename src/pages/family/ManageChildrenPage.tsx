@@ -7,10 +7,9 @@ import {
   BookOpen,
   Plus,
   ArrowLeft,
-  Settings,
+  Pencil,
   Trash2,
   MoreVertical,
-  Star,
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
@@ -27,8 +26,8 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { ReadingLogsTable, ReadingLog } from "@/components/family/ReadingLogsTable";
+import { EditChildDialog, ChildProfile } from "@/components/family/EditChildDialog";
 import { toast } from "sonner";
-
 
 // Hand-drawn border style (consistent with other pages)
 const handDrawnBorder = {
@@ -55,8 +54,30 @@ const mockReadingLogs: Record<string, ReadingLog[]> = {
   ],
 };
 
-// Mock data (same as DashboardPage for consistency)
-const mockChildren = [
+// Extended child type with privacy settings
+interface ChildData {
+  id: string;
+  name: string;
+  avatarInitials: string;
+  minutesRead: number;
+  goalMinutes: number;
+  gradeInfo: string;
+  className: string;
+  classMinutesRead: number;
+  gradeMinutesRead: number;
+  minutesToday: number;
+  longestStreak: number;
+  daysActive: number;
+  sponsors: number;
+  privacy: {
+    showOnLeaderboard: boolean;
+    allowSponsorsToSeeProgress: boolean;
+    shareReadingStats: boolean;
+  };
+}
+
+// Mock data with privacy settings
+const initialChildren: ChildData[] = [
   {
     id: "1",
     name: "Emma Johnson",
@@ -71,6 +92,11 @@ const mockChildren = [
     longestStreak: 45,
     daysActive: 18,
     sponsors: 4,
+    privacy: {
+      showOnLeaderboard: true,
+      allowSponsorsToSeeProgress: true,
+      shareReadingStats: true,
+    },
   },
   {
     id: "2",
@@ -86,12 +112,20 @@ const mockChildren = [
     longestStreak: 30,
     daysActive: 12,
     sponsors: 3,
+    privacy: {
+      showOnLeaderboard: true,
+      allowSponsorsToSeeProgress: true,
+      shareReadingStats: false,
+    },
   },
 ];
 
 const ManageChildrenPage = () => {
+  const [children, setChildren] = useState<ChildData[]>(initialChildren);
   const [readingLogs, setReadingLogs] = useState<Record<string, ReadingLog[]>>(mockReadingLogs);
   const [expandedChild, setExpandedChild] = useState<string | null>(null);
+  const [editingChild, setEditingChild] = useState<ChildProfile | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const handleEditLog = (childId: string, logId: string, minutes: number, bookTitle: string) => {
     setReadingLogs((prev) => ({
@@ -109,6 +143,42 @@ const ManageChildrenPage = () => {
       [childId]: prev[childId].filter((log) => log.id !== logId),
     }));
     toast.success("Reading log deleted");
+  };
+
+  const handleEditChild = (child: ChildData) => {
+    setEditingChild({
+      id: child.id,
+      name: child.name,
+      gradeInfo: child.gradeInfo,
+      className: child.className,
+      goalMinutes: child.goalMinutes,
+      privacy: child.privacy,
+    });
+    setIsEditDialogOpen(true);
+  };
+
+  const handleSaveChild = (updatedProfile: ChildProfile) => {
+    setChildren((prev) =>
+      prev.map((child) =>
+        child.id === updatedProfile.id
+          ? {
+              ...child,
+              name: updatedProfile.name,
+              gradeInfo: updatedProfile.gradeInfo,
+              className: updatedProfile.className,
+              goalMinutes: updatedProfile.goalMinutes,
+              avatarInitials: updatedProfile.name
+                .split(" ")
+                .map((n) => n[0])
+                .join("")
+                .toUpperCase()
+                .slice(0, 2),
+              privacy: updatedProfile.privacy,
+            }
+          : child
+      )
+    );
+    toast.success("Profile updated successfully");
   };
 
   return (
@@ -144,13 +214,12 @@ const ManageChildrenPage = () => {
                 </Link>
               </Button>
             </div>
-
           </div>
 
           {/* Children List with Reading Logs */}
-          {mockChildren.length > 0 ? (
+          {children.length > 0 ? (
             <div className="space-y-6">
-              {mockChildren.map((child) => (
+              {children.map((child) => (
                 <Collapsible
                   key={child.id}
                   open={expandedChild === child.id}
@@ -189,6 +258,15 @@ const ManageChildrenPage = () => {
                         </div>
                         
                         <div className="flex items-center gap-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="hidden md:inline-flex"
+                            onClick={() => handleEditChild(child)}
+                          >
+                            <Pencil className="h-4 w-4 mr-1" />
+                            Edit Profile
+                          </Button>
                           
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -197,13 +275,14 @@ const ManageChildrenPage = () => {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="bg-background">
-                              <DropdownMenuItem asChild>
-                                <Link to={`/family/children/${child.id}/settings`}>
-                                  <Settings className="h-4 w-4 mr-2" />
-                                  Settings
-                                </Link>
+                              <DropdownMenuItem 
+                                className="md:hidden"
+                                onClick={() => handleEditChild(child)}
+                              >
+                                <Pencil className="h-4 w-4 mr-2" />
+                                Edit Profile
                               </DropdownMenuItem>
-                              <DropdownMenuSeparator />
+                              <DropdownMenuSeparator className="md:hidden" />
                               <DropdownMenuItem className="text-destructive focus:text-destructive">
                                 <Trash2 className="h-4 w-4 mr-2" />
                                 Remove from Program
@@ -270,10 +349,17 @@ const ManageChildrenPage = () => {
       
       <Footer />
       <BottomTabBar role="parent" />
+
+      {/* Edit Child Dialog */}
+      <EditChildDialog
+        child={editingChild}
+        open={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+        onSave={handleSaveChild}
+      />
     </div>
   );
 };
-
 
 // Empty State Component
 const EmptyState = () => {
