@@ -12,6 +12,7 @@ import {
   MoreVertical,
   ChevronDown,
   ChevronUp,
+  UserPlus,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -247,6 +248,17 @@ const ManageChildrenPage = () => {
                         
                         <div className="flex items-center gap-2">
                           <Button 
+                            variant="default" 
+                            size="sm" 
+                            className="hidden md:inline-flex"
+                            asChild
+                          >
+                            <Link to={`/children/${child.id}/invite`}>
+                              <UserPlus className="h-4 w-4 mr-1" />
+                              Invite Sponsors
+                            </Link>
+                          </Button>
+                          <Button 
                             variant="outline" 
                             size="sm" 
                             className="hidden md:inline-flex"
@@ -263,6 +275,12 @@ const ManageChildrenPage = () => {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="bg-background">
+                              <DropdownMenuItem className="md:hidden" asChild>
+                                <Link to={`/children/${child.id}/invite`}>
+                                  <UserPlus className="h-4 w-4 mr-2" />
+                                  Invite Sponsors
+                                </Link>
+                              </DropdownMenuItem>
                               <DropdownMenuItem 
                                 className="md:hidden"
                                 onClick={() => handleEditChild(child)}
