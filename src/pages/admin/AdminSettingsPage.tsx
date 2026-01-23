@@ -71,16 +71,20 @@ const AdminSettingsPage = () => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
-  // Initialize form from database
+  // Track event ID to detect actual event changes vs refetches
+  const [initializedEventId, setInitializedEventId] = useState<string | null>(null);
+
+  // Initialize form from database (only when event ID changes, not on refetches)
   useEffect(() => {
-    if (event) {
+    if (event && event.id !== initializedEventId) {
       setEventName(event.name);
       setStartDate(parseISO(event.start_date));
       setEndDate(parseISO(event.end_date));
       setLastLogDate(parseISO(event.last_log_date));
       setHasUnsavedChanges(false);
+      setInitializedEventId(event.id);
     }
-  }, [event]);
+  }, [event, initializedEventId]);
 
   // Track changes
   const handleFieldChange = () => {
