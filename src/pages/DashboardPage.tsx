@@ -45,6 +45,20 @@ const formatLogDate = (dateStr: string): string => {
   return format(date, "MMM d");
 };
 
+// Calculate longest single reading session from logs
+const calculateLongestStreak = (logs: { minutes: number }[]): number => {
+  if (!logs.length) return 0;
+  return Math.max(...logs.map(log => log.minutes));
+};
+
+// Calculate minutes read today from logs
+const calculateMinutesToday = (logs: { logged_at: string; minutes: number }[]): number => {
+  const today = format(new Date(), "yyyy-MM-dd");
+  return logs
+    .filter(log => log.logged_at === today)
+    .reduce((sum, log) => sum + log.minutes, 0);
+};
+
 const DashboardPage = () => {
   const navigate = useNavigate();
   const [userName, setUserName] = useState<string>("");
@@ -108,20 +122,26 @@ const DashboardPage = () => {
   // Calculate total minutes from real children data
   const totalMinutes = children.reduce((sum, child) => sum + child.total_minutes, 0);
 
-  // Transform children data for ChildProgressCard
-  const transformedChildren = children.map((child) => ({
-    id: child.id,
-    name: child.name,
-    avatarInitials: child.name.split(" ").map((n) => n[0]).join("").toUpperCase(),
-    minutesRead: child.total_minutes,
-    goalMinutes: child.goal_minutes,
-    gradeInfo: child.grade_info || "Not specified",
-    className: child.class_name || "Not specified",
-    classMinutesRead: 0, // Would need additional query
-    gradeMinutesRead: 0, // Would need additional query
-    minutesToday: 0, // Would need to calculate from reading logs
-    longestStreak: 0, // Would need to calculate from reading logs
-  }));
+  // Transform children data for ChildProgressCard with real stats
+  const transformedChildren = useMemo(() => {
+    return children.map((child) => {
+      const childLogs = logsByChild?.[child.id] || [];
+      
+      return {
+        id: child.id,
+        name: child.name,
+        avatarInitials: child.name.split(" ").map((n) => n[0]).join("").toUpperCase(),
+        minutesRead: child.total_minutes,
+        goalMinutes: child.goal_minutes,
+        gradeInfo: child.grade_info || "Not specified",
+        className: child.class_name || "Not specified",
+        classMinutesRead: 0, // Would need additional query
+        gradeMinutesRead: 0, // Would need additional query
+        minutesToday: calculateMinutesToday(childLogs),
+        longestStreak: calculateLongestStreak(childLogs),
+      };
+    });
+  }, [children, logsByChild]);
 
   return (
     <div className="flex min-h-screen flex-col">
