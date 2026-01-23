@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { PublicLayout } from "@/components/layout";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,8 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { useSponsorPledges } from "@/hooks/useSponsorPledges";
+import { Skeleton } from "@/components/ui/skeleton";
 
 
 // Hand-drawn border style
@@ -26,23 +28,45 @@ const handDrawnBorder = {
   borderBottomLeftRadius: '15px 255px',
 };
 
-interface Pledge {
+interface DisplayPledge {
   id: string;
   childFirstName: string;
   childLastInitial: string;
   amount: number;
 }
 
-// Mock pledges - in reality would come from state/API
-const mockUnpaidPledges: Pledge[] = [
-  { id: "1", childFirstName: "Emma", childLastInitial: "J", amount: 17.35 },
-  { id: "2", childFirstName: "Noah", childLastInitial: "B", amount: 25.0 },
-];
-
 const SponsorPaymentPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const preselectedIds = location.state?.pledgeIds || [];
+  
+  // Fetch real pledges from database
+  const { pledges, isLoading, sponsor } = useSponsorPledges();
+  
+  // Filter to only unpaid pledges and transform for display
+  const unpaidPledges: DisplayPledge[] = useMemo(() => {
+    return pledges
+      .filter((p) => !p.is_paid)
+      .map((pledge) => {
+        const name = pledge.child?.name || pledge.student_name;
+        const nameParts = name.split(" ");
+        const firstName = nameParts[0] || name;
+        const lastInitial = nameParts.length > 1 ? nameParts[nameParts.length - 1][0] : "";
+        
+        // Calculate actual amount for per_minute pledges
+        const amount =
+          pledge.pledge_type === "per_minute" && pledge.child
+            ? pledge.amount * pledge.child.total_minutes
+            : pledge.amount;
+        
+        return {
+          id: pledge.id,
+          childFirstName: firstName,
+          childLastInitial: lastInitial,
+          amount,
+        };
+      });
+  }, [pledges]);
   
   // Determine dashboard URL based on referrer (from state or query param)
   const searchParams = new URLSearchParams(location.search);
@@ -53,9 +77,7 @@ const SponsorPaymentPage = () => {
   // Default to sponsor dashboard, but redirect to family dashboard if came from parent
   const dashboardUrl = referrer === "parent" ? "/dashboard" : "/sponsor/dashboard";
 
-  const [selectedPledges, setSelectedPledges] = useState<string[]>(
-    preselectedIds.length > 0 ? preselectedIds : mockUnpaidPledges.map((p) => p.id)
-  );
+  const [selectedPledges, setSelectedPledges] = useState<string[]>(preselectedIds);
   const [paymentMethod, setPaymentMethod] = useState<"card" | "check">("card");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -66,8 +88,22 @@ const SponsorPaymentPage = () => {
   const [cvc, setCvc] = useState("");
   const [cardName, setCardName] = useState("");
   const [zipCode, setZipCode] = useState("");
+  
+  // Initialize selected pledges when data loads
+  useEffect(() => {
+    if (!isLoading && unpaidPledges.length > 0 && selectedPledges.length === 0) {
+      // If we have preselected IDs from navigation, use those; otherwise select all
+      if (preselectedIds.length > 0) {
+        setSelectedPledges(preselectedIds.filter((id: string) => 
+          unpaidPledges.some((p) => p.id === id)
+        ));
+      } else {
+        setSelectedPledges(unpaidPledges.map((p) => p.id));
+      }
+    }
+  }, [isLoading, unpaidPledges, preselectedIds]);
 
-  const selectedTotal = mockUnpaidPledges
+  const selectedTotal = unpaidPledges
     .filter((p) => selectedPledges.includes(p.id))
     .reduce((sum, p) => sum + p.amount, 0);
 
@@ -235,30 +271,44 @@ const SponsorPaymentPage = () => {
                 Select pledges to pay
               </h2>
               <div className="space-y-3">
-                {mockUnpaidPledges.map((pledge) => (
-                  <label
-                    key={pledge.id}
-                    className={cn(
-                      "flex items-center justify-between p-4 rounded-lg border cursor-pointer transition-all",
-                      selectedPledges.includes(pledge.id)
-                        ? "border-primary bg-primary/5"
-                        : "border-border hover:border-primary/50"
-                    )}
-                  >
-                    <div className="flex items-center gap-3">
-                      <Checkbox
-                        checked={selectedPledges.includes(pledge.id)}
-                        onCheckedChange={() => togglePledge(pledge.id)}
-                      />
-                      <span className="font-medium">
-                        {pledge.childFirstName} {pledge.childLastInitial}.
+                {isLoading ? (
+                  <>
+                    <Skeleton className="h-16 w-full" />
+                    <Skeleton className="h-16 w-full" />
+                  </>
+                ) : unpaidPledges.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <p>No unpaid pledges found.</p>
+                    <Button asChild variant="link" className="mt-2">
+                      <Link to={dashboardUrl}>Return to Dashboard</Link>
+                    </Button>
+                  </div>
+                ) : (
+                  unpaidPledges.map((pledge) => (
+                    <label
+                      key={pledge.id}
+                      className={cn(
+                        "flex items-center justify-between p-4 rounded-lg border cursor-pointer transition-all",
+                        selectedPledges.includes(pledge.id)
+                          ? "border-primary bg-primary/5"
+                          : "border-border hover:border-primary/50"
+                      )}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Checkbox
+                          checked={selectedPledges.includes(pledge.id)}
+                          onCheckedChange={() => togglePledge(pledge.id)}
+                        />
+                        <span className="font-medium">
+                          {pledge.childFirstName} {pledge.childLastInitial}.
+                        </span>
+                      </div>
+                      <span className="font-bold text-foreground">
+                        ${pledge.amount.toFixed(2)}
                       </span>
-                    </div>
-                    <span className="font-bold text-foreground">
-                      ${pledge.amount.toFixed(2)}
-                    </span>
-                  </label>
-                ))}
+                    </label>
+                  ))
+                )}
               </div>
 
               <div className="mt-4 pt-4 border-t border-border flex items-center justify-between">
@@ -408,7 +458,7 @@ const SponsorPaymentPage = () => {
                       setIsSubmitting(true);
                       try {
                         // Get selected pledge details
-                        const selectedPledgeDetails = mockUnpaidPledges.filter(
+                        const selectedPledgeDetails = unpaidPledges.filter(
                           (p) => selectedPledges.includes(p.id)
                         );
                         const childNames = selectedPledgeDetails.map(
@@ -421,8 +471,8 @@ const SponsorPaymentPage = () => {
                           {
                             body: {
                               pledgeIds: selectedPledges,
-                              sponsorName: "Sponsor Name", // In real app, get from auth context
-                              sponsorEmail: "sponsor@example.com", // In real app, get from auth context
+                              sponsorName: sponsor?.name || "Unknown Sponsor",
+                              sponsorEmail: sponsor?.email || "unknown@email.com",
                               totalAmount: selectedTotal,
                               childNames,
                             },
