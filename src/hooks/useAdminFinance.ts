@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useActiveEvent } from "./useActiveEvent";
 import { differenceInDays, parseISO, format } from "date-fns";
 import { toast } from "sonner";
+import { sendPaymentReminders } from "@/lib/notifications";
 
 export type PaymentStatus = "completed" | "pending" | "failed" | "refunded";
 export type PaymentMethod = "card" | "cash" | "check" | "online";
@@ -224,6 +225,49 @@ export function useAdminFinance() {
     },
   });
 
+  const sendReminderMutation = useMutation({
+    mutationFn: async (pledgeIds: string[]) => {
+      const pledgesToRemind = data?.outstandingPledges.filter(p => pledgeIds.includes(p.id)) || [];
+      
+      if (pledgesToRemind.length === 0) {
+        throw new Error("No valid pledges to send reminders for");
+      }
+
+      const reminderData = pledgesToRemind.map(pledge => ({
+        pledgeId: pledge.id,
+        recipientEmail: pledge.sponsorEmail,
+        recipientName: pledge.sponsorName,
+        studentName: pledge.studentName,
+        amount: pledge.pledgeType === 'per_minute' 
+          ? pledge.amount / (pledge.childMinutes || 1) // Get back the per-minute rate
+          : pledge.amount,
+        pledgeType: pledge.pledgeType as "flat" | "per_minute",
+        totalMinutes: pledge.childMinutes,
+        daysSincePledge: pledge.daysSincePledge,
+      }));
+
+      const result = await sendPaymentReminders(reminderData);
+      
+      if (!result.success) {
+        throw new Error(result.error || "Failed to send reminders");
+      }
+
+      return result.summary;
+    },
+    onSuccess: (summary) => {
+      if (summary) {
+        if (summary.failed === 0) {
+          toast.success(`${summary.sent} reminder(s) sent successfully`);
+        } else {
+          toast.warning(`${summary.sent} sent, ${summary.failed} failed`);
+        }
+      }
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to send reminders: ${error.message}`);
+    },
+  });
+
   return {
     payments: data?.payments || [],
     outstandingPledges: data?.outstandingPledges || [],
@@ -233,6 +277,8 @@ export function useAdminFinance() {
     markAsPaid: markAsPaidMutation.mutateAsync,
     markAsUnpaid: markAsUnpaidMutation.mutateAsync,
     bulkMarkAsPaid: bulkMarkAsPaidMutation.mutateAsync,
+    sendReminders: sendReminderMutation.mutateAsync,
     isUpdating: markAsPaidMutation.isPending || markAsUnpaidMutation.isPending || bulkMarkAsPaidMutation.isPending,
+    isSendingReminders: sendReminderMutation.isPending,
   };
 }
