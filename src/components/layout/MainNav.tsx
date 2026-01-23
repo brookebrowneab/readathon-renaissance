@@ -37,6 +37,9 @@ const MainNav = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
 
+  const desktopNavItemClass =
+    "inline-flex items-start text-xs font-semibold tracking-widest text-muted-foreground transition-colors hover:text-foreground hover:underline py-2 px-0 m-0 leading-none";
+
   // Mock auth state - replace with real auth
   // Set to true on dashboard routes for demo purposes
   const isDashboardRoute = location.pathname.startsWith("/dashboard") || 
@@ -92,7 +95,7 @@ const MainNav = () => {
                 <Link
                   to="/dashboard"
                   className={cn(
-                    "text-xs font-semibold tracking-widest text-muted-foreground transition-colors hover:text-foreground hover:underline py-2 px-0 m-0",
+                    desktopNavItemClass,
                     location.pathname === "/dashboard" && "text-foreground"
                   )}
                 >
@@ -103,7 +106,8 @@ const MainNav = () => {
                 <div className="relative group">
                   <button
                     className={cn(
-                      "text-xs font-semibold tracking-widest text-muted-foreground transition-colors hover:text-foreground py-2 px-0 m-0",
+                      desktopNavItemClass,
+                      "bg-transparent border-0 appearance-none",
                       location.pathname === "/account" && "text-foreground"
                     )}
                   >
