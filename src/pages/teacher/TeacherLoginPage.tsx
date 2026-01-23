@@ -40,12 +40,35 @@ const TeacherLoginPage = () => {
         return;
       }
 
-      // Step 3: Check if user has a linked teacher record
-      const { data: teacherRecord, error: teacherError } = await supabase
+      // Step 3: Check if user already has a linked teacher record
+      let { data: teacherRecord, error: teacherError } = await supabase
         .from("teachers")
-        .select("id, name, is_active")
+        .select("id, name, is_active, user_id")
         .eq("user_id", user.id)
         .maybeSingle();
+
+      // Step 4: If no linked record, try to auto-link by email
+      if (!teacherRecord && user.email) {
+        const { data: teacherByEmail, error: emailError } = await supabase
+          .from("teachers")
+          .select("id, name, is_active, user_id, email")
+          .eq("email", user.email.toLowerCase())
+          .is("user_id", null)
+          .maybeSingle();
+
+        if (teacherByEmail && !emailError) {
+          // Found a matching teacher by email - link the account
+          const { error: updateError } = await supabase
+            .from("teachers")
+            .update({ user_id: user.id })
+            .eq("id", teacherByEmail.id);
+
+          if (!updateError) {
+            teacherRecord = { ...teacherByEmail, user_id: user.id };
+            toast.success("Your account has been linked to your teacher profile!");
+          }
+        }
+      }
 
       if (teacherError) {
         console.error("Error checking teacher record:", teacherError);
