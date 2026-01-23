@@ -253,6 +253,7 @@ export type Database = {
       pledges: {
         Row: {
           amount: number
+          child_id: string | null
           created_at: string
           event_id: string | null
           expected_payment_method: string | null
@@ -265,6 +266,7 @@ export type Database = {
         }
         Insert: {
           amount: number
+          child_id?: string | null
           created_at?: string
           event_id?: string | null
           expected_payment_method?: string | null
@@ -277,6 +279,7 @@ export type Database = {
         }
         Update: {
           amount?: number
+          child_id?: string | null
           created_at?: string
           event_id?: string | null
           expected_payment_method?: string | null
@@ -288,6 +291,13 @@ export type Database = {
           student_name?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "pledges_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "pledges_event_id_fkey"
             columns: ["event_id"]

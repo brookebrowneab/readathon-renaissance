@@ -9,12 +9,18 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { DollarSign, Calculator, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { usePledges } from "@/hooks/usePledges";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 const FIXED_AMOUNTS = [25, 50, 100];
 
 const OnboardingPledge = () => {
   const navigate = useNavigate();
+  const { user, isLoading: authLoading } = useAuth();
+  const { addPledge } = usePledges();
   const [childData, setChildData] = useState<{
+    id: string;
     firstName: string;
     lastInitial: string;
     readingGoal: number;
@@ -24,6 +30,7 @@ const OnboardingPledge = () => {
   const [fixedAmount, setFixedAmount] = useState<number | null>(null);
   const [customAmount, setCustomAmount] = useState("");
   const [perMinuteRate, setPerMinuteRate] = useState("0.05");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const [paymentTiming, setPaymentTiming] = useState<"now" | "later">("later");
 
@@ -36,6 +43,13 @@ const OnboardingPledge = () => {
       navigate('/onboarding/add-child');
     }
   }, [navigate]);
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      toast.error("Please log in to continue");
+      navigate('/login');
+    }
+  }, [user, authLoading, navigate]);
 
   const effectiveAmount = useMemo(() => {
     if (pledgeType === "fixed") {
@@ -52,19 +66,35 @@ const OnboardingPledge = () => {
     return parseFloat(perMinuteRate) * childData.readingGoal;
   }, [perMinuteRate, childData]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!childData?.id || !effectiveAmount) return;
     
-    // Store pledge data
-    const pledgeData = {
-      type: pledgeType,
-      amount: pledgeType === "fixed" ? effectiveAmount : null,
-      perMinuteRate: pledgeType === "per-minute" ? parseFloat(perMinuteRate) : null,
-      paymentTiming,
-    };
-    
-    sessionStorage.setItem('pledgeData', JSON.stringify(pledgeData));
-    navigate('/onboarding/complete');
+    setIsSubmitting(true);
+
+    try {
+      const pledgeData = {
+        child_id: childData.id,
+        student_name: `${childData.firstName} ${childData.lastInitial}.`,
+        pledge_type: pledgeType === "fixed" ? "flat" : "per_minute",
+        amount: effectiveAmount,
+        expected_payment_method: paymentTiming === "now" ? "online" : "later",
+      } as const;
+
+      await addPledge.mutateAsync(pledgeData);
+      
+      // Store pledge info for complete page
+      sessionStorage.setItem('pledgeData', JSON.stringify({
+        type: pledgeType,
+        amount: pledgeType === "fixed" ? effectiveAmount : null,
+        perMinuteRate: pledgeType === "per-minute" ? parseFloat(perMinuteRate) : null,
+        paymentTiming,
+      }));
+      
+      navigate('/onboarding/complete');
+    } catch (error) {
+      setIsSubmitting(false);
+    }
   };
 
   const handleSkip = () => {
@@ -72,7 +102,15 @@ const OnboardingPledge = () => {
     navigate('/onboarding/complete');
   };
 
-  if (!childData) return null;
+  if (!childData || authLoading) {
+    return (
+      <PublicLayout>
+        <section className="min-h-[calc(100vh-8rem)] flex items-center justify-center">
+          <div className="animate-pulse text-muted-foreground">Loading...</div>
+        </section>
+      </PublicLayout>
+    );
+  }
 
   return (
     <PublicLayout>
@@ -293,13 +331,18 @@ const OnboardingPledge = () => {
                 {/* Actions */}
                 <div className="space-y-3 pt-2">
                   {pledgeType && effectiveAmount && effectiveAmount > 0 && (
-                    <Button type="submit" className="w-full">
-                      {pledgeType === "per-minute"
-                        ? `Pledge $${effectiveAmount.toFixed(2)} per minute`
-                        : paymentTiming === "now" 
-                          ? `Pay $${effectiveAmount.toFixed(2)} Now`
-                          : `Pledge $${effectiveAmount.toFixed(2)}`
-                      }
+                    <Button 
+                      type="submit" 
+                      className="w-full"
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting ? "Saving..." : (
+                        pledgeType === "per-minute"
+                          ? `Pledge $${effectiveAmount.toFixed(2)} per minute`
+                          : paymentTiming === "now" 
+                            ? `Pay $${effectiveAmount.toFixed(2)} Now`
+                            : `Pledge $${effectiveAmount.toFixed(2)}`
+                      )}
                     </Button>
                   )}
                   
@@ -307,6 +350,7 @@ const OnboardingPledge = () => {
                     type="button"
                     onClick={handleSkip}
                     className="w-full text-center text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
+                    disabled={isSubmitting}
                   >
                     Skip for now
                   </button>

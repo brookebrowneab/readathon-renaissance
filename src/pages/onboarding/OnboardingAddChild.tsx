@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { PublicLayout } from "@/components/layout";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormField } from "@/components/ui/form-field";
@@ -16,6 +15,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { User, GraduationCap, BookOpen, Shield } from "lucide-react";
+import { useChildren } from "@/hooks/useChildren";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 const GRADES = [
   "Pre-K",
@@ -42,9 +44,11 @@ const GOAL_PRESETS = [300, 500, 750, 1000];
 
 const OnboardingAddChild = () => {
   const navigate = useNavigate();
-  const [parentData, setParentData] = useState<{ firstName: string } | null>(null);
+  const { user, isLoading: authLoading } = useAuth();
+  const { addChild } = useChildren();
   const [hasMultipleChildren, setHasMultipleChildren] = useState(false);
   const [teacherNotListed, setTeacherNotListed] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const [formData, setFormData] = useState({
     firstName: "",
@@ -53,15 +57,16 @@ const OnboardingAddChild = () => {
     teacher: "",
     customTeacher: "",
     readingGoal: 500,
-    allowSponsorSharing: false,
+    allowPublicLink: true,
   });
 
   useEffect(() => {
-    const stored = sessionStorage.getItem('parentData');
-    if (stored) {
-      setParentData(JSON.parse(stored));
+    // Redirect to login if not authenticated
+    if (!authLoading && !user) {
+      toast.error("Please create an account first");
+      navigate('/register');
     }
-  }, []);
+  }, [user, authLoading, navigate]);
 
   const updateField = (field: string, value: string | number | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -76,26 +81,50 @@ const OnboardingAddChild = () => {
     (formData.teacher || (teacherNotListed && formData.customTeacher.trim())) &&
     formData.readingGoal > 0;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isFormValid) return;
+    if (!isFormValid || !user) return;
 
-    // Store child data
-    const childData = {
-      firstName: formData.firstName,
-      lastName: formData.lastName,
-      lastInitial: formData.lastName.charAt(0).toUpperCase(),
-      grade: formData.grade,
-      teacher: teacherNotListed ? formData.customTeacher : formData.teacher,
-      readingGoal: formData.readingGoal,
-      allowSponsorSharing: formData.allowSponsorSharing,
-    };
-    
-    sessionStorage.setItem('childData', JSON.stringify(childData));
-    sessionStorage.setItem('hasMultipleChildren', JSON.stringify(hasMultipleChildren));
-    
-    navigate('/onboarding/pledge');
+    setIsSubmitting(true);
+
+    try {
+      const childName = `${formData.firstName} ${formData.lastName.charAt(0).toUpperCase()}.`;
+      const className = teacherNotListed ? formData.customTeacher : formData.teacher;
+      
+      const result = await addChild.mutateAsync({
+        name: childName,
+        grade_info: formData.grade,
+        class_name: className,
+        goal_minutes: formData.readingGoal,
+        share_public_link: formData.allowPublicLink,
+      });
+
+      // Store child data for next steps in onboarding
+      sessionStorage.setItem('onboardingChildId', result.id);
+      sessionStorage.setItem('childData', JSON.stringify({
+        id: result.id,
+        firstName: formData.firstName,
+        lastInitial: formData.lastName.charAt(0).toUpperCase(),
+        readingGoal: formData.readingGoal,
+      }));
+      sessionStorage.setItem('hasMultipleChildren', JSON.stringify(hasMultipleChildren));
+      
+      navigate('/onboarding/pledge');
+    } catch (error) {
+      // Error is already handled by the hook
+      setIsSubmitting(false);
+    }
   };
+
+  if (authLoading) {
+    return (
+      <PublicLayout>
+        <section className="min-h-[calc(100vh-8rem)] flex items-center justify-center">
+          <div className="animate-pulse text-muted-foreground">Loading...</div>
+        </section>
+      </PublicLayout>
+    );
+  }
 
   return (
     <PublicLayout>
@@ -283,7 +312,7 @@ const OnboardingAddChild = () => {
                   </div>
                 </FormField>
 
-                {/* Sponsor Sharing Permission */}
+                {/* Public Link Permission */}
                 <div 
                   className="p-4 rounded-lg bg-muted/50 space-y-3"
                   style={{
@@ -294,7 +323,7 @@ const OnboardingAddChild = () => {
                   <div className="flex items-start gap-3">
                     <Shield className="h-5 w-5 text-primary mt-0.5 shrink-0" />
                     <div className="flex-1">
-                    <Label htmlFor="allowSponsorSharing" className="text-sm font-medium">
+                      <Label htmlFor="allowPublicLink" className="text-sm font-medium">
                         Allow Public Sponsor Link
                       </Label>
                       <p className="text-xs text-muted-foreground mt-1">
@@ -302,9 +331,9 @@ const OnboardingAddChild = () => {
                       </p>
                     </div>
                     <Switch
-                      id="allowSponsorSharing"
-                      checked={formData.allowSponsorSharing}
-                      onCheckedChange={(checked) => updateField("allowSponsorSharing", checked)}
+                      id="allowPublicLink"
+                      checked={formData.allowPublicLink}
+                      onCheckedChange={(checked) => updateField("allowPublicLink", checked)}
                     />
                   </div>
                 </div>
@@ -326,9 +355,9 @@ const OnboardingAddChild = () => {
                 <Button 
                   type="submit" 
                   className="w-full" 
-                  disabled={!isFormValid}
+                  disabled={!isFormValid || isSubmitting}
                 >
-                  Continue
+                  {isSubmitting ? "Saving..." : "Continue"}
                 </Button>
               </form>
             </div>
