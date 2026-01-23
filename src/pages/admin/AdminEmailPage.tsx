@@ -78,6 +78,7 @@ import { useEmailRecipientCounts } from "@/hooks/useEmailRecipientCounts";
 import { useLogEmails, useEmailLogs } from "@/hooks/useEmailLogs";
 import { useEmailRecipients, type EmailRecipient } from "@/hooks/useEmailRecipients";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { sendTemplateEmail } from "@/lib/email";
 
 // Hand-drawn border style
 const handDrawnBorder = {
@@ -227,6 +228,8 @@ const AdminEmailPage = () => {
     }
   };
 
+  const [isSending, setIsSending] = useState(false);
+
   const handleSendNow = async () => {
     if (!templateName || !subject || !body) {
       toast.error("Please fill in all required fields");
@@ -238,6 +241,8 @@ const AdminEmailPage = () => {
       toast.error("No recipients selected");
       return;
     }
+
+    setIsSending(true);
 
     try {
       // First save/update the template
@@ -263,22 +268,72 @@ const AdminEmailPage = () => {
         templateId = newTemplate.id;
       }
 
-      // Log the emails (without actually sending - that comes later with Resend)
-      // For now, we'll create a single log entry as a placeholder
-      await logEmails.mutateAsync([{
-        template_id: templateId,
-        recipient_email: "placeholder@example.com",
-        recipient_name: "Batch Send",
-        recipient_type: selectedFilter,
-        subject: subject,
-        body: body,
-        status: "pending",
-      }]);
+      // Get recipients based on selection type
+      let recipients: { email: string; name: string; type: string; variables?: Record<string, string> }[] = [];
+      
+      if (recipientType === "manual") {
+        recipients = getSelectedRecipientDetails().map(r => ({
+          email: r.email,
+          name: r.name,
+          type: r.type,
+          variables: {
+            sponsor_name: r.name,
+            sponsor_first_name: r.name.split(' ')[0],
+          }
+        }));
+      } else {
+        // For filter-based recipients, get all matching recipients
+        const filteredByType = allRecipients.filter(r => {
+          if (selectedFilter === "all_sponsors" || selectedFilter === "unpaid_sponsors") {
+            return r.type === "sponsor";
+          }
+          if (selectedFilter === "all_parents") {
+            return r.type === "parent";
+          }
+          return true;
+        });
+        
+        recipients = filteredByType.map(r => ({
+          email: r.email,
+          name: r.name,
+          type: r.type,
+          variables: {
+            sponsor_name: r.name,
+            sponsor_first_name: r.name.split(' ')[0],
+          }
+        }));
+      }
 
-      toast.success(`Email queued for ${count} recipients! (Email sending coming soon)`);
+      if (recipients.length === 0) {
+        toast.error("No recipients found for the selected filter");
+        setIsSending(false);
+        return;
+      }
+
+      // Actually send the emails
+      const result = await sendTemplateEmail({
+        templateId,
+        subject,
+        body,
+        recipients,
+      });
+
+      if (result.success && result.summary) {
+        if (result.summary.sent > 0) {
+          toast.success(`Successfully sent ${result.summary.sent} email(s)!`);
+        }
+        if (result.summary.failed > 0) {
+          toast.error(`Failed to send ${result.summary.failed} email(s)`);
+        }
+      } else {
+        toast.error(result.error || "Failed to send emails");
+      }
+
       setShowEditor(false);
     } catch (error: any) {
       toast.error(error.message || "Failed to send emails");
+    } finally {
+      setIsSending(false);
     }
   };
 
