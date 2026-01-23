@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { User, Link as LinkIcon, Loader2 } from "lucide-react";
+import { User, Link as LinkIcon, Loader2, KeyRound, RefreshCw } from "lucide-react";
 import type { Child, ChildUpdate } from "@/hooks/useChildren";
 
 export interface ChildProfile {
@@ -30,6 +30,7 @@ export interface ChildProfile {
   className: string;
   goalMinutes: number;
   sharePublicLink: boolean;
+  studentPin: string | null;
 }
 
 interface EditChildDialogProps {
@@ -65,7 +66,15 @@ export const EditChildDialog = ({
     className: "",
     goalMinutes: 300,
     sharePublicLink: true,
+    studentPin: "",
   });
+
+  // Generate random 4-digit PIN
+  const generatePin = () => {
+    const pin = Math.floor(1000 + Math.random() * 9000).toString();
+    updateField("studentPin", pin);
+    toast.success("New PIN generated!");
+  };
 
   // Sync form data when child changes or dialog opens
   useEffect(() => {
@@ -76,6 +85,7 @@ export const EditChildDialog = ({
         className: child.class_name || "",
         goalMinutes: child.goal_minutes,
         sharePublicLink: child.share_public_link,
+        studentPin: child.student_pin || "",
       });
     }
   }, [open, child]);
@@ -89,8 +99,15 @@ export const EditChildDialog = ({
         class_name: formData.className || null,
         goal_minutes: formData.goalMinutes,
         share_public_link: formData.sharePublicLink,
+        student_pin: formData.studentPin || null,
       });
     }
+  };
+
+  const handlePinChange = (value: string) => {
+    // Only allow digits, max 6 characters
+    const sanitized = value.replace(/\D/g, "").slice(0, 6);
+    updateField("studentPin", sanitized);
   };
 
   const updateField = <K extends keyof typeof formData>(
@@ -178,6 +195,57 @@ export const EditChildDialog = ({
                   placeholder="e.g., Mrs. Peterson's Class"
                 />
               </div>
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Student Login PIN Section */}
+          <div className="space-y-4">
+            <h4 className="text-sm font-medium text-foreground flex items-center gap-2">
+              <KeyRound className="h-4 w-4" />
+              Student Login PIN
+            </h4>
+
+            <div className="space-y-2">
+              <p className="text-xs text-muted-foreground">
+                Set a 4-6 digit PIN so {child.name} can log their own reading at{" "}
+                <span className="font-medium">/student/login</span>
+              </p>
+              
+              <div className="flex items-center gap-2">
+                <Input
+                  id="studentPin"
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  placeholder="Enter 4-6 digit PIN"
+                  value={formData.studentPin}
+                  onChange={(e) => handlePinChange(e.target.value)}
+                  className="text-center text-lg tracking-widest font-mono flex-1"
+                  maxLength={6}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={generatePin}
+                >
+                  <RefreshCw className="h-4 w-4 mr-1" />
+                  Generate
+                </Button>
+              </div>
+              
+              {formData.studentPin && formData.studentPin.length >= 4 && (
+                <p className="text-xs text-success">
+                  ✓ PIN set! {child.name} can log in at /student/login
+                </p>
+              )}
+              {formData.studentPin && formData.studentPin.length < 4 && formData.studentPin.length > 0 && (
+                <p className="text-xs text-warning">
+                  PIN must be at least 4 digits
+                </p>
+              )}
             </div>
           </div>
 
