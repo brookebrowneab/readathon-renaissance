@@ -194,7 +194,7 @@ export const EditChildDialog = ({
               />
             </div>
 
-            {formData.sharePublicLink && (
+            {formData.sharePublicLink ? (
               <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
                 <Input
                   readOnly
@@ -213,6 +213,10 @@ export const EditChildDialog = ({
                   Copy
                 </Button>
               </div>
+            ) : (
+              <p className="text-xs text-muted-foreground italic p-3 bg-muted/30 rounded-lg">
+                When disabled, sponsors will need a direct invitation from your family to pledge.
+              </p>
             )}
           </div>
         </div>
