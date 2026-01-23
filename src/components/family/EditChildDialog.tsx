@@ -20,7 +20,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { User, Link as LinkIcon, Loader2, KeyRound, RefreshCw } from "lucide-react";
+import { User, Link as LinkIcon, Loader2, KeyRound, Eye, EyeOff } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import type { Child, ChildUpdate } from "@/hooks/useChildren";
 
 export interface ChildProfile {
@@ -30,7 +31,8 @@ export interface ChildProfile {
   className: string;
   goalMinutes: number;
   sharePublicLink: boolean;
-  studentPin: string | null;
+  studentUsername: string | null;
+  studentLoginEnabled: boolean;
 }
 
 interface EditChildDialogProps {
@@ -66,15 +68,12 @@ export const EditChildDialog = ({
     className: "",
     goalMinutes: 300,
     sharePublicLink: true,
-    studentPin: "",
+    studentUsername: "",
+    studentLoginEnabled: false,
   });
-
-  // Generate random 4-digit PIN
-  const generatePin = () => {
-    const pin = Math.floor(1000 + Math.random() * 9000).toString();
-    updateField("studentPin", pin);
-    toast.success("New PIN generated!");
-  };
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [isSettingPassword, setIsSettingPassword] = useState(false);
 
   // Sync form data when child changes or dialog opens
   useEffect(() => {
@@ -85,29 +84,65 @@ export const EditChildDialog = ({
         className: child.class_name || "",
         goalMinutes: child.goal_minutes,
         sharePublicLink: child.share_public_link,
-        studentPin: child.student_pin || "",
+        studentUsername: child.student_username || "",
+        studentLoginEnabled: child.student_login_enabled || false,
       });
+      setPassword("");
+      setShowPassword(false);
     }
   }, [open, child]);
 
-  const handleSave = () => {
-    if (child) {
-      onSave({
-        id: child.id,
-        name: formData.name,
-        grade_info: formData.gradeInfo || null,
-        class_name: formData.className || null,
-        goal_minutes: formData.goalMinutes,
-        share_public_link: formData.sharePublicLink,
-        student_pin: formData.studentPin || null,
-      });
+  const handleSave = async () => {
+    if (!child) return;
+
+    // If password is set, call edge function first
+    if (password && password.length >= 4) {
+      setIsSettingPassword(true);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          toast.error("Please log in to set a password");
+          setIsSettingPassword(false);
+          return;
+        }
+
+        const response = await supabase.functions.invoke("student-set-password", {
+          body: { childId: child.id, password },
+        });
+
+        if (response.error) {
+          toast.error(response.error.message || "Failed to set password");
+          setIsSettingPassword(false);
+          return;
+        }
+
+        toast.success("Password updated!");
+      } catch (err) {
+        console.error("Password set error:", err);
+        toast.error("Failed to set password");
+        setIsSettingPassword(false);
+        return;
+      }
+      setIsSettingPassword(false);
     }
+
+    // Save other fields
+    onSave({
+      id: child.id,
+      name: formData.name,
+      grade_info: formData.gradeInfo || null,
+      class_name: formData.className || null,
+      goal_minutes: formData.goalMinutes,
+      share_public_link: formData.sharePublicLink,
+      student_username: formData.studentUsername || null,
+      student_login_enabled: formData.studentLoginEnabled,
+    });
   };
 
-  const handlePinChange = (value: string) => {
-    // Only allow digits, max 6 characters
-    const sanitized = value.replace(/\D/g, "").slice(0, 6);
-    updateField("studentPin", sanitized);
+  const handleUsernameChange = (value: string) => {
+    // Lowercase, no spaces, alphanumeric + underscore only
+    const sanitized = value.toLowerCase().replace(/[^a-z0-9_]/g, "").slice(0, 20);
+    updateField("studentUsername", sanitized);
   };
 
   const updateField = <K extends keyof typeof formData>(
@@ -118,6 +153,9 @@ export const EditChildDialog = ({
   };
 
   if (!child) return null;
+
+  const hasValidCredentials = formData.studentUsername.length >= 3 && child.student_password_hash;
+  const needsPassword = formData.studentUsername.length >= 3 && !child.student_password_hash && !password;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -200,53 +238,87 @@ export const EditChildDialog = ({
 
           <Separator />
 
-          {/* Student Login PIN Section */}
+          {/* Student Login Section */}
           <div className="space-y-4">
             <h4 className="text-sm font-medium text-foreground flex items-center gap-2">
               <KeyRound className="h-4 w-4" />
-              Student Login PIN
+              Student Login
             </h4>
 
-            <div className="space-y-2">
-              <p className="text-xs text-muted-foreground">
-                Set a 4-6 digit PIN so {child.name} can log their own reading at{" "}
-                <span className="font-medium">/student/login</span>
-              </p>
-              
-              <div className="flex items-center gap-2">
-                <Input
-                  id="studentPin"
-                  type="text"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  placeholder="Enter 4-6 digit PIN"
-                  value={formData.studentPin}
-                  onChange={(e) => handlePinChange(e.target.value)}
-                  className="text-center text-lg tracking-widest font-mono flex-1"
-                  maxLength={6}
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={generatePin}
-                >
-                  <RefreshCw className="h-4 w-4 mr-1" />
-                  Generate
-                </Button>
+            {/* Enable/Disable Toggle */}
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="loginEnabled" className="text-sm font-normal">
+                  Enable Student Login
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Allow {child.name} to log their own reading
+                </p>
               </div>
-              
-              {formData.studentPin && formData.studentPin.length >= 4 && (
-                <p className="text-xs text-success">
-                  ✓ PIN set! {child.name} can log in at /student/login
-                </p>
-              )}
-              {formData.studentPin && formData.studentPin.length < 4 && formData.studentPin.length > 0 && (
-                <p className="text-xs text-warning">
-                  PIN must be at least 4 digits
-                </p>
-              )}
+              <Switch
+                id="loginEnabled"
+                checked={formData.studentLoginEnabled}
+                onCheckedChange={(checked) =>
+                  updateField("studentLoginEnabled", checked)
+                }
+              />
             </div>
+
+            {formData.studentLoginEnabled && (
+              <div className="space-y-4 p-4 bg-muted/30 rounded-lg">
+                <div className="grid gap-2">
+                  <Label htmlFor="studentUsername">Username</Label>
+                  <Input
+                    id="studentUsername"
+                    value={formData.studentUsername}
+                    onChange={(e) => handleUsernameChange(e.target.value)}
+                    placeholder="e.g., emma_reader"
+                    className="font-mono"
+                    maxLength={20}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Letters, numbers, and underscores only. 3-20 characters.
+                  </p>
+                </div>
+
+                <div className="grid gap-2">
+                  <Label htmlFor="password">
+                    {child.student_password_hash ? "New Password (leave blank to keep current)" : "Password"}
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder={child.student_password_hash ? "••••••••" : "Set a password"}
+                      className="pr-10"
+                      minLength={4}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    At least 4 characters. Use something easy for your child to remember.
+                  </p>
+                </div>
+
+                {formData.studentUsername.length >= 3 && (
+                  <div className={`text-xs p-2 rounded ${hasValidCredentials || password.length >= 4 ? "bg-success/10 text-success" : needsPassword ? "bg-warning/10 text-warning" : "bg-muted"}`}>
+                    {hasValidCredentials || password.length >= 4 ? (
+                      <>✓ {child.name} can log in at <span className="font-mono">/student/login</span> with username "<span className="font-mono">{formData.studentUsername}</span>"</>
+                    ) : needsPassword ? (
+                      <>⚠ Set a password to enable login</>
+                    ) : null}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <Separator />
@@ -304,11 +376,11 @@ export const EditChildDialog = ({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving}>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving || isSettingPassword}>
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={isSaving}>
-            {isSaving ? (
+          <Button onClick={handleSave} disabled={isSaving || isSettingPassword}>
+            {(isSaving || isSettingPassword) ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 Saving...
