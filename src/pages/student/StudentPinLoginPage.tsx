@@ -4,29 +4,36 @@ import { PublicLayout } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormField } from "@/components/ui/form-field";
-import { BookOpen, KeyRound, ArrowLeft } from "lucide-react";
+import { BookOpen, User, KeyRound, ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
 
-const StudentPinLoginPage = () => {
+const StudentLoginPage = () => {
   const navigate = useNavigate();
-  const [pin, setPin] = useState("");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | undefined>();
 
-  const handlePinChange = (value: string) => {
-    // Only allow digits, max 6 characters
-    const sanitized = value.replace(/\D/g, "").slice(0, 6);
-    setPin(sanitized);
+  const handleUsernameChange = (value: string) => {
+    // Lowercase, no spaces
+    const sanitized = value.toLowerCase().replace(/\s/g, "");
+    setUsername(sanitized);
     setError(undefined);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (pin.length < 4) {
-      setError("PIN must be at least 4 digits");
+    if (username.length < 3) {
+      setError("Username must be at least 3 characters");
+      return;
+    }
+    
+    if (password.length < 4) {
+      setError("Password must be at least 4 characters");
       return;
     }
 
@@ -34,35 +41,39 @@ const StudentPinLoginPage = () => {
     setError(undefined);
 
     try {
-      // Look up child by PIN
-      const { data: child, error: lookupError } = await supabase
-        .from("children")
-        .select("id, name, total_minutes, goal_minutes")
-        .eq("student_pin", pin)
-        .maybeSingle();
+      // Call edge function for secure login
+      const { data, error: loginError } = await supabase.functions.invoke("student-login", {
+        body: { username, password },
+      });
 
-      if (lookupError) {
-        console.error("PIN lookup error:", lookupError);
+      if (loginError) {
+        console.error("Login error:", loginError);
         setError("Something went wrong. Please try again.");
         setIsLoading(false);
         return;
       }
 
-      if (!child) {
-        setError("Invalid PIN. Please check and try again.");
+      if (data.error) {
+        setError(data.error);
         setIsLoading(false);
         return;
       }
 
-      // Store student session in sessionStorage (not full auth, just for student access)
+      if (!data.success || !data.child) {
+        setError("Login failed. Please check your credentials.");
+        setIsLoading(false);
+        return;
+      }
+
+      // Store student session in sessionStorage (cleared on browser close)
       sessionStorage.setItem("studentSession", JSON.stringify({
-        childId: child.id,
-        name: child.name,
-        totalMinutes: child.total_minutes,
-        goalMinutes: child.goal_minutes,
+        childId: data.child.id,
+        name: data.child.name,
+        totalMinutes: data.child.totalMinutes,
+        goalMinutes: data.child.goalMinutes,
       }));
 
-      toast.success(`Welcome back, ${child.name}!`);
+      toast.success(`Welcome back, ${data.child.name}!`);
       navigate("/student/dashboard");
     } catch (err) {
       console.error("Login error:", err);
@@ -97,32 +108,59 @@ const StudentPinLoginPage = () => {
                   Hi, Reader! 📚
                 </h1>
                 <p className="text-muted-foreground">
-                  Enter your PIN to log your reading
+                  Enter your username and password to log your reading
                 </p>
               </div>
 
               {/* Form */}
-              <form onSubmit={handleSubmit} className="space-y-5">
+              <form onSubmit={handleSubmit} className="space-y-4">
                 <FormField
-                  label="Your PIN"
-                  htmlFor="pin"
+                  label="Username"
+                  htmlFor="username"
+                  required
+                >
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      id="username"
+                      type="text"
+                      placeholder="Your username"
+                      value={username}
+                      onChange={(e) => handleUsernameChange(e.target.value)}
+                      className="pl-11"
+                      autoComplete="username"
+                      autoCapitalize="off"
+                    />
+                  </div>
+                </FormField>
+
+                <FormField
+                  label="Password"
+                  htmlFor="password"
                   required
                   error={error}
                 >
                   <div className="relative">
                     <KeyRound className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                     <Input
-                      id="pin"
-                      type="text"
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      placeholder="Enter your PIN"
-                      value={pin}
-                      onChange={(e) => handlePinChange(e.target.value)}
-                      className="pl-11 text-center text-2xl tracking-[0.5em] font-mono"
-                      maxLength={6}
-                      autoComplete="off"
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Your password"
+                      value={password}
+                      onChange={(e) => {
+                        setPassword(e.target.value);
+                        setError(undefined);
+                      }}
+                      className="pl-11 pr-10"
+                      autoComplete="current-password"
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
                   </div>
                 </FormField>
 
@@ -130,16 +168,16 @@ const StudentPinLoginPage = () => {
                   type="submit"
                   className="w-full"
                   size="lg"
-                  disabled={pin.length < 4 || isLoading}
+                  disabled={username.length < 3 || password.length < 4 || isLoading}
                 >
-                  {isLoading ? "Checking..." : "Start Reading! 🎉"}
+                  {isLoading ? "Logging in..." : "Start Reading! 🎉"}
                 </Button>
               </form>
 
               {/* Help text */}
               <div className="text-center space-y-3">
                 <p className="text-sm text-muted-foreground">
-                  Ask your parent for your PIN if you don't know it.
+                  Don't know your login? Ask your parent!
                 </p>
                 <Link
                   to="/login"
@@ -157,4 +195,4 @@ const StudentPinLoginPage = () => {
   );
 };
 
-export default StudentPinLoginPage;
+export default StudentLoginPage;

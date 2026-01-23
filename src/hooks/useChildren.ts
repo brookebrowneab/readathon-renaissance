@@ -12,6 +12,9 @@ export interface Child {
   share_public_link: boolean;
   total_minutes: number;
   student_pin: string | null;
+  student_username: string | null;
+  student_password_hash: string | null;
+  student_login_enabled: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -23,6 +26,8 @@ export interface ChildInsert {
   goal_minutes?: number;
   share_public_link?: boolean;
   student_pin?: string | null;
+  student_username?: string | null;
+  student_login_enabled?: boolean;
 }
 
 export interface ChildUpdate {
@@ -34,6 +39,8 @@ export interface ChildUpdate {
   share_public_link?: boolean;
   total_minutes?: number;
   student_pin?: string | null;
+  student_username?: string | null;
+  student_login_enabled?: boolean;
 }
 
 export const useChildren = () => {
