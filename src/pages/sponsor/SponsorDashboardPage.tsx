@@ -5,8 +5,12 @@ import { BottomTabBar } from "@/components/layout/BottomTabBar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
+import { useSponsorPledges } from "@/hooks/useSponsorPledges";
+import { useSponsorAuth } from "@/hooks/useSponsorAuth";
+import { format } from "date-fns";
 import {
   LogOut,
   DollarSign,
@@ -23,6 +27,8 @@ import {
   Home,
   CreditCard,
   User,
+  BookOpen,
+  CircleDollarSign,
 } from "lucide-react";
 
 // Hand-drawn border style matching FAQ/Privacy pages
@@ -33,59 +39,6 @@ const handDrawnBorder = {
   borderBottomRightRadius: '225px 15px',
   borderBottomLeftRadius: '15px 255px',
 };
-
-// Mock data - COPPA compliant (no child names without authorization)
-const mockSponsor = {
-  name: "Grandma Smith",
-  email: "grandma@example.com",
-};
-
-const currentYear = "2025";
-
-interface PastSponsorship {
-  id: string;
-  year: string;
-  eventName: string;
-  pledgeAmount: number;
-  pledgeType: "fixed" | "per-minute";
-  minutesRead: number;
-  totalAmount: number;
-  status: "paid" | "pending";
-}
-
-// Historical data - NO child names (COPPA/GDPR compliant)
-const mockPastSponsorships: PastSponsorship[] = [
-  {
-    id: "1",
-    year: "2024",
-    eventName: "Fall Read-a-thon",
-    pledgeAmount: 50,
-    pledgeType: "fixed",
-    minutesRead: 623,
-    totalAmount: 50,
-    status: "paid",
-  },
-  {
-    id: "2",
-    year: "2024",
-    eventName: "Spring Read-a-thon",
-    pledgeAmount: 0.05,
-    pledgeType: "per-minute",
-    minutesRead: 487,
-    totalAmount: 24.35,
-    status: "paid",
-  },
-  {
-    id: "3",
-    year: "2023",
-    eventName: "Fall Read-a-thon",
-    pledgeAmount: 25,
-    pledgeType: "fixed",
-    minutesRead: 350,
-    totalAmount: 25,
-    status: "paid",
-  },
-];
 
 // Menu items for the sidebar
 const menuItems = [
@@ -98,18 +51,21 @@ const menuItems = [
 const SponsorDashboardPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { signOut } = useSponsorAuth();
+  const { pledges, pledgesByChild, stats, isLoading, sponsor } = useSponsorPledges();
+  
   const [sponsorCode, setSponsorCode] = useState("");
   const [isRequestingAccess, setIsRequestingAccess] = useState(false);
   const [accessRequested, setAccessRequested] = useState(false);
   const [showRequestConfirm, setShowRequestConfirm] = useState(false);
 
-  const totalGiven = mockPastSponsorships.reduce((sum, p) => sum + p.totalAmount, 0);
-  const yearsSponsoring = [...new Set(mockPastSponsorships.map(p => p.year))].length;
-  const isReturning = mockPastSponsorships.length > 0;
+  const currentYear = new Date().getFullYear().toString();
+  const isReturning = pledges.length > 0;
 
   const isActive = (href: string) => location.pathname === href;
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await signOut();
     toast.success("Signed out successfully");
     navigate("/");
   };
@@ -138,6 +94,28 @@ const SponsorDashboardPage = () => {
     }
   };
 
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen flex-col">
+        <MainNav />
+        <main className="flex-1 bg-background-warm">
+          <div className="container py-8 max-w-3xl">
+            <Skeleton className="h-12 w-64 mb-4" />
+            <div className="grid sm:grid-cols-3 gap-4 mb-8">
+              <Skeleton className="h-32" />
+              <Skeleton className="h-32" />
+              <Skeleton className="h-32" />
+            </div>
+            <Skeleton className="h-48 mb-4" />
+            <Skeleton className="h-48" />
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen flex-col">
       <MainNav />
@@ -155,7 +133,7 @@ const SponsorDashboardPage = () => {
                     <span className="font-handwritten text-4xl text-primary">
                       {isReturning ? "Welcome back," : "Welcome,"}
                     </span>{" "}
-                    {mockSponsor.name.split(" ")[0]}!
+                    {sponsor?.name?.split(" ")[0] || "Sponsor"}!
                   </h1>
                   <div className="flex items-center gap-2 mt-2">
                     <Badge variant="outline" className="gap-1">
@@ -177,27 +155,27 @@ const SponsorDashboardPage = () => {
                       <DollarSign className="h-6 w-6 text-primary" />
                     </div>
                     <p className="font-handwritten text-4xl text-primary mb-1">
-                      ${totalGiven.toFixed(0)}
+                      ${stats.totalPledged.toFixed(0)}
                     </p>
-                    <p className="text-sm text-muted-foreground">Total Given</p>
+                    <p className="text-sm text-muted-foreground">Total Pledged</p>
                   </div>
                   <div className="p-6 text-center border-b sm:border-b-0 sm:border-r border-border">
                     <div className="p-3 rounded-full bg-success/10 w-fit mx-auto mb-3">
                       <Users className="h-6 w-6 text-success" />
                     </div>
                     <p className="font-handwritten text-4xl text-success mb-1">
-                      {mockPastSponsorships.length}
+                      {stats.childrenSupported}
                     </p>
-                    <p className="text-sm text-muted-foreground">Sponsorships</p>
+                    <p className="text-sm text-muted-foreground">Children Supported</p>
                   </div>
                   <div className="p-6 text-center">
                     <div className="p-3 rounded-full bg-accent/10 w-fit mx-auto mb-3">
                       <Calendar className="h-6 w-6 text-accent" />
                     </div>
                     <p className="font-handwritten text-4xl text-accent mb-1">
-                      {yearsSponsoring}
+                      {stats.pledgeCount}
                     </p>
-                    <p className="text-sm text-muted-foreground">Years Sponsoring</p>
+                    <p className="text-sm text-muted-foreground">Total Pledges</p>
                   </div>
                 </div>
               )}
@@ -220,56 +198,100 @@ const SponsorDashboardPage = () => {
                 </div>
               )}
 
-              {/* Past Sponsorships - Only show for returning sponsors */}
-              {isReturning && (
+              {/* Children Being Supported */}
+              {isReturning && pledgesByChild.length > 0 && (
                 <>
                   <h2 className="font-serif text-2xl md:text-3xl text-foreground mb-4 pb-2 border-b border-foreground/20">
-                    Your Past Sponsorships
+                    Children You're Supporting
                   </h2>
 
                   <div className="space-y-4 mb-10">
-                    {mockPastSponsorships.map((sponsorship) => (
+                    {pledgesByChild.map((childGroup) => (
                       <div 
-                        key={sponsorship.id} 
+                        key={childGroup.childId} 
                         className="p-6 bg-background"
                         style={handDrawnBorder}
                       >
                         <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
                           <div>
-                            <h3 className="font-serif text-xl text-foreground">
-                              {sponsorship.year} {sponsorship.eventName}
+                            <h3 className="font-serif text-xl text-foreground flex items-center gap-2">
+                              <User className="h-5 w-5 text-muted-foreground" />
+                              {childGroup.childName}
                             </h3>
-                            <p className="text-muted-foreground">
-                              You sponsored a student
-                            </p>
+                            {childGroup.child?.grade_info && (
+                              <p className="text-muted-foreground text-sm">
+                                {childGroup.child.grade_info}
+                              </p>
+                            )}
                           </div>
-                          <Badge variant="success" className="gap-1">
-                            <CheckCircle className="h-3.5 w-3.5" />
-                            {sponsorship.status === "paid" ? "Paid" : "Pending"}
+                          <Badge variant="outline" className="gap-1">
+                            {childGroup.pledges.length} pledge{childGroup.pledges.length !== 1 ? "s" : ""}
                           </Badge>
                         </div>
 
                         <div className="grid sm:grid-cols-3 gap-4">
                           <div className="bg-muted/30 rounded-lg p-4 text-center">
-                            <p className="text-xs text-muted-foreground mb-1">Your pledge</p>
-                            <p className="font-handwritten text-2xl text-foreground">
-                              {sponsorship.pledgeType === "per-minute"
-                                ? `$${sponsorship.pledgeAmount}/min`
-                                : `$${sponsorship.pledgeAmount}`}
+                            <p className="text-xs text-muted-foreground mb-1">Total Pledged</p>
+                            <p className="font-handwritten text-2xl text-primary">
+                              ${childGroup.totalAmount.toFixed(2)}
                             </p>
                           </div>
                           <div className="bg-muted/30 rounded-lg p-4 text-center">
-                            <p className="text-xs text-muted-foreground mb-1">They read</p>
-                            <p className="font-handwritten text-2xl text-foreground">
-                              {sponsorship.minutesRead} min
+                            <p className="text-xs text-muted-foreground mb-1">Minutes Read</p>
+                            <p className="font-handwritten text-2xl text-foreground flex items-center justify-center gap-1">
+                              <BookOpen className="h-5 w-5" />
+                              {childGroup.child?.total_minutes || 0}
                             </p>
                           </div>
                           <div className="bg-muted/30 rounded-lg p-4 text-center">
-                            <p className="text-xs text-muted-foreground mb-1">Total</p>
+                            <p className="text-xs text-muted-foreground mb-1">Goal Progress</p>
                             <p className="font-handwritten text-2xl text-success">
-                              ${sponsorship.totalAmount}
+                              {childGroup.child
+                                ? Math.round((childGroup.child.total_minutes / childGroup.child.goal_minutes) * 100)
+                                : 0}%
                             </p>
                           </div>
+                        </div>
+
+                        {/* Individual pledges for this child */}
+                        <div className="mt-4 pt-4 border-t border-border space-y-2">
+                          {childGroup.pledges.map((pledge) => (
+                            <div
+                              key={pledge.id}
+                              className="flex items-center justify-between p-3 rounded-lg bg-muted/20"
+                            >
+                              <div className="flex items-center gap-3">
+                                {pledge.is_paid ? (
+                                  <CheckCircle className="h-4 w-4 text-success" />
+                                ) : (
+                                  <Clock className="h-4 w-4 text-muted-foreground" />
+                                )}
+                                <div>
+                                  <p className="text-sm font-medium text-foreground">
+                                    {pledge.pledge_type === "flat" ? "Flat pledge" : "Per-minute pledge"}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {format(new Date(pledge.created_at), "MMM d, yyyy")}
+                                    {pledge.event?.name && ` • ${pledge.event.name}`}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <p className="font-serif text-lg text-primary">
+                                  ${pledge.amount.toFixed(2)}
+                                  {pledge.pledge_type === "per_minute" && (
+                                    <span className="text-xs text-muted-foreground">/min</span>
+                                  )}
+                                </p>
+                                <Badge
+                                  variant={pledge.is_paid ? "success" : "outline"}
+                                  className="text-xs"
+                                >
+                                  {pledge.is_paid ? "Paid" : "Pending"}
+                                </Badge>
+                              </div>
+                            </div>
+                          ))}
                         </div>
                       </div>
                     ))}
@@ -420,6 +442,37 @@ const SponsorDashboardPage = () => {
                 </div>
               </div>
 
+              {/* Pending Payments Section */}
+              {stats.pendingCount > 0 && (
+                <>
+                  <h2 className="font-serif text-2xl md:text-3xl text-foreground mb-4 pb-2 border-b border-foreground/20 flex items-center gap-3">
+                    <CircleDollarSign className="h-7 w-7 text-warning" />
+                    Pending Payments
+                  </h2>
+                  <div 
+                    className="p-6 bg-warning/5"
+                    style={handDrawnBorder}
+                  >
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <p className="text-lg font-serif text-foreground">
+                          You have {stats.pendingCount} pending pledge{stats.pendingCount !== 1 ? "s" : ""}
+                        </p>
+                        <p className="text-muted-foreground">
+                          Total amount: <span className="font-semibold">${stats.pendingAmount.toFixed(2)}</span>
+                        </p>
+                      </div>
+                      <Button asChild>
+                        <Link to="/sponsor/pay">
+                          <CreditCard className="h-4 w-4 mr-2" />
+                          Make Payment
+                        </Link>
+                      </Button>
+                    </div>
+                  </div>
+                </>
+              )}
+
               {/* Footer Help */}
               <div className="pt-6 border-t border-border text-center">
                 <p className="text-sm text-muted-foreground">
@@ -484,15 +537,27 @@ const SponsorDashboardPage = () => {
                     <div className="grid grid-cols-2 gap-4">
                       <div className="text-center">
                         <p className="font-handwritten text-2xl text-primary">
-                          ${totalGiven.toFixed(0)}
+                          ${stats.totalPledged.toFixed(0)}
                         </p>
-                        <p className="text-xs text-muted-foreground">Total Given</p>
+                        <p className="text-xs text-muted-foreground">Total Pledged</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="font-handwritten text-2xl text-success">
+                          {stats.paidCount}
+                        </p>
+                        <p className="text-xs text-muted-foreground">Paid</p>
                       </div>
                       <div className="text-center">
                         <p className="font-handwritten text-2xl text-accent">
-                          {yearsSponsoring}
+                          {stats.childrenSupported}
                         </p>
-                        <p className="text-xs text-muted-foreground">Years</p>
+                        <p className="text-xs text-muted-foreground">Children</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="font-handwritten text-2xl text-warning">
+                          {stats.pendingCount}
+                        </p>
+                        <p className="text-xs text-muted-foreground">Pending</p>
                       </div>
                     </div>
                   </div>
