@@ -46,7 +46,7 @@ const AdminSettingsPage = () => {
   
   // Event details - initialized from database
   const [eventName, setEventName] = useState("");
-  const [schoolName, setSchoolName] = useState("Lincoln Elementary");
+  const [schoolName, setSchoolName] = useState("");
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [endDate, setEndDate] = useState<Date | undefined>();
   const [lastLogDate, setLastLogDate] = useState<Date | undefined>();
@@ -56,9 +56,7 @@ const AdminSettingsPage = () => {
   const [showCreateEvent, setShowCreateEvent] = useState(false);
 
   // Payment settings
-  const [paymentAddress, setPaymentAddress] = useState(
-    "Lincoln Elementary PTA\nRead-a-thon Fund\n123 School Street\nAnytown, ST 12345"
-  );
+  const [paymentAddress, setPaymentAddress] = useState("");
   const [acceptChecks, setAcceptChecks] = useState(true);
   const [acceptCards, setAcceptCards] = useState(true);
 
@@ -81,6 +79,13 @@ const AdminSettingsPage = () => {
       setStartDate(parseISO(event.start_date));
       setEndDate(parseISO(event.end_date));
       setLastLogDate(parseISO(event.last_log_date));
+      setSchoolName(event.school_name || "");
+      setPaymentAddress(event.payment_address || "");
+      setAcceptChecks(event.accept_checks ?? true);
+      setAcceptCards(event.accept_cards ?? true);
+      setSendReminders(event.send_reminders ?? true);
+      setReminderDays(String(event.reminder_days ?? 7));
+      setGoalMinutes(String(event.goal_minutes ?? 500));
       setHasUnsavedChanges(false);
       setInitializedEventId(event.id);
     }
@@ -114,6 +119,13 @@ const AdminSettingsPage = () => {
         start_date: startDate,
         end_date: endDate,
         last_log_date: lastLogDate,
+        school_name: schoolName,
+        payment_address: paymentAddress,
+        accept_checks: acceptChecks,
+        accept_cards: acceptCards,
+        send_reminders: sendReminders,
+        reminder_days: parseInt(reminderDays, 10) || 7,
+        goal_minutes: parseInt(goalMinutes, 10) || 500,
       });
       setHasUnsavedChanges(false);
       toast.success("Event settings saved successfully!");
@@ -222,7 +234,10 @@ const AdminSettingsPage = () => {
                   <Input
                     id="schoolName"
                     value={schoolName}
-                    onChange={(e) => setSchoolName(e.target.value)}
+                    onChange={(e) => {
+                      setSchoolName(e.target.value);
+                      handleFieldChange();
+                    }}
                   />
                 </FormField>
 
@@ -334,7 +349,10 @@ const AdminSettingsPage = () => {
                     id="goalMinutes"
                     type="number"
                     value={goalMinutes}
-                    onChange={(e) => setGoalMinutes(e.target.value)}
+                    onChange={(e) => {
+                      setGoalMinutes(e.target.value);
+                      handleFieldChange();
+                    }}
                     min={1}
                   />
                 </FormField>
@@ -354,7 +372,10 @@ const AdminSettingsPage = () => {
                   <Textarea
                     id="paymentAddress"
                     value={paymentAddress}
-                    onChange={(e) => setPaymentAddress(e.target.value)}
+                    onChange={(e) => {
+                      setPaymentAddress(e.target.value);
+                      handleFieldChange();
+                    }}
                     rows={4}
                   />
                 </FormField>
@@ -367,7 +388,10 @@ const AdminSettingsPage = () => {
                   <Switch
                     id="acceptCards"
                     checked={acceptCards}
-                    onCheckedChange={setAcceptCards}
+                    onCheckedChange={(checked) => {
+                      setAcceptCards(checked);
+                      handleFieldChange();
+                    }}
                   />
                 </div>
 
@@ -379,7 +403,10 @@ const AdminSettingsPage = () => {
                   <Switch
                     id="acceptChecks"
                     checked={acceptChecks}
-                    onCheckedChange={setAcceptChecks}
+                    onCheckedChange={(checked) => {
+                      setAcceptChecks(checked);
+                      handleFieldChange();
+                    }}
                   />
                 </div>
               </div>
@@ -398,7 +425,10 @@ const AdminSettingsPage = () => {
                   <Switch
                     id="sendReminders"
                     checked={sendReminders}
-                    onCheckedChange={setSendReminders}
+                    onCheckedChange={(checked) => {
+                      setSendReminders(checked);
+                      handleFieldChange();
+                    }}
                   />
                 </div>
 
@@ -412,7 +442,10 @@ const AdminSettingsPage = () => {
                       id="reminderDays"
                       type="number"
                       value={reminderDays}
-                      onChange={(e) => setReminderDays(e.target.value)}
+                      onChange={(e) => {
+                        setReminderDays(e.target.value);
+                        handleFieldChange();
+                      }}
                       min={1}
                       max={30}
                       className="max-w-[120px]"
