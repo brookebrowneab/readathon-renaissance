@@ -85,28 +85,58 @@ const MainNav = () => {
           </Link>
 
           {/* Desktop Nav - Right side */}
-          <div className="flex flex-col items-end gap-2">
-            {/* Auth Buttons - Top */}
-            <div className="flex items-center gap-3">
-              {isAuthenticated ? (
-                <>
-                  <Link to="/dashboard">
-                    <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground hover:bg-muted">
-                      <User className="mr-2 h-4 w-4" />
-                      Account
-                    </Button>
-                  </Link>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="text-muted-foreground hover:text-foreground hover:bg-muted"
-                    onClick={handleLogout}
+          <nav className="flex items-center gap-6">
+            {isAuthenticated ? (
+              <>
+                {/* Dashboard Link */}
+                <Link
+                  to="/dashboard"
+                  className={cn(
+                    "text-xs font-semibold tracking-widest text-muted-foreground transition-colors hover:text-foreground hover:underline",
+                    location.pathname === "/dashboard" && "text-foreground"
+                  )}
+                >
+                  DASHBOARD
+                </Link>
+
+                {/* Account Dropdown */}
+                <div className="relative group">
+                  <button
+                    className={cn(
+                      "flex items-center gap-1 text-xs font-semibold tracking-widest text-muted-foreground transition-colors hover:text-foreground",
+                      location.pathname === "/account" && "text-foreground"
+                    )}
                   >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Logout
-                  </Button>
-                </>
-              ) : (
+                    ACCOUNT
+                  </button>
+                  {/* Dropdown menu */}
+                  <div className="absolute right-0 top-full pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150">
+                    <div className="bg-background border border-border rounded-lg shadow-lg py-1 min-w-[140px] z-50">
+                      <button
+                        onClick={handleLogout}
+                        className="flex items-center gap-2 w-full px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                      >
+                        <LogOut className="h-4 w-4" />
+                        Logout
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                {publicNav.map((item) => (
+                  <Link
+                    key={item.href}
+                    to={item.href}
+                    className={cn(
+                      "text-xs font-semibold tracking-widest text-muted-foreground transition-colors hover:text-foreground hover:underline",
+                      location.pathname === item.href && "text-foreground"
+                    )}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
                 <Link to="/login">
                   <Button 
                     variant="outline" 
@@ -116,25 +146,9 @@ const MainNav = () => {
                     Sign In
                   </Button>
                 </Link>
-              )}
-            </div>
-
-            {/* Nav Links - Below Sign In */}
-            <nav className="flex items-center gap-8">
-              {(isAuthenticated ? authenticatedNav : publicNav).map((item) => (
-                <Link
-                  key={item.href}
-                  to={item.href}
-                  className={cn(
-                    "text-xs font-semibold tracking-widest text-muted-foreground transition-colors hover:text-foreground hover:underline",
-                    location.pathname === item.href && "text-foreground"
-                  )}
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </nav>
-          </div>
+              </>
+            )}
+          </nav>
         </div>
 
         {/* Floating Notification Circle - Desktop */}
