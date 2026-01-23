@@ -294,11 +294,11 @@ const OnboardingAddChild = () => {
                   <div className="flex items-start gap-3">
                     <Shield className="h-5 w-5 text-primary mt-0.5 shrink-0" />
                     <div className="flex-1">
-                      <Label htmlFor="allowSponsorSharing" className="text-sm font-medium">
-                        Allow sponsors to invite others
+                    <Label htmlFor="allowSponsorSharing" className="text-sm font-medium">
+                        Allow Public Sponsor Link
                       </Label>
                       <p className="text-xs text-muted-foreground mt-1">
-                        When enabled, your child's sponsors can share the sponsor link with friends and family
+                        When enabled, anyone with the link can sign up as a sponsor
                       </p>
                     </div>
                     <Switch
