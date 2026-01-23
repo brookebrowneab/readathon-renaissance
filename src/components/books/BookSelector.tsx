@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,6 +16,13 @@ import { BarcodeScanner } from "./BarcodeScanner";
 import { useBooks, Book } from "@/hooks/useBooks";
 import { cn } from "@/lib/utils";
 
+interface OpenLibrarySearchResult {
+  title: string;
+  author_name?: string[];
+  cover_i?: number;
+  isbn?: string[];
+}
+
 interface BookSelectorProps {
   selectedBook: Book | null;
   onSelectBook: (book: Book | null) => void;
@@ -31,12 +38,21 @@ export const BookSelector = ({
   onManualTitleChange,
   className,
 }: BookSelectorProps) => {
-  const { books, isLoading, searchBooks, scanAndAddBook } = useBooks();
+  const { books, isLoading, searchBooks, scanAndAddBook, addBook } = useBooks();
   const [showScanner, setShowScanner] = useState(false);
   const [showLibrary, setShowLibrary] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isScanning, setIsScanning] = useState(false);
   const [filteredBooks, setFilteredBooks] = useState<Book[]>([]);
+  
+  // Autocomplete state
+  const [showAutocomplete, setShowAutocomplete] = useState(false);
+  const [autocompleteResults, setAutocompleteResults] = useState<Book[]>([]);
+  const [externalResults, setExternalResults] = useState<OpenLibrarySearchResult[]>([]);
+  const [isSearchingExternal, setIsSearchingExternal] = useState(false);
+  const autocompleteRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (searchQuery.trim()) {
@@ -45,6 +61,101 @@ export const BookSelector = ({
       setFilteredBooks(books.slice(0, 20)); // Show recent books
     }
   }, [searchQuery, books]);
+
+  // Handle autocomplete for manual title input
+  useEffect(() => {
+    if (manualTitle.trim().length >= 2) {
+      // Search local database first
+      const localResults = searchBooks(manualTitle);
+      setAutocompleteResults(localResults.slice(0, 5));
+      setShowAutocomplete(true);
+
+      // Debounce external API search
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+
+      debounceRef.current = setTimeout(async () => {
+        if (manualTitle.trim().length >= 3) {
+          setIsSearchingExternal(true);
+          try {
+            const response = await fetch(
+              `https://openlibrary.org/search.json?title=${encodeURIComponent(manualTitle)}&limit=5`
+            );
+            if (response.ok) {
+              const data = await response.json();
+              setExternalResults(data.docs?.slice(0, 5) || []);
+            }
+          } catch (error) {
+            console.error("Error searching Open Library:", error);
+          } finally {
+            setIsSearchingExternal(false);
+          }
+        }
+      }, 400);
+    } else {
+      setShowAutocomplete(false);
+      setAutocompleteResults([]);
+      setExternalResults([]);
+    }
+
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+    };
+  }, [manualTitle]);
+
+  // Close autocomplete when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        autocompleteRef.current &&
+        !autocompleteRef.current.contains(event.target as Node) &&
+        inputRef.current &&
+        !inputRef.current.contains(event.target as Node)
+      ) {
+        setShowAutocomplete(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleSelectLocalBook = (book: Book) => {
+    onSelectBook(book);
+    onManualTitleChange("");
+    setShowAutocomplete(false);
+  };
+
+  const handleSelectExternalBook = async (result: OpenLibrarySearchResult) => {
+    setShowAutocomplete(false);
+    setIsScanning(true);
+
+    try {
+      // Add the book to our library
+      const coverUrl = result.cover_i
+        ? `https://covers.openlibrary.org/b/id/${result.cover_i}-M.jpg`
+        : null;
+
+      const newBook = await addBook.mutateAsync({
+        title: result.title,
+        author: result.author_name?.[0] || null,
+        cover_url: coverUrl,
+        isbn: result.isbn?.[0] || null,
+      });
+
+      onSelectBook(newBook);
+      onManualTitleChange("");
+    } catch (error) {
+      console.error("Error adding book:", error);
+      // Still use the title even if we couldn't save the book
+      onManualTitleChange(result.title);
+    } finally {
+      setIsScanning(false);
+    }
+  };
 
   const handleScan = async (isbn: string) => {
     setShowScanner(false);
@@ -117,12 +228,101 @@ export const BookSelector = ({
       <div className="flex gap-2">
         <div className="relative flex-1">
           <Input
+            ref={inputRef}
             id="bookTitle"
             placeholder="Enter title or scan..."
             value={manualTitle}
             onChange={(e) => onManualTitleChange(e.target.value)}
+            onFocus={() => manualTitle.trim().length >= 2 && setShowAutocomplete(true)}
             disabled={isScanning}
+            autoComplete="off"
           />
+          
+          {/* Autocomplete dropdown */}
+          {showAutocomplete && (autocompleteResults.length > 0 || externalResults.length > 0 || isSearchingExternal) && (
+            <div
+              ref={autocompleteRef}
+              className="absolute z-50 top-full left-0 right-0 mt-1 bg-background border rounded-lg shadow-lg max-h-[300px] overflow-y-auto"
+            >
+              {/* Local database results */}
+              {autocompleteResults.length > 0 && (
+                <div>
+                  <div className="px-3 py-1.5 text-xs font-medium text-muted-foreground bg-muted/50">
+                    From Library
+                  </div>
+                  {autocompleteResults.map((book) => (
+                    <button
+                      key={book.id}
+                      type="button"
+                      className="w-full px-3 py-2 flex items-center gap-3 hover:bg-muted/50 transition-colors text-left"
+                      onClick={() => handleSelectLocalBook(book)}
+                    >
+                      {book.cover_url ? (
+                        <img
+                          src={book.cover_url}
+                          alt={book.title}
+                          className="w-8 h-10 object-cover rounded shadow-sm"
+                        />
+                      ) : (
+                        <div className="w-8 h-10 bg-muted rounded flex items-center justify-center">
+                          <BookOpen className="h-3 w-3 text-muted-foreground" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{book.title}</p>
+                        {book.author && (
+                          <p className="text-xs text-muted-foreground truncate">{book.author}</p>
+                        )}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* External API results */}
+              {externalResults.length > 0 && (
+                <div>
+                  <div className="px-3 py-1.5 text-xs font-medium text-muted-foreground bg-muted/50 border-t">
+                    From Open Library
+                  </div>
+                  {externalResults.map((result, index) => (
+                    <button
+                      key={`external-${index}`}
+                      type="button"
+                      className="w-full px-3 py-2 flex items-center gap-3 hover:bg-muted/50 transition-colors text-left"
+                      onClick={() => handleSelectExternalBook(result)}
+                    >
+                      {result.cover_i ? (
+                        <img
+                          src={`https://covers.openlibrary.org/b/id/${result.cover_i}-S.jpg`}
+                          alt={result.title}
+                          className="w-8 h-10 object-cover rounded shadow-sm"
+                        />
+                      ) : (
+                        <div className="w-8 h-10 bg-muted rounded flex items-center justify-center">
+                          <BookOpen className="h-3 w-3 text-muted-foreground" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{result.title}</p>
+                        {result.author_name?.[0] && (
+                          <p className="text-xs text-muted-foreground truncate">{result.author_name[0]}</p>
+                        )}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Loading state for external search */}
+              {isSearchingExternal && (
+                <div className="px-3 py-2 flex items-center gap-2 text-sm text-muted-foreground border-t">
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  Searching online...
+                </div>
+              )}
+            </div>
+          )}
         </div>
         <Button
           type="button"
