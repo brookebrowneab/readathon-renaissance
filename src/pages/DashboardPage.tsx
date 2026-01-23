@@ -19,6 +19,7 @@ import { useChildren } from "@/hooks/useChildren";
 import { useParentPledges } from "@/hooks/useParentPledges";
 import { usePledges } from "@/hooks/usePledges";
 import { useAllChildrenReadingLogs } from "@/hooks/useReadingLogs";
+import { useClassGradeTotals } from "@/hooks/useClassGradeTotals";
 import { PledgesSection } from "@/components/dashboard/PledgesSection";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState, useMemo } from "react";
@@ -66,6 +67,7 @@ const DashboardPage = () => {
   const { pledgesByChild, totalPledges, totalSponsors, isLoading: pledgesLoading } = useParentPledges();
   const { deletePledge } = usePledges();
   const { data: logsByChild, isLoading: logsLoading } = useAllChildrenReadingLogs();
+  const { data: classGradeTotals } = useClassGradeTotals(children);
 
   // Build recent activity from real reading logs
   const recentActivity = useMemo(() => {
@@ -126,6 +128,7 @@ const DashboardPage = () => {
   const transformedChildren = useMemo(() => {
     return children.map((child) => {
       const childLogs = logsByChild?.[child.id] || [];
+      const totals = classGradeTotals?.[child.id] || { classTotal: 0, gradeTotal: 0 };
       
       return {
         id: child.id,
@@ -135,13 +138,13 @@ const DashboardPage = () => {
         goalMinutes: child.goal_minutes,
         gradeInfo: child.grade_info || "Not specified",
         className: child.class_name || "Not specified",
-        classMinutesRead: 0, // Would need additional query
-        gradeMinutesRead: 0, // Would need additional query
+        classMinutesRead: totals.classTotal,
+        gradeMinutesRead: totals.gradeTotal,
         minutesToday: calculateMinutesToday(childLogs),
         longestStreak: calculateLongestStreak(childLogs),
       };
     });
-  }, [children, logsByChild]);
+  }, [children, logsByChild, classGradeTotals]);
 
   return (
     <div className="flex min-h-screen flex-col">

@@ -488,6 +488,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_class_total_minutes: {
+        Args: { p_class_name: string }
+        Returns: number
+      }
+      get_grade_total_minutes: {
+        Args: { p_grade_info: string }
+        Returns: number
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
