@@ -89,6 +89,45 @@ export type Database = {
         }
         Relationships: []
       }
+      children: {
+        Row: {
+          class_name: string | null
+          created_at: string
+          goal_minutes: number
+          grade_info: string | null
+          id: string
+          name: string
+          share_public_link: boolean
+          total_minutes: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          class_name?: string | null
+          created_at?: string
+          goal_minutes?: number
+          grade_info?: string | null
+          id?: string
+          name: string
+          share_public_link?: boolean
+          total_minutes?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          class_name?: string | null
+          created_at?: string
+          goal_minutes?: number
+          grade_info?: string | null
+          id?: string
+          name?: string
+          share_public_link?: boolean
+          total_minutes?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       email_logs: {
         Row: {
           body: string
