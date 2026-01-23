@@ -6,7 +6,6 @@ import { ReadingGoalRing } from "@/components/legacy";
 import {
   BookOpen,
   Plus,
-  ChevronRight,
   ArrowLeft,
   Settings,
   UserPlus,
@@ -195,12 +194,6 @@ const ManageChildrenPage = () => {
                         </div>
                         
                         <div className="flex items-center gap-2">
-                          <Button variant="outline" size="sm" asChild className="hidden md:inline-flex">
-                            <Link to={`/log-reading?child=${child.id}`}>
-                              <BookOpen className="h-4 w-4 mr-1" />
-                              Log Reading
-                            </Link>
-                          </Button>
                           
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -264,15 +257,7 @@ const ManageChildrenPage = () => {
                     {/* Collapsible Reading Logs Table */}
                     <CollapsibleContent>
                       <div className="border-t border-border p-6 bg-muted/20">
-                        <div className="flex items-center justify-between mb-4">
-                          <h4 className="font-serif text-lg text-foreground">Reading Logs</h4>
-                          <Button size="sm" asChild className="md:hidden">
-                            <Link to={`/log-reading?child=${child.id}`}>
-                              <BookOpen className="h-4 w-4 mr-1" />
-                              Log Reading
-                            </Link>
-                          </Button>
-                        </div>
+                        <h4 className="font-serif text-lg text-foreground mb-4">Reading Logs</h4>
                         <ReadingLogsTable
                           logs={readingLogs[child.id] || []}
                           childName={child.name}
