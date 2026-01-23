@@ -38,6 +38,7 @@ export interface UpdateTeacherInput {
   teacher_type?: TeacherType;
   has_full_access?: boolean;
   is_active?: boolean;
+  user_id?: string | null;
 }
 
 // Fetch all teachers

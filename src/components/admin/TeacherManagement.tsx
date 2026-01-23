@@ -84,6 +84,7 @@ export function TeacherManagement() {
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showUnlinkDialog, setShowUnlinkDialog] = useState(false);
   const [showAssignmentsDialog, setShowAssignmentsDialog] = useState(false);
   const [showUploadPreview, setShowUploadPreview] = useState(false);
   const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
@@ -157,6 +158,22 @@ export function TeacherManagement() {
       await deleteTeacher.mutateAsync(selectedTeacher.id);
       toast.success(`Removed ${selectedTeacher.name}`);
       setShowDeleteDialog(false);
+      setSelectedTeacher(null);
+    } catch (error) {
+      // Error handled in hook
+    }
+  };
+
+  const handleUnlinkTeacher = async () => {
+    if (!selectedTeacher) return;
+
+    try {
+      await updateTeacher.mutateAsync({
+        id: selectedTeacher.id,
+        user_id: null,
+      });
+      toast.success(`Unlinked account from ${selectedTeacher.name}`);
+      setShowUnlinkDialog(false);
       setSelectedTeacher(null);
     } catch (error) {
       // Error handled in hook
@@ -392,7 +409,15 @@ export function TeacherManagement() {
                             </span>
                           )}
                           {teacher.user_id ? (
-                            <Badge variant="success" className="text-xs">
+                            <Badge 
+                              variant="success" 
+                              className="text-xs cursor-pointer hover:opacity-80"
+                              onClick={() => {
+                                setSelectedTeacher(teacher);
+                                setShowUnlinkDialog(true);
+                              }}
+                              title="Click to unlink account"
+                            >
                               <Link className="h-3 w-3 mr-1" />
                               Account Linked
                             </Badge>
@@ -718,6 +743,31 @@ export function TeacherManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Unlink Account Dialog */}
+      <AlertDialog open={showUnlinkDialog} onOpenChange={setShowUnlinkDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Unlink Teacher Account</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to unlink the user account from{" "}
+              <span className="font-medium">{selectedTeacher?.name}</span>?
+              <br /><br />
+              The teacher will need to log in again with a matching email to re-link their account.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleUnlinkTeacher}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              <Link2Off className="h-4 w-4 mr-2" />
+              Unlink Account
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
