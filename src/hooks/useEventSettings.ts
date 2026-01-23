@@ -10,6 +10,13 @@ export interface EventSettings {
   end_date: string;
   last_log_date: string;
   is_active: boolean;
+  school_name: string;
+  payment_address: string;
+  accept_checks: boolean;
+  accept_cards: boolean;
+  send_reminders: boolean;
+  reminder_days: number;
+  goal_minutes: number;
   created_at: string;
   updated_at: string;
 }
@@ -21,6 +28,13 @@ export interface UpdateEventParams {
   end_date?: Date;
   last_log_date?: Date;
   is_active?: boolean;
+  school_name?: string;
+  payment_address?: string;
+  accept_checks?: boolean;
+  accept_cards?: boolean;
+  send_reminders?: boolean;
+  reminder_days?: number;
+  goal_minutes?: number;
 }
 
 export function useEventSettings() {
@@ -51,6 +65,13 @@ export function useEventSettings() {
       if (updates.end_date !== undefined) updateData.end_date = format(updates.end_date, 'yyyy-MM-dd');
       if (updates.last_log_date !== undefined) updateData.last_log_date = format(updates.last_log_date, 'yyyy-MM-dd');
       if (updates.is_active !== undefined) updateData.is_active = updates.is_active;
+      if (updates.school_name !== undefined) updateData.school_name = updates.school_name;
+      if (updates.payment_address !== undefined) updateData.payment_address = updates.payment_address;
+      if (updates.accept_checks !== undefined) updateData.accept_checks = updates.accept_checks;
+      if (updates.accept_cards !== undefined) updateData.accept_cards = updates.accept_cards;
+      if (updates.send_reminders !== undefined) updateData.send_reminders = updates.send_reminders;
+      if (updates.reminder_days !== undefined) updateData.reminder_days = updates.reminder_days;
+      if (updates.goal_minutes !== undefined) updateData.goal_minutes = updates.goal_minutes;
 
       const { data, error } = await supabase
         .from('events')

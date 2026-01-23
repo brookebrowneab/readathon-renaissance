@@ -266,32 +266,53 @@ export type Database = {
       }
       events: {
         Row: {
+          accept_cards: boolean
+          accept_checks: boolean
           created_at: string
           end_date: string
+          goal_minutes: number
           id: string
           is_active: boolean
           last_log_date: string
           name: string
+          payment_address: string
+          reminder_days: number
+          school_name: string
+          send_reminders: boolean
           start_date: string
           updated_at: string
         }
         Insert: {
+          accept_cards?: boolean
+          accept_checks?: boolean
           created_at?: string
           end_date: string
+          goal_minutes?: number
           id?: string
           is_active?: boolean
           last_log_date: string
           name: string
+          payment_address?: string
+          reminder_days?: number
+          school_name?: string
+          send_reminders?: boolean
           start_date: string
           updated_at?: string
         }
         Update: {
+          accept_cards?: boolean
+          accept_checks?: boolean
           created_at?: string
           end_date?: string
+          goal_minutes?: number
           id?: string
           is_active?: boolean
           last_log_date?: string
           name?: string
+          payment_address?: string
+          reminder_days?: number
+          school_name?: string
+          send_reminders?: boolean
           start_date?: string
           updated_at?: string
         }
