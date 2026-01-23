@@ -1,9 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { MainNav, Footer } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { supabase } from "@/integrations/supabase/client";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useParentPledges, ParentPledge } from "@/hooks/useParentPledges";
+import { usePledges } from "@/hooks/usePledges";
+import { DeleteConfirm } from "@/components/ui/confirm-dialog";
 import {
   ArrowLeft,
   DollarSign,
@@ -13,6 +16,7 @@ import {
   Clock,
   CreditCard,
   FileText,
+  Trash2,
 } from "lucide-react";
 import { format } from "date-fns";
 
@@ -25,105 +29,44 @@ const handDrawnBorder = {
   borderBottomLeftRadius: '15px 255px',
 };
 
-interface Pledge {
-  id: string;
-  student_name: string;
-  amount: number;
-  pledge_type: string;
-  payment_status: string;
-  is_paid: boolean;
-  expected_payment_method: string | null;
-  created_at: string;
-}
-
 const MyPledgesPage = () => {
-  const [pledges, setPledges] = useState<Pledge[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchPledges = async () => {
-      try {
-        setIsLoading(true);
-        
-        // Get current user's sponsor profile
-        const { data: { user } } = await supabase.auth.getUser();
-        
-        if (!user) {
-          // Show demo data for non-authenticated users
-          setPledges([
-            {
-              id: "1",
-              student_name: "Emma Johnson",
-              amount: 50,
-              pledge_type: "flat",
-              payment_status: "pending",
-              is_paid: false,
-              expected_payment_method: "card",
-              created_at: new Date().toISOString(),
-            },
-            {
-              id: "2",
-              student_name: "Lucas Johnson",
-              amount: 0.25,
-              pledge_type: "per_minute",
-              payment_status: "paid",
-              is_paid: true,
-              expected_payment_method: "check",
-              created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-            },
-          ]);
-          setIsLoading(false);
-          return;
-        }
-
-        // Get sponsor record for current user
-        const { data: sponsor } = await supabase
-          .from("sponsors")
-          .select("id")
-          .eq("user_id", user.id)
-          .maybeSingle();
-
-        if (sponsor) {
-          // Fetch pledges for this sponsor
-          const { data: pledgesData, error: pledgesError } = await supabase
-            .from("pledges")
-            .select("*")
-            .eq("sponsor_id", sponsor.id)
-            .order("created_at", { ascending: false });
-
-          if (pledgesError) throw pledgesError;
-          setPledges(pledgesData || []);
-        } else {
-          // User might be a parent - for now show empty
-          setPledges([]);
-        }
-      } catch (err) {
-        console.error("Error fetching pledges:", err);
-        setError("Failed to load pledges");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchPledges();
-  }, []);
-
-  const totalPledged = pledges.reduce((sum, p) => {
-    if (p.pledge_type === "flat") return sum + p.amount;
-    // For per-minute pledges, we'd need reading minutes - show base amount for now
-    return sum + p.amount * 100; // Estimate based on 100 minutes
-  }, 0);
+  const { pledges, pledgesByChild, totalPledges, totalSponsors, isLoading, error } = useParentPledges();
+  const { deletePledge } = usePledges();
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [pledgeToDelete, setPledgeToDelete] = useState<string | null>(null);
 
   const paidCount = pledges.filter(p => p.is_paid).length;
   const pendingCount = pledges.filter(p => !p.is_paid).length;
 
-  const getStatusBadge = (pledge: Pledge) => {
+  const handleDeleteClick = (pledgeId: string) => {
+    setPledgeToDelete(pledgeId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (pledgeToDelete) {
+      deletePledge.mutate(pledgeToDelete);
+    }
+    setDeleteDialogOpen(false);
+    setPledgeToDelete(null);
+  };
+
+  const getStatusBadge = (pledge: ParentPledge) => {
     if (pledge.is_paid) {
-      return <Badge className="bg-success/10 text-success border-success/20">Paid</Badge>;
+      return (
+        <Badge className="bg-success/10 text-success border-success/20">
+          <CheckCircle className="h-3 w-3 mr-1" />
+          Paid
+        </Badge>
+      );
     }
     if (pledge.payment_status === "pending") {
-      return <Badge variant="outline" className="text-muted-foreground">Pending</Badge>;
+      return (
+        <Badge variant="outline" className="text-muted-foreground">
+          <Clock className="h-3 w-3 mr-1" />
+          Pending
+        </Badge>
+      );
     }
     return <Badge variant="secondary">{pledge.payment_status}</Badge>;
   };
@@ -160,7 +103,7 @@ const MyPledgesPage = () => {
               My Pledges
             </h1>
             <p className="text-muted-foreground mt-1 text-sm md:text-base">
-              View and manage pledges you've made to support readers
+              View and manage pledges for your children
             </p>
           </div>
 
@@ -170,7 +113,7 @@ const MyPledgesPage = () => {
             style={handDrawnBorder}
           >
             <div className="text-center">
-              <p className="text-2xl font-serif text-primary">${totalPledged.toFixed(0)}</p>
+              <p className="text-2xl font-serif text-primary">${totalPledges.toFixed(0)}</p>
               <p className="text-xs text-muted-foreground">Total Pledged</p>
             </div>
             <div className="text-center border-x border-border">
@@ -185,9 +128,12 @@ const MyPledgesPage = () => {
 
           {/* Loading State */}
           {isLoading && (
-            <div className="text-center py-12">
-              <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4" />
-              <p className="text-muted-foreground">Loading pledges...</p>
+            <div className="space-y-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="p-4 bg-background" style={handDrawnBorder}>
+                  <Skeleton className="h-16 w-full" />
+                </div>
+              ))}
             </div>
           )}
 
@@ -197,7 +143,7 @@ const MyPledgesPage = () => {
               className="p-6 bg-destructive/10 text-center"
               style={handDrawnBorder}
             >
-              <p className="text-destructive">{error}</p>
+              <p className="text-destructive">Failed to load pledges</p>
               <Button 
                 variant="outline" 
                 className="mt-4"
@@ -217,66 +163,95 @@ const MyPledgesPage = () => {
               <DollarSign className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
               <h3 className="font-serif text-xl text-foreground mb-2">No pledges yet</h3>
               <p className="text-muted-foreground mb-6">
-                You haven't made any pledges to support readers.
+                Invite sponsors to support your children's reading journey.
               </p>
               <Button asChild>
-                <Link to="/sponsor">Make a Pledge</Link>
+                <Link to="/invite">Invite Sponsors</Link>
               </Button>
             </div>
           )}
 
-          {/* Pledges List */}
-          {!isLoading && !error && pledges.length > 0 && (
-            <div className="space-y-4">
-              {pledges.map((pledge) => (
-                <div
-                  key={pledge.id}
-                  className="p-4 bg-background"
-                  style={handDrawnBorder}
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <User className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-medium text-foreground">
-                          {pledge.student_name}
-                        </span>
-                        {getStatusBadge(pledge)}
-                      </div>
-                      
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <Calendar className="h-3.5 w-3.5" />
-                          {format(new Date(pledge.created_at), "MMM d, yyyy")}
-                        </span>
-                        {pledge.expected_payment_method && (
-                          <span className="flex items-center gap-1">
-                            {getPaymentMethodIcon(pledge.expected_payment_method)}
-                            {pledge.expected_payment_method === "card" ? "Card" : "Check"}
-                          </span>
-                        )}
-                      </div>
+          {/* Pledges List by Child */}
+          {!isLoading && !error && pledgesByChild.length > 0 && (
+            <div className="space-y-6">
+              {pledgesByChild.map((child) => (
+                <div key={child.childId}>
+                  <h2 className="font-serif text-lg text-foreground mb-3 flex items-center gap-2">
+                    <User className="h-4 w-4 text-muted-foreground" />
+                    {child.childName}
+                    <Badge variant="outline" className="ml-auto">
+                      {child.pledges.length} pledge{child.pledges.length !== 1 ? "s" : ""}
+                    </Badge>
+                  </h2>
+                  
+                  {child.pledges.length === 0 ? (
+                    <div 
+                      className="p-4 bg-background text-center text-muted-foreground"
+                      style={handDrawnBorder}
+                    >
+                      No pledges for {child.childName} yet
                     </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {child.pledges.map((pledge) => (
+                        <div
+                          key={pledge.id}
+                          className="p-4 bg-background"
+                          style={handDrawnBorder}
+                        >
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                {getStatusBadge(pledge)}
+                                <span className="text-xs text-muted-foreground">
+                                  {pledge.pledge_type === "flat" ? "Flat amount" : "Per minute"}
+                                </span>
+                              </div>
+                              
+                              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                                <span className="flex items-center gap-1">
+                                  <Calendar className="h-3.5 w-3.5" />
+                                  {format(new Date(pledge.created_at), "MMM d, yyyy")}
+                                </span>
+                                {pledge.expected_payment_method && (
+                                  <span className="flex items-center gap-1">
+                                    {getPaymentMethodIcon(pledge.expected_payment_method)}
+                                    {pledge.expected_payment_method === "card" ? "Card" : "Check"}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
 
-                    <div className="text-right">
-                      <p className="font-serif text-xl text-primary">
-                        ${pledge.amount.toFixed(2)}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {pledge.pledge_type === "flat" ? "flat amount" : "per minute"}
-                      </p>
-                    </div>
-                  </div>
+                            <div className="text-right flex items-center gap-2">
+                              <div>
+                                <p className="font-serif text-xl text-primary">
+                                  ${pledge.amount.toFixed(2)}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  {pledge.pledge_type === "flat" ? "flat" : "/min"}
+                                </p>
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                                onClick={() => handleDeleteClick(pledge.id)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
 
-                  {!pledge.is_paid && (
-                    <div className="mt-4 pt-4 border-t border-border flex gap-2">
-                      <Button size="sm" className="flex-1">
-                        <CreditCard className="h-4 w-4 mr-2" />
-                        Pay Now
-                      </Button>
-                      <Button size="sm" variant="outline">
-                        View Details
-                      </Button>
+                          {!pledge.is_paid && (
+                            <div className="mt-4 pt-4 border-t border-border flex gap-2">
+                              <Button size="sm" className="flex-1" disabled>
+                                <CreditCard className="h-4 w-4 mr-2" />
+                                Pay Now (Coming Soon)
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      ))}
                     </div>
                   )}
                 </div>
@@ -287,6 +262,14 @@ const MyPledgesPage = () => {
       </main>
 
       <Footer />
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteConfirm
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleConfirmDelete}
+        itemName="this pledge"
+      />
     </div>
   );
 };
