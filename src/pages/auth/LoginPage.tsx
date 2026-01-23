@@ -149,7 +149,7 @@ const LoginPage = () => {
                         Student
                       </Button>
                     </Link>
-                    <Link to="/teacher" className="block">
+                    <Link to="/teacher/login" className="block">
                       <Button variant="outline" className="w-full text-xs px-2">
                         <Users className="h-4 w-4 mr-1" />
                         Teacher
