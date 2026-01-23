@@ -6,7 +6,10 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useParentPledges, ParentPledge } from "@/hooks/useParentPledges";
 import { usePledges } from "@/hooks/usePledges";
+import { useChildren } from "@/hooks/useChildren";
 import { DeleteConfirm, ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { sendPledgeNotification } from "@/lib/notifications";
+import { supabase } from "@/integrations/supabase/client";
 import {
   ArrowLeft,
   DollarSign,
@@ -34,6 +37,7 @@ const handDrawnBorder = {
 const MyPledgesPage = () => {
   const { pledges, pledgesByChild, totalPledges, totalSponsors, isLoading, error, refetch } = useParentPledges();
   const { deletePledge, updatePledge } = usePledges();
+  const { children } = useChildren();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [pledgeToDelete, setPledgeToDelete] = useState<string | null>(null);
   const [markPaidDialogOpen, setMarkPaidDialogOpen] = useState(false);
@@ -60,12 +64,42 @@ const MyPledgesPage = () => {
     setMarkPaidDialogOpen(true);
   };
 
-  const handleConfirmMarkPaid = () => {
+  const handleConfirmMarkPaid = async () => {
     if (pledgeToMarkPaid) {
       updatePledge.mutate(
         { id: pledgeToMarkPaid.id, is_paid: true, payment_status: "paid" },
         {
-          onSuccess: () => {
+          onSuccess: async () => {
+            // Send email notification to sponsor if we have their info
+            try {
+              if (pledgeToMarkPaid.sponsor_id) {
+                const { data: sponsorData } = await supabase
+                  .from("sponsors")
+                  .select("*")
+                  .eq("id", pledgeToMarkPaid.sponsor_id)
+                  .maybeSingle();
+                
+                // Get child's total minutes for per-minute calculation
+                const child = children.find(c => c.id === pledgeToMarkPaid.child_id);
+                const totalMinutes = child?.total_minutes || 0;
+                
+                if (sponsorData?.email) {
+                  await sendPledgeNotification({
+                    type: "payment_complete",
+                    pledgeId: pledgeToMarkPaid.id,
+                    recipientEmail: sponsorData.email,
+                    recipientName: sponsorData.name,
+                    studentName: pledgeToMarkPaid.student_name,
+                    amount: pledgeToMarkPaid.amount,
+                    pledgeType: pledgeToMarkPaid.pledge_type as "flat" | "per_minute",
+                    totalMinutes,
+                  });
+                }
+              }
+            } catch (notifyError) {
+              console.error("Failed to send payment notification:", notifyError);
+            }
+            
             refetch();
             setMarkPaidDialogOpen(false);
             setPledgeToMarkPaid(null);

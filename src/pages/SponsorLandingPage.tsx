@@ -10,6 +10,8 @@ import { useChildById } from "@/hooks/useChildren";
 import { usePledges } from "@/hooks/usePledges";
 import { useReadingLogs } from "@/hooks/useReadingLogs";
 import { useActiveEvent, formatEventDates } from "@/hooks/useActiveEvent";
+import { sendPledgeNotification } from "@/lib/notifications";
+import { supabase } from "@/integrations/supabase/client";
 import { format, isToday, isYesterday, parseISO } from "date-fns";
 import { 
   CreditCard, 
@@ -133,7 +135,7 @@ const SponsorLandingPage = () => {
     setIsSubmitting(true);
     
     try {
-      await addPledge.mutateAsync({
+      const newPledge = await addPledge.mutateAsync({
         child_id: childId,
         student_name: child.name,
         pledge_type: usePerMinute ? "per_minute" : "flat",
@@ -142,6 +144,36 @@ const SponsorLandingPage = () => {
         sponsor_id: sponsor?.id || null,
         expected_payment_method: paymentMethod,
       });
+      
+      // Send email notification to parent
+      try {
+        // Get parent's profile for email
+        const { data: parentProfile } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("user_id", child.user_id)
+          .maybeSingle();
+        
+        // Get parent's email from auth
+        const { data: authData } = await supabase.auth.admin.getUserById(child.user_id);
+        const parentEmail = authData?.user?.email;
+        
+        if (parentEmail) {
+          await sendPledgeNotification({
+            type: "pledge_created",
+            pledgeId: newPledge.id,
+            recipientEmail: parentEmail,
+            recipientName: parentProfile?.display_name || "Parent",
+            sponsorName: sponsorName || sponsor?.name || "A sponsor",
+            studentName: child.name,
+            amount: effectiveAmount || 0,
+            pledgeType: usePerMinute ? "per_minute" : "flat",
+          });
+        }
+      } catch (notifyError) {
+        // Don't block navigation on notification failure
+        console.error("Failed to send notification:", notifyError);
+      }
       
       navigate("/sponsor/pledged");
     } catch (error) {
