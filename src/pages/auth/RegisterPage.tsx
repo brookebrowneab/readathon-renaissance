@@ -152,11 +152,15 @@ const RegisterPage = () => {
               <div className="space-y-6">
                 {/* Header */}
                 <div className="text-center">
+                  <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium mb-3">
+                    <Users className="h-4 w-4" />
+                    Parent / Sponsor Registration
+                  </div>
                   <h1 className="font-serif text-2xl text-foreground">
                     Create Your Account
                   </h1>
                   <p className="text-muted-foreground">
-                    Join the Read-a-thon community
+                    Sign up as a parent or sponsor to support young readers
                   </p>
                 </div>
 
