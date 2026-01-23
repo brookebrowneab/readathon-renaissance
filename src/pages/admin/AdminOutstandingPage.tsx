@@ -32,6 +32,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { sendPaymentReminders } from "@/lib/notifications";
 
 // Hand-drawn border style
 const handDrawnBorder = {
@@ -145,10 +146,38 @@ const AdminOutstandingPage = () => {
       toast.error("Please select at least one payment");
       return;
     }
+    
     setIsSending(true);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    
+    // Build the pledge data for selected payments
+    const selectedPledgeData = filteredPayments
+      .filter((p) => selectedPayments.includes(p.id))
+      .map((p) => ({
+        pledgeId: p.id,
+        recipientEmail: p.sponsorEmail,
+        recipientName: p.sponsorName,
+        studentName: p.studentName,
+        amount: p.pledgeType === "per-minute" ? p.amount / (p.totalMinutes || 1) : p.amount,
+        pledgeType: p.pledgeType === "per-minute" ? "per_minute" as const : "flat" as const,
+        totalMinutes: p.totalMinutes,
+        daysSincePledge: p.daysOutstanding,
+      }));
+    
+    const result = await sendPaymentReminders(selectedPledgeData);
+    
     setIsSending(false);
-    toast.success(`Reminders sent to ${selectedPayments.length} sponsor(s)!`);
+    
+    if (result.success && result.summary) {
+      if (result.summary.sent > 0) {
+        toast.success(`Successfully sent ${result.summary.sent} reminder(s)!`);
+      }
+      if (result.summary.failed > 0) {
+        toast.error(`Failed to send ${result.summary.failed} reminder(s)`);
+      }
+    } else {
+      toast.error(result.error || "Failed to send reminders");
+    }
+    
     setSelectedPayments([]);
   };
 
@@ -312,8 +341,22 @@ const AdminOutstandingPage = () => {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => {
-                          toast.success(`Reminder sent to ${payment.sponsorName}`);
+                        onClick={async () => {
+                          const result = await sendPaymentReminders([{
+                            pledgeId: payment.id,
+                            recipientEmail: payment.sponsorEmail,
+                            recipientName: payment.sponsorName,
+                            studentName: payment.studentName,
+                            amount: payment.pledgeType === "per-minute" ? payment.amount / (payment.totalMinutes || 1) : payment.amount,
+                            pledgeType: payment.pledgeType === "per-minute" ? "per_minute" : "flat",
+                            totalMinutes: payment.totalMinutes,
+                            daysSincePledge: payment.daysOutstanding,
+                          }]);
+                          if (result.success) {
+                            toast.success(`Reminder sent to ${payment.sponsorName}`);
+                          } else {
+                            toast.error(result.error || "Failed to send reminder");
+                          }
                         }}
                       >
                         <Mail className="h-4 w-4" />
