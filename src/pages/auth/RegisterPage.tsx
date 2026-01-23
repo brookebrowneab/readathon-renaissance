@@ -136,29 +136,7 @@ const RegisterPage = () => {
 
   return (
     <PublicLayout>
-      <section className="min-h-[calc(100vh-8rem)] flex">
-        {/* Left Side - Illustration (Desktop Only) */}
-        <div className="hidden lg:flex lg:w-[40%] bg-primary items-center justify-center p-12 relative overflow-hidden">
-          {/* Decorative Background */}
-          <div className="absolute inset-0 bg-gradient-to-br from-primary to-primary-hover" />
-          <div className="absolute top-20 right-10 w-40 h-40 bg-accent/20 rounded-full blur-3xl" />
-          <div className="absolute bottom-10 left-10 w-56 h-56 bg-primary-foreground/10 rounded-full blur-3xl" />
-
-          {/* Content */}
-          <div className="relative z-10 text-center text-primary-foreground">
-            <div className="mb-8">
-              <Users className="h-24 w-24 mx-auto mb-6 opacity-90" />
-            </div>
-            <h2 className="text-3xl font-bold mb-4">Join Read-a-thon</h2>
-            <p className="text-lg opacity-90 max-w-sm">
-              Create an account to start tracking your child's reading journey and
-              collect pledges from supporters.
-            </p>
-          </div>
-        </div>
-
-        {/* Right Side - Form */}
-        <div className="flex-1 flex items-center justify-center bg-background-warm p-6 lg:p-12">
+      <section className="min-h-[calc(100vh-8rem)] flex items-center justify-center bg-background-warm p-6 lg:p-12">
           
           <div className="w-full max-w-md relative z-10">
             <div 
@@ -377,7 +355,6 @@ const RegisterPage = () => {
               </div>
             </div>
           </div>
-        </div>
       </section>
     </PublicLayout>
   );
