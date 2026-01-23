@@ -41,6 +41,8 @@ import {
   Trash2,
   Users,
   Shield,
+  Link,
+  Link2Off,
 } from "lucide-react";
 import { toast } from "sonner";
 import { handDrawnBorder } from "@/lib/admin-styles";
@@ -389,6 +391,17 @@ export function TeacherManagement() {
                               {teacher.email}
                             </span>
                           )}
+                          {teacher.user_id ? (
+                            <Badge variant="success" className="text-xs">
+                              <Link className="h-3 w-3 mr-1" />
+                              Account Linked
+                            </Badge>
+                          ) : teacher.email ? (
+                            <Badge variant="outline" className="text-xs text-muted-foreground">
+                              <Link2Off className="h-3 w-3 mr-1" />
+                              Pending Link
+                            </Badge>
+                          ) : null}
                           {teacher.has_full_access && (
                             <Badge variant="secondary" className="text-xs">
                               <Shield className="h-3 w-3 mr-1" />
@@ -458,7 +471,11 @@ export function TeacherManagement() {
                 placeholder="e.g., Mrs. Smith"
               />
             </FormField>
-            <FormField label="Email" htmlFor="teacherEmail">
+            <FormField 
+              label="Email" 
+              htmlFor="teacherEmail"
+              helperText="When this email registers/logs in, their account will be automatically linked"
+            >
               <Input
                 id="teacherEmail"
                 type="email"
@@ -525,12 +542,17 @@ export function TeacherManagement() {
                 onChange={(e) => setFormName(e.target.value)}
               />
             </FormField>
-            <FormField label="Email" htmlFor="editTeacherEmail">
+            <FormField 
+              label="Email" 
+              htmlFor="editTeacherEmail"
+              helperText={selectedTeacher?.user_id ? "Account already linked" : "When this email registers/logs in, their account will be automatically linked"}
+            >
               <Input
                 id="editTeacherEmail"
                 type="email"
                 value={formEmail}
                 onChange={(e) => setFormEmail(e.target.value)}
+                disabled={!!selectedTeacher?.user_id}
               />
             </FormField>
             <FormField label="Type" htmlFor="editTeacherType" required>
