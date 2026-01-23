@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,7 +20,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { User, Link as LinkIcon } from "lucide-react";
+import { User, Link as LinkIcon, Loader2 } from "lucide-react";
+import type { Child, ChildUpdate } from "@/hooks/useChildren";
 
 export interface ChildProfile {
   id: string;
@@ -32,10 +33,11 @@ export interface ChildProfile {
 }
 
 interface EditChildDialogProps {
-  child: ChildProfile | null;
+  child: Child | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (child: ChildProfile) => void;
+  onSave: (updates: ChildUpdate) => void;
+  isSaving?: boolean;
 }
 
 const gradeOptions = [
@@ -55,41 +57,53 @@ export const EditChildDialog = ({
   open,
   onOpenChange,
   onSave,
+  isSaving = false,
 }: EditChildDialogProps) => {
-  const [formData, setFormData] = useState<ChildProfile | null>(null);
+  const [formData, setFormData] = useState({
+    name: "",
+    gradeInfo: "",
+    className: "",
+    goalMinutes: 300,
+    sharePublicLink: true,
+  });
 
-  // Sync form data when child changes
-  const handleOpenChange = (isOpen: boolean) => {
-    if (isOpen && child) {
-      setFormData({ ...child });
+  // Sync form data when child changes or dialog opens
+  useEffect(() => {
+    if (open && child) {
+      setFormData({
+        name: child.name,
+        gradeInfo: child.grade_info || "",
+        className: child.class_name || "",
+        goalMinutes: child.goal_minutes,
+        sharePublicLink: child.share_public_link,
+      });
     }
-    onOpenChange(isOpen);
-  };
-
-  if (!formData && open && child) {
-    setFormData({ ...child });
-  }
+  }, [open, child]);
 
   const handleSave = () => {
-    if (formData) {
-      onSave(formData);
-      onOpenChange(false);
+    if (child) {
+      onSave({
+        id: child.id,
+        name: formData.name,
+        grade_info: formData.gradeInfo || null,
+        class_name: formData.className || null,
+        goal_minutes: formData.goalMinutes,
+        share_public_link: formData.sharePublicLink,
+      });
     }
   };
 
-  const updateField = <K extends keyof ChildProfile>(
+  const updateField = <K extends keyof typeof formData>(
     field: K,
-    value: ChildProfile[K]
+    value: (typeof formData)[K]
   ) => {
-    if (formData) {
-      setFormData({ ...formData, [field]: value });
-    }
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  if (!formData) return null;
+  if (!child) return null;
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle className="font-serif text-xl flex items-center gap-2">
@@ -97,7 +111,7 @@ export const EditChildDialog = ({
             Edit Child Profile
           </DialogTitle>
           <DialogDescription>
-            Update {child?.name}'s profile information and sharing settings.
+            Update {child.name}'s profile information and sharing settings.
           </DialogDescription>
         </DialogHeader>
 
@@ -198,7 +212,7 @@ export const EditChildDialog = ({
               <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
                 <Input
                   readOnly
-                  value={`${window.location.origin}/sponsor/${child?.id}`}
+                  value={`${window.location.origin}/sponsor/${child.id}`}
                   className="text-xs bg-background"
                 />
                 <Button
@@ -206,7 +220,7 @@ export const EditChildDialog = ({
                   variant="outline"
                   size="sm"
                   onClick={() => {
-                    navigator.clipboard.writeText(`${window.location.origin}/sponsor/${child?.id}`);
+                    navigator.clipboard.writeText(`${window.location.origin}/sponsor/${child.id}`);
                     toast.success("Link copied to clipboard!");
                   }}
                 >
@@ -222,10 +236,19 @@ export const EditChildDialog = ({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving}>
             Cancel
           </Button>
-          <Button onClick={handleSave}>Save Changes</Button>
+          <Button onClick={handleSave} disabled={isSaving}>
+            {isSaving ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              "Save Changes"
+            )}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
