@@ -1,10 +1,11 @@
-import { useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
-import { MainNav, Footer, AppBreadcrumbs } from "@/components/layout";
+import { useState, useMemo } from "react";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
+import { MainNav, Footer } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { FormField } from "@/components/ui/form-field";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
@@ -16,8 +17,22 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
-import { format } from "date-fns";
+import { format, parseISO, isToday, isYesterday } from "date-fns";
+import { useChildren, Child } from "@/hooks/useChildren";
+import { useReadingLogs } from "@/hooks/useReadingLogs";
+import { useActiveEvent } from "@/hooks/useActiveEvent";
+import { z } from "zod";
 import {
   CalendarIcon,
   Minus,
@@ -41,66 +56,12 @@ const handDrawnBorder = {
   borderBottomLeftRadius: '15px 255px',
 };
 
-// Mock data
-const mockChildren = [
-  {
-    id: "1",
-    name: "Emma Johnson",
-    avatarInitials: "EJ",
-    minutesRead: 245,
-    goalMinutes: 300,
-  },
-  {
-    id: "2",
-    name: "Lucas Johnson",
-    avatarInitials: "LJ",
-    minutesRead: 180,
-    goalMinutes: 250,
-  },
-];
-
-const mockRecentEntries = [
-  {
-    id: "1",
-    childId: "1",
-    date: "2024-03-25",
-    minutes: 25,
-    bookTitle: "Charlotte's Web",
-    notes: "Read chapters 3-4",
-  },
-  {
-    id: "2",
-    childId: "1",
-    date: "2024-03-24",
-    minutes: 30,
-    bookTitle: "Charlotte's Web",
-    notes: "",
-  },
-  {
-    id: "3",
-    childId: "1",
-    date: "2024-03-23",
-    minutes: 20,
-    bookTitle: null,
-    notes: "Reading before bed",
-  },
-  {
-    id: "4",
-    childId: "2",
-    date: "2024-03-25",
-    minutes: 15,
-    bookTitle: "Diary of a Wimpy Kid",
-    notes: "",
-  },
-  {
-    id: "5",
-    childId: "2",
-    date: "2024-03-24",
-    minutes: 20,
-    bookTitle: "Diary of a Wimpy Kid",
-    notes: "Really enjoying this book!",
-  },
-];
+// Validation schema
+const readingLogSchema = z.object({
+  minutes: z.number().min(1, "Please enter at least 1 minute").max(480, "Maximum 8 hours per entry"),
+  bookTitle: z.string().max(200, "Book title too long").optional(),
+  notes: z.string().max(500, "Notes too long").optional(),
+});
 
 const bookSuggestions = [
   "Charlotte's Web",
@@ -117,9 +78,15 @@ const minutePresets = [15, 30, 45, 60];
 
 const LogReadingPage = () => {
   const [searchParams] = useSearchParams();
-  const initialChildId = searchParams.get("child") || mockChildren[0]?.id;
+  const navigate = useNavigate();
+  const initialChildId = searchParams.get("child");
 
-  const [selectedChildId, setSelectedChildId] = useState(initialChildId);
+  // Fetch real data
+  const { children, isLoading: childrenLoading } = useChildren();
+  const { data: activeEvent } = useActiveEvent();
+
+  // Form state
+  const [selectedChildId, setSelectedChildId] = useState<string | null>(initialChildId);
   const [date, setDate] = useState<Date>(new Date());
   const [minutes, setMinutes] = useState(0);
   const [bookTitle, setBookTitle] = useState("");
@@ -128,51 +95,148 @@ const LogReadingPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const [deleteLogId, setDeleteLogId] = useState<string | null>(null);
 
-  const selectedChild = mockChildren.find((c) => c.id === selectedChildId);
+  // Set initial child when data loads
+  useMemo(() => {
+    if (!selectedChildId && children.length > 0) {
+      setSelectedChildId(children[0].id);
+    }
+  }, [children, selectedChildId]);
+
+  const selectedChild = children.find((c) => c.id === selectedChildId);
+  
+  // Fetch reading logs for selected child
+  const { logs, addLog, deleteLog, isLoading: logsLoading } = useReadingLogs(selectedChildId || undefined);
 
   const filteredSuggestions = bookSuggestions.filter((book) =>
     book.toLowerCase().includes(bookTitle.toLowerCase())
   );
 
+  // Format log date for display
+  const formatLogDate = (dateStr: string) => {
+    const logDate = parseISO(dateStr);
+    if (isToday(logDate)) return "Today";
+    if (isYesterday(logDate)) return "Yesterday";
+    return format(logDate, "MMM d, yyyy");
+  };
+
   // Calculate new progress
-  const newMinutesRead = (selectedChild?.minutesRead || 0) + minutes;
-  const goalMinutes = selectedChild?.goalMinutes || 300;
-  const newPercentage = Math.round((newMinutesRead / goalMinutes) * 100);
-  const currentPercentage = Math.round(
-    ((selectedChild?.minutesRead || 0) / goalMinutes) * 100
-  );
+  const newMinutesRead = (selectedChild?.total_minutes || 0) + minutes;
+  const goalMinutes = selectedChild?.goal_minutes || 300;
+  const newPercentage = Math.min(100, Math.round((newMinutesRead / goalMinutes) * 100));
+  const currentPercentage = Math.min(100, Math.round(((selectedChild?.total_minutes || 0) / goalMinutes) * 100));
   const willReachGoal = newPercentage >= 100 && currentPercentage < 100;
 
-  // Filter history for selected child
-  const childHistory = mockRecentEntries.filter(
-    (e) => e.childId === selectedChildId
-  );
-
   const handleMinutesChange = (delta: number) => {
-    setMinutes((prev) => Math.max(0, prev + delta));
+    setMinutes((prev) => Math.max(0, Math.min(480, prev + delta)));
+    setValidationErrors((prev) => ({ ...prev, minutes: "" }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (minutes <= 0) return;
+    if (!selectedChild) return;
+
+    // Validate
+    const result = readingLogSchema.safeParse({
+      minutes,
+      bookTitle: bookTitle.trim() || undefined,
+      notes: notes.trim() || undefined,
+    });
+
+    if (!result.success) {
+      const errors: Record<string, string> = {};
+      result.error.errors.forEach((err) => {
+        if (err.path[0]) {
+          errors[err.path[0].toString()] = err.message;
+        }
+      });
+      setValidationErrors(errors);
+      return;
+    }
 
     setIsSubmitting(true);
+    setValidationErrors({});
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    try {
+      await addLog.mutateAsync({
+        child_id: selectedChild.id,
+        student_name: selectedChild.name,
+        minutes,
+        book_title: bookTitle.trim() || null,
+        logged_at: format(date, "yyyy-MM-dd"),
+        event_id: activeEvent?.id || null,
+      });
 
-    setIsSubmitting(false);
-    setIsSuccess(true);
+      setIsSuccess(true);
 
-    // Reset after showing success
-    setTimeout(() => {
-      setMinutes(0);
-      setBookTitle("");
-      setNotes("");
-      setIsSuccess(false);
-    }, 3000);
+      // Reset after showing success
+      setTimeout(() => {
+        setMinutes(0);
+        setBookTitle("");
+        setNotes("");
+        setIsSuccess(false);
+      }, 3000);
+    } catch (error) {
+      // Error toast handled by mutation
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  const handleDeleteLog = async () => {
+    if (!deleteLogId) return;
+    try {
+      await deleteLog.mutateAsync(deleteLogId);
+    } catch (error) {
+      // Error toast handled by mutation
+    } finally {
+      setDeleteLogId(null);
+    }
+  };
+
+  const avatarInitials = (name: string) =>
+    name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+
+  // Loading state
+  if (childrenLoading) {
+    return (
+      <div className="flex min-h-screen flex-col">
+        <MainNav />
+        <main className="flex-1 bg-background-warm">
+          <div className="container py-8 max-w-2xl">
+            <Skeleton className="h-8 w-48 mb-8" />
+            <Skeleton className="h-24 w-full mb-6" />
+            <Skeleton className="h-64 w-full" />
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  // No children state
+  if (children.length === 0) {
+    return (
+      <div className="flex min-h-screen flex-col">
+        <MainNav />
+        <main className="flex-1 bg-background-warm flex items-center justify-center">
+          <div className="text-center p-8">
+            <BookOpen className="h-16 w-16 text-muted-foreground/30 mx-auto mb-4" />
+            <h1 className="font-serif text-2xl text-foreground mb-2">No Children Added</h1>
+            <p className="text-muted-foreground mb-6">
+              Add a child to your account to start logging reading.
+            </p>
+            <Button asChild>
+              <Link to="/onboarding/add-child">Add a Child</Link>
+            </Button>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -200,13 +264,13 @@ const LogReadingPage = () => {
           </div>
 
           {/* Child Selector */}
-          {mockChildren.length > 1 && (
+          {children.length > 1 && (
             <div className="mb-6">
               <div 
                 className="flex gap-2 p-1 bg-background"
                 style={handDrawnBorder}
               >
-                {mockChildren.map((child) => (
+                {children.map((child) => (
                   <button
                     key={child.id}
                     type="button"
@@ -226,7 +290,7 @@ const LogReadingPage = () => {
                           : "bg-muted text-muted-foreground"
                       )}
                     >
-                      {child.avatarInitials}
+                      {avatarInitials(child.name)}
                     </span>
                     <span className="font-serif">{child.name.split(" ")[0]}</span>
                   </button>
@@ -236,31 +300,33 @@ const LogReadingPage = () => {
           )}
 
           {/* Selected Child Stats */}
-          <div 
-            className="bg-background p-6 mb-8 shadow-md"
-            style={handDrawnBorder}
-          >
-            <div className="flex items-center gap-4">
-              <div className="h-14 w-14 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xl font-serif">
-                {selectedChild?.avatarInitials}
-              </div>
-              <div className="flex-1">
-                <h2 className="font-serif text-xl md:text-2xl text-foreground">
-                  {selectedChild?.name.split(" ")[0]}'s Progress
-                </h2>
-                <p className="text-sm text-muted-foreground">
-                  {selectedChild?.minutesRead} / {selectedChild?.goalMinutes} minutes ({currentPercentage}%)
-                </p>
-              </div>
-              <div className="text-right">
-                <p className="font-serif text-2xl md:text-3xl text-primary">{currentPercentage}%</p>
-                <p className="text-xs text-muted-foreground">of goal</p>
+          {selectedChild && (
+            <div 
+              className="bg-background p-6 mb-8 shadow-md"
+              style={handDrawnBorder}
+            >
+              <div className="flex items-center gap-4">
+                <div className="h-14 w-14 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xl font-serif">
+                  {avatarInitials(selectedChild.name)}
+                </div>
+                <div className="flex-1">
+                  <h2 className="font-serif text-xl md:text-2xl text-foreground">
+                    {selectedChild.name.split(" ")[0]}'s Progress
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    {selectedChild.total_minutes} / {selectedChild.goal_minutes} minutes ({currentPercentage}%)
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="font-serif text-2xl md:text-3xl text-primary">{currentPercentage}%</p>
+                  <p className="text-xs text-muted-foreground">of goal</p>
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* Success State */}
-          {isSuccess && (
+          {isSuccess && selectedChild && (
             <div className="mb-6 animate-scale-in">
               <div 
                 className="bg-background p-6 text-center relative overflow-hidden shadow-md"
@@ -280,7 +346,7 @@ const LogReadingPage = () => {
                       : "Reading Logged Successfully!"}
                   </h2>
                   <p className="text-muted-foreground text-sm md:text-base">
-                    {selectedChild?.name.split(" ")[0]} now has {newMinutesRead}{" "}
+                    {selectedChild.name.split(" ")[0]} now has {newMinutesRead}{" "}
                     minutes ({newPercentage}% of goal)
                   </p>
                 </div>
@@ -289,7 +355,7 @@ const LogReadingPage = () => {
           )}
 
           {/* Form */}
-          {!isSuccess && (
+          {!isSuccess && selectedChild && (
             <div 
               className="bg-background p-6 mb-8 shadow-md"
               style={handDrawnBorder}
@@ -326,7 +392,11 @@ const LogReadingPage = () => {
                 </FormField>
 
                 {/* Minutes Input */}
-                <FormField label="Minutes Read" htmlFor="minutes">
+                <FormField 
+                  label="Minutes Read" 
+                  htmlFor="minutes"
+                  error={validationErrors.minutes}
+                >
                   <div className="space-y-3">
                     {/* Stepper */}
                     <div className="flex items-center justify-center gap-4">
@@ -345,11 +415,17 @@ const LogReadingPage = () => {
                           id="minutes"
                           type="number"
                           value={minutes}
-                          onChange={(e) =>
-                            setMinutes(Math.max(0, parseInt(e.target.value) || 0))
-                          }
-                          className="w-24 h-14 text-center text-2xl font-serif"
+                          onChange={(e) => {
+                            const val = Math.max(0, Math.min(480, parseInt(e.target.value) || 0));
+                            setMinutes(val);
+                            setValidationErrors((prev) => ({ ...prev, minutes: "" }));
+                          }}
+                          className={cn(
+                            "w-24 h-14 text-center text-2xl font-serif",
+                            validationErrors.minutes && "border-destructive"
+                          )}
                           min={0}
+                          max={480}
                         />
                         <span className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-xs text-muted-foreground">
                           minutes
@@ -361,6 +437,7 @@ const LogReadingPage = () => {
                         size="icon"
                         className="h-12 w-12"
                         onClick={() => handleMinutesChange(5)}
+                        disabled={minutes >= 480}
                       >
                         <Plus className="h-5 w-5" />
                       </Button>
@@ -374,7 +451,10 @@ const LogReadingPage = () => {
                           type="button"
                           variant={minutes === preset ? "default" : "outline"}
                           size="sm"
-                          onClick={() => setMinutes(preset)}
+                          onClick={() => {
+                            setMinutes(preset);
+                            setValidationErrors((prev) => ({ ...prev, minutes: "" }));
+                          }}
                           className="font-serif"
                         >
                           {preset} min
@@ -389,6 +469,7 @@ const LogReadingPage = () => {
                   label="Book Title"
                   htmlFor="bookTitle"
                   helperText="Optional - helps track what they're reading"
+                  error={validationErrors.bookTitle}
                 >
                   <div className="relative">
                     <BookOpen className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -397,14 +478,17 @@ const LogReadingPage = () => {
                       placeholder="Enter book title..."
                       value={bookTitle}
                       onChange={(e) => {
-                        setBookTitle(e.target.value);
+                        const val = e.target.value.slice(0, 200);
+                        setBookTitle(val);
                         setShowSuggestions(true);
+                        setValidationErrors((prev) => ({ ...prev, bookTitle: "" }));
                       }}
                       onFocus={() => setShowSuggestions(true)}
                       onBlur={() =>
                         setTimeout(() => setShowSuggestions(false), 200)
                       }
                       className="pl-10"
+                      maxLength={200}
                     />
                     {showSuggestions &&
                       bookTitle &&
@@ -426,21 +510,6 @@ const LogReadingPage = () => {
                         </div>
                       )}
                   </div>
-                </FormField>
-
-                {/* Notes */}
-                <FormField
-                  label="Notes"
-                  htmlFor="notes"
-                  helperText="Optional - add any notes about this reading session"
-                >
-                  <Textarea
-                    id="notes"
-                    placeholder="What did they read about? Any thoughts?"
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    rows={3}
-                  />
                 </FormField>
 
                 {/* Progress Preview */}
@@ -483,7 +552,7 @@ const LogReadingPage = () => {
                         <p className="text-sm text-foreground">
                           This will bring{" "}
                           <span className="font-semibold">
-                            {selectedChild?.name.split(" ")[0]}
+                            {selectedChild.name.split(" ")[0]}
                           </span>{" "}
                           to{" "}
                           <span className="font-serif text-primary">
@@ -524,83 +593,105 @@ const LogReadingPage = () => {
           )}
 
           {/* Reading History */}
-          <Collapsible open={historyOpen} onOpenChange={setHistoryOpen}>
-            <div 
-              className="bg-background p-6 shadow-md"
-              style={handDrawnBorder}
-            >
-              <CollapsibleTrigger asChild>
-                <button className="w-full flex items-center justify-between text-left">
-                  <div>
-                    <h3 className="font-serif text-lg md:text-xl text-foreground">
-                      Recent Reading History
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      {childHistory.length} entries for{" "}
-                      {selectedChild?.name.split(" ")[0]}
-                    </p>
-                  </div>
-                  <ChevronDown
-                    className={cn(
-                      "h-5 w-5 text-muted-foreground transition-transform",
-                      historyOpen && "rotate-180"
-                    )}
-                  />
-                </button>
-              </CollapsibleTrigger>
-              <CollapsibleContent className="mt-4">
-                <div className="space-y-3">
-                  {childHistory.map((entry) => (
-                    <div
-                      key={entry.id}
-                      className="flex items-start gap-3 p-3 bg-muted/30 rounded-lg"
-                    >
-                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                        <BookOpen className="h-5 w-5 text-primary" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="font-serif text-foreground">
-                            {entry.minutes} minutes
-                          </span>
-                          <span className="text-sm text-muted-foreground">
-                            •{" "}
-                            {format(new Date(entry.date), "MMM d, yyyy")}
-                          </span>
-                        </div>
-                        {entry.bookTitle && (
-                          <p className="text-sm text-muted-foreground truncate">
-                            {entry.bookTitle}
-                          </p>
-                        )}
-                        {entry.notes && (
-                          <p className="text-sm text-muted-foreground truncate mt-1 italic">
-                            "{entry.notes}"
-                          </p>
-                        )}
-                      </div>
-                      <div className="flex gap-1">
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-destructive hover:text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+          {selectedChild && (
+            <Collapsible open={historyOpen} onOpenChange={setHistoryOpen}>
+              <div 
+                className="bg-background p-6 shadow-md"
+                style={handDrawnBorder}
+              >
+                <CollapsibleTrigger asChild>
+                  <button className="w-full flex items-center justify-between text-left">
+                    <div>
+                      <h3 className="font-serif text-lg md:text-xl text-foreground">
+                        Recent Reading History
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        {logs.length} entries for{" "}
+                        {selectedChild.name.split(" ")[0]}
+                      </p>
                     </div>
-                  ))}
-                </div>
-              </CollapsibleContent>
-            </div>
-          </Collapsible>
+                    <ChevronDown
+                      className={cn(
+                        "h-5 w-5 text-muted-foreground transition-transform",
+                        historyOpen && "rotate-180"
+                      )}
+                    />
+                  </button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="mt-4">
+                  {logs.length === 0 ? (
+                    <div className="text-center py-6">
+                      <BookOpen className="h-10 w-10 text-muted-foreground/30 mx-auto mb-2" />
+                      <p className="text-muted-foreground text-sm">No reading logged yet</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {logs.slice(0, 10).map((entry) => (
+                        <div
+                          key={entry.id}
+                          className="flex items-start gap-3 p-3 bg-muted/30 rounded-lg"
+                        >
+                          <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                            <BookOpen className="h-5 w-5 text-primary" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="font-serif text-foreground">
+                                {entry.minutes} minutes
+                              </span>
+                              <span className="text-sm text-muted-foreground">
+                                • {formatLogDate(entry.logged_at)}
+                              </span>
+                            </div>
+                            {entry.book_title && (
+                              <p className="text-sm text-muted-foreground truncate">
+                                {entry.book_title}
+                              </p>
+                            )}
+                          </div>
+                          <div className="flex gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-destructive hover:text-destructive"
+                              onClick={() => setDeleteLogId(entry.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CollapsibleContent>
+              </div>
+            </Collapsible>
+          )}
         </div>
       </main>
 
       <Footer />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deleteLogId} onOpenChange={() => setDeleteLogId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Reading Entry?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete this reading entry and update the total minutes read. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteLog}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
