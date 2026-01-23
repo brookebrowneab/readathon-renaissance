@@ -89,6 +89,33 @@ export type Database = {
         }
         Relationships: []
       }
+      books: {
+        Row: {
+          author: string | null
+          cover_url: string | null
+          created_at: string
+          id: string
+          isbn: string | null
+          title: string
+        }
+        Insert: {
+          author?: string | null
+          cover_url?: string | null
+          created_at?: string
+          id?: string
+          isbn?: string | null
+          title: string
+        }
+        Update: {
+          author?: string | null
+          cover_url?: string | null
+          created_at?: string
+          id?: string
+          isbn?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
       children: {
         Row: {
           class_name: string | null
@@ -346,6 +373,7 @@ export type Database = {
       }
       reading_logs: {
         Row: {
+          book_id: string | null
           book_title: string | null
           child_id: string | null
           created_at: string
@@ -356,6 +384,7 @@ export type Database = {
           student_name: string
         }
         Insert: {
+          book_id?: string | null
           book_title?: string | null
           child_id?: string | null
           created_at?: string
@@ -366,6 +395,7 @@ export type Database = {
           student_name: string
         }
         Update: {
+          book_id?: string | null
           book_title?: string | null
           child_id?: string | null
           created_at?: string
@@ -376,6 +406,13 @@ export type Database = {
           student_name?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "reading_logs_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "reading_logs_child_id_fkey"
             columns: ["child_id"]
