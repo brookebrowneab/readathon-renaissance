@@ -1,10 +1,11 @@
 import { useState, useMemo } from "react";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { MainNav, Footer } from "@/components/layout";
 import { BookContainer, ReadingGoalRing } from "@/components/legacy";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -21,78 +22,81 @@ import {
   BookOpen,
   Search,
   Calendar,
+  Loader2,
+  LogOut,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
-
-// Mock data
-const mockTeacher = {
-  name: "Ms. Johnson",
-  grade: "3rd",
-  schoolName: "Lincoln Elementary",
-};
-
-const mockEvent = {
-  name: "Spring Read-a-thon 2024",
-  daysRemaining: 12,
-};
-
-interface Student {
-  id: string;
-  firstName: string;
-  lastInitial: string;
-  minutesRead: number;
-  goalMinutes: number;
-  lastLogged: string | null;
-  status: "exceeding" | "on-track" | "needs-encouragement" | "not-started";
-}
-
-const mockStudents: Student[] = [
-  { id: "1", firstName: "Emma", lastInitial: "J", minutesRead: 520, goalMinutes: 500, lastLogged: "Today", status: "exceeding" },
-  { id: "2", firstName: "Liam", lastInitial: "S", minutesRead: 380, goalMinutes: 500, lastLogged: "Today", status: "on-track" },
-  { id: "3", firstName: "Olivia", lastInitial: "M", minutesRead: 247, goalMinutes: 500, lastLogged: "Yesterday", status: "on-track" },
-  { id: "4", firstName: "Noah", lastInitial: "B", minutesRead: 180, goalMinutes: 500, lastLogged: "3 days ago", status: "needs-encouragement" },
-  { id: "5", firstName: "Ava", lastInitial: "W", minutesRead: 420, goalMinutes: 500, lastLogged: "Today", status: "on-track" },
-  { id: "6", firstName: "Ethan", lastInitial: "D", minutesRead: 550, goalMinutes: 500, lastLogged: "Yesterday", status: "exceeding" },
-  { id: "7", firstName: "Sophia", lastInitial: "C", minutesRead: 95, goalMinutes: 500, lastLogged: "5 days ago", status: "needs-encouragement" },
-  { id: "8", firstName: "Mason", lastInitial: "T", minutesRead: 0, goalMinutes: 500, lastLogged: null, status: "not-started" },
-  { id: "9", firstName: "Isabella", lastInitial: "R", minutesRead: 315, goalMinutes: 500, lastLogged: "Today", status: "on-track" },
-  { id: "10", firstName: "Lucas", lastInitial: "H", minutesRead: 0, goalMinutes: 500, lastLogged: null, status: "not-started" },
-  { id: "11", firstName: "Mia", lastInitial: "K", minutesRead: 480, goalMinutes: 500, lastLogged: "Yesterday", status: "on-track" },
-  { id: "12", firstName: "Jackson", lastInitial: "L", minutesRead: 125, goalMinutes: 500, lastLogged: "4 days ago", status: "needs-encouragement" },
-];
+import { useTeacherAuth } from "@/hooks/useTeacherAuth";
+import { useTeacherStudents, useTeacherStudentLogs } from "@/hooks/useTeacherStudents";
+import { useActiveEvent } from "@/hooks/useActiveEvent";
+import { useAuth } from "@/hooks/useAuth";
+import { differenceInDays, parseISO, format, isToday, isYesterday } from "date-fns";
 
 type SortOption = "name" | "progress" | "last-active";
 type FilterOption = "all" | "needs-attention" | "goal-reached";
 
+type StudentStatus = "exceeding" | "on-track" | "needs-encouragement" | "not-started";
+
 const TeacherDashboard = () => {
+  const { user, teacherProfile, isLoading: authLoading } = useTeacherAuth();
+  const { signOut } = useAuth();
+  const { students, isLoading: studentsLoading } = useTeacherStudents();
+  const { data: activeEvent, isLoading: eventLoading } = useActiveEvent();
+  
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<SortOption>("name");
   const [filterBy, setFilterBy] = useState<FilterOption>("all");
+  
+  const studentIds = useMemo(() => students.map(s => s.id), [students]);
+  const { lastLoggedByStudent, isLoading: logsLoading } = useTeacherStudentLogs(studentIds);
 
+  const isLoading = authLoading || studentsLoading || eventLoading;
+
+  // Calculate student status
+  const getStudentStatus = (totalMinutes: number, goalMinutes: number): StudentStatus => {
+    if (totalMinutes === 0) return "not-started";
+    const progress = totalMinutes / goalMinutes;
+    if (progress >= 1) return "exceeding";
+    if (progress >= 0.5) return "on-track";
+    return "needs-encouragement";
+  };
+
+  // Format last logged date
+  const formatLastLogged = (dateStr: string | undefined): string => {
+    if (!dateStr) return "No activity";
+    const date = parseISO(dateStr);
+    if (isToday(date)) return "Today";
+    if (isYesterday(date)) return "Yesterday";
+    const daysAgo = differenceInDays(new Date(), date);
+    if (daysAgo < 7) return `${daysAgo} days ago`;
+    return format(date, "MMM d");
+  };
+
+  // Calculate stats
   const stats = useMemo(() => {
-    const participating = mockStudents.filter((s) => s.minutesRead > 0).length;
-    const totalMinutes = mockStudents.reduce((sum, s) => sum + s.minutesRead, 0);
+    const participating = students.filter((s) => s.total_minutes > 0).length;
+    const totalMinutes = students.reduce((sum, s) => sum + s.total_minutes, 0);
     const avgPerStudent = participating > 0 ? Math.round(totalMinutes / participating) : 0;
 
     return {
-      totalStudents: mockStudents.length,
+      totalStudents: students.length,
       participating,
       totalMinutes,
       avgPerStudent,
     };
-  }, []);
+  }, [students]);
 
+  // Filter and sort students
   const filteredStudents = useMemo(() => {
-    let result = [...mockStudents];
+    let result = students.map(student => ({
+      ...student,
+      status: getStudentStatus(student.total_minutes, student.goal_minutes),
+      lastLogged: formatLastLogged(lastLoggedByStudent[student.id]),
+    }));
 
     // Search
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      result = result.filter(
-        (s) =>
-          s.firstName.toLowerCase().includes(query) ||
-          s.lastInitial.toLowerCase().includes(query)
-      );
+      result = result.filter((s) => s.name.toLowerCase().includes(query));
     }
 
     // Filter
@@ -106,26 +110,30 @@ const TeacherDashboard = () => {
 
     // Sort
     if (sortBy === "name") {
-      result.sort((a, b) => a.firstName.localeCompare(b.firstName));
+      result.sort((a, b) => a.name.localeCompare(b.name));
     } else if (sortBy === "progress") {
-      result.sort((a, b) => b.minutesRead / b.goalMinutes - a.minutesRead / a.goalMinutes);
+      result.sort((a, b) => b.total_minutes / b.goal_minutes - a.total_minutes / a.goal_minutes);
     } else if (sortBy === "last-active") {
-      // Simple sort - Today first, then Yesterday, etc.
-      const order = { Today: 0, Yesterday: 1 };
+      const order: Record<string, number> = { "Today": 0, "Yesterday": 1 };
       result.sort((a, b) => {
-        const aOrder = a.lastLogged ? (order[a.lastLogged as keyof typeof order] ?? 99) : 999;
-        const bOrder = b.lastLogged ? (order[b.lastLogged as keyof typeof order] ?? 99) : 999;
+        const aOrder = order[a.lastLogged] ?? (a.lastLogged === "No activity" ? 999 : 50);
+        const bOrder = order[b.lastLogged] ?? (b.lastLogged === "No activity" ? 999 : 50);
         return aOrder - bOrder;
       });
     }
 
     return result;
-  }, [searchQuery, sortBy, filterBy]);
+  }, [students, searchQuery, sortBy, filterBy, lastLoggedByStudent]);
 
-  const getStatusBadge = (status: Student["status"]) => {
+  // Redirect if not a teacher - after all hooks
+  if (!authLoading && (!user || !teacherProfile)) {
+    return <Navigate to="/login" replace />;
+  }
+
+  const getStatusBadge = (status: StudentStatus) => {
     switch (status) {
       case "exceeding":
-        return <Badge variant="success">Exceeding</Badge>;
+        return <Badge variant="success">Goal Reached</Badge>;
       case "on-track":
         return <Badge variant="info">On Track</Badge>;
       case "needs-encouragement":
@@ -135,6 +143,23 @@ const TeacherDashboard = () => {
     }
   };
 
+  // Calculate days remaining for active event
+  const daysRemaining = activeEvent 
+    ? Math.max(0, differenceInDays(parseISO(activeEvent.end_date), new Date()))
+    : 0;
+
+  const handleSignOut = async () => {
+    await signOut();
+  };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background-warm">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen flex-col">
       <MainNav />
@@ -142,81 +167,101 @@ const TeacherDashboard = () => {
       <main className="flex-1 bg-background-warm">
         <div className="container py-8">
           {/* Header */}
-          <div className="mb-8">
-            <h1 className="font-serif text-3xl font-normal tracking-tight text-foreground">
-              {mockTeacher.name}'s Class
-            </h1>
-            <p className="text-muted-foreground">
-              {mockTeacher.grade} Grade • {mockTeacher.schoolName}
-            </p>
+          <div className="flex items-start justify-between mb-8">
+            <div>
+              <h1 className="font-serif text-3xl font-normal tracking-tight text-foreground">
+                {teacherProfile?.name}'s Dashboard
+              </h1>
+              <p className="text-muted-foreground capitalize">
+                {teacherProfile?.teacher_type === "homeroom" ? "Homeroom Teacher" : 
+                 teacherProfile?.teacher_type === "partner" ? "Partner Teacher" :
+                 teacherProfile?.teacher_type === "staff" ? "Staff" : 
+                 teacherProfile?.teacher_type}
+                {teacherProfile?.has_full_access && " • Full Access"}
+              </p>
+            </div>
+            <Button variant="outline" size="sm" onClick={handleSignOut}>
+              <LogOut className="h-4 w-4 mr-2" />
+              Sign Out
+            </Button>
           </div>
 
           {/* Event Status */}
-          <div className="bg-brand-blue/10 border border-brand-blue/20 rounded-xl p-4 flex items-center justify-between mb-8">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-brand-blue/20 flex items-center justify-center">
-                <Calendar className="h-5 w-5 text-brand-blue" />
+          {activeEvent && (
+            <div className="bg-brand-blue/10 border border-brand-blue/20 rounded-xl p-4 flex items-center justify-between mb-8">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-full bg-brand-blue/20 flex items-center justify-center">
+                  <Calendar className="h-5 w-5 text-brand-blue" />
+                </div>
+                <div>
+                  <p className="font-medium text-foreground">{activeEvent.name}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {daysRemaining} days remaining • {stats.participating} of {stats.totalStudents} students participating
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="font-medium text-foreground">{mockEvent.name}</p>
-                <p className="text-sm text-muted-foreground">
-                  {mockEvent.daysRemaining} days remaining • {stats.participating} students participating
-                </p>
-              </div>
+              <Badge variant="info">Active</Badge>
             </div>
-            <Badge variant="info">Active</Badge>
-          </div>
+          )}
 
           {/* Stats Row */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            <BookContainer variant="default" className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-brand-blue/10 flex items-center justify-center">
-                  <Users className="h-5 w-5 text-brand-blue" />
+          {isLoading ? (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+              {[1, 2, 3, 4].map((i) => (
+                <Skeleton key={i} className="h-24 rounded-xl" />
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+              <BookContainer variant="default" className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-brand-blue/10 flex items-center justify-center">
+                    <Users className="h-5 w-5 text-brand-blue" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-foreground">{stats.totalStudents}</p>
+                    <p className="text-sm text-muted-foreground">Students</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-2xl font-bold text-foreground">{stats.totalStudents}</p>
-                  <p className="text-sm text-muted-foreground">Students</p>
-                </div>
-              </div>
-            </BookContainer>
+              </BookContainer>
 
-            <BookContainer variant="default" className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-success/10 flex items-center justify-center">
-                  <UserCheck className="h-5 w-5 text-success" />
+              <BookContainer variant="default" className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-success/10 flex items-center justify-center">
+                    <UserCheck className="h-5 w-5 text-success" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-foreground">{stats.participating}</p>
+                    <p className="text-sm text-muted-foreground">Participating</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-2xl font-bold text-foreground">{stats.participating}</p>
-                  <p className="text-sm text-muted-foreground">Participating</p>
-                </div>
-              </div>
-            </BookContainer>
+              </BookContainer>
 
-            <BookContainer variant="default" className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-brand-yellow/20 flex items-center justify-center">
-                  <Clock className="h-5 w-5 text-brand-yellow" />
+              <BookContainer variant="default" className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-brand-yellow/20 flex items-center justify-center">
+                    <Clock className="h-5 w-5 text-brand-yellow" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-foreground">{stats.totalMinutes.toLocaleString()}</p>
+                    <p className="text-sm text-muted-foreground">Total Minutes</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-2xl font-bold text-foreground">{stats.totalMinutes.toLocaleString()}</p>
-                  <p className="text-sm text-muted-foreground">Total Minutes</p>
-                </div>
-              </div>
-            </BookContainer>
+              </BookContainer>
 
-            <BookContainer variant="default" className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                  <TrendingUp className="h-5 w-5 text-primary" />
+              <BookContainer variant="default" className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <TrendingUp className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-foreground">{stats.avgPerStudent}</p>
+                    <p className="text-sm text-muted-foreground">Avg per Student</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-2xl font-bold text-foreground">{stats.avgPerStudent}</p>
-                  <p className="text-sm text-muted-foreground">Avg per Student</p>
-                </div>
-              </div>
-            </BookContainer>
-          </div>
+              </BookContainer>
+            </div>
+          )}
 
           {/* Filters and Actions */}
           <div className="flex flex-col md:flex-row gap-4 mb-6">
@@ -263,47 +308,63 @@ const TeacherDashboard = () => {
               </Button>
               <Button variant="outline">
                 <Download className="h-4 w-4 mr-2" />
-                Download Report
+                Export
               </Button>
             </div>
           </div>
 
           {/* Student Grid */}
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {filteredStudents.map((student) => (
-              <Link key={student.id} to={`/teacher/student/${student.id}`}>
+          {studentsLoading || logsLoading ? (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                <Skeleton key={i} className="h-32 rounded-xl" />
+              ))}
+            </div>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {filteredStudents.map((student) => (
                 <BookContainer
+                  key={student.id}
                   variant="default"
-                  className="p-4 hover:shadow-lg transition-shadow cursor-pointer"
+                  className="p-4 hover:shadow-lg transition-shadow"
                 >
                   <div className="flex items-start gap-4">
                     <ReadingGoalRing
-                      progress={student.minutesRead}
-                      goal={student.goalMinutes}
+                      progress={student.total_minutes}
+                      goal={student.goal_minutes}
                       size={64}
                     />
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-foreground truncate">
-                        {student.firstName} {student.lastInitial}.
+                        {student.name}
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        {student.minutesRead} / {student.goalMinutes} min (
-                        {Math.round((student.minutesRead / student.goalMinutes) * 100)}%)
+                        {student.total_minutes.toLocaleString()} / {student.goal_minutes.toLocaleString()} min (
+                        {Math.round((student.total_minutes / student.goal_minutes) * 100)}%)
                       </p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        {student.lastLogged ? `Last: ${student.lastLogged}` : "No activity"}
+                        Last: {student.lastLogged}
                       </p>
                       <div className="mt-2">{getStatusBadge(student.status)}</div>
                     </div>
                   </div>
                 </BookContainer>
-              </Link>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
 
-          {filteredStudents.length === 0 && (
+          {!studentsLoading && filteredStudents.length === 0 && (
             <div className="text-center py-12">
-              <p className="text-muted-foreground">No students match your search.</p>
+              {students.length === 0 ? (
+                <div className="space-y-2">
+                  <p className="text-muted-foreground">No students found.</p>
+                  <p className="text-sm text-muted-foreground">
+                    Students will appear here once they are assigned to your class.
+                  </p>
+                </div>
+              ) : (
+                <p className="text-muted-foreground">No students match your search.</p>
+              )}
             </div>
           )}
         </div>
