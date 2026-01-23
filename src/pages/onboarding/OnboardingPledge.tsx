@@ -302,8 +302,8 @@ const OnboardingPledge = () => {
                   </button>
                 </div>
 
-                {/* Payment Timing */}
-                {pledgeType && effectiveAmount && effectiveAmount > 0 && (
+                {/* Payment Timing - only show for fixed pledges */}
+                {pledgeType === "fixed" && effectiveAmount && effectiveAmount > 0 && (
                   <div className="pt-4 border-t">
                     <FormField label="When would you like to pay?">
                       <RadioGroup 
