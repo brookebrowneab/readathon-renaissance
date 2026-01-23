@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import AdminLayout from "@/components/layout/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -29,6 +30,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 // Hand-drawn border style
 const handDrawnBorder = {
@@ -49,18 +52,8 @@ interface OutstandingPayment {
   amount: number;
   daysOutstanding: number;
   lastReminder: string | null;
+  totalMinutes: number;
 }
-
-const mockPayments: OutstandingPayment[] = [
-  { id: "1", sponsorName: "Betty Smith", sponsorEmail: "betty@example.com", studentName: "Emma J.", studentGrade: "3rd", pledgeType: "per-minute", amount: 50.00, daysOutstanding: 3, lastReminder: null },
-  { id: "2", sponsorName: "John Davis", sponsorEmail: "john@example.com", studentName: "Sophie K.", studentGrade: "2nd", pledgeType: "fixed", amount: 25.00, daysOutstanding: 7, lastReminder: "2 days ago" },
-  { id: "3", sponsorName: "Mike Thompson", sponsorEmail: "mike@example.com", studentName: "Liam B.", studentGrade: "4th", pledgeType: "per-minute", amount: 42.50, daysOutstanding: 5, lastReminder: "1 week ago" },
-  { id: "4", sponsorName: "Sarah Kim", sponsorEmail: "sarah@example.com", studentName: "Olivia M.", studentGrade: "1st", pledgeType: "fixed", amount: 30.00, daysOutstanding: 2, lastReminder: null },
-  { id: "5", sponsorName: "David Roberts", sponsorEmail: "david@example.com", studentName: "Noah W.", studentGrade: "5th", pledgeType: "per-minute", amount: 75.00, daysOutstanding: 10, lastReminder: "3 days ago" },
-  { id: "6", sponsorName: "Lisa Martinez", sponsorEmail: "lisa@example.com", studentName: "Ava T.", studentGrade: "3rd", pledgeType: "fixed", amount: 100.00, daysOutstanding: 14, lastReminder: "1 week ago" },
-  { id: "7", sponsorName: "James Wilson", sponsorEmail: "james@example.com", studentName: "Ethan D.", studentGrade: "2nd", pledgeType: "per-minute", amount: 35.00, daysOutstanding: 4, lastReminder: null },
-  { id: "8", sponsorName: "Emily Brown", sponsorEmail: "emily@example.com", studentName: "Isabella C.", studentGrade: "4th", pledgeType: "fixed", amount: 50.00, daysOutstanding: 8, lastReminder: "5 days ago" },
-];
 
 type FilterOption = "all" | "overdue" | "no-reminder";
 
@@ -70,7 +63,53 @@ const AdminOutstandingPage = () => {
   const [selectedPayments, setSelectedPayments] = useState<string[]>([]);
   const [isSending, setIsSending] = useState(false);
 
-  const filteredPayments = mockPayments.filter((payment) => {
+  // Fetch real pledges from database
+  const { data: pledgesData = [], isLoading } = useQuery({
+    queryKey: ["admin-outstanding-pledges"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("pledges")
+        .select(`
+          *,
+          child:children(id, name, total_minutes, grade_info),
+          sponsor:sponsors(id, name, email)
+        `)
+        .eq("is_paid", false)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Transform database pledges to display format
+  const payments: OutstandingPayment[] = useMemo(() => {
+    return pledgesData.map((pledge) => {
+      const createdAt = new Date(pledge.created_at);
+      const now = new Date();
+      const daysOutstanding = Math.floor((now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24));
+      
+      const totalMinutes = pledge.child?.total_minutes || 0;
+      const calculatedAmount = pledge.pledge_type === "per_minute" 
+        ? pledge.amount * totalMinutes 
+        : pledge.amount;
+      
+      return {
+        id: pledge.id,
+        sponsorName: pledge.sponsor?.name || "Unknown Sponsor",
+        sponsorEmail: pledge.sponsor?.email || "unknown@email.com",
+        studentName: pledge.child?.name || pledge.student_name,
+        studentGrade: pledge.child?.grade_info || "N/A",
+        pledgeType: pledge.pledge_type === "per_minute" ? "per-minute" : "fixed",
+        amount: calculatedAmount,
+        daysOutstanding,
+        lastReminder: null, // TODO: Track reminder history
+        totalMinutes,
+      } as OutstandingPayment;
+    });
+  }, [pledgesData]);
+
+  const filteredPayments = payments.filter((payment) => {
     const matchesSearch =
       payment.sponsorName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       payment.studentName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -286,7 +325,15 @@ const AdminOutstandingPage = () => {
             </Table>
           </div>
 
-          {filteredPayments.length === 0 && (
+          {isLoading && (
+            <div className="p-8 space-y-4">
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+            </div>
+          )}
+
+          {!isLoading && filteredPayments.length === 0 && (
             <div className="p-8 text-center text-muted-foreground">
               No outstanding payments match your criteria.
             </div>
