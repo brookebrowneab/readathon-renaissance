@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useParentPledges, ParentPledge } from "@/hooks/useParentPledges";
 import { usePledges } from "@/hooks/usePledges";
-import { DeleteConfirm } from "@/components/ui/confirm-dialog";
+import { DeleteConfirm, ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   ArrowLeft,
   DollarSign,
@@ -17,6 +17,8 @@ import {
   CreditCard,
   FileText,
   Trash2,
+  CircleDollarSign,
+  Undo2,
 } from "lucide-react";
 import { format } from "date-fns";
 
@@ -30,10 +32,12 @@ const handDrawnBorder = {
 };
 
 const MyPledgesPage = () => {
-  const { pledges, pledgesByChild, totalPledges, totalSponsors, isLoading, error } = useParentPledges();
-  const { deletePledge } = usePledges();
+  const { pledges, pledgesByChild, totalPledges, totalSponsors, isLoading, error, refetch } = useParentPledges();
+  const { deletePledge, updatePledge } = usePledges();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [pledgeToDelete, setPledgeToDelete] = useState<string | null>(null);
+  const [markPaidDialogOpen, setMarkPaidDialogOpen] = useState(false);
+  const [pledgeToMarkPaid, setPledgeToMarkPaid] = useState<ParentPledge | null>(null);
 
   const paidCount = pledges.filter(p => p.is_paid).length;
   const pendingCount = pledges.filter(p => !p.is_paid).length;
@@ -49,6 +53,33 @@ const MyPledgesPage = () => {
     }
     setDeleteDialogOpen(false);
     setPledgeToDelete(null);
+  };
+
+  const handleMarkPaidClick = (pledge: ParentPledge) => {
+    setPledgeToMarkPaid(pledge);
+    setMarkPaidDialogOpen(true);
+  };
+
+  const handleConfirmMarkPaid = () => {
+    if (pledgeToMarkPaid) {
+      updatePledge.mutate(
+        { id: pledgeToMarkPaid.id, is_paid: true, payment_status: "paid" },
+        {
+          onSuccess: () => {
+            refetch();
+            setMarkPaidDialogOpen(false);
+            setPledgeToMarkPaid(null);
+          },
+        }
+      );
+    }
+  };
+
+  const handleMarkUnpaid = (pledgeId: string) => {
+    updatePledge.mutate(
+      { id: pledgeId, is_paid: false, payment_status: "pending" },
+      { onSuccess: () => refetch() }
+    );
   };
 
   const getStatusBadge = (pledge: ParentPledge) => {
@@ -242,11 +273,29 @@ const MyPledgesPage = () => {
                             </div>
                           </div>
 
-                          {!pledge.is_paid && (
+                          {pledge.is_paid ? (
                             <div className="mt-4 pt-4 border-t border-border flex gap-2">
-                              <Button size="sm" className="flex-1" disabled>
-                                <CreditCard className="h-4 w-4 mr-2" />
-                                Pay Now (Coming Soon)
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                className="flex-1"
+                                onClick={() => handleMarkUnpaid(pledge.id)}
+                                disabled={updatePledge.isPending}
+                              >
+                                <Undo2 className="h-4 w-4 mr-2" />
+                                Mark as Unpaid
+                              </Button>
+                            </div>
+                          ) : (
+                            <div className="mt-4 pt-4 border-t border-border flex gap-2">
+                              <Button 
+                                size="sm" 
+                                className="flex-1"
+                                onClick={() => handleMarkPaidClick(pledge)}
+                                disabled={updatePledge.isPending}
+                              >
+                                <CircleDollarSign className="h-4 w-4 mr-2" />
+                                Mark as Paid
                               </Button>
                             </div>
                           )}
@@ -269,6 +318,19 @@ const MyPledgesPage = () => {
         onOpenChange={setDeleteDialogOpen}
         onConfirm={handleConfirmDelete}
         itemName="this pledge"
+      />
+
+      {/* Mark as Paid Confirmation Dialog */}
+      <ConfirmDialog
+        open={markPaidDialogOpen}
+        onOpenChange={setMarkPaidDialogOpen}
+        onConfirm={handleConfirmMarkPaid}
+        title="Mark Pledge as Paid"
+        description={pledgeToMarkPaid ? `Are you sure you want to mark the $${pledgeToMarkPaid.amount.toFixed(2)} pledge for ${pledgeToMarkPaid.student_name} as paid?` : ""}
+        confirmLabel="Mark as Paid"
+        variant="default"
+        icon={<CircleDollarSign className="h-5 w-5 text-success" />}
+        loading={updatePledge.isPending}
       />
     </div>
   );
