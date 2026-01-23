@@ -108,7 +108,7 @@ const DashboardPage = () => {
       <MainNav />
       
       {/* Main Content */}
-      <main className="flex-1 bg-background-warm">
+      <main className="flex-1 bg-background-warm shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
         <div className="container py-8">
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Main Content Area */}
