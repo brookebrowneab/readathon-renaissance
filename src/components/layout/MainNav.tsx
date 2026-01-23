@@ -85,9 +85,9 @@ const MainNav = () => {
           </Link>
 
           {/* Desktop Nav - Right side */}
-          <nav className="flex items-center gap-6 whitespace-nowrap">
+          <nav className="flex items-center">
             {isAuthenticated ? (
-              <>
+              <div className="flex items-center gap-6">
                 {/* Dashboard Link */}
                 <Link
                   to="/dashboard"
@@ -103,15 +103,15 @@ const MainNav = () => {
                 <div className="relative group">
                   <button
                     className={cn(
-                      "flex items-center gap-1 text-xs font-semibold tracking-widest text-muted-foreground transition-colors hover:text-foreground",
+                      "text-xs font-semibold tracking-widest text-muted-foreground transition-colors hover:text-foreground",
                       location.pathname === "/account" && "text-foreground"
                     )}
                   >
                     ACCOUNT
                   </button>
                   {/* Dropdown menu */}
-                  <div className="absolute right-0 top-full pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150">
-                    <div className="bg-background border border-border rounded-lg shadow-lg py-1 min-w-[140px] z-50">
+                  <div className="absolute right-0 top-full pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50">
+                    <div className="bg-background border border-border rounded-lg shadow-lg py-1 min-w-[140px]">
                       <button
                         onClick={handleLogout}
                         className="flex items-center gap-2 w-full px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
@@ -122,7 +122,7 @@ const MainNav = () => {
                     </div>
                   </div>
                 </div>
-              </>
+              </div>
             ) : (
               <>
                 {publicNav.map((item) => (
