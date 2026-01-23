@@ -11,7 +11,6 @@ export interface Child {
   goal_minutes: number;
   share_public_link: boolean;
   total_minutes: number;
-  student_pin: string | null;
   student_username: string | null;
   student_password_hash: string | null;
   student_login_enabled: boolean;
@@ -25,7 +24,6 @@ export interface ChildInsert {
   class_name?: string | null;
   goal_minutes?: number;
   share_public_link?: boolean;
-  student_pin?: string | null;
   student_username?: string | null;
   student_login_enabled?: boolean;
 }
@@ -38,7 +36,6 @@ export interface ChildUpdate {
   goal_minutes?: number;
   share_public_link?: boolean;
   total_minutes?: number;
-  student_pin?: string | null;
   student_username?: string | null;
   student_login_enabled?: boolean;
 }

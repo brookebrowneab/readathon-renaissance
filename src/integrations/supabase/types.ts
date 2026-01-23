@@ -127,7 +127,6 @@ export type Database = {
           share_public_link: boolean
           student_login_enabled: boolean
           student_password_hash: string | null
-          student_pin: string | null
           student_username: string | null
           total_minutes: number
           updated_at: string
@@ -143,7 +142,6 @@ export type Database = {
           share_public_link?: boolean
           student_login_enabled?: boolean
           student_password_hash?: string | null
-          student_pin?: string | null
           student_username?: string | null
           total_minutes?: number
           updated_at?: string
@@ -159,7 +157,6 @@ export type Database = {
           share_public_link?: boolean
           student_login_enabled?: boolean
           student_password_hash?: string | null
-          student_pin?: string | null
           student_username?: string | null
           total_minutes?: number
           updated_at?: string
