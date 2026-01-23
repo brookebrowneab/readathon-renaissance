@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/collapsible";
 import { ReadingLogsTable, ReadingLog } from "@/components/family/ReadingLogsTable";
 import { toast } from "sonner";
-import openBookBanner from "@/assets/open-book-banner.png";
+
 
 // Hand-drawn border style (consistent with other pages)
 const handDrawnBorder = {
@@ -146,10 +146,6 @@ const ManageChildrenPage = () => {
               </Button>
             </div>
 
-            {/* Banner Image */}
-            <div className="relative">
-              <img src={openBookBanner} alt="Open book illustration" className="w-full h-auto max-h-32 object-contain" />
-            </div>
           </div>
 
           {/* Children List with Reading Logs */}
