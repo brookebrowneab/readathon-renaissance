@@ -177,18 +177,23 @@ const SponsorPaymentPage = () => {
 
   return (
     <PublicLayout>
+      {/* Back to Dashboard link - above hero */}
+      <div className="container pt-6">
+        <div className="max-w-4xl pl-9 md:pl-14 lg:pl-20">
+          <Link 
+            to={dashboardUrl}
+            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Dashboard
+          </Link>
+        </div>
+      </div>
+
       {/* Hero Section */}
-      <section className="relative pt-8 md:pt-12 pb-6 md:pb-8">
+      <section className="relative pt-4 md:pt-8 pb-6 md:pb-8">
         <div className="container">
           <div className="max-w-4xl pl-9 md:pl-14 lg:pl-20">
-            {/* Back to Dashboard link */}
-            <Link 
-              to={dashboardUrl}
-              className="inline-flex items-center gap-2 mb-4 text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back to Dashboard
-            </Link>
             
             {/* Large headline with highlighter effect */}
             <div className="relative inline-block mb-4">
