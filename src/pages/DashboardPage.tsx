@@ -115,28 +115,16 @@ const DashboardPage = () => {
             <div className="flex-1 space-y-8">
               {/* Header Section */}
               <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h1 className="font-serif text-3xl font-normal tracking-tight text-foreground md:text-4xl">
-                      <span className="font-handwritten text-4xl text-primary">
-                        Welcome,
-                      </span>{" "}
-                      {mockUser.name.split(" ")[0]}!
-                    </h1>
-                    <p className="text-muted-foreground mt-1 text-sm md:text-base">
-                      Here's how your readers are doing this week
-                    </p>
-                  </div>
-                  <Link to="/login">
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      style={handDrawnBorder}
-                    >
-                      <LogOut className="mr-2 h-4 w-4" />
-                      Exit Demo
-                    </Button>
-                  </Link>
+                <div>
+                  <h1 className="font-serif text-3xl font-normal tracking-tight text-foreground md:text-4xl">
+                    <span className="font-handwritten text-4xl text-primary">
+                      Welcome,
+                    </span>{" "}
+                    {mockUser.name.split(" ")[0]}!
+                  </h1>
+                  <p className="text-muted-foreground mt-2 text-sm md:text-base">
+                    Here's how your readers are doing this week
+                  </p>
                 </div>
               </div>
 
