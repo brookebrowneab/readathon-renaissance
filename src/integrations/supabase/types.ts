@@ -334,6 +334,7 @@ export type Database = {
       reading_logs: {
         Row: {
           book_title: string | null
+          child_id: string | null
           created_at: string
           event_id: string | null
           id: string
@@ -343,6 +344,7 @@ export type Database = {
         }
         Insert: {
           book_title?: string | null
+          child_id?: string | null
           created_at?: string
           event_id?: string | null
           id?: string
@@ -352,6 +354,7 @@ export type Database = {
         }
         Update: {
           book_title?: string | null
+          child_id?: string | null
           created_at?: string
           event_id?: string | null
           id?: string
@@ -360,6 +363,13 @@ export type Database = {
           student_name?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "reading_logs_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "reading_logs_event_id_fkey"
             columns: ["event_id"]
