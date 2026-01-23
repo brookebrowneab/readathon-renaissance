@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { PublicLayout } from "@/components/layout";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, GraduationCap } from "lucide-react";
 import { useMemo } from "react";
 import { differenceInDays, differenceInHours } from "date-fns";
 import booksShelfHero from "@/assets/books-shelf-hero.png";
@@ -390,6 +390,18 @@ const HomePage = () => {
               >
                 Sign In
               </Button>
+            </Link>
+          </div>
+          
+          {/* Student login link */}
+          <div className="mt-6 pt-6 border-t border-primary-foreground/20">
+            <Link 
+              to="/student/login" 
+              className="inline-flex items-center gap-2 text-primary-foreground/80 hover:text-primary-foreground transition-colors text-sm"
+            >
+              <GraduationCap className="h-4 w-4" />
+              <span>I'm a student — log my reading</span>
+              <ArrowRight className="h-3 w-3" />
             </Link>
           </div>
         </div>
