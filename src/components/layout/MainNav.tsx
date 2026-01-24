@@ -148,7 +148,7 @@ const MainNav = () => {
                       size="sm" 
                       className="border-border text-foreground hover:bg-muted rounded-md"
                     >
-                      Sign In
+                      Login
                     </Button>
                   </Link>
                   <Link to="/register">
