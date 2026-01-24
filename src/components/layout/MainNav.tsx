@@ -128,7 +128,7 @@ const MainNav = () => {
                 </div>
               </div>
             ) : (
-              <div className="flex flex-col items-end gap-1">
+              <div className="flex flex-col items-end gap-0.5">
                 {publicNav.map((item) => (
                   <Link
                     key={item.href}
