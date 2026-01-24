@@ -141,15 +141,25 @@ const MainNav = () => {
                     {item.label}
                   </Link>
                 ))}
-                <Link to="/login">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="border-border text-foreground hover:bg-muted rounded-md"
-                  >
-                    Sign In
-                  </Button>
-                </Link>
+                <div className="flex items-center gap-2">
+                  <Link to="/login">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="border-border text-foreground hover:bg-muted rounded-md"
+                    >
+                      Sign In
+                    </Button>
+                  </Link>
+                  <Link to="/register">
+                    <Button 
+                      size="sm" 
+                      className="rounded-md"
+                    >
+                      Sign Up
+                    </Button>
+                  </Link>
+                </div>
               </div>
             )}
           </nav>
