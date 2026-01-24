@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Menu, User, LogOut, Bell, Clock, Mail } from "lucide-react";
@@ -6,6 +6,7 @@ import { useState } from "react";
 import { MobileNavDrawer } from "./MobileNavDrawer";
 import { UserRole } from "./BottomTabBar";
 import logo from "@/assets/logo.svg";
+import { useAuth } from "@/hooks/useAuth";
 import {
   Popover,
   PopoverContent,
@@ -36,30 +37,25 @@ const mockNotifications = {
 const MainNav = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, isAdmin, signOut } = useAuth();
 
   const desktopNavItemClass =
     "inline-flex items-start text-xs font-semibold tracking-widest text-muted-foreground transition-colors hover:text-foreground hover:underline py-2 px-0 m-0 leading-none";
 
-  // Mock auth state - replace with real auth
-  // Set to true on dashboard routes for demo purposes
-  const isDashboardRoute = location.pathname.startsWith("/dashboard") || 
-                           location.pathname.startsWith("/log-reading") ||
-                           location.pathname.startsWith("/children") ||
-                           location.pathname.startsWith("/family") ||
-                           location.pathname.startsWith("/pledges") ||
-                           location.pathname.startsWith("/reading-logs");
-  const isAuthenticated = isDashboardRoute;
-  const userRole: UserRole = isDashboardRoute ? "parent" : null;
-  const userName = "Sarah Johnson";
-  const userEmail = "sarah@example.com";
+  // Use real auth state
+  const isAuthenticated = !!user;
+  const userRole: UserRole = isAdmin ? "parent" : (isAuthenticated ? "parent" : null);
+  const userName = user?.user_metadata?.display_name || user?.email?.split('@')[0] || "User";
+  const userEmail = user?.email || "";
 
   const totalNotifications = 
     mockNotifications.pendingLogApprovals.length + 
     (mockNotifications.pendingSponsorRequests > 0 ? 1 : 0);
 
-  const handleLogout = () => {
-    // Handle logout logic
-    console.log("Logout");
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/");
   };
 
   return (
