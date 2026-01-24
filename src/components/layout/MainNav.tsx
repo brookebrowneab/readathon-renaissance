@@ -128,7 +128,7 @@ const MainNav = () => {
                 </div>
               </div>
             ) : (
-              <>
+              <div className="flex flex-col items-end gap-3">
                 {publicNav.map((item) => (
                   <Link
                     key={item.href}
@@ -150,7 +150,7 @@ const MainNav = () => {
                     Sign In
                   </Button>
                 </Link>
-              </>
+              </div>
             )}
           </nav>
         </div>
