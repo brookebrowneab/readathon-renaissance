@@ -9,6 +9,7 @@ import booksShelfDivider from "@/assets/books-shelf-divider.png";
 import openBook from "@/assets/open-book.png";
 import bookStackAccent from "@/assets/book-stack-accent.png";
 import booksShelfBannerV2 from "@/assets/books-shelf-banner-v2.png";
+import { useActiveEvent } from "@/hooks/useActiveEvent";
 
 
 const HERO_HEADLINES = [
@@ -17,22 +18,37 @@ const HERO_HEADLINES = [
   "Read books. Support Janney.",
 ];
 
-// Read-a-thon end date: March 8, 2025 at 11:59 PM EST
-const READATHON_END = new Date("2025-03-08T23:59:59-05:00");
-
 const HomePage = () => {
+  const { data: activeEvent } = useActiveEvent();
+
   // Randomize hero text on page load (stable for component lifecycle)
   const heroHeadline = useMemo(() => {
     return HERO_HEADLINES[Math.floor(Math.random() * HERO_HEADLINES.length)];
   }, []);
 
-  // Calculate days remaining
-  const daysRemaining = useMemo(() => {
+  // Calculate countdown - before event starts, count to start; during/after, count to end
+  const countdown = useMemo(() => {
     const now = new Date();
-    const days = differenceInDays(READATHON_END, now);
-    const hours = differenceInHours(READATHON_END, now) % 24;
-    return { days: Math.max(0, days), hours: Math.max(0, hours) };
-  }, []);
+    
+    if (!activeEvent) {
+      return { days: 0, hours: 0, label: "until reading starts" };
+    }
+    
+    const startDate = new Date(activeEvent.start_date);
+    const endDate = new Date(activeEvent.end_date);
+    
+    // Before the event starts - countdown to reading
+    if (now < startDate) {
+      const days = differenceInDays(startDate, now);
+      const hours = differenceInHours(startDate, now) % 24;
+      return { days: Math.max(0, days), hours: Math.max(0, hours), label: "until reading starts" };
+    }
+    
+    // During or after the event - countdown to end
+    const days = differenceInDays(endDate, now);
+    const hours = differenceInHours(endDate, now) % 24;
+    return { days: Math.max(0, days), hours: Math.max(0, hours), label: "left to read" };
+  }, [activeEvent]);
 
   return (
     <PublicLayout>
@@ -49,10 +65,10 @@ const HomePage = () => {
               borderBottomLeftRadius: '15px 255px',
             }}
           >
-            <span className="font-serif text-2xl md:text-3xl text-foreground">{daysRemaining.days}</span>
+            <span className="font-serif text-2xl md:text-3xl text-foreground">{countdown.days}</span>
             <span className="text-sm text-muted-foreground mr-2">days</span>
-            <span className="font-serif text-2xl md:text-3xl text-foreground">{daysRemaining.hours}</span>
-            <span className="text-sm text-muted-foreground">hours left</span>
+            <span className="font-serif text-2xl md:text-3xl text-foreground">{countdown.hours}</span>
+            <span className="text-sm text-muted-foreground">{countdown.label}</span>
           </div>
         </div>
       </div>
