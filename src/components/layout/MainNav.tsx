@@ -146,7 +146,7 @@ const MainNav = () => {
                     <Button 
                       variant="outline" 
                       size="sm" 
-                      className="border-border text-foreground hover:bg-muted rounded-md m-0"
+                      className="border-border text-foreground hover:bg-muted rounded-md m-0 leading-tight"
                     >
                       Login
                     </Button>
@@ -154,7 +154,7 @@ const MainNav = () => {
                   <Link to="/register">
                     <Button 
                       size="sm" 
-                      className="rounded-md m-0"
+                      className="rounded-md m-0 leading-tight"
                     >
                       Sign Up
                     </Button>
