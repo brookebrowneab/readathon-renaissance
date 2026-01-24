@@ -141,7 +141,7 @@ const MainNav = () => {
                     {item.label}
                   </Link>
                 ))}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1">
                   <Link to="/login">
                     <Button 
                       variant="outline" 
