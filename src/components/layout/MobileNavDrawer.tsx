@@ -180,7 +180,7 @@ export function MobileNavDrawer({
                   onClick={onClose}
                   className="flex items-center justify-center h-12 rounded-lg border border-input text-base font-medium hover:bg-muted transition-colors"
                 >
-                  Log In
+                  Login
                 </Link>
                 <Link
                   to="/register"
