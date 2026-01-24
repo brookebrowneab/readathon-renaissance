@@ -68,6 +68,7 @@ const HomePage = () => {
             <span className="font-serif text-2xl md:text-3xl text-foreground">{countdown.days}</span>
             <span className="text-sm text-muted-foreground mr-2">days</span>
             <span className="font-serif text-2xl md:text-3xl text-foreground">{countdown.hours}</span>
+            <span className="text-sm text-muted-foreground mr-2">hours</span>
             <span className="text-sm text-muted-foreground">{countdown.label}</span>
           </div>
         </div>
