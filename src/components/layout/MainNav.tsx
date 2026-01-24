@@ -134,7 +134,7 @@ const MainNav = () => {
                     key={item.href}
                     to={item.href}
                     className={cn(
-                      "text-xs font-semibold tracking-widest text-muted-foreground transition-colors hover:text-foreground hover:underline text-right max-w-[180px] lg:max-w-none leading-tight mt-[15px]",
+                      "text-xs font-semibold tracking-widest text-muted-foreground transition-colors hover:text-foreground hover:underline text-right max-w-[180px] lg:max-w-none leading-tight mt-[15px] pt-[10px]",
                       location.pathname === item.href && "text-foreground"
                     )}
                   >
