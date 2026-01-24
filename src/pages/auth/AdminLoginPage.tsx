@@ -40,11 +40,25 @@ export default function AdminLoginPage() {
   const { user, isLoading, isAdmin, signIn, signUp, refreshAdmin } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState("login");
+  const [adminExists, setAdminExists] = useState<boolean | null>(null);
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: "", password: "" },
   });
+
+  // Check if any admin exists
+  useEffect(() => {
+    const checkAdminExists = async () => {
+      const { data } = await supabase
+        .from('user_roles')
+        .select('id')
+        .eq('role', 'admin')
+        .limit(1);
+      setAdminExists((data?.length ?? 0) > 0);
+    };
+    checkAdminExists();
+  }, []);
 
   // Redirect if already logged in as admin
   useEffect(() => {
@@ -146,19 +160,23 @@ export default function AdminLoginPage() {
             <Shield className="h-12 w-12 text-destructive mx-auto mb-4" />
             <h1 className="font-serif text-3xl md:text-4xl text-foreground mb-2">Access Denied</h1>
             <p className="text-muted-foreground mb-6">
-              You don't have admin privileges. Please contact an administrator if you believe this is an error.
+              {adminExists === false 
+                ? "No admin has been set up yet. Click below to complete setup."
+                : "You don't have admin privileges. Please contact an administrator if you believe this is an error."}
             </p>
             <div className="space-y-3">
-              <Button onClick={handleBootstrapAdmin} className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Verifying...
-                  </>
-                ) : (
-                  "Complete Admin Setup"
-                )}
-              </Button>
+              {adminExists === false && (
+                <Button onClick={handleBootstrapAdmin} className="w-full" disabled={isSubmitting}>
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Verifying...
+                    </>
+                  ) : (
+                    "Complete Admin Setup"
+                  )}
+                </Button>
+              )}
               <Button onClick={() => navigate("/")} variant="outline" className="w-full">
                 Return to Home
               </Button>
