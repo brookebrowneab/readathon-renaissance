@@ -9,6 +9,7 @@ import "@fontsource/caveat/400.css";
 import "@fontsource/caveat/700.css";
 
 import App from "./App.tsx";
+import "./styles/serif-fonts.css";
 import "./index.css";
 
 createRoot(document.getElementById("root")!).render(<App />);

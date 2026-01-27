@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { PublicLayout } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, GraduationCap } from "lucide-react";
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
 import { differenceInDays, differenceInHours } from "date-fns";
 import booksShelfHero from "@/assets/books-shelf-hero.png";
 import booksShelfDivider from "@/assets/books-shelf-divider.png";
@@ -10,6 +10,7 @@ import openBook from "@/assets/open-book.png";
 import bookStackAccent from "@/assets/book-stack-accent.png";
 import booksShelfBannerV2 from "@/assets/books-shelf-banner-v2.png";
 import { useActiveEvent } from "@/hooks/useActiveEvent";
+import { FontDebugOverlay } from "@/components/debug/FontDebugOverlay";
 
 
 const HERO_HEADLINES = [
@@ -20,6 +21,12 @@ const HERO_HEADLINES = [
 
 const HomePage = () => {
   const { data: activeEvent } = useActiveEvent();
+  const heroHeadingRef = useRef<HTMLHeadingElement | null>(null);
+
+  const debugFonts = useMemo(() => {
+    if (typeof window === "undefined") return false;
+    return new URLSearchParams(window.location.search).get("debugFonts") === "1";
+  }, []);
 
   // Randomize hero text on page load (stable for component lifecycle)
   const heroHeadline = useMemo(() => {
@@ -82,6 +89,7 @@ const HomePage = () => {
             {/* Large headline - left aligned with highlighter effect */}
             <div className="relative inline-block mb-6">
               <h1
+                ref={heroHeadingRef}
                 className="font-serif text-5xl md:text-6xl lg:text-7xl font-normal tracking-tight text-foreground leading-[1.05] relative"
               >
                 <span className="relative">
@@ -108,6 +116,9 @@ const HomePage = () => {
                 </span>
               </h1>
             </div>
+
+            {/* Enable with ?debugFonts=1 in the URL */}
+            <FontDebugOverlay enabled={debugFonts} targetRef={heroHeadingRef} />
 
             <p className="text-base md:text-lg text-muted-foreground max-w-2xl leading-relaxed mb-6">
               Janney Elementary Read-a-thon runs February 24–March 8. Students read to raise funds for our school. 
