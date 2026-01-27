@@ -28,3 +28,21 @@
   /* Cache-bust to avoid stale 404/old font caches in shared preview links */
   src: url("/fonts/source-serif-4-variable.woff2?v=20260127") format("woff2");
 }
+
+/*
+  IMPORTANT:
+  We also define the `.font-serif` / `.font-display` classes here as a safety net.
+  In some shared preview scenarios, users can end up with a stale/cached CSS bundle
+  where Tailwind’s font utilities don’t reflect the latest config.
+  This guarantees that any element using `className="font-serif"` (or `font-display`)
+  will still render with the serif stack.
+*/
+
+:root {
+  --serif-stack: "Instrument Serif", "Source Serif 4", Georgia, serif;
+}
+
+.font-serif,
+.font-display {
+  font-family: var(--serif-stack) !important;
+}
