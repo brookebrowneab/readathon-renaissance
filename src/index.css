@@ -1,4 +1,7 @@
-/* Fonts are imported in main.tsx to ensure proper Vite bundling */
+/* Fonts are imported in main.tsx to ensure proper Vite bundling.
+   Fallback import for shared preview links (ensures serif fonts render consistently). */
+
+@import url("https://fonts.googleapis.com/css2?family=Instrument+Serif:ital,wght@0,400;1,400&family=Source+Serif+4:wght@400;600;700&display=swap");
 
 @tailwind base;
 @tailwind components;
