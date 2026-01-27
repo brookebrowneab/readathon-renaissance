@@ -39,7 +39,8 @@
 */
 
 :root {
-  --serif-stack: "Instrument Serif", "Source Serif 4", Georgia, serif;
+  /* Match the original intended heading serif (Instrument Serif). */
+  --serif-stack: "Instrument Serif", Georgia, serif;
 }
 
 .font-serif,
