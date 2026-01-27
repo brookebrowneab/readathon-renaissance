@@ -6,7 +6,8 @@
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url("/fonts/instrument-serif-400-normal.woff2") format("woff2");
+  /* Cache-bust to avoid stale 404/old font caches in shared preview links */
+  src: url("/fonts/instrument-serif-400-normal.woff2?v=20260127") format("woff2");
 }
 
 @font-face {
@@ -14,7 +15,8 @@
   font-style: italic;
   font-weight: 400;
   font-display: swap;
-  src: url("/fonts/instrument-serif-400-italic.woff2") format("woff2");
+  /* Cache-bust to avoid stale 404/old font caches in shared preview links */
+  src: url("/fonts/instrument-serif-400-italic.woff2?v=20260127") format("woff2");
 }
 
 /* Source Serif 4 ships as a variable font file (wght axis). */
@@ -23,5 +25,6 @@
   font-style: normal;
   font-weight: 400 700;
   font-display: swap;
-  src: url("/fonts/source-serif-4-variable.woff2") format("woff2");
+  /* Cache-bust to avoid stale 404/old font caches in shared preview links */
+  src: url("/fonts/source-serif-4-variable.woff2?v=20260127") format("woff2");
 }
