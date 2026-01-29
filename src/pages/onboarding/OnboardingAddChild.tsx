@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { PublicLayout } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,6 +34,8 @@ const GOAL_PRESETS = [300, 500, 750, 1000];
 
 const OnboardingAddChild = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const fromDashboard = (location.state as { from?: string })?.from === "dashboard";
   const { user, isLoading: authLoading } = useAuth();
   const { addChild } = useChildren();
   const { data: homeroomTeachers = [], isLoading: teachersLoading } = useHomeroomTeachers();
@@ -127,6 +129,18 @@ const OnboardingAddChild = () => {
     <PublicLayout>
       <section className="min-h-[calc(100vh-8rem)] flex items-center justify-center bg-background-warm p-6 lg:p-12">
         <div className="w-full max-w-lg">
+          {/* Back to Dashboard Link */}
+          {fromDashboard && (
+            <div className="mb-6">
+              <Link 
+                to="/dashboard" 
+                className="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+              >
+                ← Back to Dashboard
+              </Link>
+            </div>
+          )}
+          
           {/* Progress Indicator */}
           <div className="flex items-center justify-center gap-2 mb-8">
             {[1, 2, 3].map((step) => (
