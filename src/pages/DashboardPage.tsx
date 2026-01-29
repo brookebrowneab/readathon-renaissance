@@ -344,7 +344,7 @@ const DashboardPage = () => {
                     >
                       <Link to="/my-pledges">
                         <DollarSign className="h-4 w-4 mr-2" />
-                        View All Pledges
+                        View My Pledges
                       </Link>
                     </Button>
                     <Button
@@ -354,7 +354,17 @@ const DashboardPage = () => {
                     >
                       <Link to="/family/sponsor-my-child">
                         <Heart className="h-4 w-4 mr-2" />
-                        Sponsor My Child
+                        Make a Pledge
+                      </Link>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start"
+                      asChild
+                    >
+                      <Link to="/onboarding/add-child" state={{ from: "dashboard" }}>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add a Child
                       </Link>
                     </Button>
                     <Button
