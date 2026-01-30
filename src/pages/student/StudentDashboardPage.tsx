@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { BookContainer, ReadingGoalRing } from "@/components/legacy";
 import { PageHeader } from "@/components/layout";
 import { Button } from "@/components/ui/button";
+import { ClassFundraisingStack } from "@/components/ui/class-fundraising-stack";
 import { Heart, BookOpen, LogOut, Sparkles } from "lucide-react";
 
 interface StudentData {
@@ -87,12 +88,23 @@ const StudentDashboardPage = () => {
         {/* Hero Progress */}
         <BookContainer variant="default" className="p-8">
           <div className="flex flex-col items-center space-y-4">
-            <ReadingGoalRing
-              progress={studentData.minutesRead}
-              goal={studentData.readingGoal}
-              size={280}
-              mobileSize={240}
-            />
+            {/* Reading Ring + Class Fundraising Stack */}
+            <div className="flex items-center justify-center gap-6 w-full">
+              <ReadingGoalRing
+                progress={studentData.minutesRead}
+                goal={studentData.readingGoal}
+                size={200}
+                mobileSize={180}
+              />
+              
+              <ClassFundraisingStack
+                fundedAmount={420} // TODO: Connect to real data
+                goalAmount={1000}
+                classLabel="Class Goal"
+                rewardLabel="Ice Cream Party! 🍦"
+                size="md"
+              />
+            </div>
 
             <div className="text-center space-y-2">
               <p className="font-handwritten text-5xl text-brand-blue">

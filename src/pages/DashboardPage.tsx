@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ReadingGoalRing } from "@/components/legacy";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ClassFundraisingStack } from "@/components/ui/class-fundraising-stack";
 import {
   BookOpen,
   Plus,
@@ -20,6 +21,8 @@ import { useParentPledges } from "@/hooks/useParentPledges";
 import { usePledges } from "@/hooks/usePledges";
 import { useAllChildrenReadingLogs } from "@/hooks/useReadingLogs";
 import { useClassGradeTotals } from "@/hooks/useClassGradeTotals";
+import { useMultipleClassFundraisingTotals } from "@/hooks/useClassFundraising";
+import { useActiveEvent } from "@/hooks/useActiveEvent";
 import { PledgesSection } from "@/components/dashboard/PledgesSection";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState, useMemo } from "react";
@@ -68,6 +71,19 @@ const DashboardPage = () => {
   const { deletePledge } = usePledges();
   const { data: logsByChild, isLoading: logsLoading } = useAllChildrenReadingLogs();
   const { data: classGradeTotals } = useClassGradeTotals(children);
+  const { data: activeEvent } = useActiveEvent();
+
+  // Get class names for fundraising totals
+  const classNames = useMemo(() => 
+    [...new Set(children.map(c => c.class_name).filter(Boolean))] as string[],
+    [children]
+  );
+  const { data: classFundraisingTotals } = useMultipleClassFundraisingTotals(classNames, activeEvent?.id);
+
+  // Get milestone settings from event
+  const milestoneGoal = (activeEvent as any)?.class_milestone_goal || 1000;
+  const milestoneReward = (activeEvent as any)?.class_milestone_reward || null;
+  const milestoneEnabled = (activeEvent as any)?.class_milestone_enabled !== false;
 
   // Build recent activity from real reading logs
   const recentActivity = useMemo(() => {
@@ -129,6 +145,7 @@ const DashboardPage = () => {
     return children.map((child) => {
       const childLogs = logsByChild?.[child.id] || [];
       const totals = classGradeTotals?.[child.id] || { classTotal: 0, gradeTotal: 0 };
+      const classFunded = child.class_name ? (classFundraisingTotals?.[child.class_name] || 0) : 0;
       
       return {
         id: child.id,
@@ -142,9 +159,10 @@ const DashboardPage = () => {
         gradeMinutesRead: totals.gradeTotal,
         minutesToday: calculateMinutesToday(childLogs),
         longestStreak: calculateLongestStreak(childLogs),
+        classFundraisingTotal: classFunded,
       };
     });
-  }, [children, logsByChild, classGradeTotals]);
+  }, [children, logsByChild, classGradeTotals, classFundraisingTotals]);
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -212,7 +230,12 @@ const DashboardPage = () => {
                 ) : transformedChildren.length > 0 ? (
                   <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
                     {transformedChildren.map((child) => (
-                      <ChildProgressCard key={child.id} child={child} />
+                      <ChildProgressCard 
+                        key={child.id} 
+                        child={child} 
+                        milestoneGoal={milestoneGoal}
+                        milestoneReward={milestoneEnabled ? milestoneReward : null}
+                      />
                     ))}
                   </div>
                 ) : (
@@ -438,10 +461,13 @@ interface ChildProgressCardProps {
     gradeMinutesRead: number;
     minutesToday: number;
     longestStreak: number;
+    classFundraisingTotal: number;
   };
+  milestoneGoal: number;
+  milestoneReward: string | null;
 }
 
-const ChildProgressCard = ({ child }: ChildProgressCardProps) => {
+const ChildProgressCard = ({ child, milestoneGoal, milestoneReward }: ChildProgressCardProps) => {
   return (
     <div 
       className="bg-background p-6 shadow-md"
@@ -453,7 +479,21 @@ const ChildProgressCard = ({ child }: ChildProgressCardProps) => {
         </h2>
         
         <div style={{ height: 15 }} />
-        <ReadingGoalRing progress={child.minutesRead} goal={child.goalMinutes} size={120} />
+        
+        {/* Reading Ring + Class Fundraising Stack side by side */}
+        <div className="flex items-center justify-center gap-6 w-full">
+          <ReadingGoalRing progress={child.minutesRead} goal={child.goalMinutes} size={100} />
+          
+          {child.className !== "Not specified" && (
+            <ClassFundraisingStack
+              fundedAmount={child.classFundraisingTotal}
+              goalAmount={milestoneGoal}
+              classLabel="Class Goal"
+              rewardLabel={milestoneReward || undefined}
+              size="sm"
+            />
+          )}
+        </div>
         
         {/* Personal Stats Grid */}
         <div className="mt-2 grid w-full grid-cols-2 gap-3">

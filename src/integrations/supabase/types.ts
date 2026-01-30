@@ -175,6 +175,63 @@ export type Database = {
           },
         ]
       }
+      class_pledges: {
+        Row: {
+          amount: number
+          class_name: string
+          created_at: string
+          event_id: string | null
+          id: string
+          is_paid: boolean
+          max_cap: number | null
+          payment_status: string
+          pledge_type: string
+          sponsor_user_id: string
+          teacher_id: string | null
+        }
+        Insert: {
+          amount: number
+          class_name: string
+          created_at?: string
+          event_id?: string | null
+          id?: string
+          is_paid?: boolean
+          max_cap?: number | null
+          payment_status?: string
+          pledge_type: string
+          sponsor_user_id: string
+          teacher_id?: string | null
+        }
+        Update: {
+          amount?: number
+          class_name?: string
+          created_at?: string
+          event_id?: string | null
+          id?: string
+          is_paid?: boolean
+          max_cap?: number | null
+          payment_status?: string
+          pledge_type?: string
+          sponsor_user_id?: string
+          teacher_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "class_pledges_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "class_pledges_teacher_id_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "teachers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_logs: {
         Row: {
           body: string
@@ -595,6 +652,10 @@ export type Database = {
       can_teacher_view_child: {
         Args: { child_id: string; teacher_user_id: string }
         Returns: boolean
+      }
+      get_class_fundraising_total: {
+        Args: { p_class_name: string; p_event_id?: string }
+        Returns: number
       }
       get_class_total_minutes: {
         Args: { p_class_name: string }
