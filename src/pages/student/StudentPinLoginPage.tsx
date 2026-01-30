@@ -84,6 +84,8 @@ const StudentLoginPage = () => {
         name: data.child.name,
         totalMinutes: data.child.totalMinutes,
         goalMinutes: data.child.goalMinutes,
+        className: data.child.className,
+        gradeInfo: data.child.gradeInfo,
       }));
 
       toast.success(`Welcome back, ${data.child.name}!`);

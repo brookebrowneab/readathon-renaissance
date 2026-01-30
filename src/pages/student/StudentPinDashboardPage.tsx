@@ -3,6 +3,10 @@ import { Link } from "react-router-dom";
 import { useStudentSession } from "@/hooks/useStudentSession";
 import { supabase } from "@/integrations/supabase/client";
 import { useActiveEvent } from "@/hooks/useActiveEvent";
+import { useSchoolReadingStats } from "@/hooks/useSchoolReadingStats";
+import { useClassReadingStats } from "@/hooks/useClassReadingStats";
+import { useWeeklyReadingStats } from "@/hooks/useWeeklyReadingStats";
+import { usePopularBooks } from "@/hooks/usePopularBooks";
 import { MainNav, Footer } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,7 +25,12 @@ import {
   Calendar,
   Sparkles,
   Library,
-  ChevronRight
+  ChevronRight,
+  School,
+  Users,
+  GraduationCap,
+  Star,
+  TrendingUp
 } from "lucide-react";
 import { toast } from "sonner";
 import { format, parseISO, isToday, isYesterday } from "date-fns";
@@ -62,6 +71,16 @@ const StudentPinDashboardPage = () => {
   const { session, isLoading: sessionLoading, logout, refreshData, requireAuth } = useStudentSession();
   const { data: activeEvent } = useActiveEvent();
   const { books } = useBooks();
+  
+  // New data hooks
+  const { data: schoolStats, isLoading: schoolStatsLoading } = useSchoolReadingStats();
+  const { data: classStats } = useClassReadingStats(session?.className);
+  const { data: weeklyStats } = useWeeklyReadingStats(session?.childId);
+  const { data: popularBooks } = usePopularBooks({ 
+    className: session?.className, 
+    gradeInfo: session?.gradeInfo,
+    limit: 4 
+  });
   
   const [readingLogs, setReadingLogs] = useState<ReadingLog[]>([]);
   const [isLoadingLogs, setIsLoadingLogs] = useState(true);
@@ -195,6 +214,28 @@ const StudentPinDashboardPage = () => {
       <MainNav />
 
       <main className="flex-1 bg-background-warm shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+        {/* School-Wide Reading Banner */}
+        <div className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground py-6">
+          <div className="container">
+            <div className="flex flex-col md:flex-row items-center justify-center gap-4 text-center md:text-left">
+              <School className="h-10 w-10 shrink-0" />
+              <div>
+                <p className="text-sm opacity-90">Our whole school has read</p>
+                <p className="text-4xl md:text-5xl font-bold">
+                  {schoolStatsLoading ? (
+                    <span className="animate-pulse">...</span>
+                  ) : (
+                    <>{(schoolStats?.total_minutes ?? 0).toLocaleString()} minutes!</>
+                  )}
+                </p>
+                {schoolStats?.total_students && (
+                  <p className="text-sm opacity-90">{schoolStats.total_students} readers strong 💪</p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="container py-8">
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Main Content Area */}
@@ -215,6 +256,23 @@ const StudentPinDashboardPage = () => {
                         : `${session.goalMinutes - session.totalMinutes} minutes to reach your goal`
                       }
                     </p>
+                    {/* Class and Grade Info */}
+                    {(session.className || session.gradeInfo) && (
+                      <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
+                        {session.className && (
+                          <span className="flex items-center gap-1">
+                            <Users className="h-4 w-4" />
+                            {session.className}
+                          </span>
+                        )}
+                        {session.gradeInfo && (
+                          <span className="flex items-center gap-1">
+                            <GraduationCap className="h-4 w-4" />
+                            {session.gradeInfo}
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
                   <Button 
                     variant="ghost" 
@@ -226,6 +284,39 @@ const StudentPinDashboardPage = () => {
                     Log Out
                   </Button>
                 </div>
+              </div>
+
+              {/* Weekly + Class Stats Row */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Last 7 Days */}
+                <div className="bg-background p-5 shadow-md" style={handDrawnBorder}>
+                  <div className="flex items-center gap-2 mb-3">
+                    <TrendingUp className="h-5 w-5 text-primary" />
+                    <h3 className="font-serif text-lg">Last 7 Days</h3>
+                  </div>
+                  <p className="text-3xl font-bold text-primary mb-1">
+                    {weeklyStats?.total_minutes ?? 0} min
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {weeklyStats?.daily_breakdown?.length ?? 0} days of reading
+                  </p>
+                </div>
+
+                {/* Class Progress */}
+                {session.className && (
+                  <div className="bg-background p-5 shadow-md" style={handDrawnBorder}>
+                    <div className="flex items-center gap-2 mb-3">
+                      <Users className="h-5 w-5 text-primary" />
+                      <h3 className="font-serif text-lg">Class Total</h3>
+                    </div>
+                    <p className="text-3xl font-bold text-primary mb-1">
+                      {(classStats?.total_minutes ?? 0).toLocaleString()} min
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {classStats?.student_count ?? 0} readers • {classStats?.total_books ?? 0} books
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Progress Card */}
@@ -285,6 +376,84 @@ const StudentPinDashboardPage = () => {
                   </div>
                 </div>
               </section>
+
+              {/* Popular Books in Your Class/Grade */}
+              {(popularBooks?.classBooks?.length || popularBooks?.gradeBooks?.length) && (
+                <section>
+                  <h2 className="font-serif text-xl md:text-2xl font-normal text-foreground flex items-center gap-2 mb-4">
+                    <Star className="h-5 w-5 text-warning" />
+                    Popular Books
+                  </h2>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Class Favorites */}
+                    {popularBooks?.classBooks && popularBooks.classBooks.length > 0 && (
+                      <div className="bg-background p-5 shadow-md" style={handDrawnBorder}>
+                        <h3 className="font-medium text-sm text-muted-foreground mb-3 flex items-center gap-2">
+                          <Users className="h-4 w-4" />
+                          In Your Class
+                        </h3>
+                        <div className="space-y-2">
+                          {popularBooks.classBooks.map((book) => (
+                            <div key={book.book_id} className="flex items-center gap-3">
+                              {book.cover_url ? (
+                                <img
+                                  src={book.cover_url}
+                                  alt={book.title}
+                                  className="w-8 h-12 object-cover rounded shadow-sm shrink-0"
+                                />
+                              ) : (
+                                <div className="w-8 h-12 bg-muted rounded flex items-center justify-center shrink-0">
+                                  <BookOpen className="h-3 w-3 text-muted-foreground" />
+                                </div>
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium truncate">{book.title}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {book.read_count} {book.read_count === 1 ? 'reader' : 'readers'}
+                                </p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Grade Favorites */}
+                    {popularBooks?.gradeBooks && popularBooks.gradeBooks.length > 0 && (
+                      <div className="bg-background p-5 shadow-md" style={handDrawnBorder}>
+                        <h3 className="font-medium text-sm text-muted-foreground mb-3 flex items-center gap-2">
+                          <GraduationCap className="h-4 w-4" />
+                          In Your Grade
+                        </h3>
+                        <div className="space-y-2">
+                          {popularBooks.gradeBooks.map((book) => (
+                            <div key={book.book_id} className="flex items-center gap-3">
+                              {book.cover_url ? (
+                                <img
+                                  src={book.cover_url}
+                                  alt={book.title}
+                                  className="w-8 h-12 object-cover rounded shadow-sm shrink-0"
+                                />
+                              ) : (
+                                <div className="w-8 h-12 bg-muted rounded flex items-center justify-center shrink-0">
+                                  <BookOpen className="h-3 w-3 text-muted-foreground" />
+                                </div>
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium truncate">{book.title}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {book.read_count} {book.read_count === 1 ? 'reader' : 'readers'}
+                                </p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </section>
+              )}
 
               {/* Log Reading Card */}
               <section>
