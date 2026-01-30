@@ -211,10 +211,13 @@ const TeacherLoginPage = () => {
 
               {/* Info Box */}
               <div className="bg-muted/50 rounded-lg p-4 text-sm text-muted-foreground">
-                <p className="font-medium text-foreground mb-1">First time logging in?</p>
+                <p className="font-medium text-foreground mb-1">First time here?</p>
                 <p>
-                  Your administrator should have created an account for you and linked it to your teacher profile.
-                  If you're having trouble, please contact your school administrator.
+                  If your administrator has added you to the system,{" "}
+                  <Link to="/teacher/register" className="text-primary hover:underline">
+                    register with a magic link
+                  </Link>{" "}
+                  instead—no password needed!
                 </p>
               </div>
 
