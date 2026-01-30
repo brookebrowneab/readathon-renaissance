@@ -212,12 +212,15 @@ const DashboardPage = () => {
                   <div>
                     <h1 className="font-serif text-3xl font-normal tracking-tight text-foreground md:text-4xl">
                       <span className="font-handwritten text-4xl text-primary">
-                        Welcome,
+                        {isSponsorOnly ? "Thank you," : "Welcome,"}
                       </span>{" "}
-                      {userName || "Reader"}!
+                      {userName || (isSponsorOnly ? "Sponsor" : "Reader")}!
                     </h1>
                     <p className="text-muted-foreground mt-1 text-sm md:text-base">
-                      Here's how your readers are doing this week
+                      {isSponsorOnly 
+                        ? "Here's how the readers you're supporting are doing" 
+                        : "Here's how your readers are doing this week"
+                      }
                     </p>
                   </div>
                   <Button 
@@ -232,126 +235,175 @@ const DashboardPage = () => {
                 </div>
               </div>
 
-              {/* Children Overview */}
-              <section>
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="font-serif text-xl md:text-2xl font-normal text-foreground">
-                    Your Readers
-                  </h2>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    asChild
-                    className="text-muted-foreground hover:text-foreground"
-                  >
-                    <Link to="/children">
-                      Manage Children
-                      <ChevronRight className="h-4 w-4 ml-1" />
-                    </Link>
-                  </Button>
-                </div>
-
-                {childrenLoading ? (
-                  <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-                    {[1, 2].map((i) => (
-                      <div key={i} className="bg-background p-6 shadow-md" style={handDrawnBorder}>
-                        <Skeleton className="h-40 w-full" />
-                      </div>
-                    ))}
-                  </div>
-                ) : transformedChildren.length > 0 ? (
-                  <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-                    {transformedChildren.map((child) => (
-                      <ChildProgressCard 
-                        key={child.id} 
-                        child={child} 
-                        milestoneGoal={milestoneGoal}
-                        milestoneReward={milestoneEnabled ? milestoneReward : null}
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="bg-background p-6 shadow-md text-center" style={handDrawnBorder}>
-                    <BookOpen className="h-10 w-10 text-muted-foreground/40 mx-auto mb-3" />
-                    <p className="text-muted-foreground mb-4">No children added yet</p>
-                    <Button asChild>
-                      <Link to="/onboarding/add-child">
-                        <Plus className="h-4 w-4 mr-2" />
-                        Add Your First Reader
-                      </Link>
-                    </Button>
-                  </div>
-                )}
-              </section>
-
-              {/* Recent Activity */}
-              <section>
-                <div 
-                  className="bg-background p-6 shadow-md"
-                  style={handDrawnBorder}
-                >
+              {/* Children Overview (Parent View) */}
+              {!isSponsorOnly && (
+                <section>
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-serif text-xl md:text-2xl text-foreground">Recent Activity</h3>
+                    <h2 className="font-serif text-xl md:text-2xl font-normal text-foreground">
+                      Your Readers
+                    </h2>
                     <Button 
                       variant="ghost" 
                       size="sm" 
                       asChild
                       className="text-muted-foreground hover:text-foreground"
                     >
-                      <Link to="/reading-logs">
-                        View all
+                      <Link to="/children">
+                        Manage Children
                         <ChevronRight className="h-4 w-4 ml-1" />
                       </Link>
                     </Button>
                   </div>
-                  <div className="space-y-3">
-                    {logsLoading ? (
-                      <>
-                        {[1, 2, 3].map((i) => (
-                          <div key={i} className="flex items-center gap-4 rounded-lg bg-muted/30 p-3">
-                            <Skeleton className="h-10 w-10 rounded-full" />
-                            <div className="flex-1 space-y-2">
-                              <Skeleton className="h-4 w-32" />
-                              <Skeleton className="h-3 w-24" />
+
+                  {childrenLoading ? (
+                    <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+                      {[1, 2].map((i) => (
+                        <div key={i} className="bg-background p-6 shadow-md" style={handDrawnBorder}>
+                          <Skeleton className="h-40 w-full" />
+                        </div>
+                      ))}
+                    </div>
+                  ) : transformedChildren.length > 0 ? (
+                    <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+                      {transformedChildren.map((child) => (
+                        <ChildProgressCard 
+                          key={child.id} 
+                          child={child} 
+                          milestoneGoal={milestoneGoal}
+                          milestoneReward={milestoneEnabled ? milestoneReward : null}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="bg-background p-6 shadow-md text-center" style={handDrawnBorder}>
+                      <BookOpen className="h-10 w-10 text-muted-foreground/40 mx-auto mb-3" />
+                      <p className="text-muted-foreground mb-4">No children added yet</p>
+                      <Button asChild>
+                        <Link to="/onboarding/add-child">
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add Your First Reader
+                        </Link>
+                      </Button>
+                    </div>
+                  )}
+                </section>
+              )}
+
+              {/* Sponsored Children Overview (Sponsor View) */}
+              {isSponsorOnly && (
+                <section>
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="font-serif text-xl md:text-2xl font-normal text-foreground">
+                      Readers You're Supporting
+                    </h2>
+                  </div>
+
+                  {sponsorPledgesLoading ? (
+                    <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+                      {[1, 2].map((i) => (
+                        <div key={i} className="bg-background p-6 shadow-md" style={handDrawnBorder}>
+                          <Skeleton className="h-40 w-full" />
+                        </div>
+                      ))}
+                    </div>
+                  ) : sponsorPledgesByChild.length > 0 ? (
+                    <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+                      {sponsorPledgesByChild.map((item) => (
+                        <SponsoredChildCard 
+                          key={item.childId} 
+                          childId={item.childId}
+                          childName={item.childName}
+                          child={item.child}
+                          pledges={item.pledges}
+                          totalAmount={item.totalAmount}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="bg-background p-6 shadow-md text-center" style={handDrawnBorder}>
+                      <Heart className="h-10 w-10 text-muted-foreground/40 mx-auto mb-3" />
+                      <p className="text-muted-foreground mb-4">You haven't sponsored any readers yet</p>
+                      <Button asChild>
+                        <Link to="/sponsor">
+                          <Plus className="h-4 w-4 mr-2" />
+                          Support a Reader
+                        </Link>
+                      </Button>
+                    </div>
+                  )}
+                </section>
+              )}
+
+              {/* Recent Activity - Only for Parents */}
+              {!isSponsorOnly && (
+                <section>
+                  <div 
+                    className="bg-background p-6 shadow-md"
+                    style={handDrawnBorder}
+                  >
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-serif text-xl md:text-2xl text-foreground">Recent Activity</h3>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        asChild
+                        className="text-muted-foreground hover:text-foreground"
+                      >
+                        <Link to="/reading-logs">
+                          View all
+                          <ChevronRight className="h-4 w-4 ml-1" />
+                        </Link>
+                      </Button>
+                    </div>
+                    <div className="space-y-3">
+                      {logsLoading ? (
+                        <>
+                          {[1, 2, 3].map((i) => (
+                            <div key={i} className="flex items-center gap-4 rounded-lg bg-muted/30 p-3">
+                              <Skeleton className="h-10 w-10 rounded-full" />
+                              <div className="flex-1 space-y-2">
+                                <Skeleton className="h-4 w-32" />
+                                <Skeleton className="h-3 w-24" />
+                              </div>
+                            </div>
+                          ))}
+                        </>
+                      ) : recentActivity.length > 0 ? (
+                        recentActivity.map((activity) => (
+                          <div
+                            key={activity.id}
+                            className="flex items-center gap-4 rounded-lg bg-muted/30 p-3"
+                          >
+                            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                              <BookOpen className="h-5 w-5 text-primary" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium text-foreground text-sm md:text-base">
+                                {activity.childName} read for {activity.minutes} min
+                              </p>
+                              <p className="text-xs md:text-sm text-muted-foreground truncate">
+                                {activity.bookTitle || "No book specified"} •{" "}
+                                {activity.date}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-1 font-serif text-lg text-primary">
+                              {activity.minutes}m
                             </div>
                           </div>
-                        ))}
-                      </>
-                    ) : recentActivity.length > 0 ? (
-                      recentActivity.map((activity) => (
-                        <div
-                          key={activity.id}
-                          className="flex items-center gap-4 rounded-lg bg-muted/30 p-3"
-                        >
-                          <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                            <BookOpen className="h-5 w-5 text-primary" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium text-foreground text-sm md:text-base">
-                              {activity.childName} read for {activity.minutes} min
-                            </p>
-                            <p className="text-xs md:text-sm text-muted-foreground truncate">
-                              {activity.bookTitle || "No book specified"} •{" "}
-                              {activity.date}
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-1 font-serif text-lg text-primary">
-                            {activity.minutes}m
-                          </div>
+                        ))
+                      ) : (
+                        <div className="text-center py-6 text-muted-foreground">
+                          <BookOpen className="h-8 w-8 mx-auto mb-2 opacity-40" />
+                          <p className="text-sm">No reading logged yet</p>
+                          <Button asChild size="sm" variant="link" className="mt-1">
+                            <Link to="/log-reading">Log your first session</Link>
+                          </Button>
                         </div>
-                      ))
-                    ) : (
-                      <div className="text-center py-6 text-muted-foreground">
-                        <BookOpen className="h-8 w-8 mx-auto mb-2 opacity-40" />
-                        <p className="text-sm">No reading logged yet</p>
-                        <Button asChild size="sm" variant="link" className="mt-1">
-                          <Link to="/log-reading">Log your first session</Link>
-                        </Button>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
-                </div>
-              </section>
+                </section>
+              )}
 
               {/* Pledges & Sponsors Section */}
               <PledgesSection
@@ -373,70 +425,99 @@ const DashboardPage = () => {
                     <h3 className="font-serif text-xl text-foreground mb-4">
                       Quick Actions
                     </h3>
-                    <Button 
-                      className="w-full justify-start bg-primary text-primary-foreground hover:bg-primary/90" 
-                      asChild
-                    >
-                      <Link to="/log-reading">
-                        <Plus className="h-4 w-4 mr-2" />
-                        Add Reading Log
-                      </Link>
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start"
-                      asChild
-                    >
-                      <Link to="/invite">
-                        <UserPlus className="h-4 w-4 mr-2" />
-                        Invite Sponsor
-                      </Link>
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start"
-                      asChild
-                    >
-                      <Link to="/my-pledges">
-                        <DollarSign className="h-4 w-4 mr-2" />
-                        My Pledges
-                      </Link>
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start"
-                      asChild
-                    >
-                      <Link to="/family/sponsor-my-child">
-                        <Heart className="h-4 w-4 mr-2" />
-                        Make a Pledge
-                      </Link>
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start"
-                      asChild
-                    >
-                      <Link to="/onboarding/add-child" state={{ from: "dashboard" }}>
-                        <Plus className="h-4 w-4 mr-2" />
-                        Add a Child
-                      </Link>
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start relative"
-                      asChild
-                    >
-                      <Link to="/family/sponsor-requests">
-                        <Bell className="h-4 w-4 mr-2" />
-                        Sponsor Requests
-                        {mockPendingSponsorRequests > 0 && (
-                          <Badge variant="destructive" className="ml-auto h-5 w-5 p-0 flex items-center justify-center text-xs">
-                            {mockPendingSponsorRequests}
-                          </Badge>
-                        )}
-                      </Link>
-                    </Button>
+                    
+                    {/* Sponsor-only actions */}
+                    {isSponsorOnly ? (
+                      <>
+                        <Button 
+                          className="w-full justify-start bg-primary text-primary-foreground hover:bg-primary/90" 
+                          asChild
+                        >
+                          <Link to="/sponsor">
+                            <Heart className="h-4 w-4 mr-2" />
+                            Support Another Reader
+                          </Link>
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="w-full justify-start"
+                          asChild
+                        >
+                          <Link to="/my-pledges">
+                            <DollarSign className="h-4 w-4 mr-2" />
+                            View My Pledges
+                          </Link>
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        {/* Parent actions */}
+                        <Button 
+                          className="w-full justify-start bg-primary text-primary-foreground hover:bg-primary/90" 
+                          asChild
+                        >
+                          <Link to="/log-reading">
+                            <Plus className="h-4 w-4 mr-2" />
+                            Add Reading Log
+                          </Link>
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="w-full justify-start"
+                          asChild
+                        >
+                          <Link to="/invite">
+                            <UserPlus className="h-4 w-4 mr-2" />
+                            Invite Sponsor
+                          </Link>
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="w-full justify-start"
+                          asChild
+                        >
+                          <Link to="/my-pledges">
+                            <DollarSign className="h-4 w-4 mr-2" />
+                            My Pledges
+                          </Link>
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="w-full justify-start"
+                          asChild
+                        >
+                          <Link to="/family/sponsor-my-child">
+                            <Heart className="h-4 w-4 mr-2" />
+                            Make a Pledge
+                          </Link>
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="w-full justify-start"
+                          asChild
+                        >
+                          <Link to="/onboarding/add-child" state={{ from: "dashboard" }}>
+                            <Plus className="h-4 w-4 mr-2" />
+                            Add a Child
+                          </Link>
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="w-full justify-start relative"
+                          asChild
+                        >
+                          <Link to="/family/sponsor-requests">
+                            <Bell className="h-4 w-4 mr-2" />
+                            Sponsor Requests
+                            {mockPendingSponsorRequests > 0 && (
+                              <Badge variant="destructive" className="ml-auto h-5 w-5 p-0 flex items-center justify-center text-xs">
+                                {mockPendingSponsorRequests}
+                              </Badge>
+                            )}
+                          </Link>
+                        </Button>
+                      </>
+                    )}
                   </div>
                 </div>
 
@@ -480,6 +561,104 @@ const DashboardPage = () => {
     </div>
   );
 };
+
+// Sponsored Child Card Component (Limited view for sponsors)
+import { SponsorPledge } from "@/hooks/useSponsorPledges";
+
+interface SponsoredChildCardProps {
+  childId: string;
+  childName: string;
+  child: {
+    id: string;
+    name: string;
+    total_minutes: number;
+    goal_minutes: number;
+    grade_info: string | null;
+  } | null;
+  pledges: SponsorPledge[];
+  totalAmount: number;
+}
+
+const SponsoredChildCard = ({ childId, childName, child, pledges, totalAmount }: SponsoredChildCardProps) => {
+  const totalMinutes = child?.total_minutes || 0;
+  const goalMinutes = child?.goal_minutes || 300;
+  const gradeInfo = child?.grade_info || "Student";
+  const progress = Math.round((totalMinutes / goalMinutes) * 100);
+  
+  // Calculate total owed based on pledge type
+  const calculateOwed = () => {
+    return pledges.reduce((sum, pledge) => {
+      if (pledge.pledge_type === "per_minute") {
+        return sum + (pledge.amount * totalMinutes);
+      }
+      return sum + pledge.amount;
+    }, 0);
+  };
+  
+  const totalOwed = calculateOwed();
+  const hasPendingPayment = pledges.some(p => !p.is_paid);
+  
+  return (
+    <div 
+      className="bg-background p-6 shadow-md"
+      style={handDrawnBorder}
+    >
+      <div className="flex flex-col items-center gap-4" style={{ paddingTop: 15 }}>
+        <div className="w-full flex items-center justify-between">
+          <h2 className="font-serif text-xl md:text-2xl font-normal tracking-tight text-foreground">
+            {childName.split(" ")[0]}'s Progress
+          </h2>
+          <Badge variant={hasPendingPayment ? "secondary" : "default"} className="shrink-0">
+            {hasPendingPayment ? "Pledged" : "Paid"}
+          </Badge>
+        </div>
+        
+        {/* Reading Ring */}
+        <div className="flex items-center justify-center w-full">
+          <ReadingGoalRing progress={totalMinutes} goal={goalMinutes} size={100} />
+        </div>
+        
+        {/* Progress Stats */}
+        <div className="grid w-full grid-cols-2 gap-3">
+          <div className="flex flex-col items-center rounded-lg bg-muted/30 p-3">
+            <span className="text-xs text-muted-foreground">Minutes Read</span>
+            <span className="font-serif text-xl text-primary">{totalMinutes.toLocaleString()}</span>
+          </div>
+          <div className="relative flex flex-col items-center rounded-lg bg-muted/30 p-3">
+            <Star className="absolute -right-1 -top-1 h-4 w-4 fill-accent text-accent" />
+            <span className="text-xs text-muted-foreground">Goal Progress</span>
+            <span className="font-serif text-xl text-primary">{Math.min(progress, 100)}%</span>
+          </div>
+        </div>
+        
+        {/* Pledge Info */}
+        <div className="w-full space-y-2 pt-2 border-t border-border">
+          <p className="text-xs text-muted-foreground text-center">{gradeInfo}</p>
+          <div className="grid w-full grid-cols-2 gap-3">
+            <div className="flex flex-col items-center rounded-lg bg-accent/10 p-2 border border-accent/20">
+              <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Your Pledge</span>
+              <span className="font-serif text-lg text-accent">${totalOwed.toFixed(2)}</span>
+            </div>
+            <div className="flex flex-col items-center rounded-lg bg-secondary/30 p-2 border border-secondary/40">
+              <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Pledge Type</span>
+              <span className="font-serif text-lg text-secondary-foreground">
+                {pledges[0]?.pledge_type === "per_minute" ? "Per Min" : "Flat"}
+              </span>
+            </div>
+          </div>
+        </div>
+        
+        {/* Thank You Message */}
+        <div className="w-full rounded-lg bg-primary/5 p-3 border border-primary/10">
+          <p className="text-xs text-center text-muted-foreground">
+            <Heart className="inline h-3 w-3 text-primary mr-1" />
+            Thank you for supporting {childName.split(" ")[0]}'s reading journey!
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // Child Progress Card Component
 interface ChildProgressCardProps {
