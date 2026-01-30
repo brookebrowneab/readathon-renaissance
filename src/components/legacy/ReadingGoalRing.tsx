@@ -118,7 +118,7 @@ const ReadingGoalRing = ({
             </defs>
             {/* Background circle */}
             <circle r="10" cx="10" cy="10" fill="transparent" stroke="none" />
-            {/* Progress arc */}
+            {/* Progress arc - fills clockwise from top */}
             <circle
               r="4.75"
               cx="10"
@@ -126,9 +126,10 @@ const ReadingGoalRing = ({
               fill="transparent"
               stroke={`url(#pencil-pattern-${index})`}
               strokeWidth="9.5"
+              strokeLinecap="round"
               pathLength={PATH_LENGTH}
-              strokeDasharray={PATH_LENGTH}
-              strokeDashoffset={PATH_LENGTH - circle.percent}
+              strokeDasharray={`${circle.percent} ${PATH_LENGTH - circle.percent}`}
+              strokeDashoffset="25"
               transform="rotate(-90 10 10)"
               className="transition-all duration-500 ease-out"
             />
