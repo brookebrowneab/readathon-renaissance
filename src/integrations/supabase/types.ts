@@ -183,7 +183,9 @@ export type Database = {
           event_id: string | null
           id: string
           is_paid: boolean
+          is_unlocked: boolean
           max_cap: number | null
+          milestone_minutes_target: number | null
           payment_status: string
           pledge_type: string
           sponsor_user_id: string
@@ -196,7 +198,9 @@ export type Database = {
           event_id?: string | null
           id?: string
           is_paid?: boolean
+          is_unlocked?: boolean
           max_cap?: number | null
+          milestone_minutes_target?: number | null
           payment_status?: string
           pledge_type: string
           sponsor_user_id: string
@@ -209,7 +213,9 @@ export type Database = {
           event_id?: string | null
           id?: string
           is_paid?: boolean
+          is_unlocked?: boolean
           max_cap?: number | null
+          milestone_minutes_target?: number | null
           payment_status?: string
           pledge_type?: string
           sponsor_user_id?: string
@@ -665,6 +671,23 @@ export type Database = {
       get_class_fundraising_total: {
         Args: { p_class_name: string; p_event_id?: string }
         Returns: number
+      }
+      get_class_milestone_status: {
+        Args: { p_class_name: string; p_event_id?: string }
+        Returns: {
+          next_milestone_amount: number
+          next_milestone_minutes: number
+          total_pledged: number
+          total_unlocked: number
+        }[]
+      }
+      get_class_reading_stats: {
+        Args: { p_class_name: string }
+        Returns: {
+          student_count: number
+          total_books: number
+          total_minutes: number
+        }[]
       }
       get_class_total_minutes: {
         Args: { p_class_name: string }
