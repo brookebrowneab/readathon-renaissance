@@ -18,6 +18,7 @@ export interface ActiveEvent {
   class_milestone_enabled: boolean;
   class_milestone_goal: number;
   class_milestone_reward: string;
+  teacher_logging_grades: string[];
   created_at: string;
   updated_at: string;
 }

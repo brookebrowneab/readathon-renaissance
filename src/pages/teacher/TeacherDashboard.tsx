@@ -7,6 +7,12 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -51,6 +57,16 @@ const TeacherDashboard = () => {
   const { lastLoggedByStudent, booksByStudent, isLoading: logsLoading } = useTeacherStudentLogs(studentIds);
 
   const isLoading = authLoading || studentsLoading || eventLoading;
+
+  // Check if teacher can log reading (based on grade-level permissions)
+  const canLogReading = useMemo(() => {
+    if (!activeEvent?.teacher_logging_grades || activeEvent.teacher_logging_grades.length === 0) {
+      return false;
+    }
+    // Check if any of the teacher's students are in an allowed grade
+    const studentGrades = [...new Set(students.map(s => s.grade_info).filter(Boolean))];
+    return studentGrades.some(grade => activeEvent.teacher_logging_grades.includes(grade as string));
+  }, [students, activeEvent?.teacher_logging_grades]);
 
   // Calculate student status
   const getStudentStatus = (totalMinutes: number, goalMinutes: number): StudentStatus => {
@@ -302,12 +318,32 @@ const TeacherDashboard = () => {
             </div>
 
             <div className="flex gap-2">
-              <Button asChild>
-                <Link to="/teacher/log">
-                  <BookOpen className="h-4 w-4 mr-2" />
-                  Log Reading
-                </Link>
-              </Button>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span>
+                      {canLogReading ? (
+                        <Button asChild>
+                          <Link to="/teacher/log">
+                            <BookOpen className="h-4 w-4 mr-2" />
+                            Log Reading
+                          </Link>
+                        </Button>
+                      ) : (
+                        <Button disabled className="opacity-50 cursor-not-allowed">
+                          <BookOpen className="h-4 w-4 mr-2" />
+                          Log Reading
+                        </Button>
+                      )}
+                    </span>
+                  </TooltipTrigger>
+                  {!canLogReading && (
+                    <TooltipContent>
+                      <p>Reading logging is not enabled for your grade level</p>
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+              </TooltipProvider>
               <Button variant="outline">
                 <Download className="h-4 w-4 mr-2" />
                 Export
