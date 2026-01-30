@@ -530,7 +530,7 @@ const ChildProgressCard = ({ child, milestoneGoal, milestoneReward }: ChildProgr
           <div className="w-full pt-2">
             <p className="text-xs text-muted-foreground mb-1.5 flex items-center gap-1">
               <Star className="h-3 w-3 text-accent fill-accent" />
-              Class Goal
+              Class Pledge Goal
             </p>
             <ClassFundraisingShelf
               fundedAmount={child.classFundraisingTotal}
