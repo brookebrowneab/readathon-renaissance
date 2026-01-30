@@ -368,46 +368,61 @@ export function LogoGenerator() {
     
     setIsApplying(true);
     try {
+      const version = Date.now();
+
       // Generate SVG with embedded font
       const svgString = generateSvgString(true);
       const svgBlob = new Blob([svgString], { type: 'image/svg+xml' });
       
       // Upload to storage
-      const fileName = `logo-${activeEvent.id}.svg`;
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      // IMPORTANT: use a unique filename per apply to avoid CDN/browser caching of the same path.
+      const fileName = `logo-${activeEvent.id}-${version}.svg`;
+      const { error: uploadError } = await supabase.storage
         .from('event-logos')
         .upload(fileName, svgBlob, {
-          upsert: true,
+          upsert: false,
           contentType: 'image/svg+xml',
+          cacheControl: '0',
         });
       
       if (uploadError) throw uploadError;
       
-      // Get public URL with cache-busting timestamp
+      // Get public URL
       const { data: urlData } = supabase.storage
         .from('event-logos')
         .getPublicUrl(fileName);
       
-      // Add cache-busting query parameter to force browsers to refetch
-      const logoUrlWithCacheBust = `${urlData.publicUrl}?v=${Date.now()}`;
+      const publicUrl = urlData.publicUrl;
+      // Extra cache-busting (some CDNs ignore query strings, but harmless if respected)
+      const logoUrl = `${publicUrl}?v=${version}`;
       
       // Update event with logo URL
-      const { error: updateError } = await supabase
+      const { data: updatedEvent, error: updateError } = await supabase
         .from('events')
-        .update({ logo_url: logoUrlWithCacheBust })
-        .eq('id', activeEvent.id);
+        .update({ logo_url: logoUrl })
+        .eq('id', activeEvent.id)
+        .select('logo_url')
+        .single();
       
       if (updateError) throw updateError;
+
+      // Update cache immediately, then refetch to ensure all listeners refresh.
+      queryClient.setQueryData(['active-event'], (prev: any) => {
+        if (!prev) return prev;
+        return { ...prev, logo_url: updatedEvent?.logo_url ?? logoUrl };
+      });
       
       // Invalidate queries to refresh logo everywhere
       // Use await to ensure the cache is invalidated before showing success
       await queryClient.invalidateQueries({ queryKey: ['active-event'] });
+      await queryClient.invalidateQueries({ queryKey: ['event-settings'] });
       await queryClient.refetchQueries({ queryKey: ['active-event'] });
       
       toast.success("Logo applied to site successfully!");
     } catch (error) {
       console.error("Failed to apply logo:", error);
-      toast.error("Failed to apply logo to site");
+      const message = error instanceof Error ? error.message : String(error);
+      toast.error(`Failed to apply logo to site: ${message}`);
     } finally {
       setIsApplying(false);
     }
