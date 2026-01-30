@@ -25,8 +25,8 @@ interface TabItem {
 const parentTabs: TabItem[] = [
   { label: "Home", href: "/dashboard", icon: Home },
   { label: "Children", href: "/family/manage", icon: Users },
-  { label: "Pledges", href: "/dashboard", icon: Heart },
-  { label: "Profile", href: "/dashboard", icon: User },
+  { label: "Pledges", href: "/my-pledges", icon: Heart },
+  { label: "Profile", href: "/account", icon: User },
 ];
 
 const studentTabs: TabItem[] = [
@@ -92,11 +92,11 @@ export function BottomTabBar({ role }: BottomTabBarProps) {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-card md:hidden safe-area-inset-bottom">
       <div className="flex items-center justify-around h-16">
-        {tabs.map((tab) => {
+        {tabs.map((tab, index) => {
           const active = isActive(tab.href);
           return (
             <Link
-              key={tab.href}
+              key={`${tab.label}-${index}`}
               to={tab.href}
               className={cn(
                 "flex flex-col items-center justify-center flex-1 h-full px-2 transition-colors touch-target-small",
