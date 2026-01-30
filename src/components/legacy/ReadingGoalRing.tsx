@@ -100,25 +100,25 @@ const ReadingGoalRing = ({
             <defs>
               <pattern 
                 id={`pencil-pattern-${index}`}
-                patternUnits="objectBoundingBox" 
-                x="0"
-                y="0"
-                width="1" 
-                height="1"
+                patternUnits="userSpaceOnUse" 
+                x="-40"
+                y="-40"
+                width="100" 
+                height="100"
               >
                 <image 
                   href={pencilPattern} 
                   x="0"
                   y="0"
-                  width="20" 
-                  height="20"
+                  width="100" 
+                  height="100"
                   preserveAspectRatio="xMidYMid slice"
                 />
               </pattern>
             </defs>
             {/* Background circle */}
             <circle r="10" cx="10" cy="10" fill="transparent" stroke="none" />
-            {/* Progress arc - fills clockwise from top */}
+            {/* Progress arc */}
             <circle
               r="4.75"
               cx="10"
@@ -126,10 +126,9 @@ const ReadingGoalRing = ({
               fill="transparent"
               stroke={`url(#pencil-pattern-${index})`}
               strokeWidth="9.5"
-              strokeLinecap="round"
               pathLength={PATH_LENGTH}
-              strokeDasharray={`${circle.percent} ${PATH_LENGTH - circle.percent}`}
-              strokeDashoffset="25"
+              strokeDasharray={PATH_LENGTH}
+              strokeDashoffset={PATH_LENGTH - circle.percent}
               transform="rotate(-90 10 10)"
               className="transition-all duration-500 ease-out"
             />
