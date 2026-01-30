@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useStudentSession } from "@/hooks/useStudentSession";
 import { supabase } from "@/integrations/supabase/client";
 import { useActiveEvent } from "@/hooks/useActiveEvent";
-import bookAbstractBorder from "@/assets/book-abstract-border.png";
+import booksShelfDividerV2 from "@/assets/books-shelf-divider-v2.png";
 import { MainNav, Footer } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -247,7 +247,7 @@ const StudentPinDashboardPage = () => {
         <div 
           className="h-10 md:h-12 w-full"
           style={{
-            backgroundImage: `url(${bookAbstractBorder})`,
+            backgroundImage: `url(${booksShelfDividerV2})`,
             backgroundRepeat: 'repeat-x',
             backgroundSize: 'auto 100%',
             backgroundPosition: 'center bottom',
