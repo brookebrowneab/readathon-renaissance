@@ -9,6 +9,7 @@ export interface TeacherProfile {
   teacher_type: "homeroom" | "partner" | "specials" | "staff";
   has_full_access: boolean;
   is_active: boolean;
+  grade_level: string | null;
 }
 
 export const useTeacherAuth = () => {
@@ -21,7 +22,7 @@ export const useTeacherAuth = () => {
 
       const { data, error } = await supabase
         .from("teachers")
-        .select("id, name, email, teacher_type, has_full_access, is_active")
+        .select("id, name, email, teacher_type, has_full_access, is_active, grade_level")
         .eq("user_id", user.id)
         .eq("is_active", true)
         .maybeSingle();

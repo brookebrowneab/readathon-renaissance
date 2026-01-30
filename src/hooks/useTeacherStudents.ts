@@ -51,8 +51,25 @@ export const useTeacherStudents = () => {
     enabled: !!teacherProfile,
   });
 
+  // Derive unique grades and classes for filtering
+  const uniqueGrades = [...new Set(students.map(s => s.grade_info).filter(Boolean))] as string[];
+  const uniqueClasses = [...new Set(students.map(s => s.class_name).filter(Boolean))] as string[];
+
+  // Sort grades sensibly
+  const sortedGrades = uniqueGrades.sort((a, b) => {
+    const gradeOrder = (grade: string) => {
+      if (grade.toLowerCase().startsWith('k')) return 0;
+      if (grade.toLowerCase().startsWith('pre')) return -1;
+      const match = grade.match(/(\d+)/);
+      return match ? parseInt(match[1], 10) : 100;
+    };
+    return gradeOrder(a) - gradeOrder(b);
+  });
+
   return {
     students,
+    uniqueGrades: sortedGrades,
+    uniqueClasses,
     isLoading: authLoading || studentsLoading,
     error,
     refetch,

@@ -656,6 +656,7 @@ export type Database = {
         Row: {
           created_at: string
           email: string | null
+          grade_level: string | null
           has_full_access: boolean
           id: string
           is_active: boolean
@@ -667,6 +668,7 @@ export type Database = {
         Insert: {
           created_at?: string
           email?: string | null
+          grade_level?: string | null
           has_full_access?: boolean
           id?: string
           is_active?: boolean
@@ -678,6 +680,7 @@ export type Database = {
         Update: {
           created_at?: string
           email?: string | null
+          grade_level?: string | null
           has_full_access?: boolean
           id?: string
           is_active?: boolean
