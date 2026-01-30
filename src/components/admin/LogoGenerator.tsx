@@ -370,18 +370,58 @@ export function LogoGenerator() {
     try {
       const version = Date.now();
 
-      // Generate SVG with embedded font
+      // Generate SVG (then rasterize to PNG for maximum compatibility in <img> tags)
       const svgString = generateSvgString(true);
       const svgBlob = new Blob([svgString], { type: 'image/svg+xml' });
-      
+
+      const pngBlob = await new Promise<Blob>((resolve, reject) => {
+        const url = URL.createObjectURL(svgBlob);
+        const img = new window.Image();
+        img.onload = () => {
+          try {
+            const canvas = document.createElement('canvas');
+            const scale = 2;
+            canvas.width = 666 * scale;
+            canvas.height = 164.4 * scale;
+
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+              URL.revokeObjectURL(url);
+              reject(new Error('Canvas not supported'));
+              return;
+            }
+
+            ctx.scale(scale, scale);
+            ctx.drawImage(img, 0, 0, 666, 164.4);
+
+            canvas.toBlob((blob) => {
+              URL.revokeObjectURL(url);
+              if (!blob) {
+                reject(new Error('Failed to create PNG'));
+                return;
+              }
+              resolve(blob);
+            }, 'image/png');
+          } catch (e) {
+            URL.revokeObjectURL(url);
+            reject(e instanceof Error ? e : new Error(String(e)));
+          }
+        };
+        img.onerror = () => {
+          URL.revokeObjectURL(url);
+          reject(new Error('Failed to render SVG for PNG'));
+        };
+        img.src = url;
+      });
+
       // Upload to storage
       // IMPORTANT: use a unique filename per apply to avoid CDN/browser caching of the same path.
-      const fileName = `logo-${activeEvent.id}-${version}.svg`;
+      const fileName = `logo-${activeEvent.id}-${version}.png`;
       const { error: uploadError } = await supabase.storage
         .from('event-logos')
-        .upload(fileName, svgBlob, {
+        .upload(fileName, pngBlob, {
           upsert: false,
-          contentType: 'image/svg+xml',
+          contentType: 'image/png',
           cacheControl: '0',
         });
       
