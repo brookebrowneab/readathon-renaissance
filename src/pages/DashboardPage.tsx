@@ -535,6 +535,35 @@ const ChildProgressCard = ({ child, milestoneGoal, milestoneReward }: ChildProgr
           </div>
         </div>
 
+        {/* Class Goal Progress - Prominent and Colorful */}
+        {child.className !== "Not specified" && milestoneReward && (
+          <div className="w-full rounded-xl bg-gradient-to-r from-primary/15 via-accent/15 to-success/15 p-4 border-2 border-primary/30">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-foreground flex items-center gap-1.5">
+                <Star className="h-4 w-4 text-accent fill-accent" />
+                Class Goal Progress
+              </span>
+              <span className="text-xs text-muted-foreground">
+                {Math.min(Math.round((child.classMinutesRead / milestoneGoal) * 100), 100)}%
+              </span>
+            </div>
+            <div className="h-3 w-full bg-muted/50 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-gradient-to-r from-primary via-accent to-success rounded-full transition-all duration-500"
+                style={{ width: `${Math.min((child.classMinutesRead / milestoneGoal) * 100, 100)}%` }}
+              />
+            </div>
+            <div className="mt-2 flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">
+                <span className="font-semibold text-foreground">{child.classMinutesRead.toLocaleString()}</span> / {milestoneGoal.toLocaleString()} min
+              </span>
+              {milestoneReward && (
+                <span className="font-medium text-success">🎉 {milestoneReward}</span>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Actions */}
         <div className="flex gap-2 w-full">
           <Button 
@@ -543,7 +572,7 @@ const ChildProgressCard = ({ child, milestoneGoal, milestoneReward }: ChildProgr
             className="flex-1" 
             asChild
           >
-            <Link to={`/children/${child.id}`}>
+            <Link to={`/children/${child.id}`} state={{ from: "dashboard" }}>
               Details
             </Link>
           </Button>

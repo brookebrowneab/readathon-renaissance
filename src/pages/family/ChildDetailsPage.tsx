@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useLocation } from "react-router-dom";
 import { MainNav, Footer, BottomTabBar } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -36,6 +36,8 @@ const handDrawnBorder = {
 
 const ChildDetailsPage = () => {
   const { id } = useParams<{ id: string }>();
+  const location = useLocation();
+  const cameFromDashboard = (location.state as { from?: string })?.from === "dashboard";
   
   // Fetch real data from database
   const { data: child, isLoading: childLoading, error: childError } = useChildById(id);
@@ -146,9 +148,9 @@ const ChildDetailsPage = () => {
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
                   <Button variant="ghost" size="sm" asChild>
-                    <Link to="/children">
+                    <Link to={cameFromDashboard ? "/dashboard" : "/children"}>
                       <ArrowLeft className="h-4 w-4 mr-1" />
-                      Back to Children
+                      {cameFromDashboard ? "Back to Dashboard" : "Back to Children"}
                     </Link>
                   </Button>
                 </div>
