@@ -241,30 +241,35 @@ const SponsorMyChildPage = () => {
   };
 
   // Render Step 0: Type Selection
-  const renderStep0 = () => (
-    <div className="space-y-6 animate-fade-in">
-      <SponsorTypeSelector
-        selectedType={sponsorType}
-        onSelect={handleTypeSelect}
-        hasChildren={myChildren.length > 0}
-      />
+  const renderStep0 = () => {
+    const isSponsorOnly = myChildren.length === 0;
+    
+    return (
+      <div className="space-y-6 animate-fade-in">
+        <SponsorTypeSelector
+          selectedType={sponsorType}
+          onSelect={handleTypeSelect}
+          hasChildren={myChildren.length > 0}
+          isSponsorOnly={isSponsorOnly}
+        />
 
-      <div className="flex gap-3">
-        <Button variant="outline" onClick={handleBack} className="flex-1">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          {fromDashboard ? "Back to Dashboard" : "Back"}
-        </Button>
-        <Button
-          className="flex-1"
-          disabled={!sponsorType}
-          onClick={handleTypeNext}
-        >
-          Continue
-          <ArrowRight className="ml-2 h-4 w-4" />
-        </Button>
+        <div className="flex gap-3">
+          <Button variant="outline" onClick={handleBack} className="flex-1">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            {fromDashboard ? "Back to Dashboard" : "Back"}
+          </Button>
+          <Button
+            className="flex-1"
+            disabled={!sponsorType}
+            onClick={handleTypeNext}
+          >
+            Continue
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   // Render Step 1: Selection (Child or Class)
   const renderStep1 = () => {

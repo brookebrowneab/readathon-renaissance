@@ -8,6 +8,7 @@ interface SponsorTypeSelectorProps {
   selectedType: SponsorType | null;
   onSelect: (type: SponsorType) => void;
   hasChildren: boolean;
+  isSponsorOnly?: boolean;
 }
 
 const sponsorTypes = [
@@ -35,7 +36,22 @@ export function SponsorTypeSelector({
   selectedType,
   onSelect,
   hasChildren,
+  isSponsorOnly = false,
 }: SponsorTypeSelectorProps) {
+  // Override labels for sponsor-only users
+  const getLabel = (type: SponsorType, defaultTitle: string) => {
+    if (isSponsorOnly && type === "another-child") {
+      return "Sponsor a Student";
+    }
+    return defaultTitle;
+  };
+
+  const getDescription = (type: SponsorType, defaultDesc: string) => {
+    if (isSponsorOnly && type === "another-child") {
+      return "Support a student's reading journey";
+    }
+    return defaultDesc;
+  };
   return (
     <div className="space-y-6">
       <div className="text-center mb-6">
@@ -67,8 +83,8 @@ export function SponsorTypeSelector({
                   <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
                     <Icon className="h-7 w-7 text-primary" />
                   </div>
-                  <h3 className="font-semibold text-lg mb-2">{title}</h3>
-                  <p className="text-sm text-muted-foreground">{description}</p>
+                  <h3 className="font-semibold text-lg mb-2">{getLabel(type, title)}</h3>
+                  <p className="text-sm text-muted-foreground">{getDescription(type, description)}</p>
                 </CardContent>
               </Card>
             );
