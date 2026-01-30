@@ -13,6 +13,13 @@ import { ReadingGoalRing } from "@/components/legacy";
 import { BookSelector } from "@/components/books";
 import { Book, useBooks } from "@/hooks/useBooks";
 import { useQuery } from "@tanstack/react-query";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { 
   BookOpen, 
   Clock, 
@@ -147,7 +154,7 @@ const StudentPinDashboardPage = () => {
   const [minutes, setMinutes] = useState(15);
   const [bookTitle, setBookTitle] = useState("");
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
-
+  const [isLogModalOpen, setIsLogModalOpen] = useState(false);
   // Redirect if not authenticated
   useEffect(() => {
     requireAuth();
@@ -208,6 +215,7 @@ const StudentPinDashboardPage = () => {
       setMinutes(15);
       setBookTitle("");
       setSelectedBook(null);
+      setIsLogModalOpen(false);
       refreshData();
     }
 
@@ -504,16 +512,25 @@ const StudentPinDashboardPage = () => {
                 </section>
               )}
 
-              {/* Log Reading Card */}
-              <section>
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="font-serif text-xl md:text-2xl font-normal text-foreground flex items-center gap-2">
-                    <Clock className="h-5 w-5" />
-                    Log Your Reading
-                  </h2>
-                </div>
+            </div>
 
-                <div className="bg-background p-6 shadow-md" style={handDrawnBorder}>
+            {/* Sidebar - Recent Activity & Log Reading */}
+            <aside className="lg:w-80 xl:w-96 space-y-6">
+              {/* Log Reading Button */}
+              <Dialog open={isLogModalOpen} onOpenChange={setIsLogModalOpen}>
+                <DialogTrigger asChild>
+                  <Button className="w-full" size="lg" style={handDrawnBorder}>
+                    <Plus className="h-5 w-5 mr-2" />
+                    Log My Reading
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle className="font-serif text-xl flex items-center gap-2">
+                      <Clock className="h-5 w-5" />
+                      Log Your Reading
+                    </DialogTitle>
+                  </DialogHeader>
                   <form onSubmit={handleLogReading} className="space-y-4">
                     {/* Minutes Stepper */}
                     <div className="space-y-2">
@@ -525,7 +542,6 @@ const StudentPinDashboardPage = () => {
                           size="icon"
                           onClick={() => adjustMinutes(-5)}
                           disabled={minutes <= 1}
-                          style={handDrawnBorder}
                         >
                           <Minus className="h-4 w-4" />
                         </Button>
@@ -546,7 +562,6 @@ const StudentPinDashboardPage = () => {
                           size="icon"
                           onClick={() => adjustMinutes(5)}
                           disabled={minutes >= 180}
-                          style={handDrawnBorder}
                         >
                           <Plus className="h-4 w-4" />
                         </Button>
@@ -565,12 +580,10 @@ const StudentPinDashboardPage = () => {
                       {isSubmitting ? "Saving..." : "Log My Reading! 📖"}
                     </Button>
                   </form>
-                </div>
-              </section>
-            </div>
+                </DialogContent>
+              </Dialog>
 
-            {/* Sidebar - Recent Activity */}
-            <aside className="lg:w-80 xl:w-96 space-y-6">
+              {/* Recent Reading Card */}
               <div className="bg-background p-6 shadow-md" style={handDrawnBorder}>
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-serif text-lg font-normal text-foreground flex items-center gap-2">
