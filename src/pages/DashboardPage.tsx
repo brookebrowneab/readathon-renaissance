@@ -69,7 +69,7 @@ const DashboardPage = () => {
   const [userName, setUserName] = useState<string>("");
   const { children, isLoading: childrenLoading } = useChildren();
   const { pledgesByChild: parentPledgesByChild, totalPledges: parentTotalPledges, isLoading: parentPledgesLoading } = useParentPledges();
-  const { pledgesByChild: sponsorPledgesByChild, stats: sponsorStats, isLoading: sponsorPledgesLoading, sponsor } = useSponsorPledges();
+  const { pledgesByChild: sponsorPledgesByChild, pledgesByClass: sponsorPledgesByClass, classPledges: sponsorClassPledges, stats: sponsorStats, isLoading: sponsorPledgesLoading, sponsor } = useSponsorPledges();
   const { deletePledge } = usePledges();
   
   // Determine if user is primarily a sponsor (has sponsor profile but no children)
@@ -334,6 +334,28 @@ const DashboardPage = () => {
                 </section>
               )}
 
+              {/* Sponsored Classes Section (Sponsor View) */}
+              {isSponsorOnly && sponsorPledgesByClass.length > 0 && (
+                <section>
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="font-serif text-xl md:text-2xl font-normal text-foreground">
+                      Classes You're Supporting
+                    </h2>
+                  </div>
+                  <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+                    {sponsorPledgesByClass.map((item) => (
+                      <SponsoredClassCard 
+                        key={item.className} 
+                        className={item.className}
+                        teacher={item.teacher}
+                        pledges={item.pledges}
+                        totalAmount={item.totalAmount}
+                      />
+                    ))}
+                  </div>
+                </section>
+              )}
+
               {/* Recent Activity - Only for Parents */}
               {!isSponsorOnly && (
                 <section>
@@ -563,7 +585,7 @@ const DashboardPage = () => {
 };
 
 // Sponsored Child Card Component (Limited view for sponsors)
-import { SponsorPledge } from "@/hooks/useSponsorPledges";
+import { SponsorPledge, SponsorClassPledge } from "@/hooks/useSponsorPledges";
 
 interface SponsoredChildCardProps {
   childId: string;
@@ -659,6 +681,71 @@ const SponsoredChildCard = ({ childId, childName, child, pledges, totalAmount }:
     </div>
   );
 }
+
+// Sponsored Class Card Component
+interface SponsoredClassCardProps {
+  className: string;
+  teacher: { id: string; name: string } | null;
+  pledges: SponsorClassPledge[];
+  totalAmount: number;
+}
+
+const SponsoredClassCard = ({ className, teacher, pledges, totalAmount }: SponsoredClassCardProps) => {
+  const hasPendingPayment = pledges.some(p => !p.is_paid);
+  const latestPledge = pledges[0];
+  const isUnlocked = latestPledge?.is_unlocked;
+  
+  return (
+    <div 
+      className="bg-background p-6 shadow-md"
+      style={handDrawnBorder}
+    >
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center justify-between">
+          <h2 className="font-serif text-xl font-normal tracking-tight text-foreground">
+            {teacher?.name ? `${teacher.name}'s Class` : className}
+          </h2>
+          <Badge variant={isUnlocked ? "default" : "secondary"} className="shrink-0">
+            {isUnlocked ? "Unlocked" : "Pending"}
+          </Badge>
+        </div>
+        
+        {/* Class Fundraising Progress */}
+        <div className="flex items-center justify-center py-4">
+          <ClassFundraisingShelf
+            fundedAmount={totalAmount}
+            goalAmount={latestPledge?.milestone_minutes_target || 1000}
+          />
+        </div>
+        
+        {/* Pledge Info */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="flex flex-col items-center rounded-lg bg-accent/10 p-2 border border-accent/20">
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Your Pledge</span>
+            <span className="font-serif text-lg text-accent">${totalAmount.toFixed(2)}</span>
+          </div>
+          <div className="flex flex-col items-center rounded-lg bg-secondary/30 p-2 border border-secondary/40">
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Type</span>
+            <span className="font-serif text-lg text-secondary-foreground">
+              {latestPledge?.pledge_type === "milestone" ? "Milestone" : "Flat"}
+            </span>
+          </div>
+        </div>
+        
+        {/* Status */}
+        <div className="w-full rounded-lg bg-primary/5 p-3 border border-primary/10">
+          <p className="text-xs text-center text-muted-foreground">
+            <Heart className="inline h-3 w-3 text-primary mr-1" />
+            {isUnlocked 
+              ? `Milestone reached! Your $${totalAmount.toFixed(0)} pledge is active.`
+              : `Waiting for class to reach milestone.`
+            }
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 // Child Progress Card Component
 interface ChildProgressCardProps {
