@@ -42,6 +42,7 @@ import { useEventSettings } from "@/hooks/useEventSettings";
 import { useAvailableGrades } from "@/hooks/useAvailableGrades";
 import { EditEventDialog } from "@/components/admin/EditEventDialog";
 import { TeacherManagement } from "@/components/admin/TeacherManagement";
+import { LogoGenerator } from "@/components/admin/LogoGenerator";
 
 
 
@@ -651,6 +652,9 @@ const AdminSettingsPage = () => {
                 </div>
               </div>
             </div>
+
+            {/* Logo Generator */}
+            <LogoGenerator />
           </div>
         )}
       </div>
