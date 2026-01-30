@@ -219,12 +219,14 @@ const StudentPinDashboardPage = () => {
               <div className="relative inline-block">
                 <h1 className="font-serif text-5xl md:text-6xl lg:text-7xl font-normal tracking-tight text-foreground leading-[1.05] relative">
                   <span className="relative inline-block">
-                    {(schoolTotalMinutes ?? 0).toLocaleString()}
+                    <span className="relative z-10">
+                      {(schoolTotalMinutes ?? 0).toLocaleString()}
+                    </span>
                     {/* Highlighter effect - sits behind text */}
-                    <span 
-                      className="absolute -skew-y-1 bg-primary/25 -z-10 transform -rotate-[0.5deg]"
+                    <span
+                      className="pointer-events-none absolute -skew-y-1 bg-primary/40 z-0 transform -rotate-[0.5deg]"
                       style={{
-                        top: '40%',
+                        top: '42%',
                         bottom: '0',
                         left: '-4%',
                         right: '-4%',
