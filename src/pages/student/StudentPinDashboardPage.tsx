@@ -224,7 +224,7 @@ const StudentPinDashboardPage = () => {
                     </span>
                     {/* Highlighter effect - sits behind text */}
                     <span
-                      className="pointer-events-none absolute -skew-y-1 bg-primary/40 z-0 transform -rotate-[0.5deg]"
+                      className="pointer-events-none absolute -skew-y-1 bg-accent/50 z-0 transform -rotate-[0.5deg]"
                       style={{
                         top: '42%',
                         bottom: '0',
