@@ -32,6 +32,7 @@ import { format, parseISO, isToday, isYesterday } from "date-fns";
 import { useChildren, Child } from "@/hooks/useChildren";
 import { useReadingLogs } from "@/hooks/useReadingLogs";
 import { useActiveEvent } from "@/hooks/useActiveEvent";
+import { useEventStatus } from "@/hooks/useEventStatus";
 import { BookSelector } from "@/components/books";
 import { Book } from "@/hooks/useBooks";
 import { z } from "zod";
@@ -47,6 +48,9 @@ import {
   Sparkles,
   PartyPopper,
   ArrowLeft,
+  Clock,
+  Calendar as CalendarIconSolid,
+  AlertCircle,
 } from "lucide-react";
 
 // Hand-drawn border style (consistent with HomePage)
@@ -86,6 +90,7 @@ const LogReadingPage = () => {
   // Fetch real data
   const { children, isLoading: childrenLoading } = useChildren();
   const { data: activeEvent } = useActiveEvent();
+  const { phase, canParentsLog, validLogDates, phaseMessage, isLoading: statusLoading } = useEventStatus();
 
   // Form state
   const [selectedChildId, setSelectedChildId] = useState<string | null>(initialChildId);
@@ -207,7 +212,7 @@ const LogReadingPage = () => {
     name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 
   // Loading state
-  if (childrenLoading) {
+  if (childrenLoading || statusLoading) {
     return (
       <div className="flex min-h-screen flex-col">
         <MainNav />
@@ -222,6 +227,53 @@ const LogReadingPage = () => {
       </div>
     );
   }
+
+  // Phase-based blocking for parents
+  if (!canParentsLog) {
+    const formatDate = (d: Date) => format(d, "MMMM d");
+    
+    let title = "";
+    let message = "";
+    let icon = <Clock className="h-12 w-12 text-muted-foreground/50" />;
+    
+    if (phase === 'pre_event' && validLogDates) {
+      title = "Reading Starts Soon";
+      message = `The read-a-thon begins on ${formatDate(validLogDates.start)}. Use this time to sign up sponsors and get excited for reading!`;
+      icon = <CalendarIconSolid className="h-12 w-12 text-primary" />;
+    } else if (phase === 'closed') {
+      title = "Read-a-thon Complete";
+      message = "This year's read-a-thon has concluded. Check the results and collect pledges on your dashboard.";
+      icon = <PartyPopper className="h-12 w-12 text-success" />;
+    } else {
+      title = "Logging Not Available";
+      message = "Reading logging is not currently open.";
+    }
+    
+    return (
+      <div className="flex min-h-screen flex-col">
+        <MainNav />
+        <main className="flex-1 bg-background-warm flex items-center justify-center">
+          <div className="text-center p-8 max-w-md">
+            <div className="mx-auto w-20 h-20 bg-muted/30 rounded-full flex items-center justify-center mb-6">
+              {icon}
+            </div>
+            <h1 className="font-serif text-2xl text-foreground mb-2">{title}</h1>
+            <p className="text-muted-foreground mb-6">{message}</p>
+            <Button asChild>
+              <Link to="/dashboard">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Dashboard
+              </Link>
+            </Button>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Grace period notice
+  const isGracePeriod = phase === 'grace_period';
 
   // No children state
   if (children.length === 0) {
@@ -269,6 +321,22 @@ const LogReadingPage = () => {
               Record today's reading session for your child
             </p>
           </div>
+
+          {/* Grace Period Notice */}
+          {isGracePeriod && validLogDates && (
+            <div 
+              className="bg-warning/10 border border-warning/30 p-4 mb-6 flex items-start gap-3 rounded-lg"
+            >
+              <AlertCircle className="h-5 w-5 text-warning mt-0.5 shrink-0" />
+              <div>
+                <p className="text-sm font-medium text-foreground">Grace Period</p>
+                <p className="text-sm text-muted-foreground">
+                  The reading period has ended, but you can still log missed reading until {format(validLogDates.end, "MMMM d")}. 
+                  Entries must be for dates between {format(validLogDates.start, "MMM d")} and {format(validLogDates.end, "MMM d")}.
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Child Selector */}
           {children.length > 1 && (
@@ -388,9 +456,17 @@ const LogReadingPage = () => {
                         mode="single"
                         selected={date}
                         onSelect={(d) => d && setDate(d)}
-                        disabled={(d) =>
-                          d > new Date() || d < new Date("2024-01-01")
-                        }
+                        disabled={(d) => {
+                          const now = new Date();
+                          // Always block future dates
+                          if (d > now) return true;
+                          // During grace period, only allow dates within the valid log range
+                          if (isGracePeriod && validLogDates) {
+                            return d < validLogDates.start || d > validLogDates.end;
+                          }
+                          // Normal mode: allow any past date within reason
+                          return d < new Date("2024-01-01");
+                        }}
                         initialFocus
                         className="p-3 pointer-events-auto"
                       />

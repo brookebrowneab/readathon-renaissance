@@ -20,6 +20,7 @@ export interface ActiveEvent {
   class_milestone_reward: string;
   teacher_logging_grades: string[];
   logo_url: string | null;
+  timezone: string;
   created_at: string;
   updated_at: string;
 }

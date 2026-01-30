@@ -130,8 +130,11 @@ export type Database = {
           student_password_hash: string | null
           student_username: string | null
           total_minutes: number
+          total_verified: boolean | null
           updated_at: string
           user_id: string
+          verified_at: string | null
+          verified_by: string | null
         }
         Insert: {
           class_name?: string | null
@@ -146,8 +149,11 @@ export type Database = {
           student_password_hash?: string | null
           student_username?: string | null
           total_minutes?: number
+          total_verified?: boolean | null
           updated_at?: string
           user_id: string
+          verified_at?: string | null
+          verified_by?: string | null
         }
         Update: {
           class_name?: string | null
@@ -162,8 +168,11 @@ export type Database = {
           student_password_hash?: string | null
           student_username?: string | null
           total_minutes?: number
+          total_verified?: boolean | null
           updated_at?: string
           user_id?: string
+          verified_at?: string | null
+          verified_by?: string | null
         }
         Relationships: [
           {
@@ -327,6 +336,54 @@ export type Database = {
         }
         Relationships: []
       }
+      event_winners: {
+        Row: {
+          child_id: string | null
+          class_name: string | null
+          created_at: string | null
+          event_id: string
+          grade_info: string
+          id: string
+          total_minutes: number
+          winner_type: string
+        }
+        Insert: {
+          child_id?: string | null
+          class_name?: string | null
+          created_at?: string | null
+          event_id: string
+          grade_info: string
+          id?: string
+          total_minutes: number
+          winner_type: string
+        }
+        Update: {
+          child_id?: string | null
+          class_name?: string | null
+          created_at?: string | null
+          event_id?: string
+          grade_info?: string
+          id?: string
+          total_minutes?: number
+          winner_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_winners_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_winners_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       events: {
         Row: {
           accept_cards: boolean
@@ -348,6 +405,7 @@ export type Database = {
           send_reminders: boolean
           start_date: string
           teacher_logging_grades: string[]
+          timezone: string
           updated_at: string
         }
         Insert: {
@@ -370,6 +428,7 @@ export type Database = {
           send_reminders?: boolean
           start_date: string
           teacher_logging_grades?: string[]
+          timezone?: string
           updated_at?: string
         }
         Update: {
@@ -392,6 +451,7 @@ export type Database = {
           send_reminders?: boolean
           start_date?: string
           teacher_logging_grades?: string[]
+          timezone?: string
           updated_at?: string
         }
         Relationships: []
@@ -403,6 +463,8 @@ export type Database = {
           created_at: string
           event_id: string | null
           expected_payment_method: string | null
+          final_amount: number | null
+          finalized_at: string | null
           id: string
           is_paid: boolean
           payment_status: string
@@ -416,6 +478,8 @@ export type Database = {
           created_at?: string
           event_id?: string | null
           expected_payment_method?: string | null
+          final_amount?: number | null
+          finalized_at?: string | null
           id?: string
           is_paid?: boolean
           payment_status?: string
@@ -429,6 +493,8 @@ export type Database = {
           created_at?: string
           event_id?: string | null
           expected_payment_method?: string | null
+          final_amount?: number | null
+          finalized_at?: string | null
           id?: string
           is_paid?: boolean
           payment_status?: string

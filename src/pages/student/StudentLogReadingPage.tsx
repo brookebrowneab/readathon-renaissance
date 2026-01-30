@@ -5,10 +5,13 @@ import { PageHeader } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormField } from "@/components/ui/form-field";
-import { Minus, Plus, ArrowLeft, Check, BookOpen, RotateCcw } from "lucide-react";
+import { Minus, Plus, ArrowLeft, Check, BookOpen, RotateCcw, Clock, Calendar } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import Confetti from "@/components/ui/confetti";
+import { useEventStatus } from "@/hooks/useEventStatus";
+import { useActiveEvent } from "@/hooks/useActiveEvent";
+import { format } from "date-fns";
 
 const QUICK_MINUTES = [15, 30, 45, 60];
 
@@ -20,6 +23,9 @@ interface StudentData {
 
 const StudentLogReadingPage = () => {
   const navigate = useNavigate();
+  const { phase, canStudentsLog, validLogDates, isLoading: statusLoading } = useEventStatus();
+  const { data: activeEvent } = useActiveEvent();
+  
   const [studentData, setStudentData] = useState<StudentData | null>(null);
   const [selectedDay, setSelectedDay] = useState<"today" | "yesterday">("today");
   const [minutes, setMinutes] = useState(0);
@@ -88,7 +94,84 @@ const StudentLogReadingPage = () => {
     navigate("/student");
   };
 
-  if (!studentData) return null;
+  if (!studentData || statusLoading) return null;
+
+  // Phase-based access control for students
+  if (!canStudentsLog) {
+    const formatDate = (d: Date) => format(d, "MMMM d");
+    
+    let title = "";
+    let message = "";
+    let icon = <Clock className="h-16 w-16 text-muted-foreground/50" />;
+    
+    if (phase === 'pre_event' && validLogDates) {
+      title = "Reading Starts Soon! 📚";
+      message = `The read-a-thon begins on ${formatDate(validLogDates.start)}. Check back then to start logging your reading!`;
+      icon = <Calendar className="h-16 w-16 text-primary" />;
+    } else if (phase === 'grace_period') {
+      title = "Time's Up! ⏰";
+      message = "The reading period has ended. Ask your parent or guardian to log any remaining minutes for you.";
+    } else if (phase === 'closed') {
+      title = "Read-a-thon Complete! 🎉";
+      message = `Great job reading this year! You read ${studentData.minutesRead} minutes total.`;
+      icon = <BookOpen className="h-16 w-16 text-success" />;
+    } else {
+      title = "Logging Not Available";
+      message = "Reading logging is not currently open.";
+    }
+    
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-brand-yellow/20 to-background-warm">
+        <PageHeader 
+          rightContent={
+            <Link
+              to="/student"
+              className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
+            >
+              <ArrowLeft className="h-6 w-6" />
+              <span className="text-lg">Back</span>
+            </Link>
+          }
+        />
+        
+        <main className="px-4 pb-8 max-w-lg mx-auto">
+          <BookContainer variant="default" className="p-8 text-center">
+            <div className="space-y-6">
+              <div className="flex justify-center">
+                {icon}
+              </div>
+              
+              <h1 className="font-handwritten text-4xl text-brand-blue">
+                {title}
+              </h1>
+              
+              <p className="text-xl text-muted-foreground">
+                {message}
+              </p>
+              
+              {phase === 'closed' && (
+                <div className="flex justify-center">
+                  <ReadingGoalRing
+                    progress={studentData.minutesRead}
+                    goal={studentData.readingGoal}
+                    size={160}
+                  />
+                </div>
+              )}
+              
+              <Button
+                onClick={() => navigate("/student")}
+                className="h-14 text-xl bg-brand-yellow hover:bg-accent-hover text-foreground"
+              >
+                <ArrowLeft className="h-5 w-5 mr-2" />
+                Back to Dashboard
+              </Button>
+            </div>
+          </BookContainer>
+        </main>
+      </div>
+    );
+  }
 
   // Get book size class based on minutes
   const getBookSize = (mins: number) => {

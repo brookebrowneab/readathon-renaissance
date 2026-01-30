@@ -17,6 +17,13 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -34,6 +41,7 @@ import {
   FileText,
   Trophy,
   GraduationCap,
+  Globe,
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
@@ -43,6 +51,15 @@ import { useAvailableGrades } from "@/hooks/useAvailableGrades";
 import { EditEventDialog } from "@/components/admin/EditEventDialog";
 import { TeacherManagement } from "@/components/admin/TeacherManagement";
 import { LogoGenerator } from "@/components/admin/LogoGenerator";
+
+const US_TIMEZONES = [
+  { value: "America/New_York", label: "Eastern Time (ET)" },
+  { value: "America/Chicago", label: "Central Time (CT)" },
+  { value: "America/Denver", label: "Mountain Time (MT)" },
+  { value: "America/Los_Angeles", label: "Pacific Time (PT)" },
+  { value: "America/Anchorage", label: "Alaska Time (AKT)" },
+  { value: "Pacific/Honolulu", label: "Hawaii Time (HT)" },
+];
 
 
 
@@ -57,6 +74,7 @@ const AdminSettingsPage = () => {
   const [endDate, setEndDate] = useState<Date | undefined>();
   const [lastLogDate, setLastLogDate] = useState<Date | undefined>();
   const [goalMinutes, setGoalMinutes] = useState("500");
+  const [timezone, setTimezone] = useState("America/New_York");
 
   // Create new event dialog
   const [showCreateEvent, setShowCreateEvent] = useState(false);
@@ -95,6 +113,7 @@ const AdminSettingsPage = () => {
       setEndDate(parseISO(event.end_date));
       setLastLogDate(parseISO(event.last_log_date));
       setSchoolName(event.school_name || "");
+      setTimezone(event.timezone || "America/New_York");
       setPaymentAddress(event.payment_address || "");
       setAcceptChecks(event.accept_checks ?? true);
       setAcceptCards(event.accept_cards ?? true);
@@ -139,6 +158,7 @@ const AdminSettingsPage = () => {
         end_date: endDate,
         last_log_date: lastLogDate,
         school_name: schoolName,
+        timezone: timezone,
         payment_address: paymentAddress,
         accept_checks: acceptChecks,
         accept_cards: acceptCards,
@@ -378,6 +398,35 @@ const AdminSettingsPage = () => {
                     }}
                     min={1}
                   />
+                </FormField>
+
+                <FormField
+                  label="Event Timezone"
+                  htmlFor="timezone"
+                  helperText="Determines when reading periods start and end each day"
+                  required
+                >
+                  <Select
+                    value={timezone}
+                    onValueChange={(value) => {
+                      setTimezone(value);
+                      handleFieldChange();
+                    }}
+                  >
+                    <SelectTrigger>
+                      <div className="flex items-center gap-2">
+                        <Globe className="h-4 w-4 text-muted-foreground" />
+                        <SelectValue placeholder="Select timezone" />
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {US_TIMEZONES.map((tz) => (
+                        <SelectItem key={tz.value} value={tz.value}>
+                          {tz.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </FormField>
               </div>
             </div>
