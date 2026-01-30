@@ -2,13 +2,14 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Menu, User, LogOut, Bell, Clock, Mail, ChevronDown, GraduationCap, Heart } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MobileNavDrawer } from "./MobileNavDrawer";
 import { UserRole } from "./BottomTabBar";
 import { useEventLogo } from "@/hooks/useEventLogo";
 import { useAuth } from "@/hooks/useAuth";
 import { useChildren } from "@/hooks/useChildren";
 import { useTeacherAuth } from "@/hooks/useTeacherAuth";
+import { useStudentSession } from "@/hooks/useStudentSession";
 import {
   Popover,
   PopoverContent,
@@ -50,17 +51,19 @@ const MainNav = () => {
   const { children } = useChildren();
   const { isTeacher } = useTeacherAuth();
   const { logoUrl } = useEventLogo();
+  const { session: studentSession, logout: studentLogout } = useStudentSession();
 
   const desktopNavItemClass =
     "inline-flex items-start text-xs font-semibold tracking-widest text-muted-foreground transition-colors hover:text-foreground hover:underline py-2 px-0 m-0 leading-none";
 
-  // Use real auth state
-  const isAuthenticated = !!user;
+  // Check both Supabase auth and student session
+  const isAuthenticated = !!user || !!studentSession;
+  const isStudentLoggedIn = !!studentSession;
   // Determine if user is a parent (has children) vs sponsor-only
   const isParent = children.length > 0;
-  const userRole: UserRole = isTeacher ? "teacher" : (isAdmin ? "parent" : (isParent ? "parent" : (isAuthenticated ? "sponsor" : null)));
-  const userName = user?.user_metadata?.display_name || user?.email?.split('@')[0] || "User";
-  const userEmail = user?.email || "";
+  const userRole: UserRole = isStudentLoggedIn ? "student" : (isTeacher ? "teacher" : (isAdmin ? "parent" : (isParent ? "parent" : (isAuthenticated ? "sponsor" : null))));
+  const userName = isStudentLoggedIn ? studentSession.name : (user?.user_metadata?.display_name || user?.email?.split('@')[0] || "User");
+  const userEmail = isStudentLoggedIn ? "" : (user?.email || "");
 
   // Only show parent-specific notifications for parents, not teachers or sponsor-only users
   const totalNotifications = (isParent && !isTeacher)
@@ -68,8 +71,12 @@ const MainNav = () => {
     : 0;
 
   const handleLogout = async () => {
-    await signOut();
-    navigate("/");
+    if (isStudentLoggedIn) {
+      studentLogout();
+    } else {
+      await signOut();
+      navigate("/");
+    }
   };
 
   return (
@@ -103,46 +110,58 @@ const MainNav = () => {
               <div className="flex items-start gap-6">
                 {/* Dashboard Link */}
                 <Link
-                  to={isTeacher ? "/teacher" : "/dashboard"}
+                  to={isStudentLoggedIn ? "/student/dashboard" : (isTeacher ? "/teacher" : "/dashboard")}
                   className={cn(
                     desktopNavItemClass,
-                    (location.pathname === "/dashboard" || location.pathname === "/teacher") && "text-foreground"
+                    (location.pathname === "/dashboard" || location.pathname === "/teacher" || location.pathname === "/student/dashboard") && "text-foreground"
                   )}
                 >
                   DASHBOARD
                 </Link>
 
-                {/* Account Dropdown */}
-                <div className="relative group">
-                  <button
-                    className={cn(
-                      desktopNavItemClass,
-                      "bg-transparent border-0 appearance-none",
-                      location.pathname === "/account" && "text-foreground"
-                    )}
-                  >
-                    ACCOUNT
-                  </button>
-                  {/* Dropdown menu */}
-                  <div className="absolute right-0 top-full pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-[70]">
-                    <div className="bg-background border border-border rounded-lg shadow-lg py-1 min-w-[140px]">
-                      <Link
-                        to="/account"
-                        className="flex items-center gap-2 w-full px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                      >
-                        <User className="h-4 w-4" />
-                        Settings
-                      </Link>
-                      <button
-                        onClick={handleLogout}
-                        className="flex items-center gap-2 w-full px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                      >
-                        <LogOut className="h-4 w-4" />
-                        Logout
-                      </button>
+                {/* Account Dropdown - not shown for students */}
+                {!isStudentLoggedIn && (
+                  <div className="relative group">
+                    <button
+                      className={cn(
+                        desktopNavItemClass,
+                        "bg-transparent border-0 appearance-none",
+                        location.pathname === "/account" && "text-foreground"
+                      )}
+                    >
+                      ACCOUNT
+                    </button>
+                    {/* Dropdown menu */}
+                    <div className="absolute right-0 top-full pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-[70]">
+                      <div className="bg-background border border-border rounded-lg shadow-lg py-1 min-w-[140px]">
+                        <Link
+                          to="/account"
+                          className="flex items-center gap-2 w-full px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                        >
+                          <User className="h-4 w-4" />
+                          Settings
+                        </Link>
+                        <button
+                          onClick={handleLogout}
+                          className="flex items-center gap-2 w-full px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                        >
+                          <LogOut className="h-4 w-4" />
+                          Logout
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
+
+                {/* Log Out button for students */}
+                {isStudentLoggedIn && (
+                  <button
+                    onClick={handleLogout}
+                    className={cn(desktopNavItemClass, "bg-transparent border-0 appearance-none")}
+                  >
+                    LOG OUT
+                  </button>
+                )}
               </div>
             ) : (
               <div className="flex flex-col items-end justify-end gap-0.5">
