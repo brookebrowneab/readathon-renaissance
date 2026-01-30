@@ -36,7 +36,7 @@ import {
 import { StudentLoginPage, StudentDashboardPage as StudentDashboard, StudentLogReadingPage as StudentLogReading, StudentBooksPage } from "./pages/student";
 import StudentPinLoginPage from "./pages/student/StudentPinLoginPage";
 import StudentPinDashboardPage from "./pages/student/StudentPinDashboardPage";
-import { TeacherDashboard, TeacherLogReading, TeacherLoginPage } from "./pages/teacher";
+import { TeacherDashboard, TeacherLogReading, TeacherLoginPage, TeacherRegisterPage } from "./pages/teacher";
 import { AdminDashboard, AdminOutstandingPage, AdminChecksPage, AdminSettingsPage, AdminEmailPage } from "./pages/admin";
 import { SponsorRequestsPage, ChildSettingsPage, SponsorMyChildPage, ManageChildrenPage, ChildDetailsPage } from "./pages/family";
 import { VerifyLogsPage } from "./pages/reading-logs";
@@ -117,6 +117,7 @@ const App = () => (
           
           {/* Teacher Dashboard */}
           <Route path="/teacher/login" element={<TeacherLoginPage />} />
+          <Route path="/teacher/register" element={<TeacherRegisterPage />} />
           <Route path="/teacher" element={<TeacherDashboard />} />
           <Route path="/teacher/log" element={<TeacherLogReading />} />
           
