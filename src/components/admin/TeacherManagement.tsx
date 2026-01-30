@@ -94,11 +94,13 @@ export function TeacherManagement() {
   const [pendingUpload, setPendingUpload] = useState<CreateTeacherInput[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [sendingInvite, setSendingInvite] = useState<string | null>(null);
+  const [isAddingWithInvite, setIsAddingWithInvite] = useState(false);
   // Form state
   const [formName, setFormName] = useState("");
   const [formEmail, setFormEmail] = useState("");
   const [formType, setFormType] = useState<TeacherType>("homeroom");
   const [formFullAccess, setFormFullAccess] = useState(false);
+  const [formSendInvite, setFormSendInvite] = useState(true);
   const [selectedHomeroomId, setSelectedHomeroomId] = useState("");
 
   // Get assignments for selected partner teacher
@@ -111,6 +113,7 @@ export function TeacherManagement() {
     setFormEmail("");
     setFormType("homeroom");
     setFormFullAccess(false);
+    setFormSendInvite(true);
   };
 
   const handleAddTeacher = async () => {
@@ -119,18 +122,56 @@ export function TeacherManagement() {
       return;
     }
 
+    const shouldSendInvite = formSendInvite && formEmail.trim();
+    
     try {
-      await createTeacher.mutateAsync({
+      setIsAddingWithInvite(shouldSendInvite ? true : false);
+      
+      const newTeacher = await createTeacher.mutateAsync({
         name: formName.trim(),
         email: formEmail.trim() || undefined,
         teacher_type: formType,
         has_full_access: formFullAccess,
       });
-      toast.success(`Added ${formName}`);
+      
+      // Send invite if checkbox is checked and email is provided
+      if (shouldSendInvite && newTeacher) {
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          
+          if (session?.access_token) {
+            const response = await supabase.functions.invoke("send-teacher-invite", {
+              body: {
+                teacherId: newTeacher.id,
+                teacherEmail: formEmail.trim(),
+                teacherName: formName.trim(),
+                redirectUrl: `${window.location.origin}/teacher/set-password`,
+              },
+            });
+
+            if (response.error) {
+              console.error("Failed to send invite:", response.error);
+              toast.error(`Added ${formName}, but failed to send invite email`);
+            } else {
+              toast.success(`Added ${formName} and sent invite email`);
+            }
+          } else {
+            toast.success(`Added ${formName}`);
+          }
+        } catch (inviteError) {
+          console.error("Error sending invite:", inviteError);
+          toast.error(`Added ${formName}, but failed to send invite email`);
+        }
+      } else {
+        toast.success(`Added ${formName}`);
+      }
+      
       setShowAddDialog(false);
       resetForm();
     } catch (error) {
       // Error handled in hook
+    } finally {
+      setIsAddingWithInvite(false);
     }
   };
 
@@ -604,13 +645,30 @@ export function TeacherManagement() {
                 />
               </div>
             )}
+            {formEmail.trim() && (
+              <div className="flex items-center justify-between py-2 border-t pt-4">
+                <div>
+                  <Label htmlFor="sendInvite" className="font-medium">
+                    Send invite email
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    Send a magic link for the teacher to set up their account
+                  </p>
+                </div>
+                <Switch
+                  id="sendInvite"
+                  checked={formSendInvite}
+                  onCheckedChange={setFormSendInvite}
+                />
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowAddDialog(false)}>
               Cancel
             </Button>
-            <Button onClick={handleAddTeacher} disabled={createTeacher.isPending}>
-              {createTeacher.isPending ? "Adding..." : "Add Teacher"}
+            <Button onClick={handleAddTeacher} disabled={createTeacher.isPending || isAddingWithInvite}>
+              {isAddingWithInvite ? "Adding & Sending..." : createTeacher.isPending ? "Adding..." : formSendInvite && formEmail.trim() ? "Add & Send Invite" : "Add Teacher"}
             </Button>
           </DialogFooter>
         </DialogContent>
