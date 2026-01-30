@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useStudentSession } from "@/hooks/useStudentSession";
 import { supabase } from "@/integrations/supabase/client";
 import { useActiveEvent } from "@/hooks/useActiveEvent";
+import booksShelfBannerV2 from "@/assets/books-shelf-banner-v2.png";
 import { MainNav, Footer } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -242,8 +243,20 @@ const StudentPinDashboardPage = () => {
           </div>
         </section>
 
+        {/* Bookshelf Divider */}
+        <div 
+          className="h-16 md:h-20 w-full"
+          style={{
+            backgroundImage: `url(${booksShelfBannerV2})`,
+            backgroundRepeat: 'repeat-x',
+            backgroundSize: 'auto 100%',
+            backgroundPosition: 'center bottom',
+          }}
+          aria-hidden="true"
+        />
+
         {/* Main Content */}
-        <div className="bg-background-warm shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+        <div className="bg-background-warm">
           <div className="container py-8">
             <div className="flex flex-col lg:flex-row gap-8">
               {/* Main Content Area */}
