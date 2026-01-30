@@ -245,7 +245,7 @@ const StudentPinDashboardPage = () => {
 
         {/* Bookshelf Divider */}
         <div 
-          className="h-16 md:h-20 w-full"
+          className="h-10 md:h-12 w-full"
           style={{
             backgroundImage: `url(${booksShelfBannerV2})`,
             backgroundRepeat: 'repeat-x',
