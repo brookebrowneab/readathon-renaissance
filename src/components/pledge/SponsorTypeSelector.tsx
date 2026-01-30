@@ -43,35 +43,36 @@ export function SponsorTypeSelector({
         <p className="text-muted-foreground">Choose how you'd like to support reading</p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        {sponsorTypes.map(({ type, icon: Icon, title, description }) => {
-          const isDisabled = type === "my-children" && !hasChildren;
-          
-          return (
-            <Card
-              key={type}
-              className={cn(
-                "cursor-pointer transition-all hover:shadow-md",
-                selectedType === type && "ring-2 ring-primary",
-                isDisabled && "opacity-50 cursor-not-allowed"
-              )}
-              onClick={() => !isDisabled && onSelect(type)}
-            >
-              <CardContent className="p-6 text-center">
-                <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                  <Icon className="h-7 w-7 text-primary" />
-                </div>
-                <h3 className="font-semibold text-lg mb-2">{title}</h3>
-                <p className="text-sm text-muted-foreground">{description}</p>
-                {isDisabled && (
-                  <p className="text-xs text-destructive mt-2">
-                    You need to add children first
-                  </p>
+      <div className={cn(
+        "grid gap-4",
+        hasChildren ? "md:grid-cols-3" : "md:grid-cols-2"
+      )}>
+        {sponsorTypes
+          .filter(({ type }) => {
+            // Hide "My Children" option entirely if user has no children
+            if (type === "my-children" && !hasChildren) return false;
+            return true;
+          })
+          .map(({ type, icon: Icon, title, description }) => {
+            return (
+              <Card
+                key={type}
+                className={cn(
+                  "cursor-pointer transition-all hover:shadow-md",
+                  selectedType === type && "ring-2 ring-primary"
                 )}
-              </CardContent>
-            </Card>
-          );
-        })}
+                onClick={() => onSelect(type)}
+              >
+                <CardContent className="p-6 text-center">
+                  <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                    <Icon className="h-7 w-7 text-primary" />
+                  </div>
+                  <h3 className="font-semibold text-lg mb-2">{title}</h3>
+                  <p className="text-sm text-muted-foreground">{description}</p>
+                </CardContent>
+              </Card>
+            );
+          })}
       </div>
     </div>
   );
