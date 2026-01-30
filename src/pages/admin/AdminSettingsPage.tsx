@@ -33,10 +33,13 @@ import {
   Plus,
   FileText,
   Trophy,
+  GraduationCap,
 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useEventSettings } from "@/hooks/useEventSettings";
+import { useAvailableGrades } from "@/hooks/useAvailableGrades";
 import { EditEventDialog } from "@/components/admin/EditEventDialog";
 import { TeacherManagement } from "@/components/admin/TeacherManagement";
 
@@ -44,6 +47,7 @@ import { TeacherManagement } from "@/components/admin/TeacherManagement";
 
 const AdminSettingsPage = () => {
   const { event, isLoading, updateEvent, endEvent, isUpdating, isEnding } = useEventSettings();
+  const { data: availableGrades = [], isLoading: gradesLoading } = useAvailableGrades();
   
   // Event details - initialized from database
   const [eventName, setEventName] = useState("");
@@ -69,6 +73,9 @@ const AdminSettingsPage = () => {
   const [classMilestoneEnabled, setClassMilestoneEnabled] = useState(true);
   const [classMilestoneGoal, setClassMilestoneGoal] = useState("1000");
   const [classMilestoneReward, setClassMilestoneReward] = useState("Pizza party for the whole class!");
+  
+  // Teacher logging settings
+  const [teacherLoggingGrades, setTeacherLoggingGrades] = useState<string[]>([]);
 
 
   // Dialogs
@@ -96,6 +103,7 @@ const AdminSettingsPage = () => {
       setClassMilestoneEnabled(event.class_milestone_enabled ?? true);
       setClassMilestoneGoal(String(event.class_milestone_goal ?? 1000));
       setClassMilestoneReward(event.class_milestone_reward || "Pizza party for the whole class!");
+      setTeacherLoggingGrades(event.teacher_logging_grades || []);
       setHasUnsavedChanges(false);
       setInitializedEventId(event.id);
     }
@@ -139,6 +147,7 @@ const AdminSettingsPage = () => {
         class_milestone_enabled: classMilestoneEnabled,
         class_milestone_goal: parseFloat(classMilestoneGoal) || 1000,
         class_milestone_reward: classMilestoneReward,
+        teacher_logging_grades: teacherLoggingGrades,
       });
       setHasUnsavedChanges(false);
       toast.success("Event settings saved successfully!");
@@ -532,6 +541,57 @@ const AdminSettingsPage = () => {
                   </>
                 )}
               </div>
+            </div>
+
+            {/* Teacher Reading Log Permissions */}
+            <div className="bg-background p-6" style={handDrawnBorder}>
+              <div className="flex items-center gap-2 mb-6">
+                <GraduationCap className="h-5 w-5 text-primary" />
+                <h2 className="font-medium text-foreground">Teacher Reading Log Permissions</h2>
+              </div>
+
+              <p className="text-sm text-muted-foreground mb-4">
+                Select which grade levels allow teachers to log reading on behalf of students. 
+                If a grade is not selected, the "Log Reading" button will be disabled for teachers of that grade.
+              </p>
+
+              <div className="space-y-3">
+                {gradesLoading ? (
+                  <Skeleton className="h-8 w-48" />
+                ) : availableGrades.length === 0 ? (
+                  <p className="text-sm text-muted-foreground italic">
+                    No students enrolled yet. Grades will appear once students are added.
+                  </p>
+                ) : (
+                  availableGrades.map((grade) => (
+                    <div key={grade} className="flex items-center space-x-3">
+                      <Checkbox
+                        id={`grade-${grade}`}
+                        checked={teacherLoggingGrades.includes(grade)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setTeacherLoggingGrades([...teacherLoggingGrades, grade]);
+                          } else {
+                            setTeacherLoggingGrades(teacherLoggingGrades.filter(g => g !== grade));
+                          }
+                          handleFieldChange();
+                        }}
+                      />
+                      <Label htmlFor={`grade-${grade}`} className="text-sm font-medium cursor-pointer">
+                        {grade}
+                      </Label>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {teacherLoggingGrades.length > 0 && (
+                <div className="mt-4 p-3 bg-muted/50 rounded-md">
+                  <p className="text-xs text-muted-foreground">
+                    <strong>Enabled for:</strong> {teacherLoggingGrades.join(", ")}
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Teachers & Staff */}

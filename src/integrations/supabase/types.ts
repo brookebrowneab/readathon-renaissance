@@ -346,6 +346,7 @@ export type Database = {
           school_name: string
           send_reminders: boolean
           start_date: string
+          teacher_logging_grades: string[]
           updated_at: string
         }
         Insert: {
@@ -366,6 +367,7 @@ export type Database = {
           school_name?: string
           send_reminders?: boolean
           start_date: string
+          teacher_logging_grades?: string[]
           updated_at?: string
         }
         Update: {
@@ -386,6 +388,7 @@ export type Database = {
           school_name?: string
           send_reminders?: boolean
           start_date?: string
+          teacher_logging_grades?: string[]
           updated_at?: string
         }
         Relationships: []

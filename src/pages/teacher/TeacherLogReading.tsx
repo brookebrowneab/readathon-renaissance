@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { MainNav, Footer } from "@/components/layout";
 import { BookContainer, ReadingGoalRing } from "@/components/legacy";
@@ -26,6 +26,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useTeacherStudents } from "@/hooks/useTeacherStudents";
+import { useActiveEvent } from "@/hooks/useActiveEvent";
 
 interface Student {
   id: string;
@@ -52,6 +54,26 @@ const mockStudents: Student[] = [
 
 const TeacherLogReading = () => {
   const navigate = useNavigate();
+  const { students: teacherStudents } = useTeacherStudents();
+  const { data: activeEvent } = useActiveEvent();
+  
+  // Check if teacher can log reading based on grade-level permissions
+  const canLogReading = useMemo(() => {
+    if (!activeEvent?.teacher_logging_grades || activeEvent.teacher_logging_grades.length === 0) {
+      return false;
+    }
+    const studentGrades = [...new Set(teacherStudents.map(s => s.grade_info).filter(Boolean))];
+    return studentGrades.some(grade => activeEvent.teacher_logging_grades.includes(grade as string));
+  }, [teacherStudents, activeEvent?.teacher_logging_grades]);
+
+  // Redirect if not allowed to log reading
+  useEffect(() => {
+    if (activeEvent && !canLogReading) {
+      toast.error("Reading logging is not enabled for your grade level");
+      navigate("/teacher");
+    }
+  }, [activeEvent, canLogReading, navigate]);
+
   const [bulkMode, setBulkMode] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<string>("");
   const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
