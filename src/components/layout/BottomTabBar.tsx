@@ -47,7 +47,7 @@ const sponsorTabs: TabItem[] = [
   { label: "Home", href: "/sponsor/dashboard", icon: Home },
   { label: "Pledges", href: "/my-pledges", icon: Heart },
   { label: "Payments", href: "/sponsor/pay", icon: DollarSign },
-  { label: "Profile", href: "/sponsor/dashboard", icon: User },
+  { label: "Account", href: "/account", icon: User },
 ];
 
 const adminTabs: TabItem[] = [
