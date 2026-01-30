@@ -576,7 +576,17 @@ const DashboardPage = () => {
                         >
                           <Link to="/my-pledges">
                             <DollarSign className="h-4 w-4 mr-2" />
-                            View My Pledges
+                            My Pledges
+                          </Link>
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="w-full justify-start"
+                          asChild
+                        >
+                          <Link to="/sponsor/pay">
+                            <DollarSign className="h-4 w-4 mr-2" />
+                            Make a Payment
                           </Link>
                         </Button>
                       </>
