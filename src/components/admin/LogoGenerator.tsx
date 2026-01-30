@@ -9,6 +9,7 @@ import { handDrawnBorder } from "@/lib/admin-styles";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import opentype from "opentype.js";
 
 // Get ordinal suffix for a day number
 function getOrdinalSuffix(day: number): string {
@@ -203,46 +204,6 @@ export function LogoGenerator() {
     return minX + (xPosition[0] / 100) * (maxX - minX);
   }, [xPosition]);
 
-  // Render date text to a canvas and return as data URL
-  const renderDateTextToImage = useCallback(async (): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const canvas = document.createElement('canvas');
-      const scale = 4; // High resolution
-      const fontSize = 24;
-      const padding = 10;
-      
-      // Measure text width using a temporary context
-      const tempCtx = canvas.getContext('2d');
-      if (!tempCtx) {
-        reject(new Error('Canvas not supported'));
-        return;
-      }
-      
-      tempCtx.font = `${fontSize}px 'Cooper Black', 'Arial Black', sans-serif`;
-      const metrics = tempCtx.measureText(dateText);
-      const textWidth = metrics.width;
-      const textHeight = fontSize * 1.2;
-      
-      canvas.width = (textWidth + padding * 2) * scale;
-      canvas.height = (textHeight + padding * 2) * scale;
-      
-      const ctx = canvas.getContext('2d');
-      if (!ctx) {
-        reject(new Error('Canvas not supported'));
-        return;
-      }
-      
-      ctx.scale(scale, scale);
-      ctx.font = `${fontSize}px 'Cooper Black', 'Arial Black', sans-serif`;
-      ctx.fillStyle = '#3761ad';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(dateText, (textWidth + padding * 2) / 2, (textHeight + padding * 2) / 2);
-      
-      resolve(canvas.toDataURL('image/png'));
-    });
-  }, [dateText]);
-
   // Generate SVG string for export (with text, for download)
   const generateSvgStringWithText = useCallback((embedFont: boolean = false) => {
     const textX = calculateTextX();
@@ -357,26 +318,36 @@ export function LogoGenerator() {
 </svg>`;
   }, [calculateTextX, fontBase64, dateText]);
 
-  // Generate SVG string with rasterized text for Apply to Site
-  const generateSvgWithRasterizedText = useCallback(async (): Promise<string> => {
+  // Generate SVG string with vectorized text for Apply to Site (using opentype.js)
+  const generateSvgWithVectorizedText = useCallback(async (): Promise<string> => {
     const textX = calculateTextX();
-    const dateImageDataUrl = await renderDateTextToImage();
     
-    // Measure text dimensions for positioning
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    if (!ctx) throw new Error('Canvas not supported');
-    ctx.font = "24px 'Cooper Black', 'Arial Black', sans-serif";
-    const metrics = ctx.measureText(dateText);
-    const textWidth = metrics.width;
-    const textHeight = 24 * 1.2;
-    const padding = 10;
+    // Load the Cooper Black font using opentype.js
+    const fontUrl = '/fonts/cooper-black.woff2';
+    let textPathData = '';
     
-    // Calculate image position (centered at textX, baseline at y=104)
-    const imgWidth = textWidth + padding * 2;
-    const imgHeight = textHeight + padding * 2;
-    const imgX = textX - imgWidth / 2;
-    const imgY = 104 - imgHeight / 2 - 4; // Adjust for baseline
+    try {
+      const font = await opentype.load(fontUrl);
+      const fontSize = 24;
+      const textPath = font.getPath(dateText, 0, 0, fontSize);
+      
+      // Get bounding box to center the text
+      const bbox = textPath.getBoundingBox();
+      const textWidth = bbox.x2 - bbox.x1;
+      const textHeight = bbox.y2 - bbox.y1;
+      
+      // Calculate translation to center at textX, baseline at y=104
+      const translateX = textX - textWidth / 2 - bbox.x1;
+      const translateY = 104 + textHeight * 0.3; // Adjust for baseline
+      
+      // Get path data and apply transform
+      const pathData = textPath.toPathData(2);
+      textPathData = `<path d="${pathData}" transform="translate(${translateX}, ${translateY})" fill="#3761ad"/>`;
+    } catch (error) {
+      console.error('Failed to load font for vectorization, falling back to text element:', error);
+      // Fallback to regular text element if font loading fails
+      textPathData = `<text x="${textX}" y="104" text-anchor="middle" style="font-family: 'Cooper Black', 'Arial Black', sans-serif; font-size: 24px; fill: #3761ad;">${dateText}</text>`;
+    }
 
     return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 666 164.4" width="666" height="164.4">
@@ -443,10 +414,10 @@ export function LogoGenerator() {
       <path class="st1" d="M497.9,66.6c0,6.2,2.2,5.1,2.2,7.6,0,4-8.6,3.9-11.2,3.9s-9.1,0-9.1-3.9,3-.3,3.2-6.6l.3-9.7c.1-4.8-3.8-3.2-3.8-6.6s14.8-6.6,16.1-6.6,2.3,1.2,2.3,2.5,0,.8,0,1.2c0,.8.3,1.7,1.3,1.7s1.6-1.4,2.9-2.7c1.3-1.3,3.2-2.6,6.9-2.6,13.3,0,11.1,13.1,11.7,22.8.3,5.1,3,3.9,3,6.7s.3,3.9-11.8,3.9-8.5.1-8.5-3.5,2.1-1.2,2.4-5.4c.3-4.6,2.1-14.9-3.9-14.9s-3.7,4.4-3.7,7.3v5Z"/>
     </g>
   </g>
-  <!-- Date text as rasterized image -->
-  <image x="${imgX}" y="${imgY}" width="${imgWidth}" height="${imgHeight}" href="${dateImageDataUrl}" />
+  <!-- Date text as vector path -->
+  ${textPathData}
 </svg>`;
-  }, [calculateTextX, renderDateTextToImage, dateText]);
+  }, [calculateTextX, dateText]);
 
   // Download SVG
   const handleDownloadSvg = useCallback(() => {
@@ -524,8 +495,8 @@ export function LogoGenerator() {
       const version = Date.now();
       const textX = calculateTextX();
 
-      // Generate SVG with rasterized text for consistent rendering
-      const svgString = await generateSvgWithRasterizedText();
+      // Generate SVG with vectorized text for consistent rendering
+      const svgString = await generateSvgWithVectorizedText();
       const svgBlob = new Blob([svgString], { type: 'image/svg+xml' });
       
       // Upload to storage with unique filename
@@ -583,7 +554,7 @@ export function LogoGenerator() {
     } finally {
       setIsApplying(false);
     }
-  }, [activeEvent, generateSvgWithRasterizedText, calculateTextX, queryClient]);
+  }, [activeEvent, generateSvgWithVectorizedText, calculateTextX, queryClient]);
 
   if (eventLoading) {
     return (
