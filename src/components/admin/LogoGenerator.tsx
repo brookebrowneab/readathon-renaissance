@@ -142,8 +142,12 @@ export function LogoGenerator() {
   // Initialize date text from active event
   useEffect(() => {
     if (activeEvent && !dateText) {
-      const startDate = new Date(activeEvent.start_date);
-      const endDate = new Date(activeEvent.end_date);
+      // Parse dates in local timezone to avoid off-by-one errors
+      // The dates are stored as YYYY-MM-DD, so we need to parse them correctly
+      const [startYear, startMonth, startDay] = activeEvent.start_date.split('-').map(Number);
+      const [endYear, endMonth, endDay] = activeEvent.end_date.split('-').map(Number);
+      const startDate = new Date(startYear, startMonth - 1, startDay);
+      const endDate = new Date(endYear, endMonth - 1, endDay);
       setDateText(formatEventDatesForLogo(startDate, endDate));
     }
   }, [activeEvent, dateText]);
