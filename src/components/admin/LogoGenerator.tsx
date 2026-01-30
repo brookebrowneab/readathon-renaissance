@@ -322,8 +322,8 @@ export function LogoGenerator() {
   const generateSvgWithVectorizedText = useCallback(async (): Promise<string> => {
     const textX = calculateTextX();
     
-    // Load the Cooper Black font using opentype.js
-    const fontUrl = '/fonts/cooper-black.woff2';
+    // Load the Cooper Black font using opentype.js (TTF required - opentype.js doesn't support WOFF2)
+    const fontUrl = '/fonts/cooper-black.ttf';
     let textPathData = '';
     
     try {
