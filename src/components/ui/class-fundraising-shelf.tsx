@@ -2,8 +2,8 @@ import { cn } from "@/lib/utils";
 import booksShelfImage from "@/assets/books-shelf-horizontal.png";
 
 interface ClassFundraisingShelfProps {
-  currentMinutes: number;
-  goalMinutes: number;
+  fundedAmount: number;
+  goalAmount: number;
   className?: string;
   rewardLabel?: string;
 }
@@ -11,14 +11,15 @@ interface ClassFundraisingShelfProps {
 /**
  * A horizontal book shelf progress indicator for class fundraising.
  * Shows grayscale image for unmet goal, with saturated overlay masked to progress %.
+ * Tracks monetary fundraising progress, not reading minutes.
  */
 export function ClassFundraisingShelf({
-  currentMinutes,
-  goalMinutes,
+  fundedAmount,
+  goalAmount,
   className,
   rewardLabel,
 }: ClassFundraisingShelfProps) {
-  const percentage = Math.min(100, Math.max(0, (currentMinutes / goalMinutes) * 100));
+  const percentage = Math.min(100, Math.max(0, (fundedAmount / goalAmount) * 100));
   const isComplete = percentage >= 100;
 
   return (
@@ -57,12 +58,20 @@ export function ClassFundraisingShelf({
         )}
       </div>
 
+      {/* Thin progress bar for clarity */}
+      <div className="mt-1 h-1.5 w-full bg-muted/40 rounded-full overflow-hidden">
+        <div 
+          className="h-full bg-gradient-to-r from-primary via-accent to-success rounded-full transition-all duration-500"
+          style={{ width: `${percentage}%` }}
+        />
+      </div>
+
       {/* Labels below shelf */}
       <div className="mt-1 flex items-center justify-between text-xs">
         <span className="text-muted-foreground">
-          <span className="font-semibold text-foreground">{currentMinutes.toLocaleString()}</span>
+          <span className="font-semibold text-foreground">${fundedAmount.toLocaleString()}</span>
           <span className="mx-0.5">/</span>
-          <span>{goalMinutes.toLocaleString()} min</span>
+          <span>${goalAmount.toLocaleString()}</span>
         </span>
         <div className="flex items-center gap-1.5">
           <span className="text-muted-foreground">
@@ -78,7 +87,7 @@ export function ClassFundraisingShelf({
 
       {/* Screen reader text */}
       <span className="sr-only">
-        Class goal progress: {percentage.toFixed(0)}% complete, {currentMinutes} of {goalMinutes} minutes read
+        Class fundraising progress: {percentage.toFixed(0)}% complete, ${fundedAmount} of ${goalAmount} raised
       </span>
     </div>
   );
