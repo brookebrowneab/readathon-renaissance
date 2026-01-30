@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ReadingGoalRing } from "@/components/legacy";
 import { BookSelector } from "@/components/books";
 import { Book, useBooks } from "@/hooks/useBooks";
+import { useQuery } from "@tanstack/react-query";
 import { 
   BookOpen, 
   Clock, 
@@ -62,6 +63,19 @@ const StudentPinDashboardPage = () => {
   const { session, isLoading: sessionLoading, logout, refreshData, requireAuth } = useStudentSession();
   const { data: activeEvent } = useActiveEvent();
   const { books } = useBooks();
+  
+  // Fetch school-wide total minutes
+  const { data: schoolTotalMinutes } = useQuery({
+    queryKey: ['school-total-minutes'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('children')
+        .select('total_minutes');
+      
+      if (error) throw error;
+      return data?.reduce((sum, child) => sum + (child.total_minutes || 0), 0) || 0;
+    },
+  });
   
   const [readingLogs, setReadingLogs] = useState<ReadingLog[]>([]);
   const [isLoadingLogs, setIsLoadingLogs] = useState(true);
@@ -199,6 +213,29 @@ const StudentPinDashboardPage = () => {
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Main Content Area */}
             <div className="flex-1 space-y-8">
+              {/* School-wide Minutes Counter */}
+              <div className="mb-2">
+                <p className="text-sm text-muted-foreground mb-1">How many minutes has Janney read?</p>
+                <div className="inline-block relative">
+                  <span className="font-serif text-3xl md:text-4xl text-foreground tracking-tight relative">
+                    {(schoolTotalMinutes ?? 0).toLocaleString()}
+                    {/* Highlighter effect */}
+                    <span 
+                      className="absolute inset-0 -skew-y-1 bg-accent/30 -z-10 transform -rotate-[0.5deg]"
+                      style={{
+                        top: '40%',
+                        height: '60%',
+                        left: '-4%',
+                        right: '-4%',
+                        borderRadius: '3px 6px 3px 5px',
+                      }}
+                      aria-hidden="true"
+                    />
+                  </span>
+                  <span className="text-sm text-muted-foreground ml-2">minutes</span>
+                </div>
+              </div>
+
               {/* Header Section */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
