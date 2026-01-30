@@ -41,11 +41,11 @@ const TeacherRegisterPage = () => {
         return;
       }
 
-      // Step 2: Send magic link
+      // Step 2: Send magic link - redirect to set-password page
       const { error: signInError } = await supabase.auth.signInWithOtp({
         email: email.toLowerCase(),
         options: {
-          emailRedirectTo: `${window.location.origin}/teacher`,
+          emailRedirectTo: `${window.location.origin}/teacher/set-password`,
         },
       });
 
