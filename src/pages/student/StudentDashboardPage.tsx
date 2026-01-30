@@ -3,13 +3,17 @@ import { Link, useNavigate } from "react-router-dom";
 import { BookContainer, ReadingGoalRing } from "@/components/legacy";
 import { PageHeader } from "@/components/layout";
 import { Button } from "@/components/ui/button";
-import { ClassFundraisingStack } from "@/components/ui/class-fundraising-stack";
-import { Heart, BookOpen, LogOut, Sparkles } from "lucide-react";
+import { ClassProgressCard } from "@/components/classroom/ClassProgressCard";
+import { Heart, BookOpen, LogOut, Sparkles, Target } from "lucide-react";
+import { useClassMilestoneStatus } from "@/hooks/useClassMilestoneStatus";
+import { useClassReadingStats } from "@/hooks/useClassReadingStats";
+import { useActiveEvent } from "@/hooks/useActiveEvent";
 
 interface StudentData {
   firstName: string;
   readingGoal: number;
   minutesRead: number;
+  className?: string;
 }
 
 interface ReadingLog {
@@ -31,6 +35,10 @@ const StudentDashboardPage = () => {
   const navigate = useNavigate();
   const [studentData, setStudentData] = useState<StudentData | null>(null);
   const [recentLogs] = useState(getMockRecentLogs);
+  
+  // Get active event for milestone settings
+  const { data: activeEvent } = useActiveEvent();
+  
   useEffect(() => {
     const stored = sessionStorage.getItem("studentData");
     if (stored) {
@@ -42,9 +50,17 @@ const StudentDashboardPage = () => {
         firstName: "Emma",
         readingGoal: 500,
         minutesRead: 247,
+        className: "Mrs. Johnson's Class",
       });
     }
   }, []);
+  
+  // Get milestone status for the student's class
+  const { data: milestoneStatus } = useClassMilestoneStatus(
+    studentData?.className,
+    activeEvent?.id
+  );
+  const { data: classStats } = useClassReadingStats(studentData?.className);
 
   const handleLogout = () => {
     sessionStorage.removeItem("studentData");
@@ -88,23 +104,12 @@ const StudentDashboardPage = () => {
         {/* Hero Progress */}
         <BookContainer variant="default" className="p-8">
           <div className="flex flex-col items-center space-y-4">
-            {/* Reading Ring + Class Fundraising Stack */}
-            <div className="flex items-center justify-center gap-6 w-full">
-              <ReadingGoalRing
-                progress={studentData.minutesRead}
-                goal={studentData.readingGoal}
-                size={200}
-                mobileSize={180}
-              />
-              
-              <ClassFundraisingStack
-                fundedAmount={420} // TODO: Connect to real data
-                goalAmount={1000}
-                classLabel="Class Goal"
-                rewardLabel="Ice Cream Party! 🍦"
-                size="md"
-              />
-            </div>
+            <ReadingGoalRing
+              progress={studentData.minutesRead}
+              goal={studentData.readingGoal}
+              size={200}
+              mobileSize={180}
+            />
 
             <div className="text-center space-y-2">
               <p className="font-handwritten text-5xl text-brand-blue">
@@ -116,6 +121,58 @@ const StudentDashboardPage = () => {
             </div>
           </div>
         </BookContainer>
+        
+        {/* Class Progress toward Party */}
+        {studentData.className && milestoneStatus && (
+          <BookContainer variant="warm" className="p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Target className="h-5 w-5 text-primary" />
+              <h2 className="font-serif text-xl text-brand-blue">
+                Help Your Class Earn More!
+              </h2>
+            </div>
+            
+            <div className="space-y-4">
+              {/* Current earnings */}
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Class has earned</span>
+                <span className="text-2xl font-bold text-success">
+                  ${milestoneStatus.total_unlocked.toFixed(0)}
+                </span>
+              </div>
+              
+              {/* Class reading total */}
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Class total minutes</span>
+                <span className="text-lg font-medium">
+                  {(classStats?.total_minutes || 0).toLocaleString()}
+                </span>
+              </div>
+              
+              {/* Next milestone */}
+              {milestoneStatus.next_milestone_minutes && milestoneStatus.next_milestone_amount && (
+                <div className="mt-4 p-4 bg-primary/10 rounded-lg text-center">
+                  <p className="text-sm text-muted-foreground mb-1">Next milestone</p>
+                  <p className="text-lg font-bold text-primary">
+                    Read {((milestoneStatus.next_milestone_minutes) - (classStats?.total_minutes || 0)).toLocaleString()} more minutes
+                  </p>
+                  <p className="text-sm mt-1">
+                    to unlock <span className="font-bold text-success">${milestoneStatus.next_milestone_amount.toFixed(0)}</span> more for your class party!
+                  </p>
+                </div>
+              )}
+              
+              {!milestoneStatus.next_milestone_minutes && milestoneStatus.total_unlocked > 0 && (
+                <div className="mt-4 p-4 bg-success/10 rounded-lg text-center">
+                  <p className="text-lg font-bold text-success">🎉 All milestones reached!</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Keep reading to help your class earn even more!
+                  </p>
+                </div>
+              )}
+            </div>
+          </BookContainer>
+        )}
 
         {/* Sponsors Cheering */}
         <div className="text-center py-4">

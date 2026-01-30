@@ -8,9 +8,11 @@ export interface ClassPledge {
   class_name: string;
   teacher_id: string | null;
   event_id: string | null;
-  pledge_type: "flat" | "per_minute";
+  pledge_type: "flat" | "milestone";
   amount: number;
   max_cap: number | null;
+  milestone_minutes_target: number | null;
+  is_unlocked: boolean;
   is_paid: boolean;
   payment_status: "pending" | "paid" | "cancelled";
   created_at: string;
@@ -69,13 +71,15 @@ export function useCreateClassPledge() {
       pledgeType,
       amount,
       maxCap,
+      milestoneMinutesTarget,
     }: {
       className: string;
       teacherId?: string;
       eventId?: string;
-      pledgeType: "flat" | "per_minute";
+      pledgeType: "flat" | "milestone";
       amount: number;
       maxCap?: number;
+      milestoneMinutesTarget?: number;
     }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
@@ -90,6 +94,7 @@ export function useCreateClassPledge() {
           pledge_type: pledgeType,
           amount,
           max_cap: maxCap || null,
+          milestone_minutes_target: milestoneMinutesTarget || null,
         })
         .select()
         .single();
@@ -100,10 +105,62 @@ export function useCreateClassPledge() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["class-pledges"] });
       queryClient.invalidateQueries({ queryKey: ["class-fundraising"] });
+      queryClient.invalidateQueries({ queryKey: ["class-milestone-status"] });
       toast.success("Class pledge created!");
     },
     onError: (error) => {
       toast.error("Failed to create pledge", {
+        description: error.message,
+      });
+    },
+  });
+}
+
+// Create multiple milestone pledges at once
+export function useCreateMilestonePledges() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      className,
+      teacherId,
+      eventId,
+      milestones,
+    }: {
+      className: string;
+      teacherId?: string;
+      eventId?: string;
+      milestones: Array<{ amount: number; minutesTarget: number }>;
+    }) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const pledges = milestones.map((m) => ({
+        sponsor_user_id: user.id,
+        class_name: className,
+        teacher_id: teacherId || null,
+        event_id: eventId || null,
+        pledge_type: "milestone",
+        amount: m.amount,
+        milestone_minutes_target: m.minutesTarget,
+      }));
+
+      const { data, error } = await (supabase as any)
+        .from("class_pledges")
+        .insert(pledges)
+        .select();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["class-pledges"] });
+      queryClient.invalidateQueries({ queryKey: ["class-fundraising"] });
+      queryClient.invalidateQueries({ queryKey: ["class-milestone-status"] });
+      toast.success("Milestone pledges created!");
+    },
+    onError: (error) => {
+      toast.error("Failed to create pledges", {
         description: error.message,
       });
     },
@@ -120,16 +177,19 @@ export function useUpdateClassPledge() {
       amount,
       maxCap,
       pledgeType,
+      milestoneMinutesTarget,
     }: {
       id: string;
       amount?: number;
       maxCap?: number | null;
-      pledgeType?: "flat" | "per_minute";
+      pledgeType?: "flat" | "milestone";
+      milestoneMinutesTarget?: number | null;
     }) => {
       const updates: Record<string, unknown> = {};
       if (amount !== undefined) updates.amount = amount;
       if (maxCap !== undefined) updates.max_cap = maxCap;
       if (pledgeType !== undefined) updates.pledge_type = pledgeType;
+      if (milestoneMinutesTarget !== undefined) updates.milestone_minutes_target = milestoneMinutesTarget;
 
       const { data, error } = await (supabase as any)
         .from("class_pledges")
@@ -144,6 +204,7 @@ export function useUpdateClassPledge() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["class-pledges"] });
       queryClient.invalidateQueries({ queryKey: ["class-fundraising"] });
+      queryClient.invalidateQueries({ queryKey: ["class-milestone-status"] });
       toast.success("Pledge updated!");
     },
     onError: (error) => {

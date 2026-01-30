@@ -17,7 +17,7 @@ import { useChildren } from "@/hooks/useChildren";
 import { useSponsorableChildren } from "@/hooks/useSponsorableChildren";
 import { useAvailableClasses, useMultipleClassFundraisingTotals } from "@/hooks/useClassFundraising";
 import { usePledges } from "@/hooks/usePledges";
-import { useCreateClassPledge } from "@/hooks/useClassPledges";
+import { useCreateClassPledge, useCreateMilestonePledges } from "@/hooks/useClassPledges";
 import { useActiveEvent } from "@/hooks/useActiveEvent";
 
 // Components
@@ -29,6 +29,11 @@ import {
   PledgeAmountForm,
   PledgeType,
 } from "@/components/pledge";
+import { 
+  ClassroomPledgeForm, 
+  ClassroomPledgeType, 
+  MilestoneTier 
+} from "@/components/pledge/ClassroomPledgeForm";
 
 const handDrawnBorder = {
   border: 'solid 1px #41403E',
@@ -52,6 +57,7 @@ const SponsorMyChildPage = () => {
   const { data: activeEvent } = useActiveEvent();
   const { addPledge } = usePledges();
   const createClassPledge = useCreateClassPledge();
+  const createMilestonePledges = useCreateMilestonePledges();
 
   // Get class names for fundraising totals
   const classNames = useMemo(() => 
@@ -69,11 +75,18 @@ const SponsorMyChildPage = () => {
   const [selectedClassName, setSelectedClassName] = useState<string | null>(null);
   const [selectedTeacherId, setSelectedTeacherId] = useState<string | null>(null);
   
-  // Pledge amount state
+  // Pledge amount state (individual child pledges)
   const [pledgeType, setPledgeType] = useState<PledgeType>("per_minute");
   const [perMinuteAmount, setPerMinuteAmount] = useState("0.05");
   const [flatAmount, setFlatAmount] = useState("25");
   const [maxPledgeCap, setMaxPledgeCap] = useState("");
+  
+  // Classroom pledge state
+  const [classroomPledgeType, setClassroomPledgeType] = useState<ClassroomPledgeType>("flat");
+  const [classroomFlatAmount, setClassroomFlatAmount] = useState("50");
+  const [milestoneTiers, setMilestoneTiers] = useState<MilestoneTier[]>([
+    { id: crypto.randomUUID(), amount: "25", minutesTarget: "1000" },
+  ]);
   
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -171,19 +184,38 @@ const SponsorMyChildPage = () => {
     
     try {
       if (sponsorType === "support-classroom" && selectedClassName) {
-        // Create class pledge
-        await createClassPledge.mutateAsync({
-          className: selectedClassName,
-          teacherId: selectedTeacherId || undefined,
-          eventId: activeEvent?.id,
-          pledgeType: pledgeType === "per_minute" ? "per_minute" : "flat",
-          amount: pledgeType === "per_minute" 
-            ? parseFloat(perMinuteAmount) 
-            : parseFloat(flatAmount),
-          maxCap: pledgeType === "per_minute" && maxPledgeCap 
-            ? parseFloat(maxPledgeCap) 
-            : undefined,
-        });
+        // Create class pledge(s)
+        if (classroomPledgeType === "milestone") {
+          // Create multiple milestone pledges
+          const validMilestones = milestoneTiers
+            .filter(t => parseFloat(t.amount) > 0 && parseInt(t.minutesTarget) > 0)
+            .map(t => ({
+              amount: parseFloat(t.amount),
+              minutesTarget: parseInt(t.minutesTarget),
+            }));
+
+          if (validMilestones.length === 0) {
+            toast.error("Please add at least one valid milestone");
+            setIsSubmitting(false);
+            return;
+          }
+
+          await createMilestonePledges.mutateAsync({
+            className: selectedClassName,
+            teacherId: selectedTeacherId || undefined,
+            eventId: activeEvent?.id,
+            milestones: validMilestones,
+          });
+        } else {
+          // Create flat donation
+          await createClassPledge.mutateAsync({
+            className: selectedClassName,
+            teacherId: selectedTeacherId || undefined,
+            eventId: activeEvent?.id,
+            pledgeType: "flat",
+            amount: parseFloat(classroomFlatAmount) || 0,
+          });
+        }
       } else if (selectedChildId && selectedChild) {
         // Create individual pledge
         await addPledge.mutateAsync({
@@ -340,90 +372,170 @@ const SponsorMyChildPage = () => {
   };
 
   // Render Step 2: Pledge Amount
-  const renderStep2 = () => (
-    <div className="space-y-6 animate-fade-in">
-      <PledgeAmountForm
-        pledgeType={pledgeType}
-        perMinuteAmount={perMinuteAmount}
-        flatAmount={flatAmount}
-        maxPledgeCap={maxPledgeCap}
-        projectedMinutes={projectedMinutes}
-        onPledgeTypeChange={setPledgeType}
-        onPerMinuteChange={setPerMinuteAmount}
-        onFlatAmountChange={setFlatAmount}
-        onMaxCapChange={setMaxPledgeCap}
-        recipientName={recipientName}
-      />
+  const renderStep2 = () => {
+    // For classroom sponsorship, use the dedicated classroom pledge form
+    if (sponsorType === "support-classroom") {
+      return (
+        <div className="space-y-6 animate-fade-in">
+          <ClassroomPledgeForm
+            pledgeType={classroomPledgeType}
+            onPledgeTypeChange={setClassroomPledgeType}
+            flatAmount={classroomFlatAmount}
+            onFlatAmountChange={setClassroomFlatAmount}
+            milestoneTiers={milestoneTiers}
+            onMilestoneTiersChange={setMilestoneTiers}
+            className={selectedClassName || ""}
+            teacherName={selectedClass?.teacherName}
+          />
 
-      <div className="flex gap-3">
-        <Button variant="outline" onClick={handleBack} className="flex-1">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back
-        </Button>
-        <Button
-          className="flex-1"
-          onClick={handleSubmit}
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? "Creating Pledge..." : (
-            <>
-              <Heart className="mr-2 h-4 w-4" />
-              Create Pledge
-            </>
-          )}
-        </Button>
-      </div>
-    </div>
-  );
-
-  // Render Step 3: Confirmation
-  const renderStep3 = () => (
-    <div className="space-y-6 animate-fade-in text-center">
-      <div className="h-20 w-20 rounded-full bg-success/20 flex items-center justify-center mx-auto">
-        <CheckCircle className="h-10 w-10 text-success" />
-      </div>
-
-      <div>
-        <h2 className="font-serif text-2xl text-primary mb-2">Pledge Created!</h2>
-        <p className="text-muted-foreground">
-          You've pledged to sponsor {recipientName}
-        </p>
-      </div>
-
-      <BookContainer variant="warm" className="p-6">
-        <div className="space-y-3 text-left">
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Recipient</span>
-            <span className="font-medium">{recipientName}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Pledge Type</span>
-            <span className="font-medium">
-              {pledgeType === "per_minute" ? "Per Minute" : "Flat"}
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Amount</span>
-            <span className="font-medium">
-              {pledgeType === "per_minute" 
-                ? `$${perMinuteAmount}/min` 
-                : `$${flatAmount}`}
-            </span>
-          </div>
-          {pledgeType === "per_minute" && maxPledgeCap && (
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Maximum Cap</span>
-              <span className="font-medium">${maxPledgeCap}</span>
-            </div>
-          )}
-          <div className="flex justify-between pt-2 border-t">
-            <span className="text-muted-foreground">Projected Total</span>
-            <span className="font-handwritten text-xl text-primary">
-              ${calculateProjected().toFixed(2)}
-            </span>
+          <div className="flex gap-3">
+            <Button variant="outline" onClick={handleBack} className="flex-1">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back
+            </Button>
+            <Button
+              className="flex-1"
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Creating Pledge..." : (
+                <>
+                  <Heart className="mr-2 h-4 w-4" />
+                  Create Pledge
+                </>
+              )}
+            </Button>
           </div>
         </div>
-      </BookContainer>
+      );
+    }
+
+    // For individual child pledges, use the standard pledge form
+    return (
+      <div className="space-y-6 animate-fade-in">
+        <PledgeAmountForm
+          pledgeType={pledgeType}
+          perMinuteAmount={perMinuteAmount}
+          flatAmount={flatAmount}
+          maxPledgeCap={maxPledgeCap}
+          projectedMinutes={projectedMinutes}
+          onPledgeTypeChange={setPledgeType}
+          onPerMinuteChange={setPerMinuteAmount}
+          onFlatAmountChange={setFlatAmount}
+          onMaxCapChange={setMaxPledgeCap}
+          recipientName={recipientName}
+        />
+
+        <div className="flex gap-3">
+          <Button variant="outline" onClick={handleBack} className="flex-1">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back
+          </Button>
+          <Button
+            className="flex-1"
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Creating Pledge..." : (
+              <>
+                <Heart className="mr-2 h-4 w-4" />
+                Create Pledge
+              </>
+            )}
+          </Button>
+        </div>
+      </div>
+    );
+  };
+
+  // Render Step 3: Confirmation
+  const renderStep3 = () => {
+    const isClassroomPledge = sponsorType === "support-classroom";
+    
+    // Calculate total for milestone pledges
+    const milestoneTotalPledged = milestoneTiers.reduce(
+      (sum, t) => sum + (parseFloat(t.amount) || 0), 
+      0
+    );
+    
+    return (
+      <div className="space-y-6 animate-fade-in text-center">
+        <div className="h-20 w-20 rounded-full bg-success/20 flex items-center justify-center mx-auto">
+          <CheckCircle className="h-10 w-10 text-success" />
+        </div>
+
+        <div>
+          <h2 className="font-serif text-2xl text-primary mb-2">Pledge Created!</h2>
+          <p className="text-muted-foreground">
+            You've pledged to {isClassroomPledge ? "support" : "sponsor"} {recipientName}
+          </p>
+        </div>
+
+        <BookContainer variant="warm" className="p-6">
+          <div className="space-y-3 text-left">
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Recipient</span>
+              <span className="font-medium">{recipientName}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Pledge Type</span>
+              <span className="font-medium">
+                {isClassroomPledge 
+                  ? (classroomPledgeType === "milestone" ? "Reading Milestone" : "Fixed Donation")
+                  : (pledgeType === "per_minute" ? "Per Minute" : "Flat")}
+              </span>
+            </div>
+            
+            {isClassroomPledge ? (
+              <>
+                {classroomPledgeType === "milestone" ? (
+                  <>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Milestones</span>
+                      <span className="font-medium">{milestoneTiers.length} tier(s)</span>
+                    </div>
+                    <div className="flex justify-between pt-2 border-t">
+                      <span className="text-muted-foreground">Total Pledged</span>
+                      <span className="font-handwritten text-xl text-primary">
+                        ${milestoneTotalPledged.toFixed(2)}
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex justify-between pt-2 border-t">
+                    <span className="text-muted-foreground">Donation Amount</span>
+                    <span className="font-handwritten text-xl text-primary">
+                      ${classroomFlatAmount}
+                    </span>
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Amount</span>
+                  <span className="font-medium">
+                    {pledgeType === "per_minute" 
+                      ? `$${perMinuteAmount}/min` 
+                      : `$${flatAmount}`}
+                  </span>
+                </div>
+                {pledgeType === "per_minute" && maxPledgeCap && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Maximum Cap</span>
+                    <span className="font-medium">${maxPledgeCap}</span>
+                  </div>
+                )}
+                <div className="flex justify-between pt-2 border-t">
+                  <span className="text-muted-foreground">Projected Total</span>
+                  <span className="font-handwritten text-xl text-primary">
+                    ${calculateProjected().toFixed(2)}
+                  </span>
+                </div>
+              </>
+            )}
+          </div>
+        </BookContainer>
 
       <div className="flex gap-3">
         <Button 
@@ -445,7 +557,8 @@ const SponsorMyChildPage = () => {
         </Button>
       </div>
     </div>
-  );
+    );
+  };
 
   // Calculate total steps for progress (excluding confirmation)
   const totalSteps = 3;
