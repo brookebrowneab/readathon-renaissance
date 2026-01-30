@@ -1,11 +1,17 @@
-import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { BookContainer } from "@/components/legacy";
 import { TrendingUp, DollarSign } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+const handDrawnBorder = {
+  border: 'solid 1px #41403E',
+  borderTopLeftRadius: '255px 15px',
+  borderTopRightRadius: '15px 225px',
+  borderBottomRightRadius: '225px 15px',
+  borderBottomLeftRadius: '15px 255px',
+};
 
 export type PledgeType = "per_minute" | "flat";
 
@@ -195,16 +201,16 @@ export function PledgeAmountForm({
       </div>
 
       {/* Projected Amount */}
-      <BookContainer variant="warm" className="p-6">
+      <div className="bg-background-warm p-6" style={handDrawnBorder}>
         <div className="text-center">
           <p className="text-sm text-muted-foreground mb-1">
             Projected pledge at goal ({projectedMinutes.toLocaleString()} min)
           </p>
-          <p className="font-handwritten text-3xl text-primary">
+          <p className="text-3xl font-semibold text-primary">
             ${calculateProjected().toFixed(2)}
           </p>
         </div>
-      </BookContainer>
+      </div>
     </div>
   );
 }
