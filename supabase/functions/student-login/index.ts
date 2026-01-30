@@ -47,7 +47,7 @@ Deno.serve(async (req) => {
     // Look up child by username
     const { data: child, error: lookupError } = await supabase
       .from("children")
-      .select("id, name, total_minutes, goal_minutes, student_password_hash, student_login_enabled, class_name, grade_info")
+      .select("id, name, total_minutes, goal_minutes, student_password_hash, student_login_enabled")
       .eq("student_username", normalizedUsername)
       .maybeSingle();
 
@@ -103,8 +103,6 @@ Deno.serve(async (req) => {
           name: child.name,
           totalMinutes: child.total_minutes,
           goalMinutes: child.goal_minutes,
-          className: child.class_name,
-          gradeInfo: child.grade_info,
         },
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
