@@ -19,8 +19,8 @@ export default {
     extend: {
       fontFamily: {
         sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'system-ui', 'sans-serif'],
-        serif: ['Instrument Serif', 'Source Serif 4', 'Georgia', 'serif'],
-        display: ['Instrument Serif', 'Georgia', 'serif'],
+        serif: ['Source Serif 4', 'Georgia', 'serif'],
+        display: ['Source Serif 4', 'Georgia', 'serif'],
         handwritten: ['Shadows Into Light', 'Caveat', 'cursive'],
       },
       colors: {
