@@ -793,6 +793,13 @@ export type Database = {
         Args: { child_id: string; teacher_user_id: string }
         Returns: boolean
       }
+      get_class_favorite_books: {
+        Args: { p_class_name: string; p_limit?: number }
+        Returns: {
+          book_title: string
+          read_count: number
+        }[]
+      }
       get_class_fundraising_total: {
         Args: { p_class_name: string; p_event_id?: string }
         Returns: number
@@ -817,6 +824,13 @@ export type Database = {
       get_class_total_minutes: {
         Args: { p_class_name: string }
         Returns: number
+      }
+      get_grade_favorite_books: {
+        Args: { p_grade_info: string; p_limit?: number }
+        Returns: {
+          book_title: string
+          read_count: number
+        }[]
       }
       get_grade_total_minutes: {
         Args: { p_grade_info: string }
