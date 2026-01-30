@@ -8,6 +8,7 @@ import { Eye, EyeOff, Mail, Lock, GraduationCap, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { linkTeacherAccount } from "@/lib/teacher-account-linking";
 
 const TeacherLoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -47,47 +48,39 @@ const TeacherLoginPage = () => {
         .eq("user_id", user.id)
         .maybeSingle();
 
-      if (teacherError) {
-        console.error("Error checking teacher record by user_id:", teacherError);
-      }
+      if (teacherError) console.error("Error checking teacher record by user_id:", teacherError);
 
-      // Step 4: If no linked record, try to auto-link by email
+      // Step 4: If no linked record, securely auto-link via backend function (RLS blocks client-side updates)
       if (!teacherRecord && user.email) {
-        const { data: teacherByEmail, error: emailError } = await supabase
-          .from("teachers")
-          .select("id, name, is_active, user_id, email")
-          .eq("email", user.email.toLowerCase())
-          .is("user_id", null)
-          .maybeSingle();
+        const { teacher, linked, error: linkError } = await linkTeacherAccount();
 
-        if (emailError) {
-          console.error("Error checking teacher by email:", emailError);
+        if (linkError) {
+          console.error("Teacher linking failed:", linkError);
         }
 
-        if (teacherByEmail) {
-          // Found a matching teacher by email - link the account
-          const { error: updateError } = await supabase
-            .from("teachers")
-            .update({ user_id: user.id })
-            .eq("id", teacherByEmail.id);
+        if (teacher) {
+          teacherRecord = {
+            id: teacher.id,
+            name: teacher.name,
+            is_active: teacher.is_active,
+            user_id: teacher.user_id,
+          };
 
-          if (!updateError) {
-            teacherRecord = { ...teacherByEmail, user_id: user.id };
+          if (linked) {
             toast.success("Your account has been linked to your teacher profile!");
-            
-            // Send welcome email
+
             const dashboardUrl = `${window.location.origin}/teacher`;
-            supabase.functions.invoke("send-teacher-welcome", {
-              body: {
-                teacherName: teacherByEmail.name,
-                teacherEmail: teacherByEmail.email,
-                dashboardUrl,
-              },
-            }).catch((err) => {
-              console.error("Failed to send welcome email:", err);
-            });
-          } else {
-            console.error("Failed to link teacher account:", updateError);
+            supabase.functions
+              .invoke("send-teacher-welcome", {
+                body: {
+                  teacherName: teacher.name,
+                  teacherEmail: teacher.email,
+                  dashboardUrl,
+                },
+              })
+              .catch((err) => {
+                console.error("Failed to send welcome email:", err);
+              });
           }
         }
       }
