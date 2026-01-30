@@ -40,18 +40,19 @@ import { handDrawnBorder } from "@/lib/admin-styles";
 
 type SortOption = "name" | "progress" | "last-active";
 type FilterOption = "all" | "needs-attention" | "goal-reached";
-
 type StudentStatus = "exceeding" | "on-track" | "needs-encouragement" | "not-started";
 
 const TeacherDashboard = () => {
   const { user, teacherProfile, isLoading: authLoading } = useTeacherAuth();
   const { signOut } = useAuth();
-  const { students, isLoading: studentsLoading } = useTeacherStudents();
+  const { students, uniqueGrades, uniqueClasses, isLoading: studentsLoading } = useTeacherStudents();
   const { data: activeEvent, isLoading: eventLoading } = useActiveEvent();
   
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<SortOption>("name");
   const [filterBy, setFilterBy] = useState<FilterOption>("all");
+  const [selectedGrade, setSelectedGrade] = useState<string>("all");
+  const [selectedClass, setSelectedClass] = useState<string>("all");
   
   const studentIds = useMemo(() => students.map(s => s.id), [students]);
   const { lastLoggedByStudent, booksByStudent, isLoading: logsLoading } = useTeacherStudentLogs(studentIds);
@@ -67,6 +68,11 @@ const TeacherDashboard = () => {
     const studentGrades = [...new Set(students.map(s => s.grade_info).filter(Boolean))];
     return studentGrades.some(grade => activeEvent.teacher_logging_grades.includes(grade as string));
   }, [students, activeEvent?.teacher_logging_grades]);
+
+  // Determine what filters to show based on teacher type
+  const showGradeFilter = teacherProfile?.has_full_access;
+  const showClassFilter = teacherProfile?.has_full_access || 
+    (teacherProfile?.teacher_type === 'partner' && uniqueClasses.length > 1);
 
   // Calculate student status
   const getStudentStatus = (totalMinutes: number, goalMinutes: number): StudentStatus => {
@@ -111,13 +117,23 @@ const TeacherDashboard = () => {
       books: booksByStudent[student.id] || [],
     }));
 
+    // Grade filter (for staff)
+    if (selectedGrade !== "all") {
+      result = result.filter((s) => s.grade_info === selectedGrade);
+    }
+
+    // Class filter (for staff and grade-level partner teachers)
+    if (selectedClass !== "all") {
+      result = result.filter((s) => s.class_name === selectedClass);
+    }
+
     // Search
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       result = result.filter((s) => s.name.toLowerCase().includes(query));
     }
 
-    // Filter
+    // Status filter
     if (filterBy === "needs-attention") {
       result = result.filter(
         (s) => s.status === "needs-encouragement" || s.status === "not-started"
@@ -141,7 +157,18 @@ const TeacherDashboard = () => {
     }
 
     return result;
-  }, [students, searchQuery, sortBy, filterBy, lastLoggedByStudent, booksByStudent]);
+  }, [students, searchQuery, sortBy, filterBy, selectedGrade, selectedClass, lastLoggedByStudent, booksByStudent]);
+
+  // Get classes filtered by selected grade (for cascading filter)
+  const classesForSelectedGrade = useMemo(() => {
+    if (selectedGrade === "all") return uniqueClasses;
+    return [...new Set(
+      students
+        .filter(s => s.grade_info === selectedGrade)
+        .map(s => s.class_name)
+        .filter(Boolean)
+    )] as string[];
+  }, [students, selectedGrade, uniqueClasses]);
 
   // Redirect if not a teacher - after all hooks
   if (!authLoading && (!user || !teacherProfile)) {
@@ -190,12 +217,14 @@ const TeacherDashboard = () => {
               <h1 className="font-serif text-3xl font-normal tracking-tight text-foreground">
                 {teacherProfile?.name}'s Dashboard
               </h1>
-              <p className="text-muted-foreground capitalize">
+              <p className="text-muted-foreground">
                 {teacherProfile?.teacher_type === "homeroom" ? "Homeroom Teacher" : 
-                 teacherProfile?.teacher_type === "partner" ? "Partner Teacher" :
+                 teacherProfile?.teacher_type === "partner" ? (
+                   teacherProfile.grade_level ? `${teacherProfile.grade_level} Grade Partner` : "Partner Teacher"
+                 ) :
                  teacherProfile?.teacher_type === "staff" ? "Staff" : 
                  teacherProfile?.teacher_type}
-                {teacherProfile?.has_full_access && " • Full Access"}
+                {teacherProfile?.has_full_access && " • All Students"}
               </p>
             </div>
             <Button variant="outline" size="sm" onClick={handleSignOut}>
@@ -306,15 +335,53 @@ const TeacherDashboard = () => {
               </Select>
 
               <Select value={filterBy} onValueChange={(v) => setFilterBy(v as FilterOption)}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Filter" />
+                <SelectTrigger className="w-[160px]">
+                  <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Students</SelectItem>
+                  <SelectItem value="all">All Status</SelectItem>
                   <SelectItem value="needs-attention">Needs Attention</SelectItem>
                   <SelectItem value="goal-reached">Goal Reached</SelectItem>
                 </SelectContent>
               </Select>
+
+              {showGradeFilter && (
+                <Select 
+                  value={selectedGrade} 
+                  onValueChange={(v) => {
+                    setSelectedGrade(v);
+                    setSelectedClass("all"); // Reset class when grade changes
+                  }}
+                >
+                  <SelectTrigger className="w-[140px]">
+                    <SelectValue placeholder="Grade" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Grades</SelectItem>
+                    {uniqueGrades.map((grade) => (
+                      <SelectItem key={grade} value={grade}>
+                        {grade}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+
+              {showClassFilter && (
+                <Select value={selectedClass} onValueChange={setSelectedClass}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Class" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Classes</SelectItem>
+                    {classesForSelectedGrade.map((className) => (
+                      <SelectItem key={className} value={className}>
+                        {className}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
 
             <div className="flex gap-2">

@@ -12,6 +12,7 @@ export interface Teacher {
   teacher_type: TeacherType;
   has_full_access: boolean;
   is_active: boolean;
+  grade_level: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -29,6 +30,7 @@ export interface CreateTeacherInput {
   email?: string;
   teacher_type: TeacherType;
   has_full_access?: boolean;
+  grade_level?: string | null;
 }
 
 export interface UpdateTeacherInput {
@@ -39,6 +41,7 @@ export interface UpdateTeacherInput {
   has_full_access?: boolean;
   is_active?: boolean;
   user_id?: string | null;
+  grade_level?: string | null;
 }
 
 // Fetch all teachers
@@ -141,6 +144,7 @@ export function useCreateTeacher() {
           email: input.email || null,
           teacher_type: input.teacher_type,
           has_full_access: input.has_full_access ?? false,
+          grade_level: input.grade_level ?? null,
         })
         .select()
         .single();
@@ -298,6 +302,7 @@ export function useBulkCreateTeachers() {
             email: t.email || null,
             teacher_type: t.teacher_type,
             has_full_access: t.has_full_access ?? false,
+            grade_level: t.grade_level ?? null,
           }))
         )
         .select();

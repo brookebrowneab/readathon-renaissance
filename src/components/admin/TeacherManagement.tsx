@@ -66,16 +66,19 @@ import {
 
 const TEACHER_TYPES: { value: TeacherType; label: string; description: string }[] = [
   { value: "homeroom", label: "Homeroom Teacher", description: "Primary classroom teacher" },
-  { value: "partner", label: "Partner Teacher", description: "Assigned to specific homerooms" },
+  { value: "partner", label: "Partner Teacher", description: "Assigned to specific homerooms or entire grade" },
   { value: "specials", label: "Specials Teacher", description: "Art, music, PE, etc." },
   { value: "staff", label: "Staff", description: "Principal, librarian, admin" },
 ];
 
 const GRADES = ["Pre-K", "Kindergarten", "1st", "2nd", "3rd", "4th", "5th"];
 
+import { useAvailableGrades } from "@/hooks/useAvailableGrades";
+
 export function TeacherManagement() {
   const { data: teachers = [], isLoading } = useTeachers();
   const { data: homeroomTeachers = [] } = useHomeroomTeachers();
+  const { data: availableGrades = [] } = useAvailableGrades();
   const createTeacher = useCreateTeacher();
   const updateTeacher = useUpdateTeacher();
   const deleteTeacher = useDeleteTeacher();
@@ -101,6 +104,7 @@ export function TeacherManagement() {
   const [formType, setFormType] = useState<TeacherType>("homeroom");
   const [formFullAccess, setFormFullAccess] = useState(false);
   const [formSendInvite, setFormSendInvite] = useState(true);
+  const [formGradeLevel, setFormGradeLevel] = useState<string>("");
   const [selectedHomeroomId, setSelectedHomeroomId] = useState("");
 
   // Get assignments for selected partner teacher
@@ -114,6 +118,7 @@ export function TeacherManagement() {
     setFormType("homeroom");
     setFormFullAccess(false);
     setFormSendInvite(true);
+    setFormGradeLevel("");
   };
 
   const handleAddTeacher = async () => {
@@ -132,6 +137,7 @@ export function TeacherManagement() {
         email: formEmail.trim() || undefined,
         teacher_type: formType,
         has_full_access: formFullAccess,
+        grade_level: formType === "partner" && formGradeLevel ? formGradeLevel : null,
       });
       
       // Send invite if checkbox is checked and email is provided
@@ -185,6 +191,7 @@ export function TeacherManagement() {
         email: formEmail.trim() || undefined,
         teacher_type: formType,
         has_full_access: formFullAccess,
+        grade_level: formType === "partner" && formGradeLevel ? formGradeLevel : null,
       });
       toast.success(`Updated ${formName}`);
       setShowEditDialog(false);
@@ -230,6 +237,7 @@ export function TeacherManagement() {
     setFormEmail(teacher.email || "");
     setFormType(teacher.teacher_type);
     setFormFullAccess(teacher.has_full_access);
+    setFormGradeLevel(teacher.grade_level || "");
     setShowEditDialog(true);
   };
 
@@ -515,6 +523,11 @@ export function TeacherManagement() {
                               Pending Link
                             </Badge>
                           ) : null}
+                          {teacher.grade_level && teacher.teacher_type === "partner" && (
+                            <Badge variant="info" className="text-xs">
+                              {teacher.grade_level} Grade
+                            </Badge>
+                          )}
                           {teacher.has_full_access && (
                             <Badge variant="secondary" className="text-xs">
                               <Shield className="h-3 w-3 mr-1" />
@@ -628,6 +641,27 @@ export function TeacherManagement() {
                 </SelectContent>
               </Select>
             </FormField>
+            {formType === "partner" && (
+              <FormField 
+                label="Grade Level (Optional)" 
+                htmlFor="teacherGradeLevel"
+                helperText="Assign to an entire grade instead of specific homerooms"
+              >
+                <Select value={formGradeLevel} onValueChange={setFormGradeLevel}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select grade (or leave empty for homeroom assignments)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">No grade (use homeroom assignments)</SelectItem>
+                    {availableGrades.map((grade) => (
+                      <SelectItem key={grade} value={grade}>
+                        {grade}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </FormField>
+            )}
             {(formType === "staff" || formType === "specials") && (
               <div className="flex items-center justify-between py-2">
                 <div>
@@ -716,6 +750,27 @@ export function TeacherManagement() {
                 </SelectContent>
               </Select>
             </FormField>
+            {formType === "partner" && (
+              <FormField 
+                label="Grade Level (Optional)" 
+                htmlFor="editTeacherGradeLevel"
+                helperText="Assign to an entire grade instead of specific homerooms"
+              >
+                <Select value={formGradeLevel} onValueChange={setFormGradeLevel}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select grade (or leave empty for homeroom assignments)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">No grade (use homeroom assignments)</SelectItem>
+                    {availableGrades.map((grade) => (
+                      <SelectItem key={grade} value={grade}>
+                        {grade}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </FormField>
+            )}
             {(formType === "staff" || formType === "specials") && (
               <div className="flex items-center justify-between py-2">
                 <div>
