@@ -312,15 +312,9 @@ const StudentPinDashboardPage = () => {
           </div>
         </section>
 
-        {/* Bookshelf Divider */}
+        {/* Blue Divider Line */}
         <div 
-          className="h-10 md:h-12 w-full -mt-2.5"
-          style={{
-            backgroundImage: `url(${booksShelfDividerV2})`,
-            backgroundRepeat: 'repeat-x',
-            backgroundSize: 'auto 100%',
-            backgroundPosition: 'center bottom',
-          }}
+          className="h-1 w-full bg-brand-blue"
           aria-hidden="true"
         />
 
