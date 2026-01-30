@@ -1,384 +1,400 @@
 
-
-# Read-a-thon Lifecycle States and Admin Data Management (Revised)
+# Enhanced Parent Dashboard Cleanup Plan
 
 ## Overview
-
-This plan introduces an expanded event lifecycle with four distinct phases, timezone-aware automatic transitions, flexible sign-up windows, end-of-event winner announcements, verified totals tracking, and a comprehensive admin data exploration/correction panel.
+This comprehensive plan consolidates the parent experience by simplifying pledge management, unifying child settings, reducing navigation complexity, and adding new features for class/grade progress, inline log editing, validation, and enhanced child account management. The goal is to make the parent dashboard more intuitive while maintaining clear separation between parent-owned children and sponsor-only views.
 
 ---
 
-## Part 1: Event Lifecycle States (Revised)
+## Summary of All Changes
 
-### Updated Sign-Up Policy
+| Area | Current State | Solution |
+|------|---------------|----------|
+| My Pledges | Parents can mark pledges paid/unpaid | Remove payment status controls, add "Pay Now" with event status logic |
+| Child Details | Links to separate Settings page with mock data | Add inline EditChildDialog, class/grade progress, inline log editing |
+| Account Page | Only profile and password settings | Add Children's Accounts section with full management |
+| Navigation | Too many clicks to reach settings | Streamline from dashboard to details |
+| Sponsor View | N/A | Verify proper read-only separation |
+| Reading Logs | View only on details page | Add inline editing and validation checkboxes |
+| Delete Child | Not available in UI | Add to Account page with cascade handling |
 
-**Sign-ups are open anytime before the end date**, including:
-- Before the event starts (pre-registration)
-- During the active reading period
+---
 
-This allows families to join the read-a-thon at any point while reading is still happening.
+## Phase 1: My Pledges Page - Payment Controls Update
 
-### Revised 4-Phase Lifecycle
+**File:** `src/pages/MyPledgesPage.tsx`
 
-```text
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│                            READ-A-THON TIMELINE                                  │
-├─────────────────────────────────────────────────────────────────────────────────┤
-│                                                                                  │
-│                      START_DATE       END_DATE        LAST_LOG_DATE             │
-│                      (midnight)      (11:59pm)        (11:59pm)                 │
-│                          ▼               ▼                ▼                     │
-│   ───────────────────────●───────────────●────────────────●────────▶ time       │
-│                          │               │                │                     │
-│      [PRE-EVENT]     [ACTIVE]      [GRACE_PERIOD]     [CLOSED]                  │
-│                                                                                  │
-│   • Sign-ups ✓        • Sign-ups ✓     • Sign-ups ✗      • No sign-ups          │
-│   • Pledges ✓         • Pledges ✓      • Pledges ✓       • No pledges           │
-│   • No logging        • All logging    • Students OFF    • No logging           │
-│   • Teacher setup     • Everyone can   • Parents ON      • Winners announced    │
-│                         log reading    • Validation ON   • Payments due         │
-│                                                                                  │
-└─────────────────────────────────────────────────────────────────────────────────┘
-```
+### Changes Required:
 
-**Phase Definitions:**
+1. **Remove Admin-Only Payment Controls**
+   - Remove "Mark as Paid" and "Mark as Unpaid" buttons
+   - Remove `handleMarkPaidClick`, `handleConfirmMarkPaid`, and `handleMarkUnpaid` functions
+   - Remove `markPaidDialogOpen`, `pledgeToMarkPaid` state
+   - Remove the `ConfirmDialog` for marking paid
 
-| Phase | Condition | Sign-ups | Pledges | Logging | Notes |
-|-------|-----------|----------|---------|---------|-------|
-| `setup` | No active event | - | - | - | Admin configuration only |
-| `pre_event` | Before start_date | Yes | Yes | No | Registration, teacher activation |
-| `active` | start_date to end_date (11:59pm) | Yes | Yes | Everyone | Full reading period |
-| `grace_period` | end_date to last_log_date (11:59pm) | No | Yes | Parents only | Catch-up and validation |
-| `closed` | After last_log_date | No | No new | No | Results and payment collection |
+2. **Add "Pay Now" Button with Event Status Logic**
+   - Import `useEventStatus` hook to check if read-a-thon is closed
+   - Add "Pay Now" button that is:
+     - **Always enabled** for `flat` (one-time) pledges that are unpaid
+     - **Only enabled when event is `closed`** for `per_minute` pledges
+     - **Disabled/hidden** for already paid pledges
+   - Link "Pay Now" to `/sponsor/pay?pledge={pledgeId}`
 
-### Technical Implementation
+3. **Display Logic**
+   - Show payment status as read-only badge (Paid/Pending)
+   - For per-minute pledges during active event: show "Final amount calculated when read-a-thon ends"
+   - Paid pledges show "Paid" badge, no actions available
 
-#### 1. Database Changes
-
-Add timezone support column to `events` table:
-```sql
-ALTER TABLE events 
-ADD COLUMN timezone TEXT NOT NULL DEFAULT 'America/New_York';
-```
-
-#### 2. New Event Status Hook
-
-Create `src/hooks/useEventStatus.ts`:
+### New Payment Button Logic:
 ```typescript
-export type EventPhase = 'setup' | 'pre_event' | 'active' | 'grace_period' | 'closed';
+const { phase, isPaymentsDue } = useEventStatus();
 
-export interface EventStatus {
-  phase: EventPhase;
+const canPayNow = (pledge: ParentPledge) => {
+  if (pledge.is_paid) return false;
+  if (pledge.pledge_type === "flat") return true;
+  if (pledge.pledge_type === "per_minute") return isPaymentsDue; // only when closed
+  return false;
+};
+```
+
+---
+
+## Phase 2: Enhance ChildDetailsPage
+
+**File:** `src/pages/family/ChildDetailsPage.tsx`
+
+### 2a. Add Class and Grade Reading Progress
+
+**New imports:**
+- `useClassGradeTotals` hook for aggregated stats
+- `useClassReadingStats` for detailed class info
+
+**New UI Section** (between Reading Progress and Reading Log):
+```text
++------------------------------------------+
+|  Community Progress                      |
+|  +----------------+ +------------------+ |
+|  | Class Total    | | Grade Total      | |
+|  | Mrs. Smith     | | 3rd Grade        | |
+|  | 4,520 min      | | 12,340 min       | |
+|  | 24 students    | | 89 students      | |
+|  +----------------+ +------------------+ |
++------------------------------------------+
+```
+
+### 2b. Inline Reading Log Editing
+
+**Changes to Reading History section:**
+- Replace simple log display with `ReadingLogsTable` component (already exists)
+- Add edit icons to each log entry
+- Import `useReadingLogs` for mutation access
+- On edit: show inline inputs for minutes and book title
+- On save: call `updateLog.mutate()`
+- On delete: call `deleteLog.mutate()`
+
+### 2c. Reading Log Validation Feature
+
+**New functionality:**
+- Add checkbox next to each reading log entry
+- Checkbox toggles a "verified" state
+- Verified logs get a checkmark badge
+- Add "Select All" and "Validate Selected" bulk actions
+- Store validation in database fields (`verified_at`, `verified_by`)
+
+**New UI pattern:**
+```text
+[ ] 30 min - "Charlotte's Web" - Jan 15  [Edit] [Delete]
+[x] 45 min - "Magic Tree House" - Jan 14 ✓Verified
+```
+
+**Note:** This requires checking if reading_logs table has `verified_at` and `verified_by` columns. Currently, children table has these for child-level verification, but log-level verification may need a migration.
+
+### 2d. Replace Settings Link with Inline Dialog
+
+**Changes:**
+- Import `EditChildDialog` component
+- Add state: `editDialogOpen`, `selectedChild`
+- Change Settings button to open dialog instead of navigating
+- Add ownership check to show/hide edit capabilities
+
+### 2e. Add Link to Account Page for Student Login Settings
+
+**New sidebar quick action:**
+```typescript
+<Button variant="outline" className="w-full justify-start" asChild>
+  <Link to="/account#children">
+    <User className="h-4 w-4 mr-2" />
+    Manage Student Account
+  </Link>
+</Button>
+```
+
+---
+
+## Phase 3: Expand Account Settings Page
+
+**File:** `src/pages/AccountSettingsPage.tsx`
+
+### 3a. Add Children's Accounts Section
+
+**New imports:**
+- `useChildren` hook
+- `useParentInvitations` hook
+- `EditChildDialog` component
+- `useDeleteInvitation`, `useUpdateInvitationStatus` hooks
+
+**New section structure:**
+```text
++------------------------------------------+
+| Children's Accounts                       |
+| Manage your children's profiles and login |
++------------------------------------------+
+| [Child Card 1: Emma]                      |
+| Grade: 3rd Grade | Teacher: Mrs. Smith   |
+| Login: Enabled ✓ | Username: emma_reader |
+| Public Link: Enabled                      |
+| [Edit Profile] [View Details]             |
+|                                           |
+| Pending Sponsor Requests (2)              |
+| > Grandma Smith - [Approve] [Decline]     |
+| > Uncle Bob - [Approve] [Decline]         |
+|                                           |
+| [Delete Child] <-- Danger Zone            |
++------------------------------------------+
+```
+
+### 3b. Fields to Display Per Child
+- **Grade** (from `grade_info`)
+- **Homeroom Teacher** (from `class_name` or teacher lookup)
+- **Public Sponsor Link Toggle** (from `share_public_link`)
+- **Student Login Status** (from `student_login_enabled`)
+- **Username** (from `student_username`)
+
+### 3c. Sponsor Request Approval Inline
+
+**Integration:**
+- Fetch invitations using `useParentInvitations()`
+- Group by child
+- Show pending requests with Approve/Decline buttons
+- Use `useUpdateInvitationStatus` mutation
+
+### 3d. Delete Child Functionality
+
+**New "Danger Zone" per child:**
+- Add expandable danger section
+- Requires typing child's name to confirm
+- On delete:
+  1. Cancel all unpaid pledges for this child
+  2. Send notification to sponsors about cancellation
+  3. Delete child record (cascades to reading_logs)
+  4. Show confirmation toast
+
+**Deletion cascade logic:**
+```typescript
+const handleDeleteChild = async (childId: string, childName: string) => {
+  // 1. Get all unpaid pledges for this child
+  const { data: unpaidPledges } = await supabase
+    .from("pledges")
+    .select("*, sponsors(*)")
+    .eq("child_id", childId)
+    .eq("is_paid", false);
   
-  // Permissions
-  canSignUp: boolean;           // true during pre_event and active
-  canMakePledges: boolean;      // true during pre_event, active, grace_period
-  canStudentsLog: boolean;      // true only during active
-  canParentsLog: boolean;       // true during active and grace_period
-  canTeachersLog: boolean;      // true during active (grade-restricted)
+  // 2. Notify sponsors (optional edge function call)
+  for (const pledge of unpaidPledges || []) {
+    // Send cancellation notification
+  }
   
-  // Derived states
-  isLoggingOpen: boolean;       // anyone can log
-  isPaymentsDue: boolean;       // event is closed
+  // 3. Delete child (cascades reading_logs, pledges)
+  await deleteChild.mutateAsync(childId);
   
-  // Countdowns
-  daysUntilStart: number;
-  daysUntilEnd: number;
-  daysUntilClose: number;
-  
-  // Valid date range for logging
-  validLogDates: { start: Date; end: Date } | null;
+  toast.success(`${childName} removed from Read-a-thon`);
+};
+```
+
+---
+
+## Phase 4: Update Dashboard Navigation
+
+**File:** `src/pages/DashboardPage.tsx`
+
+### Changes:
+- Update "Manage Children" link to point to `/account#children`
+- Keep child card "Details" button pointing to `/family/children/:id`
+- No major structural changes needed
+
+---
+
+## Phase 5: Verify Sponsor-Only View Separation
+
+**File:** `src/pages/family/ChildDetailsPage.tsx`
+
+### Ownership Check:
+```typescript
+const { children } = useChildren();
+const isOwner = children.some(c => c.id === id);
+
+// If not owner, show limited view
+if (!isOwner) {
+  return <SponsorViewOfChild childId={id} />;
 }
 ```
 
-The hook will:
-- Parse dates with timezone awareness (EST/EDT)
-- Apply cutoffs: midnight for start, 11:59:59pm for end/last_log
-- Return computed permissions for UI decisions
-
-#### 3. Update Logging Pages
-
-**Parent Log Reading (`LogReadingPage.tsx`):**
-- Check `canParentsLog` from `useEventStatus`
-- During `grace_period`, restrict date picker to `validLogDates` range only
-- Show "Reading period has ended" message when in `pre_event`
-- Show "Final logging deadline passed" when in `closed`
-
-**Student Log Reading (`StudentLogReadingPage.tsx`):**
-- Check `canStudentsLog`
-- Block access during `pre_event`: "Reading starts on [date]!"
-- Block access during `grace_period`: "Time's up! Ask your parent to log any remaining minutes."
-- Block access during `closed`: "This year's read-a-thon is complete!"
-
-**Teacher Log Reading (`TeacherLogReading.tsx`):**
-- Check `canTeachersLog` (combines phase check with grade permissions)
-- Same blocking messages as student
-
-#### 4. Update Registration/Sign-up Pages
-
-- Check `canSignUp` before allowing new registrations
-- During `grace_period` or `closed`: show message "Registration for this read-a-thon has ended"
-- Link to contact admin if someone needs to register late
-
-#### 5. UI Phase Indicators
-
-Update dashboards to show phase-specific messaging:
-
-| Phase | Parent Dashboard | Student Dashboard | Admin Dashboard |
-|-------|------------------|-------------------|-----------------|
-| `pre_event` | "Starts [date] - Get sponsors now!" | "Reading starts [date]!" | "X families registered" |
-| `active` | "X days left to read!" | "Keep reading!" | "X minutes logged today" |
-| `grace_period` | "Final chance to log - ends [date]" | "Time's up!" | "Awaiting final logs" |
-| `closed` | "Results are in!" | "You read X minutes!" | "Collect payments" |
+### Sponsor View Features (read-only):
+- Reading progress ring
+- Total minutes
+- Days remaining
+- No edit buttons
+- No settings access
+- No reading log management
 
 ---
 
-## Part 2: Winner Tracking and Verification
+## Phase 6: Remove Deprecated Routes
 
-### Database Changes
+**File:** `src/App.tsx`
 
-```sql
--- Track verified totals per child
-ALTER TABLE children 
-ADD COLUMN total_verified BOOLEAN DEFAULT false,
-ADD COLUMN verified_at TIMESTAMPTZ,
-ADD COLUMN verified_by UUID REFERENCES auth.users(id);
+### Routes to Remove/Redirect:
+```typescript
+// Remove this route:
+<Route path="/family/children/:id/settings" element={<ChildSettingsPage />} />
 
--- Track event winners
-CREATE TABLE event_winners (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  event_id UUID NOT NULL REFERENCES events(id) ON DELETE CASCADE,
-  grade_info TEXT NOT NULL,
-  winner_type TEXT NOT NULL CHECK (winner_type IN ('student', 'class')),
-  child_id UUID REFERENCES children(id),
-  class_name TEXT,
-  total_minutes INTEGER NOT NULL,
-  created_at TIMESTAMPTZ DEFAULT now(),
-  UNIQUE(event_id, grade_info, winner_type)
-);
+// Or redirect to child details:
+<Route path="/family/children/:id/settings" element={<Navigate to="/family/children/:id" replace />} />
 ```
 
-### Winner Calculation
-
-When event enters `closed` state:
-
-1. **Per-Grade Student Winners:**
-   - Only students with `total_verified = true` are eligible
-   - Highest `total_minutes` per grade wins
-   - Ties: all tied students listed as co-winners
-
-2. **Per-Grade Class Winners:**
-   - Sum of all student minutes per class
-   - Highest class total per grade wins
-
-### Verification Flow
-
-**Parent Verification:**
-- Checkbox on child profile: "I confirm these reading minutes are accurate"
-- Required for winner eligibility
-
-**Admin Verification:**
-- Bulk verify from admin panel
-- Can verify/unverify any student
-- Override capability for edge cases
+**File:** `src/pages/family/index.ts`
+- Remove `ChildSettingsPage` export (if removing entirely)
 
 ---
 
-## Part 3: Admin Data Management Panel
+## Database Considerations
 
-### New Route: `/admin/data`
+### Potential Migration Needed
+If log-level verification is required (beyond child-level), add to `reading_logs` table:
+- `verified_at: timestamp with time zone | nullable`
+- `verified_by: uuid | nullable | references auth.users`
+- `is_verified: boolean | default false`
 
-Four-tab interface for data exploration and correction:
-
-### Tab 1: Students & Reading Logs
-
-**Search Interface:**
-- Search by student name, parent email, class, or grade
-- Filter by: has unverified logs, high-value entries, recent activity
-
-**Student Card View:**
-```
-┌───────────────────────────────────────────────────────────────┐
-│ 🔍 Search students: [________________________]                │
-├───────────────────────────────────────────────────────────────┤
-│ Emma Johnson                                          [Edit]  │
-│ Room 204 • 3rd Grade • Mrs. Smith                            │
-│ Total: 1,247 min | Goal: 500 | Verified: ❌                   │
-│ Parent: Sarah Johnson (sarah@example.com)                    │
-├───────────────────────────────────────────────────────────────┤
-│ Reading Logs:                                                 │
-│ ┌────────┬─────────┬─────────────────┬──────────┬──────────┐ │
-│ │ Date   │ Minutes │ Book            │ Logger   │ Actions  │ │
-│ ├────────┼─────────┼─────────────────┼──────────┼──────────┤ │
-│ │ Mar 10 │ 480 ⚠️  │ —               │ Student  │ [✏️] [🗑️]│ │
-│ │ Mar 9  │ 45      │ Harry Potter    │ Parent   │ [✏️] [🗑️]│ │
-│ │ Mar 8  │ 30      │ Harry Potter    │ Parent   │ [✏️] [🗑️]│ │
-│ └────────┴─────────┴─────────────────┴──────────┴──────────┘ │
-│ ⚠️ = Over 120 minutes (flagged for review)                   │
-│                                                               │
-│ [Verify Total] [Recalculate Total] [View Parent Account]      │
-└───────────────────────────────────────────────────────────────┘
-```
-
-**Admin Actions:**
-- Edit log entry (minutes, date, book)
-- Delete log entry
-- Verify/unverify student total
-- Recalculate cached `total_minutes` from actual logs
-
-### Tab 2: Pledges
-
-**Search Interface:**
-- Search by sponsor name, student name, or email
-- Filter by: unpaid, paid, flagged amounts, per-minute, fixed
-
-**Pledge Management:**
-```
-┌───────────────────────────────────────────────────────────────┐
-│ 🔍 Search pledges: [________________________]                 │
-├───────────────────────────────────────────────────────────────┤
-│ Grandma Smith → Emma Johnson                                  │
-│ Type: Per-minute ($0.10/min) | Est. Total: $124.70           │
-│ Status: Unpaid ⚠️ Unusually high rate                        │
-│ [Edit Amount] [Mark Paid] [Delete]                            │
-├───────────────────────────────────────────────────────────────┤
-│ Uncle Bob → Emma Johnson                                      │
-│ Type: Fixed ($500) ⚠️ Over $100                              │
-│ Status: Paid                                                  │
-│ [Edit Amount] [Mark Unpaid] [Delete]                          │
-└───────────────────────────────────────────────────────────────┘
-```
-
-**Flagging Rules:**
-- Per-minute rate > $0.50/min
-- Fixed pledge > $100
-- Any pledge > $500 (likely typo)
-
-### Tab 3: User Accounts
-
-**Search Interface:**
-- Search by name, email, or child name
-- Filter by: role (parent, sponsor, teacher, admin), has issues
-
-**Account Management:**
-```
-┌───────────────────────────────────────────────────────────────┐
-│ 🔍 Search users: [________________________]                   │
-├───────────────────────────────────────────────────────────────┤
-│ Sarah Johnson (sarah@example.com)                             │
-│ Role: Parent | Children: Emma Johnson, Jack Johnson           │
-│ Last login: March 10, 2026                                    │
-│ [Send Password Reset] [View Children] [View Pledges]          │
-├───────────────────────────────────────────────────────────────┤
-│ Bob Smith (bob@example.com)                                   │
-│ Role: Sponsor ⚠️ (may need to be Parent)                     │
-│ Sponsoring: Emma Johnson                                      │
-│ [Send Password Reset] [Convert to Parent] [View Pledges]      │
-└───────────────────────────────────────────────────────────────┘
-```
-
-**Account Actions:**
-- Send password reset email (uses Supabase auth flow)
-- Convert sponsor to parent (creates profile, links children)
-- Merge duplicate accounts
-- View all related data (children, pledges, logs)
-
-### Tab 4: Quick Fixes
-
-Common scenarios with guided workflows:
-
-| Issue | Steps |
-|-------|-------|
-| "Student logged too many minutes" | Search → Select log → Edit or delete |
-| "Sponsor pledged wrong amount" | Search → Select pledge → Edit amount |
-| "Can't find my account" | Search by child name → Show parent email |
-| "Registered as sponsor, is actually parent" | Find account → Convert role |
-| "Forgot password" | Find account → Send reset email |
-| "Duplicate accounts" | Find both → Merge into primary |
+**Note:** Currently, verification exists at the child level (`total_verified`, `verified_at`, `verified_by` on `children` table). The plan assumes we validate logs at the child level, but inline log validation could be implemented as a UI pattern that updates the child's `total_verified` status.
 
 ---
 
-## Part 4: Per-Minute Payment Finalization
+## Technical Implementation Details
 
-### Current Issue
-Per-minute pledges can't be paid until the final total is known.
+### Files to Modify
 
-### Solution
+1. `src/pages/MyPledgesPage.tsx`
+   - Remove payment status controls
+   - Add "Pay Now" with event status logic
+   
+2. `src/pages/family/ChildDetailsPage.tsx`
+   - Add class/grade progress section
+   - Add inline log editing via ReadingLogsTable
+   - Add validation checkbox functionality
+   - Replace Settings navigation with EditChildDialog
+   - Add link to Account page
+   - Add ownership check for sponsor view
+   
+3. `src/pages/AccountSettingsPage.tsx`
+   - Add Children's Accounts section
+   - Display grade, teacher, public link toggle
+   - Add sponsor approval workflow
+   - Add delete child functionality
+   
+4. `src/pages/DashboardPage.tsx`
+   - Update navigation links
+   
+5. `src/App.tsx`
+   - Remove/redirect ChildSettingsPage route
 
-Add column to pledges:
-```sql
-ALTER TABLE pledges 
-ADD COLUMN final_amount NUMERIC,
-ADD COLUMN finalized_at TIMESTAMPTZ;
+### Files to Potentially Remove
+
+1. `src/pages/family/ChildSettingsPage.tsx` - Deprecated by inline dialog
+
+### New Components (inline in existing files)
+
+1. `ChildAccountCard` - In AccountSettingsPage for displaying child management
+2. `SponsorRequestCard` - In AccountSettingsPage for approval workflow
+3. `CommunityProgressCard` - In ChildDetailsPage for class/grade stats
+
+---
+
+## Navigation Flow After Changes
+
+```text
+PARENT DASHBOARD (/dashboard)
+├── Child Card
+│   ├── [Details] -> ChildDetailsPage (/family/children/:id)
+│   │   ├── Reading Progress (ring + stats)
+│   │   ├── Community Progress (NEW: class + grade totals)
+│   │   ├── Reading Log with inline editing + validation
+│   │   ├── Sponsors List
+│   │   ├── [Edit Profile] -> Opens EditChildDialog (inline)
+│   │   ├── [Manage Student Account] -> Account page (/account#children)
+│   │   └── [Log Reading] -> LogReadingPage
+│   └── [Log] -> LogReadingPage
+├── Sidebar Quick Actions
+│   ├── Add Reading Log
+│   ├── Invite Sponsor
+│   ├── My Pledges -> MyPledgesPage (view/edit, "Pay Now" button)
+│   ├── Make a Pledge
+│   └── Add a Child
+
+ACCOUNT PAGE (/account)
+├── Children's Accounts (NEW section)
+│   ├── [Per child card]
+│   │   ├── Grade, Teacher, Public Link toggle
+│   │   ├── Student login status + credentials
+│   │   ├── [Edit Profile] -> Opens EditChildDialog
+│   │   ├── [View Details] -> ChildDetailsPage
+│   │   ├── Pending Sponsor Requests (approve/decline)
+│   │   └── [Delete Child] -> Confirmation dialog
+├── Profile Information
+├── Change Password
+└── Danger Zone (delete account)
+
+MY PLEDGES PAGE (/my-pledges)
+├── Summary Stats (read-only: Total, Paid, Pending)
+├── Pledges by Child
+│   ├── [Per pledge]
+│   │   ├── Status badge (read-only)
+│   │   ├── Amount + type
+│   │   ├── [Edit] -> Edit amount/type only
+│   │   ├── [Delete] -> Delete pledge
+│   │   └── [Pay Now] -> Payment flow (conditional visibility)
+
+SPONSOR VIEW (non-parent viewing sponsored child)
+└── Read-only progress view (no edit/settings/management)
 ```
 
-**When event enters `closed` state:**
-1. Calculate final amounts for all per-minute pledges
-2. Store in `final_amount` column
-3. Set `finalized_at` timestamp
-4. Sponsor payment page shows final amount
-5. "Pay Now" enabled for all pledges
+---
+
+## Implementation Order
+
+1. **Phase 1** - My Pledges payment controls cleanup + Pay Now logic
+2. **Phase 2** - ChildDetailsPage enhancements (class/grade progress, inline editing, validation)
+3. **Phase 3** - Account page children section with full management
+4. **Phase 4** - Dashboard navigation streamlining
+5. **Phase 5** - Ownership verification for sponsor views
+6. **Phase 6** - Remove deprecated routes and cleanup
 
 ---
 
-## File Changes Summary
+## Testing Checklist
 
-### New Files
-| File | Purpose |
-|------|---------|
-| `src/hooks/useEventStatus.ts` | Phase calculation and permissions |
-| `src/pages/admin/AdminDataPage.tsx` | Main data management page |
-| `src/components/admin/StudentDataExplorer.tsx` | Student/log search and edit |
-| `src/components/admin/PledgeDataExplorer.tsx` | Pledge management |
-| `src/components/admin/UserAccountManager.tsx` | Account fixes |
-| `src/components/admin/QuickFixesPanel.tsx` | Common issue workflows |
-| `src/components/admin/WinnersPanel.tsx` | Winner display |
-
-### Modified Files
-| File | Changes |
-|------|---------|
-| `src/hooks/useActiveEvent.ts` | Add timezone field to type |
-| `src/pages/LogReadingPage.tsx` | Phase-based access, date restrictions |
-| `src/pages/student/StudentLogReadingPage.tsx` | Phase blocking with messages |
-| `src/pages/teacher/TeacherLogReading.tsx` | Phase blocking |
-| `src/pages/auth/RegisterPage.tsx` | Check `canSignUp` |
-| `src/pages/onboarding/*.tsx` | Check `canSignUp` |
-| `src/components/layout/AdminSidebar.tsx` | Add "Data Explorer" link |
-| `src/pages/admin/AdminSettingsPage.tsx` | Add timezone selector |
-| `src/App.tsx` | Add `/admin/data` route |
-
-### Database Migrations
-1. Add `timezone` to events table
-2. Add verification columns to children table
-3. Create `event_winners` table with RLS
-4. Add `final_amount` and `finalized_at` to pledges table
-
----
-
-## Implementation Priority
-
-**Phase 1: Event Status System**
-1. Database: Add timezone column
-2. Create `useEventStatus` hook with all permission flags
-3. Update logging pages with phase checks
-4. Update sign-up pages with `canSignUp` check
-5. Add phase indicators to dashboards
-
-**Phase 2: Admin Data Management**
-1. Create AdminDataPage with tab structure
-2. Build StudentDataExplorer with search and edit
-3. Build PledgeDataExplorer with flagging
-4. Build UserAccountManager with password reset
-5. Add QuickFixesPanel
-
-**Phase 3: Winner System**
-1. Database: verification columns and winners table
-2. Parent verification UI
-3. Admin verification and calculation
-4. Results display
-
-**Phase 4: Payment Finalization**
-1. Add final_amount to pledges
-2. Implement close-event calculation
-3. Update payment pages
-
+- [ ] My Pledges: Cannot mark paid/unpaid
+- [ ] My Pledges: Pay Now works for flat pledges anytime
+- [ ] My Pledges: Pay Now only appears for per-minute when event closed
+- [ ] My Pledges: Paid pledges show status but no actions
+- [ ] Child Details: Class total minutes display correctly
+- [ ] Child Details: Grade total minutes display correctly
+- [ ] Child Details: Can edit reading logs inline
+- [ ] Child Details: Can validate reading logs with checkbox
+- [ ] Child Details: Edit Profile opens dialog (not navigates)
+- [ ] Account: Children section shows all children
+- [ ] Account: Can edit grade, teacher, public link per child
+- [ ] Account: Can approve/decline sponsor requests
+- [ ] Account: Can delete child with confirmation
+- [ ] Account: Deleting child notifies sponsors
+- [ ] Sponsor View: Cannot see edit controls when viewing non-owned child
+- [ ] Navigation: Settings route redirects properly
