@@ -288,8 +288,8 @@ export function LogoGenerator() {
       </g>
     </g>
   </g>
-  <!-- Date text - baseline aligned with bottom of circle (y=107.6) -->
-  <text x="${textX}" y="107" text-anchor="middle" class="date-text">${dateText}</text>
+  <!-- Date text - baseline aligned with bottom of circle -->
+  <text x="${textX}" y="104" text-anchor="middle" class="date-text">${dateText}</text>
 </svg>`;
   }, [calculateTextX, dateText, fontBase64]);
 
@@ -423,7 +423,7 @@ export function LogoGenerator() {
             {/* Date text - baseline aligned with bottom of circle (y=107.6) */}
             <text
               x={textX}
-              y="107"
+              y="104"
               textAnchor="middle"
               className="date-text"
               style={{
