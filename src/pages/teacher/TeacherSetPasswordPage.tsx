@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { PublicLayout } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,45 +17,83 @@ const TeacherSetPasswordPage = () => {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [teacherName, setTeacherName] = useState<string | null>(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
-    const checkAuth = async () => {
+    // Listen for auth state changes (magic link will trigger this)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Auth state change:", event, session?.user?.email);
+      
+      if (event === "SIGNED_IN" && session?.user) {
+        await handleUserAuthenticated(session.user);
+      }
+    });
+
+    // Also check if already authenticated
+    const checkExistingAuth = async () => {
+      // Give Supabase a moment to process the magic link token from URL
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
       const { data: { user } } = await supabase.auth.getUser();
       
-      if (!user) {
-        // Not authenticated, redirect to register
+      if (user) {
+        await handleUserAuthenticated(user);
+      } else {
+        // Check if there's a hash fragment that indicates a magic link
+        const hashParams = new URLSearchParams(location.hash.substring(1));
+        const accessToken = hashParams.get("access_token");
+        
+        if (accessToken) {
+          // Magic link token is present, Supabase should handle it
+          console.log("Magic link token detected, waiting for auth...");
+          // Wait a bit more for auth to complete
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          const { data: { user: retryUser } } = await supabase.auth.getUser();
+          if (retryUser) {
+            await handleUserAuthenticated(retryUser);
+            return;
+          }
+        }
+        
+        // No user and no magic link token - redirect to register
+        toast.error("Please use the magic link from your invite email");
         navigate("/teacher/register");
-        return;
       }
-
-      // Check if user is a teacher
-      const { data: teacher } = await supabase
-        .from("teachers")
-        .select("id, name, user_id")
-        .eq("email", user.email?.toLowerCase())
-        .eq("is_active", true)
-        .maybeSingle();
-
-      if (!teacher) {
-        toast.error("No teacher account found for this email.");
-        navigate("/teacher/register");
-        return;
-      }
-
-      // Auto-link if not already linked
-      if (!teacher.user_id) {
-        await supabase
-          .from("teachers")
-          .update({ user_id: user.id })
-          .eq("id", teacher.id);
-      }
-
-      setTeacherName(teacher.name);
-      setIsCheckingAuth(false);
     };
 
-    checkAuth();
-  }, [navigate]);
+    checkExistingAuth();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [navigate, location]);
+
+  const handleUserAuthenticated = async (user: { id: string; email?: string }) => {
+    // Check if user is a teacher
+    const { data: teacher } = await supabase
+      .from("teachers")
+      .select("id, name, user_id")
+      .eq("email", user.email?.toLowerCase())
+      .eq("is_active", true)
+      .maybeSingle();
+
+    if (!teacher) {
+      toast.error("No teacher account found for this email.");
+      navigate("/teacher/register");
+      return;
+    }
+
+    // Auto-link if not already linked
+    if (!teacher.user_id) {
+      await supabase
+        .from("teachers")
+        .update({ user_id: user.id })
+        .eq("id", teacher.id);
+    }
+
+    setTeacherName(teacher.name);
+    setIsCheckingAuth(false);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
