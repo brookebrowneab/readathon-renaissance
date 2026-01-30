@@ -308,16 +308,16 @@ const DashboardPage = () => {
                     </div>
                   ) : (sponsorPledgesByChild.length > 0 || sponsorPledgesByClass.length > 0) ? (
                     <>
-                      {/* Responsive grid: single item = full width horizontal, 2 items = side-by-side, 3+ = stacked sections */}
+                      {/* Layout based on content - prioritize compact layouts */}
                       {(() => {
-                        const totalItems = sponsorPledgesByChild.length + sponsorPledgesByClass.length;
-                        const isSingleItem = totalItems === 1;
-                        const useSideBySide = totalItems === 2;
+                        const childCount = sponsorPledgesByChild.length;
+                        const classCount = sponsorPledgesByClass.length;
                         
-                        if (isSingleItem) {
-                          // Single sponsorship - full width horizontal card
+                        // Single child (with or without classes) - show child prominently
+                        if (childCount === 1) {
                           return (
                             <div className="space-y-6">
+                              {/* Single child - horizontal full-width layout */}
                               {sponsorPledgesByChild.map((item) => (
                                 <SponsoredChildCard 
                                   key={item.childId} 
@@ -329,71 +329,10 @@ const DashboardPage = () => {
                                   horizontal
                                 />
                               ))}
-                              {sponsorPledgesByClass.map((item) => (
-                                <SponsoredClassCard 
-                                  key={item.className} 
-                                  className={item.className}
-                                  teacher={item.teacher}
-                                  pledges={item.pledges}
-                                  totalAmount={item.totalAmount}
-                                  horizontal
-                                />
-                              ))}
-                            </div>
-                          );
-                        }
-                        
-                        if (useSideBySide) {
-                          // Two items - side by side
-                          return (
-                            <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
-                              {sponsorPledgesByChild.map((item) => (
-                                <SponsoredChildCard 
-                                  key={item.childId} 
-                                  childId={item.childId}
-                                  childName={item.childName}
-                                  child={item.child}
-                                  pledges={item.pledges}
-                                  totalAmount={item.totalAmount}
-                                />
-                              ))}
-                              {sponsorPledgesByClass.map((item) => (
-                                <SponsoredClassCard 
-                                  key={item.className} 
-                                  className={item.className}
-                                  teacher={item.teacher}
-                                  pledges={item.pledges}
-                                  totalAmount={item.totalAmount}
-                                />
-                              ))}
-                            </div>
-                          );
-                        }
-                        
-                        // Many items - stacked sections
-                        return (
-                          <div className="space-y-8">
-                            {sponsorPledgesByChild.length > 0 && (
-                              <div>
-                                <h3 className="font-serif text-lg text-muted-foreground mb-3">Readers</h3>
-                                <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-                                  {sponsorPledgesByChild.map((item) => (
-                                    <SponsoredChildCard 
-                                      key={item.childId} 
-                                      childId={item.childId}
-                                      childName={item.childName}
-                                      child={item.child}
-                                      pledges={item.pledges}
-                                      totalAmount={item.totalAmount}
-                                    />
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-                            {sponsorPledgesByClass.length > 0 && (
-                              <div>
-                                <h3 className="font-serif text-lg text-muted-foreground mb-3">Classes</h3>
-                                <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+                              
+                              {/* Classes below in grid (if any) */}
+                              {classCount > 0 && (
+                                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                                   {sponsorPledgesByClass.map((item) => (
                                     <SponsoredClassCard 
                                       key={item.className} 
@@ -401,9 +340,110 @@ const DashboardPage = () => {
                                       teacher={item.teacher}
                                       pledges={item.pledges}
                                       totalAmount={item.totalAmount}
+                                      compact
                                     />
                                   ))}
                                 </div>
+                              )}
+                            </div>
+                          );
+                        }
+                        
+                        // Only classes (no children) - single class horizontal, multiple in grid
+                        if (childCount === 0 && classCount === 1) {
+                          return (
+                            <div className="space-y-6">
+                              {sponsorPledgesByClass.map((item) => (
+                                <SponsoredClassCard 
+                                  key={item.className} 
+                                  className={item.className}
+                                  teacher={item.teacher}
+                                  pledges={item.pledges}
+                                  totalAmount={item.totalAmount}
+                                  horizontal
+                                />
+                              ))}
+                            </div>
+                          );
+                        }
+                        
+                        if (childCount === 0 && classCount > 1) {
+                          return (
+                            <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+                              {sponsorPledgesByClass.map((item) => (
+                                <SponsoredClassCard 
+                                  key={item.className} 
+                                  className={item.className}
+                                  teacher={item.teacher}
+                                  pledges={item.pledges}
+                                  totalAmount={item.totalAmount}
+                                />
+                              ))}
+                            </div>
+                          );
+                        }
+                        
+                        // 2 children - side by side
+                        if (childCount === 2) {
+                          return (
+                            <div className="space-y-6">
+                              <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
+                                {sponsorPledgesByChild.map((item) => (
+                                  <SponsoredChildCard 
+                                    key={item.childId} 
+                                    childId={item.childId}
+                                    childName={item.childName}
+                                    child={item.child}
+                                    pledges={item.pledges}
+                                    totalAmount={item.totalAmount}
+                                  />
+                                ))}
+                              </div>
+                              {classCount > 0 && (
+                                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                                  {sponsorPledgesByClass.map((item) => (
+                                    <SponsoredClassCard 
+                                      key={item.className} 
+                                      className={item.className}
+                                      teacher={item.teacher}
+                                      pledges={item.pledges}
+                                      totalAmount={item.totalAmount}
+                                      compact
+                                    />
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        }
+                        
+                        // Many children (3+) - grid layout for all
+                        return (
+                          <div className="space-y-6">
+                            <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+                              {sponsorPledgesByChild.map((item) => (
+                                <SponsoredChildCard 
+                                  key={item.childId} 
+                                  childId={item.childId}
+                                  childName={item.childName}
+                                  child={item.child}
+                                  pledges={item.pledges}
+                                  totalAmount={item.totalAmount}
+                                />
+                              ))}
+                            </div>
+                            {classCount > 0 && (
+                              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                                {sponsorPledgesByClass.map((item) => (
+                                  <SponsoredClassCard 
+                                    key={item.className} 
+                                    className={item.className}
+                                    teacher={item.teacher}
+                                    pledges={item.pledges}
+                                    totalAmount={item.totalAmount}
+                                    compact
+                                  />
+                                ))}
                               </div>
                             )}
                           </div>
