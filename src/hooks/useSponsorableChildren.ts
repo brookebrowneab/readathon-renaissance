@@ -62,15 +62,21 @@ export function useSponsorableChildren() {
       }
 
       // Get children from accepted invitations (using type assertion for new table)
-      const { data: invitations, error: invitationsError } = await (supabase as any)
-        .from("sponsor_invitations")
-        .select("child_id")
-        .or(`invitee_user_id.eq.${user.id},invitee_email.eq.${user.email}`)
-        .eq("status", "accepted");
+      // Note: sponsor_invitations table may not exist yet - gracefully handle 404
+      let invitedChildIds = new Set<string>();
+      try {
+        const { data: invitations, error: invitationsError } = await (supabase as any)
+          .from("sponsor_invitations")
+          .select("child_id")
+          .or(`invitee_user_id.eq.${user.id},invitee_email.eq.${user.email}`)
+          .eq("status", "accepted");
 
-      if (invitationsError) throw invitationsError;
-
-      const invitedChildIds = new Set<string>((invitations || []).map((i: { child_id: string }) => i.child_id));
+        if (!invitationsError && invitations) {
+          invitedChildIds = new Set<string>(invitations.map((i: { child_id: string }) => i.child_id));
+        }
+      } catch {
+        // Table doesn't exist yet - continue without invited children
+      }
 
       // Get invited children details if any
       let invitedChildren: typeof publicChildren = [];
