@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -143,6 +142,7 @@ export function LogoGenerator() {
   const [isExporting, setIsExporting] = useState(false);
   const [isApplying, setIsApplying] = useState(false);
   const [fontBase64, setFontBase64] = useState<string | null>(null);
+  const [initializedEventId, setInitializedEventId] = useState<string | null>(null);
 
   // Load Cooper Black font and convert to base64 for embedding
   useEffect(() => {
@@ -169,18 +169,31 @@ export function LogoGenerator() {
     loadFont();
   }, []);
 
-  // Initialize date text from active event
+  // Initialize date text and xPosition from active event
   useEffect(() => {
-    if (activeEvent && !dateText) {
+    if (activeEvent && activeEvent.id !== initializedEventId) {
       // Parse dates in local timezone to avoid off-by-one errors
-      // The dates are stored as YYYY-MM-DD, so we need to parse them correctly
       const [startYear, startMonth, startDay] = activeEvent.start_date.split('-').map(Number);
       const [endYear, endMonth, endDay] = activeEvent.end_date.split('-').map(Number);
       const startDate = new Date(startYear, startMonth - 1, startDay);
       const endDate = new Date(endYear, endMonth - 1, endDay);
       setDateText(formatEventDatesForLogo(startDate, endDate));
+      
+      // Load persisted xOffset from database (convert from SVG x to slider 0-100)
+      // SVG x range is 180-480, slider is 0-100
+      const savedOffset = (activeEvent as any).logo_date_x_offset;
+      if (typeof savedOffset === 'number') {
+        const minX = 180;
+        const maxX = 480;
+        const sliderValue = ((savedOffset - minX) / (maxX - minX)) * 100;
+        setXPosition([Math.max(0, Math.min(100, sliderValue))]);
+      } else {
+        setXPosition([50]); // Default center
+      }
+      
+      setInitializedEventId(activeEvent.id);
     }
-  }, [activeEvent, dateText]);
+  }, [activeEvent, initializedEventId]);
 
   // Calculate X position based on slider (maps 0-100 to SVG coordinate range)
   const calculateTextX = useCallback(() => {
@@ -190,8 +203,48 @@ export function LogoGenerator() {
     return minX + (xPosition[0] / 100) * (maxX - minX);
   }, [xPosition]);
 
-  // Generate SVG string for export
-  const generateSvgString = useCallback((embedFont: boolean = false) => {
+  // Render date text to a canvas and return as data URL
+  const renderDateTextToImage = useCallback(async (): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const canvas = document.createElement('canvas');
+      const scale = 4; // High resolution
+      const fontSize = 24;
+      const padding = 10;
+      
+      // Measure text width using a temporary context
+      const tempCtx = canvas.getContext('2d');
+      if (!tempCtx) {
+        reject(new Error('Canvas not supported'));
+        return;
+      }
+      
+      tempCtx.font = `${fontSize}px 'Cooper Black', 'Arial Black', sans-serif`;
+      const metrics = tempCtx.measureText(dateText);
+      const textWidth = metrics.width;
+      const textHeight = fontSize * 1.2;
+      
+      canvas.width = (textWidth + padding * 2) * scale;
+      canvas.height = (textHeight + padding * 2) * scale;
+      
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        reject(new Error('Canvas not supported'));
+        return;
+      }
+      
+      ctx.scale(scale, scale);
+      ctx.font = `${fontSize}px 'Cooper Black', 'Arial Black', sans-serif`;
+      ctx.fillStyle = '#3761ad';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(dateText, (textWidth + padding * 2) / 2, (textHeight + padding * 2) / 2);
+      
+      resolve(canvas.toDataURL('image/png'));
+    });
+  }, [dateText]);
+
+  // Generate SVG string for export (with text, for download)
+  const generateSvgStringWithText = useCallback((embedFont: boolean = false) => {
     const textX = calculateTextX();
     
     const fontStyle = embedFont && fontBase64
@@ -293,38 +346,135 @@ export function LogoGenerator() {
       </g>
     </g>
   </g>
-  <!-- Date text - baseline aligned with bottom of circle -->
-  <text x="${textX}" y="104" text-anchor="middle" class="date-text">${dateText}</text>
+  <!-- Date text -->
+  <text
+    x="${textX}"
+    y="104"
+    text-anchor="middle"
+    class="date-text"
+    style="font-family: 'Cooper Black', 'Arial Black', sans-serif; font-size: 24px; fill: #3761ad;"
+  >${dateText}</text>
 </svg>`;
-  }, [calculateTextX, dateText, fontBase64]);
+  }, [calculateTextX, fontBase64, dateText]);
+
+  // Generate SVG string with rasterized text for Apply to Site
+  const generateSvgWithRasterizedText = useCallback(async (): Promise<string> => {
+    const textX = calculateTextX();
+    const dateImageDataUrl = await renderDateTextToImage();
+    
+    // Measure text dimensions for positioning
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('Canvas not supported');
+    ctx.font = "24px 'Cooper Black', 'Arial Black', sans-serif";
+    const metrics = ctx.measureText(dateText);
+    const textWidth = metrics.width;
+    const textHeight = 24 * 1.2;
+    const padding = 10;
+    
+    // Calculate image position (centered at textX, baseline at y=104)
+    const imgWidth = textWidth + padding * 2;
+    const imgHeight = textHeight + padding * 2;
+    const imgX = textX - imgWidth / 2;
+    const imgY = 104 - imgHeight / 2 - 4; // Adjust for baseline
+
+    return `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 666 164.4" width="666" height="164.4">
+  <defs>
+    <style>
+      .st0 { fill: none; }
+      .st1 { fill: #53a3aa; }
+      .st2 { fill: #21427d; }
+      .st3 { fill: #3761ad; }
+      .st4 { isolation: isolate; }
+      .st5 { fill: #fff; }
+      .st6 { fill: #fbfcfd; }
+    </style>
+  </defs>
+  <!-- Book icon paths -->
+  <g id="Layer_10">
+    <path class="st2" d="M586.6,96.2c-11.7-22.2-31.3-31.2-54.5-34.8,1.3-3.1,2.6-6.1,3.9-9,3.8-8.9,7.7-17.7,11.5-26.5,2.9-6.6,5.7-13.1,8.6-19.7.2-.6,1.3-1.1,2-1,3,.2,6,.6,8.9,1.1,14.1,2.9,24.6,11,33.5,21.9,2.9,3.5,3.4,6.6,2.1,10.9-5.4,18.1-10.3,36.4-15.4,54.6-.2.6-.3,1.3-.7,2.5h0Z"/>
+    <path class="st2" d="M640.1,74.1c-21.2-3.9-38.4,1-49.1,21.1-.2-.1-.3-.2-.5-.3,1.5-5.4,3.1-10.9,4.6-16.4,3.9-14.2,7.7-28.4,11.6-42.6.3-1,.9-2.1,1.6-2.9,4.8-5.7,10.3-10.5,16.8-14.1,8-4.4,16.6-6.5,25.8-6.2.2,0,.5.1,1,.2-3.9,20.4-7.8,40.8-11.8,61.3h0Z"/>
+    <path class="st2" d="M654.9,28.6c2.6,2.5,5,4.7,7.3,7,.3.3.2,1.2.1,1.8-1.1,7.3-2.2,14.7-3.3,22-1.1,7.2-2.1,14.4-3.1,21.6-.7,4.5-1.3,9.1-2.1,13.9-2.5-1.2-4.7-2.4-7-3.4-11.2-5.1-22.8-7.4-35.1-4.8-6.8,1.5-12.9,4.6-18.6,8.5-.7.4-1.3.9-2,1.5.6-2.4,5.7-7.7,10.4-10.9,4.2-2.9,8.8-5,13.7-6.2,5-1.2,10.1-1.7,15.2-1.1,5,.6,9.9,1.6,15.1,2.4,3-17.2,6.1-34.5,9.2-52.3h0Z"/>
+    <path class="st2" d="M663.3,49.1c2.2,1.5,3.1,3,2.7,5.6-1.1,7.1-1.8,14.2-2.7,21.3-1.5,12.2-3.1,24.4-4.7,36.7,0,.6-.2,1.2-.4,2.1-.8-.5-1.5-.9-2.1-1.3-9.3-6.5-19.2-11.8-30.3-14.5-10.4-2.6-20.7-2.4-31.1-.1-1,.2-2.1.4-3.1.7,0,0-.2,0-.3-.1,4.9-4.6,21.7-8.5,32.6-7.5,9.2.8,11.8,1.6,32.7,9.8,2.3-17.4,4.5-34.8,6.8-52.5h0Z"/>
+    <path class="st2" d="M549.3,16.7c-7.3,16.7-14.6,33.2-21.9,49.9,24.5.3,44.1,9.3,57.3,30.5-18.3-17.7-40-24.8-65.6-20.9,2-4.4,3.8-8.4,5.5-12.4,4.7-10.6,9.4-21.2,14.1-31.8,1.8-4.1,3.8-8.2,5.5-12.5.9-2.4,2.7-2.5,5-2.7h0Z"/>
+    <line class="st0" x1="497.1" y1="163.1" x2="495.8" y2="164.4"/>
+  </g>
+  <!-- Janney mascot -->
+  <g id="Layer_11">
+    <path class="st6" d="M53.7,0C23.8.1,0,24.1,0,53.9c0,28.3,22.7,53.7,53.9,53.6,29.8,0,53.8-24.4,53.6-54.2C107.2,23.9,83.5,0,53.7,0Z"/>
+    <path class="st2" d="M53.7,0c29.8,0,53.5,23.9,53.8,53.3.3,29.8-23.7,54.2-53.6,54.2C22.7,107.6,0,82.1,0,53.9,0,24.1,23.8.1,53.7,0ZM105.7,53.8c-.1-28.4-22.7-51.9-51.9-51.9C23.9,1.8,1.8,26.1,1.8,53.7c0,27.5,21.9,51.9,51.8,52.1,29.3,0,52-23.5,52.1-52h0Z"/>
+    <path class="st6" d="M105.7,53.8c0,28.4-22.8,52.1-52.1,52-29.9,0-51.8-24.6-51.8-52C1.8,26.1,23.9,1.8,53.8,1.8c29.2,0,51.8,23.6,51.9,51.9ZM104.6,53.8c0-28.3-22.6-50.9-50.9-50.9-28.2,0-50.9,22.7-50.9,50.9,0,28.2,22.7,50.8,50.9,50.9,28.2,0,50.8-22.7,50.8-50.9h0Z"/>
+    <path class="st2" d="M104.6,53.8c0,28.2-22.6,50.9-50.8,50.9-28.2,0-50.9-22.7-50.9-50.9C2.8,25.6,25.5,2.9,53.7,2.9c28.2,0,50.9,22.6,50.9,50.9h0ZM18.9,54.2c0,19.5,15.7,35.4,34.9,35.3,19.2,0,34.8-16,34.8-35.4s-15.8-35.4-34.9-35.4c-19.2,0-34.8,16-34.8,35.5h0Z"/>
+    <path class="st6" d="M18.9,54.2c0-19.5,15.6-35.5,34.8-35.5,19.1,0,34.9,16,34.9,35.4s-15.7,35.4-34.8,35.4c-19.2,0-34.8-15.8-34.9-35.3h0ZM70.4,39.4c-.5-4.5-1.9-8.6-6-11.1-4.3-2.7-8.4-1.9-12.1,1.3-3.8-2.8-7.8-2.8-11.8-.9-4.1,1.9-5.9,5.5-6.5,9.7-.5.2-.8.3-1.2.5-6.4,2.4-9.6,8-8.7,14.7.8,6,3.3,10.9,8.8,13.9.1,6.8,3.2,10.9,9.6,13.1,2.1.7,4.3,1.1,6.6,1.3,6.9.7,13.4-.7,19.2-4.6,2.4-1.6,4.2-3.8,4.9-6.7.3-1.2.3-2.4.4-3.5,5.9-4.2,7.7-12.9,6.3-18.8-.8-3.8-2.8-6.9-6.8-8.2-.8-.3-1.8,0-2.7-.6h0Z"/>
+    <path class="st2" d="M70.4,39.4c.9.5,1.8.3,2.7.6,4,1.3,5.9,4.4,6.8,8.2,1.3,6-.4,14.6-6.3,18.8-.1,1.1-.1,2.3-.4,3.5-.7,2.9-2.4,5.1-4.9,6.7-5.8,3.9-12.3,5.3-19.2,4.6-2.2-.2-4.4-.6-6.6-1.3-6.4-2.1-9.5-6.2-9.6-13.1-5.5-2.9-8-7.9-8.8-13.9-.9-6.8,2.3-12.3,8.7-14.7.3-.1.7-.3,1.2-.5.6-4.2,2.5-7.8,6.5-9.7,4-1.9,7.9-1.8,11.8.9,3.7-3.2,7.8-4,12.1-1.3,4.1,2.5,5.5,6.7,6,11.1h0ZM70,64.9c2.8-.8,4.4-2.9,5.4-5.3,1.6-3.9,2.3-7.9.8-12-1.3-3.6-3.7-5-7.5-4.6-.5,0-1,.5-1.5,0,0-1.2,0-2.5-.2-3.8-.2-2.3-.9-4.4-2.3-6.2-2.9-4-7.7-4.1-10.8-.3-.5.6-1,1.3-1.5,2-1-1.4-2-2.7-3.6-3.4-4.5-2.1-10,.7-11.3,5.6-.4,1.5-.6,3.1-.8,4.6-5.1.3-8.3,3.1-9.4,8.1-.4,1.9-.2,3.8.3,5.5,1.4,4.9,3.6,9.1,9.5,9.7-.5,1.8-1.2,3.4-.8,5.3.8,3.7,3.3,5.8,6.7,6.9,7.4,2.6,14.7,2.3,21.7-1.5,4.7-2.5,6-5.1,5.4-10.7h0Z"/>
+    <path class="st6" d="M70,64.9c.7,5.7-.6,8.2-5.4,10.7-7,3.7-14.3,4-21.7,1.5-3.3-1.2-5.9-3.2-6.7-6.9-.4-1.9.3-3.5.8-5.3-5.9-.6-8.1-4.8-9.5-9.7-.5-1.8-.7-3.6-.3-5.5,1.1-5,4.2-7.8,9.4-8.1.3-1.5.5-3.1.8-4.6,1.3-5,6.9-7.7,11.3-5.6,1.6.7,2.5,2,3.6,3.4.5-.7.9-1.4,1.5-2,3.1-3.8,7.9-3.7,10.9.3,1.3,1.8,2.1,4,2.3,6.2.1,1.3.2,2.5.2,3.8.5.5,1,0,1.5,0,3.8-.4,6.1.9,7.5,4.6,1.5,4.1.8,8.1-.8,12-1,2.5-2.6,4.6-5.4,5.3h0ZM52.2,75.6c4.6,0,8.7-1.1,12.3-3.5,2.7-1.8,3.4-4.7,1.7-7.4-2.1-3.2-4.2-6.3-6.5-9.3-4.2-5.4-10.7-4.8-13.8,1.3-1.5,2.9-3.2,5.7-4.9,8.5-2.5,3.9-1.5,6.9,2.7,8.8,2.8,1.2,5.8,1.4,8.5,1.6h0ZM51.3,44.9c-.3-2.7-.2-5.4-1.4-7.9-.8-1.8-2-3.1-4.3-3-2.3.1-4,1.3-4.6,3.5-.3,1.1-.6,2.3-.8,3.5-.5,4,1.3,7.5,4.6,9.1s5.9.3,6.3-3.3c0-.7.1-1.3.2-1.9h0ZM35.9,44.8c-2.6.6-4.5,2.1-5,4.8-.8,4.1.3,7.7,3.2,10.7,1.4,1.5,2.9,1.6,4.7.6,1.5-.8,2.5-1.9,3-3.4,1.6-4.4-1.5-11.2-5.8-12.7h0ZM64,41.8c0-2.4-.3-4.7-1.6-6.7-1.8-2.5-4-2.6-5.9-.2-.7.8-1.2,1.7-1.5,2.7-1.1,2.8-1.7,5.7-.8,8.8.6,2.2,2.5,3.8,4.7,4,1.8.1,3.3-1,4.3-3.3.7-1.7,1-3.4.9-5.2ZM68.5,61.9c1.6-.1,2.4-.8,3.1-1.8,2.2-3.5,2.9-7.2,1.8-11.1-.6-2-1.7-2.9-3.3-2.8-3.5.3-8.5,4.9-6.5,9.9,1,2.5,2.7,4.4,4.9,5.8h0Z"/>
+    <path class="st2" d="M52.2,75.6c-2.7-.2-5.7-.4-8.5-1.6-4.3-1.9-5.2-4.8-2.7-8.8,1.8-2.8,3.5-5.5,4.9-8.5,3.1-6.1,9.5-6.7,13.8-1.3,2.3,3,4.5,6.2,6.6,9.3,1.8,2.7,1.1,5.6-1.7,7.4-3.7,2.3-7.7,3.5-12.3,3.5h0Z"/>
+    <path class="st2" d="M51.3,44.9c0,.6-.1,1.3-.2,1.9-.4,3.6-3,5-6.3,3.3-3.3-1.7-5.1-5.2-4.6-9.1.2-1.2.4-2.3.8-3.5.7-2.2,2.4-3.4,4.6-3.5,2.2-.1,3.4,1.2,4.3,3,1.2,2.5,1.1,5.2,1.4,7.9h0Z"/>
+    <path class="st2" d="M35.9,44.8c4.3,1.5,7.4,8.3,5.8,12.7-.5,1.5-1.6,2.7-3,3.4-1.8.9-3.3.8-4.7-.6-2.8-3-4-6.6-3.2-10.7.5-2.7,2.5-4.2,5-4.8h0Z"/>
+    <path class="st2" d="M64,41.8c0,1.8-.2,3.5-.9,5.2-1,2.3-2.5,3.5-4.3,3.3-2.1-.2-4-1.8-4.7-4-.9-3-.3-5.9.8-8.8.4-1,.9-1.9,1.5-2.7,1.9-2.4,4.1-2.3,5.9.2,1.4,2,1.7,4.3,1.6,6.7Z"/>
+    <path class="st2" d="M68.5,61.9c-2.2-1.4-3.9-3.4-4.9-5.8-2-5,3-9.6,6.5-9.9,1.6-.1,2.7.7,3.3,2.8,1.1,4,.4,7.7-1.8,11.1-.6,1-1.4,1.7-3.1,1.8h0Z"/>
+  </g>
+  <!-- White text paths (JANNEY ELEMENTARY SCHOOL) - abbreviated for brevity -->
+  <g id="Layer_3">
+    <g class="st4"><g class="st4"><path class="st5" d="M29.6,18.9c1.8,2.5-.5,4.6-1.1,5.1-1.3,1-3.7,2-5,.4-.6-.7-.6-1.8.2-2.4.7-.5,1.6-.6,2.2,0,.2.2.2.4.3.6.2.3.6.3.8,0,1.2-1.2-1.2-3-2.7-5.1-.9-1.3-1.5.2-2.1-.6-.2-.2-.6-1,1.6-2.7,2.1-1.7,2.8-1.4,3.1-1,.5.6-.6,1,0,2l2.6,3.6Z"/></g></g>
+    <g class="st4"><g class="st4"><path class="st5" d="M39.6,13.7c1,2.3,1.2.7,1.5,1.4.3.8-.4,2-1.3,2.4-1.1.4-1.4-.2-1.7,0-.2,0-.3.3-.5.6-.2.3-.5.6-1.2.9-1.1.5-2.5.3-3-1-.4-.9,0-2.5,2.4-3.5.4-.2.6-.2.4-.7-.2-.4-.6-1.4-1.2-1.1-.8.3-.3,1.8-1.5,2.3-.4.2-.9,0-1.1-.4-.5-1.1,1.5-2.8,2.7-3.3.8-.3,3-.9,3.8,1.1l.6,1.3ZM36.1,16.6c.1.3.5.6.9.5.5-.2.3-.8.2-1.2-.1-.3-.2-.6-.6-.5-.5.2-.6.7-.4,1.2Z"/></g></g>
+    <g class="st4"><g class="st4"><path class="st5" d="M47.3,13.1c.2,1.4.6,1.1.7,1.6.1.9-1.8,1.1-2.4,1.2-.6,0-2,.3-2.1-.6,0-.7.7-.2.5-1.6l-.2-2.2c-.1-1.1-.9-.6-1-1.4,0-.8,3.1-1.9,3.4-1.9.3,0,.5.2.6.5,0,0,0,.2,0,.3,0,.2.1.4.3.3.2,0,.3-.3.6-.7.3-.3.6-.7,1.5-.8,3-.4,2.8,2.6,3.2,4.8.2,1.1.8.8.8,1.4,0,.3.2.9-2.5,1.2-.5,0-1.9.3-2-.5,0-.5.4-.3.4-1.3,0-1,0-3.4-1.3-3.2-.9.1-.7,1.1-.6,1.7v1.1Z"/></g></g>
+    <g class="st4"><g class="st4"><path class="st5" d="M59.6,13.1c-.2,1.4.3,1.2.2,1.8-.1.9-2,.5-2.6.4-.6,0-2-.3-1.9-1.2.1-.7.7,0,.9-1.3l.4-2.1c.2-1-.7-.9-.6-1.6.1-.8,3.5-.9,3.8-.9.3,0,.5.4.4.6,0,0,0,.2,0,.3,0,.2,0,.4.2.4.2,0,.4-.2.7-.5.3-.2.8-.5,1.6-.3,2.9.5,2,3.3,1.7,5.5-.1,1.1.5,1,.4,1.6,0,.3,0,.9-2.8.4-.5,0-1.9-.3-1.7-1.1,0-.5.5-.2.7-1.1.2-1,1-3.2-.3-3.4-.9-.2-1,.8-1.1,1.5l-.2,1.1Z"/></g></g>
+    <g class="st4"><g class="st4"><path class="st5" d="M71.3,15.7c-.1,0-.3-.2-.4,0-.3.7.3,1.6.9,1.9,1,.5,1.7,0,2,.2.3.1.3.6.2.9-.5,1-2.7.9-3.8.3-2.4-1.1-2.8-3.4-2-5.1.9-2,3.3-2.7,5.3-1.8,2.2,1,2.4,3.2,1.9,4.2-.4.9-.9.8-1.3.6l-2.8-1.3ZM73.2,14.6c.2-.5.1-1-.4-1.2-.4-.2-1,0-1.2.5-.2.5.3.6.6.7.4.2.7.4,1,0Z"/></g></g>
+    <g class="st4"><g class="st4"><path class="st5" d="M80.8,24.4c-1.8,1-3.7,1.9-5.5.4-.8-.7-1.4-1.9-.6-2.8.5-.6,1.3-.7,1.8-.2,1,.9-.2,1.8.2,2.2.3.2.7,0,.9-.2.3-.3.4-.9.5-1.3l1.1-4.5c.2-.6-.6-1-.2-1.5.3-.3.9-.7,3.2,1.3.4.4,1.4,1.2.9,1.9-.2.3-.6.2-.8.4-.4.4-.5,1.6-.3,1.8.3.3,1.2-.3,1.4-.6.4-.5,0-.8.3-1.1.5-.6,1.6.2,2,.5.4.3,1.1,1,.7,1.6-.5.7-1-.2-1.9.1-.6.2-1.2.5-1.7.8l-2.2,1.3Z"/></g></g>
+    <g class="st4"><g class="st4"><path class="st5" d="M16.8,61c.2,1.7.5,1.9.5,2.1,0,.7-1.1,1.2-1.6,1.2-.4,0-.9,0-1-.5-.1-1,1.1-.3.9-2.7-.2-1.4-.4-1.2-1.8-1-.7,0-.7.1-.6.9.1.9,1.4,0,1.5,1,0,.7-1.3.9-1.8,1-.5,0-2,.2-2.1-.6,0-.8,1.3-.2,1.1-1.4,0-.5-.5-.5-.9-.4-1.8.2-1.7.3-1.5,1.6.3,2.5,1.9,1.6,2.1,2.6,0,.4-.4.6-.7.7-.8.1-2.4-.4-2.5-.9,0,0,0-.3,0-.6,0-.3,0-.6,0-1.1l-.6-5.1c0-.8.3-.9.4-.9.7,0,.2.8,1.5.8,2.2-.1,2,0,4.2-.5,1.9-.3.8-1.1,1.6-1.2.7,0,.7,1,.8,1.5l.4,3.6Z"/></g></g>
+    <g class="st4"><g class="st4"><path class="st5" d="M12.3,69.7c-.2,0-.6.2-.8.3-.4.3,0,.7-.5.9-.8.2-1.2-1.2-1.3-1.8-.2-.5-.7-2.2,0-2.5.4-.1.4.4.9.4.5,0,2-.4,2.6-.6.5-.1,1.3-.4,1.8-.7.8-.4.3-1.1,1-1.3,1-.3,2.2,2.7,2.3,2.9.1.4-.1.6-.5.7-.3,0-1.6.3-3.3.8l-2.3.7Z"/></g></g>
+    <g class="st4"><g class="st4"><path class="st5" d="M97.5,56.5c.2,0,.6,0,.8,0,.4-.1.3-.7.8-.7.8,0,.7,1.6.7,2.1,0,.6,0,2.3-.9,2.3-.4,0-.2-.6-.7-.7-.5-.2-2-.3-2.6-.3-.5,0-1.4,0-2,0-.9.1-.6.9-1.3.9-1.1,0-1.2-3.3-1.2-3.5,0-.4.3-.5.7-.5.3,0,1.6.2,3.4.3h2.4Z"/></g></g>
+  </g>
+  <!-- Read-a-thon text -->
+  <g class="st4">
+    <g class="st4">
+      <path class="st1" d="M119.1,45.6c0-10-4.9-5.9-4.9-9.8s5-4,7.6-4,2.6.1,4,.2c1.3.1,2.6.3,3.9.3,2.1,0,4.1-.1,6.2-.3,2.1,0,4.2-.2,6.2-.2,7.3,0,15.7,3.2,15.7,11.8s-1.9,7.6-5.5,9.3c-.6.3-1,.5-1,1.3s.8,1.2,1.6,1.5c4.5,1.7,6.5,4.6,7.4,11.6.8,6,5,2.4,5,6.3s-3,5-10.2,5c-10.3,0-11.6-5.9-13.6-14.4-.7-3-1.8-5.9-5.3-5.9s-1.9.2-1.9,4.2.1,4.4.5,6.2c.5,3,3.8,2.1,3.8,5.1s-1.6,4.1-12,4.1-12.2,0-12.2-4.7,4.8-1,4.8-9.4v-18.3ZM134,48.4c-.1,1.7-.5,3.1,1.7,3.1,4.2,0,5.5-2.3,5.5-6.3s-.8-6.4-4.5-6.4-2.3,1.5-2.4,3.5l-.3,6.1Z"/>
+      <path class="st1" d="M182.8,62.5c-.7,0-1.7-.2-1.7.9,0,3.2,4.2,5.9,7.2,5.9,4.8,0,7.2-2.9,8.6-2.9s2.5,2,2.5,3.2c0,5-9.1,8.6-14.9,8.6-11.6,0-17.6-8.4-17.6-16.7s8.4-17.1,18.1-17.1,15.8,8.4,15.8,13.3-1.9,4.8-4,4.8h-14ZM188.4,54.4c0-2.3-1.4-4.1-3.8-4.1s-3.9,2.2-3.9,4.2,2.2,1.8,3.9,1.8,3.8.4,3.8-1.9Z"/>
+      <path class="st1" d="M235.2,61.9c0,11.3,3.9,5.1,3.9,8.6s-5,7.7-9.7,7.7-5.2-3.3-6.8-3.3-1.6.8-3,1.6c-1.4.8-3.3,1.7-6.3,1.7-5.3,0-10.7-2.8-10.7-9.2s4.4-10.2,15.7-10.2,2.9.1,2.9-2.2,0-6.6-3-6.6-4.2,7-10,7-3.6-1.5-3.6-3.5c0-5.5,10.9-9,17-9s13.7,1.4,13.7,11.1v6.4ZM215.9,67.6c0,1.7.9,3.5,2.8,3.5s2.6-2.6,2.6-4.6,0-3-1.7-3-3.7,2.1-3.7,4.1Z"/>
+      <path class="st1" d="M279.9,66.4c0,4.5,3.4,3,3.4,6.4,0,4.9-14.1,5.2-14.8,5.2-3.3,0-1-3.5-3.1-3.5s-1.5.9-3,1.9c-1.5.9-3.5,1.9-6.3,1.9-8.4,0-15-8.9-15-16.9s6.9-16.9,15.8-16.9,6.9,1.9,7.7,1.9,1-2.1,1-2.8c0-4-4.7-1.9-4.7-5.3s16.4-6,16.6-6c1.9,0,2.4,1.4,2.4,3.5v30.8ZM261.9,51.4c-4.3,0-5.1,7.4-5.1,10.4s.8,8.3,4.8,8.3,4.1-7.9,4.1-10.7,0-8-3.7-8Z"/>
+      <path class="st1" d="M297.1,66.5c-1.5,0-3.2-.5-4.7-.5-5.6,0-6,.3-6.6.3-1,0-1.9-.8-1.9-1.9s2-6.8,2.6-8c.8-1.6,1.6-2.3,3.5-2.3s3.2.5,4.7.5c5.6,0,6-.3,6.6-.3,1,0,1.9.8,1.9,1.9s-2,6.8-2.6,8c-.8,1.6-1.6,2.3-3.5,2.3Z"/>
+      <path class="st1" d="M336.8,61.9c0,11.3,3.9,5.1,3.9,8.6s-5,7.7-9.7,7.7-5.2-3.3-6.8-3.3-1.6.8-3,1.6c-1.4.8-3.3,1.7-6.3,1.7-5.3,0-10.7-2.8-10.7-9.2s4.4-10.2,15.7-10.2,2.9.1,2.9-2.2,0-6.6-3-6.6-4.2,7-10,7-3.6-1.5-3.6-3.5c0-5.5,10.9-9,17-9s13.7,1.4,13.7,11.1v6.4ZM317.5,67.6c0,1.7.9,3.5,2.8,3.5s2.6-2.6,2.6-4.6,0-3-1.7-3-3.7,2.1-3.7,4.1Z"/>
+      <path class="st1" d="M354.7,66.5c-1.5,0-3.2-.5-4.7-.5-5.6,0-6,.3-6.6.3-1,0-1.9-.8-1.9-1.9s2-6.8,2.6-8c.8-1.6,1.6-2.3,3.5-2.3s3.2.5,4.7.5c5.6,0,6-.3,6.6-.3,1,0,1.9.8,1.9,1.9s-2,6.8-2.6,8c-.8,1.6-1.6,2.3-3.5,2.3Z"/>
+      <path class="st1" d="M381.6,63.4c0,4.3,1.8,5.3,3.5,5.3s3.2-1.5,4.3-1.5,2.2,1.8,2.2,3c0,4.2-7.3,8-13.8,8s-11.5-1.4-11.5-11.6v-13.3c0-1.2,0-1.6-.3-1.8-.3-.2-1,0-2.5,0s-2.5,0-2.8-.3-.3-1.1-.3-2.6-.2-1.6.6-2.1l14.7-9.3c1.5-.9,1.4-.7,3.3-.7s2.7-.3,2.7,2.7-.1,4,.2,4.8c.2.5.6.5,2.3.5h4.5c2.8,0,2.8.2,2.8,3.1s-.5,3.9-3,3.9h-4.4c-2.3,0-2.4,0-2.4,2.4v9.6Z"/>
+      <path class="st1" d="M434.2,67.7c0,5.5,3.2,4.1,3.2,6.6,0,3.7-8.2,3.7-10.6,3.7s-9.8,0-9.8-3.3,1.8-1.8,2.3-5.1c.4-2.1.5-4.3.5-6.4,0-3.2,0-9.3-4.6-9.3s-3.8,3.3-3.8,6.2v7.5c0,5.3,2.6,4.2,2.6,6.6,0,3.7-7.3,3.8-9.8,3.8-9.2,0-11.3-1.9-11.3-3.9s2.5-1.4,3.6-5.6c.8-3,.8-11.5.8-15.1s-.2-5.9-.3-8.8c-.1-4.6-4-3-4-6,0-5.1,16.7-6.5,16.8-6.5,1.9,0,2.1.6,2.1,2.4l-.4,12.2c0,1.2-.1,3.3,1.5,3.3s2.8-5.7,10-5.7c11.8,0,11,11.1,11.1,12.9l.3,10.4Z"/>
+      <path class="st1" d="M439.1,62.4c0-11.5,10.1-18,20.7-18s17.7,8.8,17.7,16.8-11.3,17-20.8,17-17.6-5.6-17.6-15.8ZM457.1,52c-2.1,0-3.3,2-3.2,3.9.3,4.1,1.4,14,5.9,14.2,2.4.1,3-1.9,3-4s-1.3-14.1-5.7-14.1Z"/>
+      <path class="st1" d="M497.9,66.6c0,6.2,2.2,5.1,2.2,7.6,0,4-8.6,3.9-11.2,3.9s-9.1,0-9.1-3.9,3-.3,3.2-6.6l.3-9.7c.1-4.8-3.8-3.2-3.8-6.6s14.8-6.6,16.1-6.6,2.3,1.2,2.3,2.5,0,.8,0,1.2c0,.8.3,1.7,1.3,1.7s1.6-1.4,2.9-2.7c1.3-1.3,3.2-2.6,6.9-2.6,13.3,0,11.1,13.1,11.7,22.8.3,5.1,3,3.9,3,6.7s.3,3.9-11.8,3.9-8.5.1-8.5-3.5,2.1-1.2,2.4-5.4c.3-4.6,2.1-14.9-3.9-14.9s-3.7,4.4-3.7,7.3v5Z"/>
+    </g>
+  </g>
+  <!-- Date text as rasterized image -->
+  <image x="${imgX}" y="${imgY}" width="${imgWidth}" height="${imgHeight}" href="${dateImageDataUrl}" />
+</svg>`;
+  }, [calculateTextX, renderDateTextToImage, dateText]);
 
   // Download SVG
   const handleDownloadSvg = useCallback(() => {
-    const svgString = generateSvgString(false);
+    const svgString = generateSvgStringWithText(true);
     const blob = new Blob([svgString], { type: 'image/svg+xml' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'readathon-logo.svg';
+    a.download = `readathon-logo-${dateText.replace(/\s+/g, '-').toLowerCase()}.svg`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-  }, [generateSvgString]);
+  }, [generateSvgStringWithText, dateText]);
 
   // Download PNG
   const handleDownloadPng = useCallback(async () => {
     setIsExporting(true);
+    
     try {
-      const svgString = generateSvgString(true);
-      const svgBlob = new Blob([svgString], { type: 'image/svg+xml' });
-      const url = URL.createObjectURL(svgBlob);
+      const svgString = generateSvgStringWithText(true);
+      const blob = new Blob([svgString], { type: 'image/svg+xml' });
+      const url = URL.createObjectURL(blob);
       
       const img = new window.Image();
       img.onload = () => {
-        // Create canvas at 2x resolution for crisp export
         const canvas = document.createElement('canvas');
-        const scale = 2;
+        const scale = 2; // 2x resolution for crisp output
         canvas.width = 666 * scale;
         canvas.height = 164.4 * scale;
         
@@ -333,12 +483,12 @@ export function LogoGenerator() {
           ctx.scale(scale, scale);
           ctx.drawImage(img, 0, 0, 666, 164.4);
           
-          canvas.toBlob((blob) => {
-            if (blob) {
-              const pngUrl = URL.createObjectURL(blob);
+          canvas.toBlob((pngBlob) => {
+            if (pngBlob) {
+              const pngUrl = URL.createObjectURL(pngBlob);
               const a = document.createElement('a');
               a.href = pngUrl;
-              a.download = 'readathon-logo.png';
+              a.download = `readathon-logo-${dateText.replace(/\s+/g, '-').toLowerCase()}.png`;
               document.body.appendChild(a);
               a.click();
               document.body.removeChild(a);
@@ -346,7 +496,10 @@ export function LogoGenerator() {
             }
             setIsExporting(false);
           }, 'image/png');
+        } else {
+          setIsExporting(false);
         }
+        
         URL.revokeObjectURL(url);
       };
       
@@ -360,68 +513,28 @@ export function LogoGenerator() {
       console.error("PNG export failed:", error);
       setIsExporting(false);
     }
-  }, [generateSvgString]);
+  }, [generateSvgStringWithText, dateText]);
 
-  // Apply logo to site (upload to storage and update event)
+  // Apply logo to site (upload SVG with rasterized text and update event)
   const handleApplyToSite = useCallback(async () => {
     if (!activeEvent) return;
     
     setIsApplying(true);
     try {
       const version = Date.now();
+      const textX = calculateTextX();
 
-      // Generate SVG (then rasterize to PNG for maximum compatibility in <img> tags)
-      const svgString = generateSvgString(true);
+      // Generate SVG with rasterized text for consistent rendering
+      const svgString = await generateSvgWithRasterizedText();
       const svgBlob = new Blob([svgString], { type: 'image/svg+xml' });
-
-      const pngBlob = await new Promise<Blob>((resolve, reject) => {
-        const url = URL.createObjectURL(svgBlob);
-        const img = new window.Image();
-        img.onload = () => {
-          try {
-            const canvas = document.createElement('canvas');
-            const scale = 2;
-            canvas.width = 666 * scale;
-            canvas.height = 164.4 * scale;
-
-            const ctx = canvas.getContext('2d');
-            if (!ctx) {
-              URL.revokeObjectURL(url);
-              reject(new Error('Canvas not supported'));
-              return;
-            }
-
-            ctx.scale(scale, scale);
-            ctx.drawImage(img, 0, 0, 666, 164.4);
-
-            canvas.toBlob((blob) => {
-              URL.revokeObjectURL(url);
-              if (!blob) {
-                reject(new Error('Failed to create PNG'));
-                return;
-              }
-              resolve(blob);
-            }, 'image/png');
-          } catch (e) {
-            URL.revokeObjectURL(url);
-            reject(e instanceof Error ? e : new Error(String(e)));
-          }
-        };
-        img.onerror = () => {
-          URL.revokeObjectURL(url);
-          reject(new Error('Failed to render SVG for PNG'));
-        };
-        img.src = url;
-      });
-
-      // Upload to storage
-      // IMPORTANT: use a unique filename per apply to avoid CDN/browser caching of the same path.
-      const fileName = `logo-${activeEvent.id}-${version}.png`;
+      
+      // Upload to storage with unique filename
+      const fileName = `logo-${activeEvent.id}-${version}.svg`;
       const { error: uploadError } = await supabase.storage
         .from('event-logos')
-        .upload(fileName, pngBlob, {
+        .upload(fileName, svgBlob, {
           upsert: false,
-          contentType: 'image/png',
+          contentType: 'image/svg+xml',
           cacheControl: '0',
         });
       
@@ -433,27 +546,31 @@ export function LogoGenerator() {
         .getPublicUrl(fileName);
       
       const publicUrl = urlData.publicUrl;
-      // Extra cache-busting (some CDNs ignore query strings, but harmless if respected)
       const logoUrl = `${publicUrl}?v=${version}`;
       
-      // Update event with logo URL
+      // Update event with logo URL and xOffset
       const { data: updatedEvent, error: updateError } = await supabase
         .from('events')
-        .update({ logo_url: logoUrl })
+        .update({ 
+          logo_url: logoUrl,
+          logo_date_x_offset: textX
+        })
         .eq('id', activeEvent.id)
-        .select('logo_url')
+        .select('logo_url, logo_date_x_offset')
         .single();
       
       if (updateError) throw updateError;
 
-      // Update cache immediately, then refetch to ensure all listeners refresh.
+      // Update cache immediately
       queryClient.setQueryData(['active-event'], (prev: any) => {
         if (!prev) return prev;
-        return { ...prev, logo_url: updatedEvent?.logo_url ?? logoUrl };
+        return { 
+          ...prev, 
+          logo_url: updatedEvent?.logo_url ?? logoUrl,
+          logo_date_x_offset: textX
+        };
       });
       
-      // Invalidate queries to refresh logo everywhere
-      // Use await to ensure the cache is invalidated before showing success
       await queryClient.invalidateQueries({ queryKey: ['active-event'] });
       await queryClient.invalidateQueries({ queryKey: ['event-settings'] });
       await queryClient.refetchQueries({ queryKey: ['active-event'] });
@@ -466,7 +583,7 @@ export function LogoGenerator() {
     } finally {
       setIsApplying(false);
     }
-  }, [activeEvent, generateSvgString, queryClient]);
+  }, [activeEvent, generateSvgWithRasterizedText, calculateTextX, queryClient]);
 
   if (eventLoading) {
     return (

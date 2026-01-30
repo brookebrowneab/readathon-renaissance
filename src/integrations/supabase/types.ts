@@ -397,6 +397,7 @@ export type Database = {
           id: string
           is_active: boolean
           last_log_date: string
+          logo_date_x_offset: number | null
           logo_url: string | null
           name: string
           payment_address: string
@@ -420,6 +421,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           last_log_date: string
+          logo_date_x_offset?: number | null
           logo_url?: string | null
           name: string
           payment_address?: string
@@ -443,6 +445,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           last_log_date?: string
+          logo_date_x_offset?: number | null
           logo_url?: string | null
           name?: string
           payment_address?: string
