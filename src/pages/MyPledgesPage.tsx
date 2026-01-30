@@ -266,7 +266,7 @@ const MyPledgesPage = () => {
               ) : (
                 <>
                   <p className="text-muted-foreground mb-6">
-                    Sponsor a student's reading journey. Enter the parent's email to request their approval.
+                    Sponsor a student or invite others to support reading. The parent will approve all sponsorship requests.
                   </p>
                   <Button asChild>
                     <Link to="/sponsor">Sponsor a Student</Link>
