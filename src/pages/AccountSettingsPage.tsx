@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { toast } from "@/components/ui/sonner";
 import { User, Mail, Lock, Save, Heart, Trash2, AlertTriangle } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useTeacherAuth } from "@/hooks/useTeacherAuth";
 import { supabase } from "@/integrations/supabase/client";
 import {
   AlertDialog,
@@ -23,6 +24,7 @@ import {
 
 const AccountSettingsPage = () => {
   const { user, signOut } = useAuth();
+  const { isTeacher } = useTeacherAuth();
   const navigate = useNavigate();
   
   const [displayName, setDisplayName] = useState(
@@ -144,26 +146,28 @@ const AccountSettingsPage = () => {
           </div>
 
           <div className="space-y-6">
-            {/* Quick Links */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <Heart className="h-5 w-5 text-primary" />
-                  <CardTitle className="text-lg">My Pledges</CardTitle>
-                </div>
-                <CardDescription>
-                  View and manage all your pledges
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button asChild variant="outline">
-                  <Link to="/my-pledges">
-                    <Heart className="h-4 w-4 mr-2" />
-                    View My Pledges
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
+            {/* Quick Links - Only show for non-teachers */}
+            {!isTeacher && (
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <Heart className="h-5 w-5 text-primary" />
+                    <CardTitle className="text-lg">My Pledges</CardTitle>
+                  </div>
+                  <CardDescription>
+                    View and manage all your pledges
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button asChild variant="outline">
+                    <Link to="/my-pledges">
+                      <Heart className="h-4 w-4 mr-2" />
+                      View My Pledges
+                    </Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Profile Section */}
             <Card>
@@ -254,69 +258,71 @@ const AccountSettingsPage = () => {
               </CardContent>
             </Card>
 
-            {/* Danger Zone */}
-            <Card className="border-destructive/50">
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <AlertTriangle className="h-5 w-5 text-destructive" />
-                  <CardTitle className="text-lg text-destructive">Danger Zone</CardTitle>
-                </div>
-                <CardDescription>
-                  Permanently delete your account and all associated data
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="destructive">
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Delete Account
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                      <AlertDialogDescription className="space-y-3">
-                        <p>
-                          This action cannot be undone. This will permanently delete your account
-                          and remove all your data including:
-                        </p>
-                        <ul className="list-disc list-inside text-sm space-y-1">
-                          <li>All your children's profiles and reading logs</li>
-                          <li>All pledges you've made</li>
-                          <li>Your sponsor profile (if applicable)</li>
-                          <li>All associated data</li>
-                        </ul>
-                        <div className="pt-2">
-                          <Label htmlFor="deleteConfirm" className="text-foreground">
-                            Type <span className="font-mono font-bold">DELETE</span> to confirm:
-                          </Label>
-                          <Input
-                            id="deleteConfirm"
-                            value={deleteConfirmation}
-                            onChange={(e) => setDeleteConfirmation(e.target.value)}
-                            placeholder="DELETE"
-                            className="mt-2"
-                          />
-                        </div>
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel onClick={() => setDeleteConfirmation("")}>
-                        Cancel
-                      </AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={handleDeleteAccount}
-                        disabled={deleteConfirmation !== "DELETE" || isDeleting}
-                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                      >
-                        {isDeleting ? "Deleting..." : "Delete Account"}
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </CardContent>
-            </Card>
+            {/* Danger Zone - Only show for non-teachers */}
+            {!isTeacher && (
+              <Card className="border-destructive/50">
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="h-5 w-5 text-destructive" />
+                    <CardTitle className="text-lg text-destructive">Danger Zone</CardTitle>
+                  </div>
+                  <CardDescription>
+                    Permanently delete your account and all associated data
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive">
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete Account
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogDescription className="space-y-3">
+                          <p>
+                            This action cannot be undone. This will permanently delete your account
+                            and remove all your data including:
+                          </p>
+                          <ul className="list-disc list-inside text-sm space-y-1">
+                            <li>All your children's profiles and reading logs</li>
+                            <li>All pledges you've made</li>
+                            <li>Your sponsor profile (if applicable)</li>
+                            <li>All associated data</li>
+                          </ul>
+                          <div className="pt-2">
+                            <Label htmlFor="deleteConfirm" className="text-foreground">
+                              Type <span className="font-mono font-bold">DELETE</span> to confirm:
+                            </Label>
+                            <Input
+                              id="deleteConfirm"
+                              value={deleteConfirmation}
+                              onChange={(e) => setDeleteConfirmation(e.target.value)}
+                              placeholder="DELETE"
+                              className="mt-2"
+                            />
+                          </div>
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel onClick={() => setDeleteConfirmation("")}>
+                          Cancel
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={handleDeleteAccount}
+                          disabled={deleteConfirmation !== "DELETE" || isDeleting}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          {isDeleting ? "Deleting..." : "Delete Account"}
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
       </main>

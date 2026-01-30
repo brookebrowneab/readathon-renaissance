@@ -8,6 +8,7 @@ import { UserRole } from "./BottomTabBar";
 import logo from "@/assets/logo.svg";
 import { useAuth } from "@/hooks/useAuth";
 import { useChildren } from "@/hooks/useChildren";
+import { useTeacherAuth } from "@/hooks/useTeacherAuth";
 import {
   Popover,
   PopoverContent,
@@ -47,6 +48,7 @@ const MainNav = () => {
   const navigate = useNavigate();
   const { user, isAdmin, signOut } = useAuth();
   const { children } = useChildren();
+  const { isTeacher } = useTeacherAuth();
 
   const desktopNavItemClass =
     "inline-flex items-start text-xs font-semibold tracking-widest text-muted-foreground transition-colors hover:text-foreground hover:underline py-2 px-0 m-0 leading-none";
@@ -55,12 +57,12 @@ const MainNav = () => {
   const isAuthenticated = !!user;
   // Determine if user is a parent (has children) vs sponsor-only
   const isParent = children.length > 0;
-  const userRole: UserRole = isAdmin ? "parent" : (isParent ? "parent" : (isAuthenticated ? "sponsor" : null));
+  const userRole: UserRole = isTeacher ? "teacher" : (isAdmin ? "parent" : (isParent ? "parent" : (isAuthenticated ? "sponsor" : null)));
   const userName = user?.user_metadata?.display_name || user?.email?.split('@')[0] || "User";
   const userEmail = user?.email || "";
 
-  // Only show parent-specific notifications for parents, not sponsor-only users
-  const totalNotifications = isParent 
+  // Only show parent-specific notifications for parents, not teachers or sponsor-only users
+  const totalNotifications = (isParent && !isTeacher)
     ? mockNotifications.pendingLogApprovals.length + (mockNotifications.pendingSponsorRequests > 0 ? 1 : 0)
     : 0;
 
