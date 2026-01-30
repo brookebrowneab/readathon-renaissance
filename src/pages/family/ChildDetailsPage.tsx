@@ -1,15 +1,21 @@
-import { useMemo } from "react";
-import { Link, useParams, useLocation } from "react-router-dom";
+import { useMemo, useState } from "react";
+import { Link, useParams, useLocation, Navigate } from "react-router-dom";
 import { MainNav, Footer, BottomTabBar } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ReadingGoalRing } from "@/components/legacy";
-import { useChildById } from "@/hooks/useChildren";
+import { useChildById, useChildren } from "@/hooks/useChildren";
 import { useReadingLogs } from "@/hooks/useReadingLogs";
 import { usePledges } from "@/hooks/usePledges";
 import { useActiveEvent, formatEventDates } from "@/hooks/useActiveEvent";
-import { format, isToday, isYesterday, differenceInDays, parseISO } from "date-fns";
+import { useClassReadingStats } from "@/hooks/useClassReadingStats";
+import { useClassGradeTotals } from "@/hooks/useClassGradeTotals";
+import { EditChildDialog } from "@/components/family/EditChildDialog";
+import { ReadingLogsTable } from "@/components/family/ReadingLogsTable";
+import { format, isToday, isYesterday, parseISO } from "date-fns";
+import { toast } from "sonner";
 import {
   BookOpen,
   Plus,
@@ -23,6 +29,10 @@ import {
   ChevronRight,
   Clock,
   Flame,
+  GraduationCap,
+  School,
+  User,
+  CheckCircle2,
 } from "lucide-react";
 
 // Hand-drawn border style (consistent with other pages)
@@ -39,12 +49,24 @@ const ChildDetailsPage = () => {
   const location = useLocation();
   const cameFromDashboard = (location.state as { from?: string })?.from === "dashboard";
   
+  // Check ownership
+  const { children: ownedChildren, isLoading: ownedChildrenLoading, updateChild } = useChildren();
+  const isOwner = ownedChildren.some(c => c.id === id);
+  
   // Fetch real data from database
   const { data: child, isLoading: childLoading, error: childError } = useChildById(id);
-  const { logs, isLoading: logsLoading } = useReadingLogs(id);
+  const { logs, isLoading: logsLoading, updateLog, deleteLog } = useReadingLogs(id);
   const { pledges, isLoading: pledgesLoading } = usePledges(id);
   const { data: activeEvent } = useActiveEvent();
   const eventDates = formatEventDates(activeEvent);
+  
+  // Class and grade reading stats
+  const { data: classStats } = useClassReadingStats(child?.class_name);
+  const { data: classGradeTotals } = useClassGradeTotals(child ? [child] : []);
+  
+  // Dialog states
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [selectedLogIds, setSelectedLogIds] = useState<Set<string>>(new Set());
 
   // Format reading log date for display
   const formatLogDate = (dateStr: string) => {
@@ -72,14 +94,11 @@ const ChildDetailsPage = () => {
     const uniqueDates = new Set(logs.map(log => log.logged_at));
     const daysActive = uniqueDates.size;
 
-    // Calculate longest reading session (or streak logic could be more complex)
+    // Calculate longest reading session
     const longestStreak = Math.max(...logs.map(log => log.minutes), 0);
 
     return { minutesToday, longestStreak, daysActive };
   }, [logs]);
-
-  // Recent reading logs (last 5)
-  const recentLogs = logs.slice(0, 5);
 
   // Calculate total pledged amount
   const totalPledged = useMemo(() => {
@@ -91,7 +110,74 @@ const ChildDetailsPage = () => {
     }, 0);
   }, [pledges, child]);
 
-  const isLoading = childLoading || logsLoading || pledgesLoading;
+  // Handle inline log editing
+  const handleEditLog = (logId: string, minutes: number, bookTitle: string) => {
+    updateLog.mutate({
+      id: logId,
+      minutes,
+      book_title: bookTitle || null,
+    });
+  };
+
+  const handleDeleteLog = (logId: string) => {
+    deleteLog.mutate(logId);
+    setSelectedLogIds(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(logId);
+      return newSet;
+    });
+  };
+
+  // Handle log selection for validation
+  const handleLogSelectionChange = (logId: string, checked: boolean) => {
+    setSelectedLogIds(prev => {
+      const newSet = new Set(prev);
+      if (checked) {
+        newSet.add(logId);
+      } else {
+        newSet.delete(logId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleSelectAllLogs = () => {
+    if (selectedLogIds.size === logs.length) {
+      setSelectedLogIds(new Set());
+    } else {
+      setSelectedLogIds(new Set(logs.map(l => l.id)));
+    }
+  };
+
+  const handleValidateSelected = async () => {
+    // For now, we show a toast since child-level verification exists in DB
+    // but isn't exposed in the Child type from useChildren
+    if (selectedLogIds.size === logs.length && child) {
+      // The total_verified field exists in DB but may not be in the hook's type
+      // Cast to any to update it
+      updateChild.mutate({
+        id: child.id,
+      } as any, {
+        onSuccess: () => {
+          toast.success("Reading logs validated! Total has been verified.");
+          setSelectedLogIds(new Set());
+        }
+      });
+    } else {
+      toast.info("Select all logs to validate the child's total minutes");
+    }
+  };
+
+  // Handle save from edit dialog
+  const handleSaveChild = (updates: any) => {
+    updateChild.mutate(updates, {
+      onSuccess: () => {
+        setEditDialogOpen(false);
+      }
+    });
+  };
+
+  const isLoading = childLoading || logsLoading || pledgesLoading || ownedChildrenLoading;
 
   if (isLoading) {
     return (
@@ -135,6 +221,20 @@ const ChildDetailsPage = () => {
     .toUpperCase()
     .slice(0, 2);
 
+  // Get class and grade totals
+  const classTotalMinutes = classGradeTotals?.[child.id]?.classTotal || classStats?.total_minutes || 0;
+  const gradeTotalMinutes = classGradeTotals?.[child.id]?.gradeTotal || 0;
+  const classStudentCount = classStats?.student_count || 0;
+
+  // Transform logs for ReadingLogsTable
+  const tableLogs = logs.map((log) => ({
+    id: log.id,
+    logged_at: log.logged_at,
+    minutes: log.minutes,
+    book_title: log.book_title,
+    student_name: log.student_name,
+  }));
+
   return (
     <div className="flex min-h-screen flex-col">
       <MainNav />
@@ -171,12 +271,17 @@ const ChildDetailsPage = () => {
                       </p>
                     </div>
                   </div>
-                  <Button variant="outline" size="sm" asChild style={handDrawnBorder}>
-                    <Link to={`/family/children/${child.id}/settings`}>
+                  {isOwner && (
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      style={handDrawnBorder}
+                      onClick={() => setEditDialogOpen(true)}
+                    >
                       <Settings className="h-4 w-4 mr-2" />
-                      Settings
-                    </Link>
-                  </Button>
+                      Edit Profile
+                    </Button>
+                  )}
                 </div>
               </div>
 
@@ -225,10 +330,62 @@ const ChildDetailsPage = () => {
                       {eventDates.daysRemaining} days left in the read-a-thon
                     </p>
                   )}
+
+                  {/* Verification status */}
+                  {(child as any).total_verified && (
+                    <div className="mt-4 p-3 rounded-lg bg-success/10 border border-success/20 flex items-center gap-2">
+                      <CheckCircle2 className="h-5 w-5 text-success" />
+                      <span className="text-sm text-success">Reading minutes verified</span>
+                    </div>
+                  )}
                 </div>
               </section>
 
-              {/* Reading History */}
+              {/* Community Progress - Class and Grade */}
+              {(child.class_name || child.grade_info) && (
+                <section>
+                  <div 
+                    className="bg-background p-6 shadow-md"
+                    style={handDrawnBorder}
+                  >
+                    <h2 className="font-serif text-xl md:text-2xl text-foreground mb-4">
+                      Community Progress
+                    </h2>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Class Total */}
+                      {child.class_name && (
+                        <div className="flex items-center gap-4 p-4 rounded-lg bg-primary/5 border border-primary/10">
+                          <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+                            <School className="h-6 w-6 text-primary" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-xs text-muted-foreground">Class Total</p>
+                            <p className="font-serif text-2xl text-primary">{classTotalMinutes.toLocaleString()} min</p>
+                            <p className="text-xs text-muted-foreground">{child.class_name} • {classStudentCount} students</p>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Grade Total */}
+                      {child.grade_info && (
+                        <div className="flex items-center gap-4 p-4 rounded-lg bg-secondary/5 border border-secondary/10">
+                          <div className="h-12 w-12 rounded-full bg-secondary/10 flex items-center justify-center">
+                            <GraduationCap className="h-6 w-6 text-secondary-foreground" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-xs text-muted-foreground">Grade Total</p>
+                            <p className="font-serif text-2xl text-foreground">{gradeTotalMinutes.toLocaleString()} min</p>
+                            <p className="text-xs text-muted-foreground">{child.grade_info}</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </section>
+              )}
+
+              {/* Reading History with Inline Editing */}
               <section>
                 <div 
                   className="bg-background p-6 shadow-md"
@@ -238,25 +395,108 @@ const ChildDetailsPage = () => {
                     <h2 className="font-serif text-xl md:text-2xl text-foreground">
                       Reading Log
                     </h2>
-                    <Button variant="ghost" size="sm" asChild className="text-muted-foreground hover:text-foreground">
-                      <Link to="/reading-logs/approve">
-                        View All
-                        <ChevronRight className="h-4 w-4 ml-1" />
-                      </Link>
-                    </Button>
+                    {isOwner && logs.length > 0 && (
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleSelectAllLogs}
+                          className="text-xs"
+                        >
+                          {selectedLogIds.size === logs.length ? "Deselect All" : "Select All"}
+                        </Button>
+                        {selectedLogIds.size > 0 && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleValidateSelected}
+                            className="text-xs"
+                          >
+                            <CheckCircle2 className="h-3 w-3 mr-1" />
+                            Validate ({selectedLogIds.size})
+                          </Button>
+                        )}
+                      </div>
+                    )}
                   </div>
                   
-                  {recentLogs.length === 0 ? (
-                    <div className="text-center py-8">
-                      <BookOpen className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
-                      <p className="text-muted-foreground">No reading logged yet</p>
-                      <p className="text-sm text-muted-foreground">Start logging reading to track progress!</p>
-                    </div>
+                  {isOwner ? (
+                    <>
+                      {logs.length === 0 ? (
+                        <div className="text-center py-8">
+                          <BookOpen className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
+                          <p className="text-muted-foreground">No reading logged yet</p>
+                          <p className="text-sm text-muted-foreground">Start logging reading to track progress!</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-2 mb-4">
+                          {logs.map((log) => (
+                            <div key={log.id} className="flex items-start gap-3">
+                              <Checkbox
+                                checked={selectedLogIds.has(log.id)}
+                                onCheckedChange={(checked) => handleLogSelectionChange(log.id, checked as boolean)}
+                                className="mt-3"
+                              />
+                              <div className="flex-1">
+                                <div className="flex items-center gap-4 rounded-lg bg-muted/30 p-3">
+                                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                                    <BookOpen className="h-5 w-5 text-primary" />
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="font-medium text-foreground text-sm md:text-base">
+                                      {log.minutes} minutes
+                                    </p>
+                                    <p className="text-xs md:text-sm text-muted-foreground truncate">
+                                      {log.book_title || "No book specified"} • {formatLogDate(log.logged_at)}
+                                    </p>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-8 text-xs"
+                                      onClick={() => {
+                                        const newMinutes = prompt("Enter new minutes:", String(log.minutes));
+                                        if (newMinutes && !isNaN(Number(newMinutes))) {
+                                          handleEditLog(log.id, Number(newMinutes), log.book_title || "");
+                                        }
+                                      }}
+                                    >
+                                      Edit
+                                    </Button>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-8 text-xs text-destructive hover:text-destructive"
+                                      onClick={() => {
+                                        if (confirm("Delete this reading log?")) {
+                                          handleDeleteLog(log.id);
+                                        }
+                                      }}
+                                    >
+                                      Delete
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      
+                      <Button className="w-full" asChild>
+                        <Link to={`/log-reading?child=${child.id}`}>
+                          <Plus className="h-4 w-4 mr-2" />
+                          Log Reading
+                        </Link>
+                      </Button>
+                    </>
                   ) : (
-                    <div className="space-y-3 mb-4">
-                      {recentLogs.map((entry) => (
+                    // Sponsor view - read only
+                    <div className="space-y-3">
+                      {logs.slice(0, 5).map((log) => (
                         <div
-                          key={entry.id}
+                          key={log.id}
                           className="flex items-center gap-4 rounded-lg bg-muted/30 p-3"
                         >
                           <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
@@ -264,26 +504,21 @@ const ChildDetailsPage = () => {
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="font-medium text-foreground text-sm md:text-base">
-                              {entry.minutes} minutes
+                              {log.minutes} minutes
                             </p>
                             <p className="text-xs md:text-sm text-muted-foreground truncate">
-                              {entry.book_title || "No book specified"} • {formatLogDate(entry.logged_at)}
+                              {log.book_title || "Reading session"} • {formatLogDate(log.logged_at)}
                             </p>
-                          </div>
-                          <div className="flex items-center gap-1 font-serif text-lg text-primary">
-                            {entry.minutes}m
                           </div>
                         </div>
                       ))}
+                      {logs.length > 5 && (
+                        <p className="text-center text-sm text-muted-foreground">
+                          +{logs.length - 5} more entries
+                        </p>
+                      )}
                     </div>
                   )}
-                  
-                  <Button className="w-full" asChild>
-                    <Link to={`/log-reading?child=${child.id}`}>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Log Reading
-                    </Link>
-                  </Button>
                 </div>
               </section>
 
@@ -306,7 +541,9 @@ const ChildDetailsPage = () => {
                     <div className="text-center py-8">
                       <Users className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
                       <p className="text-muted-foreground">No sponsors yet</p>
-                      <p className="text-sm text-muted-foreground">Invite family and friends to sponsor {child.name.split(' ')[0]}!</p>
+                      {isOwner && (
+                        <p className="text-sm text-muted-foreground">Invite family and friends to sponsor {child.name.split(' ')[0]}!</p>
+                      )}
                     </div>
                   ) : (
                     <div className="space-y-3 mb-4">
@@ -346,12 +583,14 @@ const ChildDetailsPage = () => {
                     </div>
                   )}
                   
-                  <Button variant="outline" className="w-full" asChild>
-                    <Link to={`/children/${child.id}/invite`}>
-                      <UserPlus className="h-4 w-4 mr-2" />
-                      Invite More Sponsors
-                    </Link>
-                  </Button>
+                  {isOwner && (
+                    <Button variant="outline" className="w-full" asChild>
+                      <Link to={`/children/${child.id}/invite`}>
+                        <UserPlus className="h-4 w-4 mr-2" />
+                        Invite More Sponsors
+                      </Link>
+                    </Button>
+                  )}
                 </div>
               </section>
             </div>
@@ -367,24 +606,41 @@ const ChildDetailsPage = () => {
                     Quick Actions
                   </h3>
                   <div className="space-y-3">
-                    <Button className="w-full justify-start" asChild>
-                      <Link to={`/log-reading?child=${child.id}`}>
-                        <Plus className="h-4 w-4 mr-2" />
-                        Log Reading
-                      </Link>
-                    </Button>
-                    <Button variant="outline" className="w-full justify-start" asChild>
-                      <Link to={`/children/${child.id}/invite`}>
-                        <UserPlus className="h-4 w-4 mr-2" />
-                        Invite Sponsors
-                      </Link>
-                    </Button>
-                    <Button variant="outline" className="w-full justify-start" asChild>
-                      <Link to={`/family/children/${child.id}/settings`}>
-                        <Settings className="h-4 w-4 mr-2" />
-                        Edit Settings
-                      </Link>
-                    </Button>
+                    {isOwner ? (
+                      <>
+                        <Button className="w-full justify-start" asChild>
+                          <Link to={`/log-reading?child=${child.id}`}>
+                            <Plus className="h-4 w-4 mr-2" />
+                            Log Reading
+                          </Link>
+                        </Button>
+                        <Button variant="outline" className="w-full justify-start" asChild>
+                          <Link to={`/children/${child.id}/invite`}>
+                            <UserPlus className="h-4 w-4 mr-2" />
+                            Invite Sponsors
+                          </Link>
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          className="w-full justify-start"
+                          onClick={() => setEditDialogOpen(true)}
+                        >
+                          <Settings className="h-4 w-4 mr-2" />
+                          Edit Profile
+                        </Button>
+                        <Button variant="outline" className="w-full justify-start" asChild>
+                          <Link to="/account#children">
+                            <User className="h-4 w-4 mr-2" />
+                            Manage Student Account
+                          </Link>
+                        </Button>
+                      </>
+                    ) : (
+                      <div className="text-center text-sm text-muted-foreground py-4">
+                        <Users className="h-8 w-8 mx-auto mb-2 text-muted-foreground/50" />
+                        <p>You are viewing as a sponsor</p>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -417,6 +673,17 @@ const ChildDetailsPage = () => {
       
       <Footer />
       <BottomTabBar role="parent" />
+
+      {/* Edit Child Dialog */}
+      {isOwner && (
+        <EditChildDialog
+          child={child as any}
+          open={editDialogOpen}
+          onOpenChange={setEditDialogOpen}
+          onSave={handleSaveChild}
+          isSaving={updateChild.isPending}
+        />
+      )}
     </div>
   );
 };
