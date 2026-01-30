@@ -519,65 +519,98 @@ const StudentPinDashboardPage = () => {
               {/* Log Reading Button */}
               <Dialog open={isLogModalOpen} onOpenChange={setIsLogModalOpen}>
                 <DialogTrigger asChild>
-                  <Button className="w-full" size="lg" style={handDrawnBorder}>
-                    <Plus className="h-5 w-5 mr-2" />
-                    Log My Reading
+                  <Button className="w-full h-14 text-lg bg-primary hover:bg-primary/90" size="lg" style={handDrawnBorder}>
+                    <BookOpen className="h-6 w-6 mr-2" />
+                    Log My Reading! 📚
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-md">
                   <DialogHeader>
-                    <DialogTitle className="font-serif text-xl flex items-center gap-2">
-                      <Clock className="h-5 w-5" />
-                      Log Your Reading
+                    <DialogTitle className="font-serif text-2xl flex items-center justify-center gap-2 text-primary">
+                      <Sparkles className="h-6 w-6 text-warning" />
+                      Log Your Reading!
+                      <Sparkles className="h-6 w-6 text-warning" />
                     </DialogTitle>
                   </DialogHeader>
-                  <form onSubmit={handleLogReading} className="space-y-4">
-                    {/* Minutes Stepper */}
-                    <div className="space-y-2">
-                      <Label>How many minutes did you read?</Label>
-                      <div className="flex items-center justify-center gap-4">
+                  <form onSubmit={handleLogReading} className="space-y-6 pt-2">
+                    {/* Minutes Stepper - Kid Friendly */}
+                    <div className="space-y-3">
+                      <Label className="text-base text-center block">How many minutes did you read today? ⏱️</Label>
+                      <div className="flex items-center justify-center gap-3">
                         <Button
                           type="button"
                           variant="outline"
-                          size="icon"
+                          size="lg"
+                          className="h-14 w-14 rounded-full text-2xl font-bold"
                           onClick={() => adjustMinutes(-5)}
                           disabled={minutes <= 1}
                         >
-                          <Minus className="h-4 w-4" />
+                          −
                         </Button>
-                        <div className="text-center">
+                        <div className="text-center bg-muted/30 rounded-xl px-6 py-3">
                           <Input
                             type="number"
                             value={minutes}
                             onChange={(e) => setMinutes(Math.max(1, Math.min(180, Number(e.target.value))))}
-                            className="w-24 text-center text-3xl font-bold"
+                            className="w-20 text-center text-4xl font-bold border-none bg-transparent p-0 h-auto"
                             min={1}
                             max={180}
                           />
-                          <span className="text-sm text-muted-foreground">minutes</span>
+                          <span className="text-sm text-muted-foreground font-medium">minutes</span>
                         </div>
                         <Button
                           type="button"
                           variant="outline"
-                          size="icon"
+                          size="lg"
+                          className="h-14 w-14 rounded-full text-2xl font-bold"
                           onClick={() => adjustMinutes(5)}
                           disabled={minutes >= 180}
                         >
-                          <Plus className="h-4 w-4" />
+                          +
                         </Button>
+                      </div>
+                      {/* Quick preset buttons */}
+                      <div className="flex justify-center gap-2 pt-2">
+                        {[10, 15, 20, 30].map((preset) => (
+                          <Button
+                            key={preset}
+                            type="button"
+                            variant={minutes === preset ? "default" : "outline"}
+                            size="sm"
+                            className="rounded-full"
+                            onClick={() => setMinutes(preset)}
+                          >
+                            {preset} min
+                          </Button>
+                        ))}
                       </div>
                     </div>
 
                     {/* Book Selector with Barcode Scanning */}
-                    <BookSelector
-                      selectedBook={selectedBook}
-                      onSelectBook={setSelectedBook}
-                      manualTitle={bookTitle}
-                      onManualTitleChange={setBookTitle}
-                    />
+                    <div className="space-y-2">
+                      <Label className="text-base text-center block">What book did you read? 📖</Label>
+                      <BookSelector
+                        selectedBook={selectedBook}
+                        onSelectBook={setSelectedBook}
+                        manualTitle={bookTitle}
+                        onManualTitleChange={setBookTitle}
+                      />
+                    </div>
 
-                    <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
-                      {isSubmitting ? "Saving..." : "Log My Reading! 📖"}
+                    <Button 
+                      type="submit" 
+                      className="w-full h-14 text-lg" 
+                      size="lg" 
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting ? (
+                        "Saving... ⏳"
+                      ) : (
+                        <>
+                          <Trophy className="h-5 w-5 mr-2" />
+                          Done! Save My Reading! 🎉
+                        </>
+                      )}
                     </Button>
                   </form>
                 </DialogContent>
