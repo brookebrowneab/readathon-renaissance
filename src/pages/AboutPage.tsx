@@ -50,7 +50,7 @@ const AboutPage = () => {
                 <Card key={index} className="text-center">
                   <CardContent className="pt-6">
                     <stat.icon className="mx-auto mb-2 h-8 w-8 text-brand-blue" />
-                    <p className="font-handwritten text-3xl text-foreground">{stat.value}</p>
+                    <p className="font-serif text-3xl text-foreground">{stat.value}</p>
                     <p className="text-sm text-muted-foreground">{stat.label}</p>
                   </CardContent>
                 </Card>

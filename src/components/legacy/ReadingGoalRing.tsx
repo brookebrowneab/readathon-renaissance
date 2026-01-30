@@ -148,7 +148,7 @@ const ReadingGoalRing = ({
           }}
         >
           <span className={cn(
-            "font-handwritten text-brand-blue",
+            "font-serif text-brand-blue",
             effectiveSize < 180 ? "text-3xl" : "text-4xl"
           )}>
             {Math.round(percentage)}%

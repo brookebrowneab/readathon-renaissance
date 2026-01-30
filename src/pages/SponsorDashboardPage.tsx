@@ -823,7 +823,7 @@ export default function SponsorDashboardPage() {
                 <p className="text-sm text-muted-foreground">
                   At {selectedPledge.goalMinutes} minutes (goal):
                 </p>
-                <p className="font-handwritten text-xl text-primary">
+                <p className="font-serif text-xl text-primary">
                   ${(parseFloat(updatedAmount || "0") * selectedPledge.goalMinutes).toFixed(2)}
                 </p>
               </div>

@@ -402,7 +402,7 @@ export default function AdminFinancePage() {
               <p className="text-sm text-muted-foreground">Total Pledged</p>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </div>
-            <p className="font-handwritten text-2xl text-primary">${summary.totalPledged.toFixed(2)}</p>
+            <p className="font-serif text-2xl text-primary">${summary.totalPledged.toFixed(2)}</p>
             <p className="text-xs text-muted-foreground mt-1">From all sponsors</p>
           </div>
           <div className="bg-background p-4" style={handDrawnBorder}>
@@ -410,7 +410,7 @@ export default function AdminFinancePage() {
               <p className="text-sm text-muted-foreground">Total Collected</p>
               <CheckCircle2 className="h-4 w-4 text-accent" />
             </div>
-            <p className="font-handwritten text-2xl text-accent">${summary.totalCollected.toFixed(2)}</p>
+            <p className="font-serif text-2xl text-accent">${summary.totalCollected.toFixed(2)}</p>
             <p className="text-xs text-muted-foreground mt-1">Payments received</p>
           </div>
           <div className="bg-background p-4" style={handDrawnBorder}>
@@ -418,7 +418,7 @@ export default function AdminFinancePage() {
               <p className="text-sm text-muted-foreground">Outstanding</p>
               <AlertCircle className="h-4 w-4 text-warning" />
             </div>
-            <p className="font-handwritten text-2xl text-warning">${summary.outstanding.toFixed(2)}</p>
+            <p className="font-serif text-2xl text-warning">${summary.outstanding.toFixed(2)}</p>
             <p className="text-xs text-muted-foreground mt-1">Awaiting payment</p>
           </div>
           <div className="bg-background p-4" style={handDrawnBorder}>
@@ -426,7 +426,7 @@ export default function AdminFinancePage() {
               <p className="text-sm text-muted-foreground">Collection Rate</p>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </div>
-            <p className="font-handwritten text-2xl text-primary">{summary.collectionRate}%</p>
+            <p className="font-serif text-2xl text-primary">{summary.collectionRate}%</p>
             <div className="mt-2 h-2 w-full bg-muted rounded-full overflow-hidden">
               <div 
                 className="h-full bg-primary transition-all"

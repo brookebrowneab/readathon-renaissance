@@ -625,7 +625,7 @@ const SponsorPage = () => {
         <p className="text-sm text-muted-foreground mb-1">
           {pledgeType === "per-minute" ? "Estimated Amount" : "Amount Due"}
         </p>
-        <p className="font-handwritten text-3xl text-primary">
+        <p className="font-serif text-3xl text-primary">
           ${pledgeType === "flat" 
             ? parseFloat(flatAmount).toFixed(2) 
             : calculations.atGoal.toFixed(2)}

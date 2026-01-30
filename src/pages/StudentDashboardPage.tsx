@@ -104,7 +104,7 @@ const StudentDashboardPage = () => {
                 <Trophy className="h-6 w-6 text-brand-yellow" />
               </div>
               <div>
-                <p className="font-handwritten text-2xl text-brand-blue">
+                <p className="font-serif text-2xl text-brand-blue">
                   {mockStudent.streak} Day Streak! 🔥
                 </p>
                 <p className="text-sm text-muted-foreground">
@@ -132,7 +132,7 @@ const StudentDashboardPage = () => {
                 <div className="mt-2 grid w-full grid-cols-2 gap-3">
                   <div className="flex flex-col items-center rounded-lg bg-muted/50 p-3">
                     <span className="text-xs text-muted-foreground">Reading Goal</span>
-                    <span className="font-handwritten text-xl text-brand-blue">{mockStudent.goalMinutes} min</span>
+                    <span className="font-serif text-xl text-brand-blue">{mockStudent.goalMinutes} min</span>
                   </div>
                   <div 
                     className="relative flex cursor-pointer flex-col items-center rounded-lg bg-muted/50 p-3 transition-colors hover:bg-muted"
@@ -140,11 +140,11 @@ const StudentDashboardPage = () => {
                   >
                     <Star className="absolute -right-1 -top-1 h-4 w-4 fill-brand-yellow text-brand-yellow" />
                     <span className="text-xs text-muted-foreground">Total Time Read</span>
-                    <span className="font-handwritten text-xl text-brand-blue">{formatTime(mockStudent.minutesRead, totalTimeUnit)}</span>
+                    <span className="font-serif text-xl text-brand-blue">{formatTime(mockStudent.minutesRead, totalTimeUnit)}</span>
                   </div>
                   <div className="flex flex-col items-center rounded-lg bg-muted/50 p-3">
                     <span className="text-xs text-muted-foreground">Minutes Today</span>
-                    <span className="font-handwritten text-xl text-brand-blue">{mockStudent.minutesToday} min</span>
+                    <span className="font-serif text-xl text-brand-blue">{mockStudent.minutesToday} min</span>
                   </div>
                   <div 
                     className="relative flex cursor-pointer flex-col items-center rounded-lg bg-muted/50 p-3 transition-colors hover:bg-muted"
@@ -152,7 +152,7 @@ const StudentDashboardPage = () => {
                   >
                     <Star className="absolute -right-1 -top-1 h-4 w-4 fill-brand-yellow text-brand-yellow" />
                     <span className="text-xs text-muted-foreground">My Class Has Read</span>
-                    <span className="font-handwritten text-xl text-brand-blue">{formatTime(mockStudent.classTotal, classUnit)}</span>
+                    <span className="font-serif text-xl text-brand-blue">{formatTime(mockStudent.classTotal, classUnit)}</span>
                   </div>
                   <div 
                     className="relative flex cursor-pointer flex-col items-center rounded-lg bg-muted/50 p-3 transition-colors hover:bg-muted"
@@ -160,21 +160,21 @@ const StudentDashboardPage = () => {
                   >
                     <Star className="absolute -right-1 -top-1 h-4 w-4 fill-brand-yellow text-brand-yellow" />
                     <span className="text-xs text-muted-foreground">My Grade Has Read</span>
-                    <span className="font-handwritten text-xl text-brand-blue">{formatTime(mockStudent.gradeTotal, gradeUnit)}</span>
+                    <span className="font-serif text-xl text-brand-blue">{formatTime(mockStudent.gradeTotal, gradeUnit)}</span>
                   </div>
                   <div className="relative flex flex-col items-center rounded-lg bg-muted/50 p-3">
                     <Star className="absolute -right-1 -top-1 h-4 w-4 fill-brand-yellow text-brand-yellow" />
                     <span className="text-xs text-muted-foreground">Money I've Raised</span>
-                    <span className="font-handwritten text-xl text-brand-green">${mockStudent.moneyRaised.toFixed(2)}</span>
+                    <span className="font-serif text-xl text-brand-green">${mockStudent.moneyRaised.toFixed(2)}</span>
                   </div>
                   <div className="flex flex-col items-center rounded-lg bg-muted/50 p-3">
                     <span className="text-xs text-muted-foreground">My Sponsors</span>
-                    <span className="font-handwritten text-xl text-brand-blue">{mockStudent.sponsors}</span>
+                    <span className="font-serif text-xl text-brand-blue">{mockStudent.sponsors}</span>
                   </div>
                   <div className="relative flex flex-col items-center rounded-lg bg-muted/50 p-3">
                     <Star className="absolute -right-1 -top-1 h-4 w-4 fill-brand-yellow text-brand-yellow" />
                     <span className="text-xs text-muted-foreground">Books I've Read</span>
-                    <span className="font-handwritten text-xl text-brand-blue">{mockStudent.booksRead}</span>
+                    <span className="font-serif text-xl text-brand-blue">{mockStudent.booksRead}</span>
                   </div>
                 </div>
 
@@ -219,7 +219,7 @@ const StudentDashboardPage = () => {
                           {student.name} {student.isCurrentUser && "(You!)"}
                         </p>
                       </div>
-                      <span className="font-handwritten text-lg text-brand-blue">
+                      <span className="font-serif text-lg text-brand-blue">
                         {student.minutes} min
                       </span>
                     </div>
@@ -243,7 +243,7 @@ const StudentDashboardPage = () => {
                         <p className="font-medium text-foreground truncate">{book.title}</p>
                         <p className="text-sm text-muted-foreground truncate">{book.author}</p>
                       </div>
-                      <span className="font-handwritten text-lg text-brand-blue shrink-0">
+                      <span className="font-serif text-lg text-brand-blue shrink-0">
                         {book.minutesRead} min
                       </span>
                     </div>

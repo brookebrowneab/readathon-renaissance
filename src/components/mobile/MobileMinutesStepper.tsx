@@ -79,7 +79,7 @@ export function MobileMinutesStepper({
         </Button>
 
         <div className="flex flex-col items-center min-w-[100px]">
-          <span className="font-handwritten text-6xl text-brand-blue leading-none">
+          <span className="font-serif text-6xl text-brand-blue leading-none">
             {value}
           </span>
           <span className="text-muted-foreground text-lg">minutes</span>

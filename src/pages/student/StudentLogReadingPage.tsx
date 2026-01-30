@@ -177,7 +177,7 @@ const StudentLogReadingPage = () => {
                     </button>
 
                     <div className="w-32 h-32 rounded-2xl bg-card border-2 border-border flex items-center justify-center">
-                      <span className="font-handwritten text-6xl text-brand-blue">
+                      <span className="font-serif text-6xl text-brand-blue">
                         {minutes}
                       </span>
                     </div>
@@ -259,7 +259,7 @@ const StudentLogReadingPage = () => {
 
                 <p className="text-2xl text-foreground">
                   You have read{" "}
-                  <span className="font-handwritten text-3xl text-brand-blue">
+                  <span className="font-serif text-3xl text-brand-blue">
                     {newTotal} minutes
                   </span>{" "}
                   total!

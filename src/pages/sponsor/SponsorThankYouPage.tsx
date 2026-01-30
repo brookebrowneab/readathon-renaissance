@@ -70,7 +70,7 @@ const SponsorThankYouPage = () => {
 
               {/* Pledge Amount */}
               <div className="py-4">
-                <p className="font-handwritten text-4xl text-brand-blue">
+                <p className="font-serif text-4xl text-brand-blue">
                   ${data.amount} pledged
                 </p>
                 <p className="text-muted-foreground mt-1">
