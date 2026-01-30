@@ -254,12 +254,25 @@ const MyPledgesPage = () => {
             >
               <DollarSign className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
               <h3 className="font-serif text-xl text-foreground mb-2">No pledges yet</h3>
-              <p className="text-muted-foreground mb-6">
-                Invite sponsors to support your children's reading journey.
-              </p>
-              <Button asChild>
-                <Link to="/invite">Invite Sponsors</Link>
-              </Button>
+              {children.length > 0 ? (
+                <>
+                  <p className="text-muted-foreground mb-6">
+                    Invite sponsors to support your children's reading journey.
+                  </p>
+                  <Button asChild>
+                    <Link to="/invite">Invite Sponsors</Link>
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <p className="text-muted-foreground mb-6">
+                    Sponsor a student's reading journey. Enter the parent's email to request their approval.
+                  </p>
+                  <Button asChild>
+                    <Link to="/sponsor">Sponsor a Student</Link>
+                  </Button>
+                </>
+              )}
             </div>
           )}
 
