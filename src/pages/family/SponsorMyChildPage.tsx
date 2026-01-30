@@ -471,7 +471,7 @@ const SponsorMyChildPage = () => {
           </p>
         </div>
 
-        <BookContainer variant="warm" className="p-6">
+        <div className="bg-background-warm p-6" style={handDrawnBorder}>
           <div className="space-y-3 text-left">
             <div className="flex justify-between">
               <span className="text-muted-foreground">Recipient</span>
@@ -535,7 +535,7 @@ const SponsorMyChildPage = () => {
               </>
             )}
           </div>
-        </BookContainer>
+        </div>
 
       <div className="flex gap-3">
         <Button 
