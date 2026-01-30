@@ -96,10 +96,22 @@ export const useTeacherStudentLogs = (studentIds: string[]) => {
     return acc;
   }, {} as Record<string, string>);
 
+  // Get unique book titles per student
+  const booksByStudent = Object.entries(logsByStudent).reduce((acc, [childId, studentLogs]) => {
+    const uniqueTitles = [...new Set(
+      studentLogs
+        .map(log => log.book_title)
+        .filter((title): title is string => !!title)
+    )];
+    acc[childId] = uniqueTitles;
+    return acc;
+  }, {} as Record<string, string[]>);
+
   return {
     logs,
     logsByStudent,
     lastLoggedByStudent,
+    booksByStudent,
     isLoading,
     error,
   };

@@ -48,7 +48,7 @@ const TeacherDashboard = () => {
   const [filterBy, setFilterBy] = useState<FilterOption>("all");
   
   const studentIds = useMemo(() => students.map(s => s.id), [students]);
-  const { lastLoggedByStudent, isLoading: logsLoading } = useTeacherStudentLogs(studentIds);
+  const { lastLoggedByStudent, booksByStudent, isLoading: logsLoading } = useTeacherStudentLogs(studentIds);
 
   const isLoading = authLoading || studentsLoading || eventLoading;
 
@@ -92,6 +92,7 @@ const TeacherDashboard = () => {
       ...student,
       status: getStudentStatus(student.total_minutes, student.goal_minutes),
       lastLogged: formatLastLogged(lastLoggedByStudent[student.id]),
+      books: booksByStudent[student.id] || [],
     }));
 
     // Search
@@ -124,7 +125,7 @@ const TeacherDashboard = () => {
     }
 
     return result;
-  }, [students, searchQuery, sortBy, filterBy, lastLoggedByStudent]);
+  }, [students, searchQuery, sortBy, filterBy, lastLoggedByStudent, booksByStudent]);
 
   // Redirect if not a teacher - after all hooks
   if (!authLoading && (!user || !teacherProfile)) {
@@ -326,27 +327,57 @@ const TeacherDashboard = () => {
               {filteredStudents.map((student) => (
                 <div
                   key={student.id}
-                  className="bg-background p-4 shadow-sm hover:shadow-md transition-shadow"
+                  className="bg-background p-4 shadow-sm hover:shadow-md transition-shadow overflow-hidden"
                   style={handDrawnBorder}
                 >
-                  <div className="flex items-start gap-4">
-                    <ReadingGoalRing
-                      progress={student.total_minutes}
-                      goal={student.goal_minutes}
-                      size={64}
-                    />
-                    <div className="flex-1 min-w-0">
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0">
+                      <ReadingGoalRing
+                        progress={student.total_minutes}
+                        goal={student.goal_minutes}
+                        size={56}
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0 overflow-hidden">
                       <p className="font-medium text-foreground truncate">
                         {student.name}
                       </p>
-                      <p className="text-sm text-muted-foreground">
-                        {student.total_minutes.toLocaleString()} / {student.goal_minutes.toLocaleString()} min (
-                        {Math.round((student.total_minutes / student.goal_minutes) * 100)}%)
+                      <p className="text-sm text-muted-foreground truncate">
+                        {student.total_minutes.toLocaleString()} / {student.goal_minutes.toLocaleString()} min
                       </p>
-                      <p className="text-xs text-muted-foreground mt-1">
+                      <p className="text-xs text-muted-foreground mt-0.5 truncate">
                         Last: {student.lastLogged}
                       </p>
-                      <div className="mt-2">{getStatusBadge(student.status)}</div>
+                      <div className="mt-2 flex items-center gap-2 flex-wrap">
+                        {getStatusBadge(student.status)}
+                        {student.books.length > 0 && (
+                          <Badge variant="outline" className="text-xs">
+                            <BookOpen className="h-3 w-3 mr-1" />
+                            {student.books.length} {student.books.length === 1 ? 'book' : 'books'}
+                          </Badge>
+                        )}
+                      </div>
+                      {student.books.length > 0 && (
+                        <div className="mt-2 pt-2 border-t border-border">
+                          <p className="text-xs text-muted-foreground mb-1">Recent books:</p>
+                          <div className="flex flex-wrap gap-1">
+                            {student.books.slice(0, 3).map((book, i) => (
+                              <span 
+                                key={i} 
+                                className="text-xs bg-muted px-1.5 py-0.5 rounded truncate max-w-[120px]"
+                                title={book}
+                              >
+                                {book}
+                              </span>
+                            ))}
+                            {student.books.length > 3 && (
+                              <span className="text-xs text-muted-foreground">
+                                +{student.books.length - 3} more
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
