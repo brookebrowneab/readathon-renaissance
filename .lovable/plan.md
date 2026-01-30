@@ -1,188 +1,170 @@
 
 
-# Differentiated Teacher Dashboard Views
+# Logo Generator Tool for Admin
 
 ## Overview
 
-This plan implements role-specific views for different teacher types on the teacher dashboard. Currently, all teachers see students filtered by RLS policies, but the UI doesn't adapt to the different contexts teachers work in.
+This feature adds a logo generator tool to the admin settings page that allows administrators to create a new version of the Read-a-thon logo with updated dates each year. The tool will:
 
-## Teacher View Requirements
+1. Display the static logo elements (Janney mascot, "Read-a-thon" text, open book icon)
+2. Allow editing the date text with smart formatting
+3. Provide horizontal positioning control for the date text (left/right slider)
+4. Export the final logo as both SVG and PNG formats
 
-| Teacher Type | Access Scope | UI Behavior |
-|-------------|--------------|-------------|
-| **Homeroom** | Own students only | Current behavior - see assigned students |
-| **Partner (single homeroom)** | Single homeroom's students | Same view as homeroom teacher |
-| **Partner (multiple homerooms)** | All students in assigned grades | See all grade students, can filter by class |
-| **Staff** | Whole school | See all students, can filter by grade AND class |
+## Date Format Rules
 
-## Technical Implementation
+| Scenario | Format | Example |
+|----------|--------|---------|
+| Different months | "StartMonth Day - EndMonth Day" (no suffixes) | "February 24 - March 24" |
+| Same month | "Month DaySuffix - DaySuffix" (with ordinal suffixes) | "February 24th - 28th" |
 
-### 1. Database Changes
+No year is displayed in either case.
 
-Add a `grade_level` column to the `teachers` table to track which grade a partner teacher is assigned to:
+## Requirements Summary
 
-```sql
-ALTER TABLE public.teachers 
-ADD COLUMN grade_level text;
+| Component | Behavior |
+|-----------|----------|
+| Janney logo | Static, not editable |
+| "Read-a-thon" text | Static, not editable |
+| Open book icon | Static, not editable |
+| Date text | Auto-formatted from event dates, movable left/right |
+| Font | Cooper Black (fixed size) |
+| Export | SVG and PNG download |
 
-COMMENT ON COLUMN public.teachers.grade_level IS 
-'Grade level for partner teachers assigned to an entire grade (e.g., "1st", "2nd")';
-```
+## Technical Approach
 
-### 2. Update RLS Function
-
-Modify `can_teacher_view_child` to support grade-level partner teachers:
-
-```sql
-CREATE OR REPLACE FUNCTION public.can_teacher_view_child(teacher_user_id UUID, child_id UUID)
-RETURNS BOOLEAN
-LANGUAGE sql
-STABLE
-SECURITY DEFINER
-SET search_path = public
-AS $$
-  SELECT EXISTS (
-    SELECT 1 FROM teachers t
-    JOIN children c ON c.id = child_id
-    WHERE t.user_id = teacher_user_id
-    AND t.is_active = true
-    AND (
-      -- Staff/librarian with full access can see everyone
-      t.has_full_access = true
-      -- Homeroom teacher can see their students
-      OR c.homeroom_teacher_id = t.id
-      -- Partner teacher assigned to specific homerooms
-      OR c.homeroom_teacher_id IN (
-        SELECT tca.homeroom_teacher_id 
-        FROM teacher_class_assignments tca 
-        WHERE tca.teacher_id = t.id
-      )
-      -- Partner teacher assigned to entire grade (no specific homeroom assignments)
-      OR (
-        t.teacher_type = 'partner' 
-        AND t.grade_level IS NOT NULL
-        AND c.grade_info = t.grade_level
-        AND NOT EXISTS (
-          SELECT 1 FROM teacher_class_assignments tca 
-          WHERE tca.teacher_id = t.id
-        )
-      )
-    )
-  )
-$$;
-```
-
-### 3. Update Teacher Auth Hook
-
-Extend `useTeacherAuth` to include the new grade_level field:
+### Date Formatting Logic
 
 ```typescript
-// src/hooks/useTeacherAuth.ts
-export interface TeacherProfile {
-  id: string;
-  name: string;
-  email: string | null;
-  teacher_type: "homeroom" | "partner" | "specials" | "staff";
-  has_full_access: boolean;
-  is_active: boolean;
-  grade_level: string | null;  // NEW
+function getOrdinalSuffix(day: number): string {
+  if (day >= 11 && day <= 13) {
+    return 'th';
+  }
+  switch (day % 10) {
+    case 1: return 'st';
+    case 2: return 'nd';
+    case 3: return 'rd';
+    default: return 'th';
+  }
+}
+
+function formatEventDatesForLogo(startDate: Date, endDate: Date): string {
+  const startMonth = startDate.toLocaleDateString('en-US', { month: 'long' });
+  const endMonth = endDate.toLocaleDateString('en-US', { month: 'long' });
+  const startDay = startDate.getDate();
+  const endDay = endDate.getDate();
+  
+  if (startMonth === endMonth) {
+    // Same month with ordinal suffixes: "February 24th - 28th"
+    const startSuffix = getOrdinalSuffix(startDay);
+    const endSuffix = getOrdinalSuffix(endDay);
+    return `${startMonth} ${startDay}${startSuffix} - ${endDay}${endSuffix}`;
+  } else {
+    // Different months without suffixes: "February 24 - March 24"
+    return `${startMonth} ${startDay} - ${endMonth} ${endDay}`;
+  }
 }
 ```
 
-### 4. Update Teacher Students Hook
+### Ordinal Suffix Examples
 
-Add class and grade information to support filtering:
+| Day | Suffix | Result |
+|-----|--------|--------|
+| 1 | st | 1st |
+| 2 | nd | 2nd |
+| 3 | rd | 3rd |
+| 4-10 | th | 4th, 5th, etc. |
+| 11, 12, 13 | th | 11th, 12th, 13th (special case) |
+| 21 | st | 21st |
+| 22 | nd | 22nd |
+| 23 | rd | 23rd |
+| 24-30 | th | 24th, 25th, etc. |
+| 31 | st | 31st |
 
-```typescript
-// src/hooks/useTeacherStudents.ts
-export const useTeacherStudents = () => {
-  // ... existing code ...
-  
-  // Derive unique grades and classes from students
-  const uniqueGrades = [...new Set(students.map(s => s.grade_info).filter(Boolean))];
-  const uniqueClasses = [...new Set(students.map(s => s.class_name).filter(Boolean))];
-  
-  return {
-    students,
-    uniqueGrades,
-    uniqueClasses,
-    // ... rest
-  };
-};
-```
+### Component Structure
 
-### 5. Update Teacher Dashboard UI
+A new `LogoGenerator` component will be created and added as a new section on the Admin Settings page:
 
-Add conditional filter controls based on teacher type:
+1. Load the existing SVG logo as a base
+2. Auto-generate date text from active event dates using the format rules above
+3. Allow manual override of the date text if needed
+4. Use a slider to adjust horizontal position
+5. Provide real-time preview
+6. Export functionality using canvas conversion
 
-**Header Changes:**
-- Show grade context for grade-level partner teachers
-- Show "All Students" context for staff
-
-**Filter Bar Changes:**
-```text
-┌─────────────────────────────────────────────────────────────────────┐
-│ [Search...]  [Sort ▼]  [Status ▼]  [Grade ▼]*  [Class ▼]*          │
-└─────────────────────────────────────────────────────────────────────┘
-* Grade filter: Only shown for staff (has_full_access = true)
-* Class filter: Shown for staff AND grade-level partner teachers
-```
-
-**Component Logic:**
-```typescript
-// Determine what filters to show
-const showGradeFilter = teacherProfile?.has_full_access;
-const showClassFilter = teacherProfile?.has_full_access || 
-  (teacherProfile?.teacher_type === 'partner' && uniqueClasses.length > 1);
-```
-
-### 6. Admin Teacher Management Updates
-
-Update the admin UI to support grade-level partner teacher configuration:
-
-- Add "Grade Level" dropdown when editing partner teachers
-- Show assignment mode choice: "Specific Homerooms" vs "Entire Grade"
-- Validate: grade_level should be null if teacher has specific homeroom assignments
-
-## User Experience Flow
+### UI Layout
 
 ```text
-Partner Teacher Login Flow:
-┌────────────────────────────────────────────────────────────────┐
-│                                                                │
-│  ┌──────────────────┐    ┌──────────────────────────────────┐ │
-│  │ Has homeroom     │ NO │ Has grade_level set?             │ │
-│  │ assignments?     ├────►│                                  │ │
-│  └────────┬─────────┘    └──────────────┬───────────────────┘ │
-│           │ YES                         │                     │
-│           ▼                             ▼ YES                 │
-│  ┌────────────────────┐    ┌──────────────────────────────┐  │
-│  │ Show students from │    │ Show ALL students in that    │  │
-│  │ assigned homerooms │    │ grade with class filter      │  │
-│  └────────────────────┘    └──────────────────────────────┘  │
-│                                         │ NO                  │
-│                                         ▼                     │
-│                            ┌──────────────────────────────┐  │
-│                            │ Empty state: No students     │  │
-│                            │ (needs admin configuration)  │  │
-│                            └──────────────────────────────┘  │
-└────────────────────────────────────────────────────────────────┘
++----------------------------------------------------------+
+|  Logo Generator                                           |
++----------------------------------------------------------+
+|  [Preview Area - Shows logo with date]                   |
+|                                                          |
+|  +----------------------------------------------------+  |
+|  |  [Janney Logo] [Book] READ-A-THON                  |  |
+|  |              February 24th - 28th                  |  |
+|  +----------------------------------------------------+  |
+|                                                          |
+|  Date Text: [February 24th - 28th________]               |
+|  (Auto-generated from event dates)                       |
+|                                                          |
+|  Position:  [<-------- slider -------->]                 |
+|             Left                  Right                  |
+|                                                          |
+|  [Download SVG]  [Download PNG]                          |
++----------------------------------------------------------+
 ```
 
-## Files to Modify
+## Implementation Steps
 
-| File | Changes |
-|------|---------|
-| Database migration | Add `grade_level` column, update RLS function |
-| `src/hooks/useTeacherAuth.ts` | Add grade_level to TeacherProfile interface |
-| `src/hooks/useTeachers.ts` | Add grade_level to Teacher interface and mutations |
-| `src/hooks/useTeacherStudents.ts` | Return unique grades and classes for filtering |
-| `src/pages/teacher/TeacherDashboard.tsx` | Add grade/class filter dropdowns, conditional UI |
-| `src/components/admin/TeacherManagement.tsx` | Add grade level selection for partner teachers |
+### 1. Add Cooper Black Font
+
+Add Cooper Black font file and @font-face declaration.
+
+### 2. Create LogoGenerator Component
+
+New file: `src/components/admin/LogoGenerator.tsx`
+
+- Ordinal suffix helper function
+- State for date text (auto-generated from active event, editable)
+- State for horizontal position (slider value, default center)
+- SVG rendering with dynamic text positioning
+- Export functions for SVG and PNG
+
+### 3. Date Auto-Generation
+
+On component mount, read the active event's start and end dates and apply the formatting rules:
+- Same month: "Month DaySuffix - DaySuffix" (e.g., "February 24th - 28th")
+- Different months: "Month Day - Month Day" (e.g., "February 24 - March 24")
+
+### 4. Export Functions
+
+**SVG Export:**
+- Serialize SVG element with embedded font
+- Create Blob and trigger download
+
+**PNG Export:**
+- Render SVG to canvas at 2x resolution
+- Convert to PNG using toDataURL()
+- Trigger download
+
+### 5. Integration
+
+Add LogoGenerator component to Admin Settings page as a new card section.
+
+## Files to Create/Modify
+
+| File | Action |
+|------|--------|
+| `src/components/admin/LogoGenerator.tsx` | Create - Main component |
+| `src/pages/admin/AdminSettingsPage.tsx` | Modify - Add LogoGenerator section |
+| `public/fonts/cooper-black.woff2` | Add - Cooper Black font file |
+| `src/index.css` | Modify - Add @font-face for Cooper Black |
 
 ## Edge Cases
 
-1. **Partner teacher with no assignments and no grade_level**: Show empty state with message to contact admin
-2. **Staff viewing large school**: Implement pagination or virtual scrolling if needed
-3. **Grade names vary**: Use existing `grade_info` values from children table for consistency
+1. **No active event**: Show message prompting user to create an event first
+2. **Font loading delay**: Show loading indicator until font is ready
+3. **Very long date text**: Position slider helps fit text appropriately
+4. **Manual text override**: Users can edit the auto-generated text if needed
 
