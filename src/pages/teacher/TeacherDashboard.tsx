@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { MainNav, Footer } from "@/components/layout";
-import { BookContainer, ReadingGoalRing } from "@/components/legacy";
+import { ReadingGoalRing } from "@/components/legacy";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -30,6 +30,7 @@ import { useTeacherStudents, useTeacherStudentLogs } from "@/hooks/useTeacherStu
 import { useActiveEvent } from "@/hooks/useActiveEvent";
 import { useAuth } from "@/hooks/useAuth";
 import { differenceInDays, parseISO, format, isToday, isYesterday } from "date-fns";
+import { handDrawnBorder } from "@/lib/admin-styles";
 
 type SortOption = "name" | "progress" | "last-active";
 type FilterOption = "all" | "needs-attention" | "goal-reached";
@@ -213,19 +214,19 @@ const TeacherDashboard = () => {
             </div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-              <BookContainer variant="default" className="p-4">
+              <div className="bg-background p-4 shadow-sm" style={handDrawnBorder}>
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-brand-blue/10 flex items-center justify-center">
-                    <Users className="h-5 w-5 text-brand-blue" />
+                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Users className="h-5 w-5 text-primary" />
                   </div>
                   <div>
                     <p className="text-2xl font-bold text-foreground">{stats.totalStudents}</p>
                     <p className="text-sm text-muted-foreground">Students</p>
                   </div>
                 </div>
-              </BookContainer>
+              </div>
 
-              <BookContainer variant="default" className="p-4">
+              <div className="bg-background p-4 shadow-sm" style={handDrawnBorder}>
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-full bg-success/10 flex items-center justify-center">
                     <UserCheck className="h-5 w-5 text-success" />
@@ -235,21 +236,21 @@ const TeacherDashboard = () => {
                     <p className="text-sm text-muted-foreground">Participating</p>
                   </div>
                 </div>
-              </BookContainer>
+              </div>
 
-              <BookContainer variant="default" className="p-4">
+              <div className="bg-background p-4 shadow-sm" style={handDrawnBorder}>
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-brand-yellow/20 flex items-center justify-center">
-                    <Clock className="h-5 w-5 text-brand-yellow" />
+                  <div className="h-10 w-10 rounded-full bg-warning/20 flex items-center justify-center">
+                    <Clock className="h-5 w-5 text-warning" />
                   </div>
                   <div>
                     <p className="text-2xl font-bold text-foreground">{stats.totalMinutes.toLocaleString()}</p>
                     <p className="text-sm text-muted-foreground">Total Minutes</p>
                   </div>
                 </div>
-              </BookContainer>
+              </div>
 
-              <BookContainer variant="default" className="p-4">
+              <div className="bg-background p-4 shadow-sm" style={handDrawnBorder}>
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
                     <TrendingUp className="h-5 w-5 text-primary" />
@@ -259,7 +260,7 @@ const TeacherDashboard = () => {
                     <p className="text-sm text-muted-foreground">Avg per Student</p>
                   </div>
                 </div>
-              </BookContainer>
+              </div>
             </div>
           )}
 
@@ -323,10 +324,10 @@ const TeacherDashboard = () => {
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {filteredStudents.map((student) => (
-                <BookContainer
+                <div
                   key={student.id}
-                  variant="default"
-                  className="p-4 hover:shadow-lg transition-shadow"
+                  className="bg-background p-4 shadow-sm hover:shadow-md transition-shadow"
+                  style={handDrawnBorder}
                 >
                   <div className="flex items-start gap-4">
                     <ReadingGoalRing
@@ -348,7 +349,7 @@ const TeacherDashboard = () => {
                       <div className="mt-2">{getStatusBadge(student.status)}</div>
                     </div>
                   </div>
-                </BookContainer>
+                </div>
               ))}
             </div>
           )}
