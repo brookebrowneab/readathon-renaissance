@@ -2,7 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { User, Users, School } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export type SponsorType = "my-children" | "another-child" | "entire-class";
+export type SponsorType = "my-children" | "another-child" | "support-classroom";
 
 interface SponsorTypeSelectorProps {
   selectedType: SponsorType | null;
@@ -24,10 +24,10 @@ const sponsorTypes = [
     description: "Support a child in the program",
   },
   {
-    type: "entire-class" as SponsorType,
+    type: "support-classroom" as SponsorType,
     icon: School,
-    title: "Entire Class",
-    description: "Pool your pledge for an entire class",
+    title: "Support a Classroom",
+    description: "Make a general donation to support a class",
   },
 ];
 

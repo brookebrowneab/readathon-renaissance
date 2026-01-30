@@ -161,7 +161,7 @@ const SponsorMyChildPage = () => {
   };
 
   const handleSelectionNext = () => {
-    if (sponsorType === "entire-class" ? selectedClassName : selectedChildId) {
+    if (sponsorType === "support-classroom" ? selectedClassName : selectedChildId) {
       setCurrentStep(2);
     }
   };
@@ -170,7 +170,7 @@ const SponsorMyChildPage = () => {
     setIsSubmitting(true);
     
     try {
-      if (sponsorType === "entire-class" && selectedClassName) {
+      if (sponsorType === "support-classroom" && selectedClassName) {
         // Create class pledge
         await createClassPledge.mutateAsync({
           className: selectedClassName,
@@ -305,7 +305,7 @@ const SponsorMyChildPage = () => {
       );
     }
 
-    if (sponsorType === "entire-class") {
+    if (sponsorType === "support-classroom") {
       return (
         <div className="space-y-6 animate-fade-in">
           <ClassSelector
