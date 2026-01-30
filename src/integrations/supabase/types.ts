@@ -325,6 +325,9 @@ export type Database = {
         Row: {
           accept_cards: boolean
           accept_checks: boolean
+          class_milestone_enabled: boolean
+          class_milestone_goal: number
+          class_milestone_reward: string
           created_at: string
           end_date: string
           goal_minutes: number
@@ -342,6 +345,9 @@ export type Database = {
         Insert: {
           accept_cards?: boolean
           accept_checks?: boolean
+          class_milestone_enabled?: boolean
+          class_milestone_goal?: number
+          class_milestone_reward?: string
           created_at?: string
           end_date: string
           goal_minutes?: number
@@ -359,6 +365,9 @@ export type Database = {
         Update: {
           accept_cards?: boolean
           accept_checks?: boolean
+          class_milestone_enabled?: boolean
+          class_milestone_goal?: number
+          class_milestone_reward?: string
           created_at?: string
           end_date?: string
           goal_minutes?: number
