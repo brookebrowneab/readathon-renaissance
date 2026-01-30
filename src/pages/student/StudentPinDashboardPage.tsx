@@ -214,8 +214,8 @@ const StudentPinDashboardPage = () => {
             {/* Main Content Area */}
             <div className="flex-1 space-y-8">
               {/* School-wide Minutes Counter */}
-              <div className="mb-2">
-                <p className="text-sm text-muted-foreground mb-1">How many minutes has Janney read?</p>
+              <div className="bg-background p-6 mb-2 shadow-sm" style={handDrawnBorder}>
+                <p className="text-sm text-muted-foreground mb-2">How many minutes has Janney read?</p>
                 <div className="relative inline-block">
                   <span className="relative">
                     <span className="font-serif text-5xl md:text-6xl lg:text-7xl font-normal tracking-tight text-foreground leading-[1.05]">
