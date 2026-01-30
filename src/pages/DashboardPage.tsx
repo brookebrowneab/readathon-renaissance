@@ -578,7 +578,7 @@ const DashboardPage = () => {
                         >
                           <Link to="/sponsor">
                             <Heart className="h-4 w-4 mr-2" />
-                            Support Another Reader
+                            Make a Pledge
                           </Link>
                         </Button>
                         <Button
