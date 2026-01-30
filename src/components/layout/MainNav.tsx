@@ -102,10 +102,10 @@ const MainNav = () => {
               <div className="flex items-start gap-6">
                 {/* Dashboard Link */}
                 <Link
-                  to="/dashboard"
+                  to={isTeacher ? "/teacher" : "/dashboard"}
                   className={cn(
                     desktopNavItemClass,
-                    location.pathname === "/dashboard" && "text-foreground"
+                    (location.pathname === "/dashboard" || location.pathname === "/teacher") && "text-foreground"
                   )}
                 >
                   DASHBOARD
