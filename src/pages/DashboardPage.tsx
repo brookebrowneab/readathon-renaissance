@@ -255,7 +255,7 @@ const DashboardPage = () => {
                       asChild
                       className="text-muted-foreground hover:text-foreground"
                     >
-                      <Link to="/children">
+                      <Link to="/account#children">
                         Manage Children
                         <ChevronRight className="h-4 w-4 ml-1" />
                       </Link>

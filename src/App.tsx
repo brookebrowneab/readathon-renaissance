@@ -38,7 +38,7 @@ import StudentPinLoginPage from "./pages/student/StudentPinLoginPage";
 import StudentPinDashboardPage from "./pages/student/StudentPinDashboardPage";
 import { TeacherDashboard, TeacherLogReading, TeacherLoginPage, TeacherRegisterPage, TeacherSetPasswordPage } from "./pages/teacher";
 import { AdminDashboard, AdminOutstandingPage, AdminChecksPage, AdminSettingsPage, AdminEmailPage } from "./pages/admin";
-import { SponsorRequestsPage, ChildSettingsPage, SponsorMyChildPage, ManageChildrenPage, ChildDetailsPage } from "./pages/family";
+import { SponsorRequestsPage, SponsorMyChildPage, ManageChildrenPage, ChildDetailsPage } from "./pages/family";
 import { VerifyLogsPage } from "./pages/reading-logs";
 import AdminUsersPage from "./pages/AdminUsersPage";
 import AdminFinancePage from "./pages/AdminFinancePage";
@@ -92,7 +92,7 @@ const App = () => (
           <Route path="/children/:id" element={<ChildDetailsPage />} />
           <Route path="/family/manage" element={<ManageChildrenPage />} />
           <Route path="/family/sponsor-requests" element={<SponsorRequestsPage />} />
-          <Route path="/family/children/:id/settings" element={<ChildSettingsPage />} />
+          <Route path="/family/children/:id/settings" element={<ChildDetailsPage />} />
           <Route path="/family/sponsor-my-child" element={<SponsorMyChildPage />} />
           <Route path="/reading-logs/approve" element={<VerifyLogsPage />} />
           <Route path="/children/:id/invite" element={<InviteSponsorsPage />} />
