@@ -24,15 +24,22 @@ export function ClassFundraisingShelf({
 
   return (
     <div className={cn("w-full", className)}>
-      {/* Shelf Container */}
-      <div className="relative w-full overflow-hidden">
-        {/* Grayscale base layer (unmet goal) */}
-        <img
-          src={booksShelfImage}
-          alt=""
+      {/* Shelf Container - max 65px height, tiled background */}
+      <div 
+        className="relative w-full overflow-hidden"
+        style={{ height: "65px" }}
+      >
+        {/* Grayscale base layer (unmet goal) - tiled background */}
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `url(${booksShelfImage})`,
+            backgroundRepeat: "repeat-x",
+            backgroundSize: "auto 100%",
+            backgroundPosition: "left center",
+            filter: "saturate(0)",
+          }}
           aria-hidden="true"
-          className="w-full h-auto object-contain"
-          style={{ filter: "saturate(0)" }}
         />
 
         {/* Full saturation overlay (met goal) - masked by percentage from left */}
@@ -42,11 +49,14 @@ export function ClassFundraisingShelf({
             clipPath: `inset(0 ${100 - percentage}% 0 0)`,
           }}
         >
-          <img
-            src={booksShelfImage}
-            alt=""
-            aria-hidden="true"
-            className="w-full h-auto object-contain"
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `url(${booksShelfImage})`,
+              backgroundRepeat: "repeat-x",
+              backgroundSize: "auto 100%",
+              backgroundPosition: "left center",
+            }}
           />
         </div>
 
