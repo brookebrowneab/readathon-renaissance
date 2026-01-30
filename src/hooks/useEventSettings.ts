@@ -17,6 +17,9 @@ export interface EventSettings {
   send_reminders: boolean;
   reminder_days: number;
   goal_minutes: number;
+  class_milestone_goal: number;
+  class_milestone_reward: string;
+  class_milestone_enabled: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -35,6 +38,9 @@ export interface UpdateEventParams {
   send_reminders?: boolean;
   reminder_days?: number;
   goal_minutes?: number;
+  class_milestone_goal?: number;
+  class_milestone_reward?: string;
+  class_milestone_enabled?: boolean;
 }
 
 export function useEventSettings() {
@@ -72,6 +78,9 @@ export function useEventSettings() {
       if (updates.send_reminders !== undefined) updateData.send_reminders = updates.send_reminders;
       if (updates.reminder_days !== undefined) updateData.reminder_days = updates.reminder_days;
       if (updates.goal_minutes !== undefined) updateData.goal_minutes = updates.goal_minutes;
+      if (updates.class_milestone_goal !== undefined) updateData.class_milestone_goal = updates.class_milestone_goal;
+      if (updates.class_milestone_reward !== undefined) updateData.class_milestone_reward = updates.class_milestone_reward;
+      if (updates.class_milestone_enabled !== undefined) updateData.class_milestone_enabled = updates.class_milestone_enabled;
 
       const { data, error } = await supabase
         .from('events')

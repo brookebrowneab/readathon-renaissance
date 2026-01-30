@@ -32,6 +32,7 @@ import {
   CheckCircle,
   Plus,
   FileText,
+  Trophy,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -64,6 +65,12 @@ const AdminSettingsPage = () => {
   const [sendReminders, setSendReminders] = useState(true);
   const [reminderDays, setReminderDays] = useState("7");
 
+  // Class Milestone settings
+  const [classMilestoneEnabled, setClassMilestoneEnabled] = useState(true);
+  const [classMilestoneGoal, setClassMilestoneGoal] = useState("1000");
+  const [classMilestoneReward, setClassMilestoneReward] = useState("Pizza party for the whole class!");
+
+
   // Dialogs
   const [showEndEventDialog, setShowEndEventDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -86,6 +93,9 @@ const AdminSettingsPage = () => {
       setSendReminders(event.send_reminders ?? true);
       setReminderDays(String(event.reminder_days ?? 7));
       setGoalMinutes(String(event.goal_minutes ?? 500));
+      setClassMilestoneEnabled(event.class_milestone_enabled ?? true);
+      setClassMilestoneGoal(String(event.class_milestone_goal ?? 1000));
+      setClassMilestoneReward(event.class_milestone_reward || "Pizza party for the whole class!");
       setHasUnsavedChanges(false);
       setInitializedEventId(event.id);
     }
@@ -126,6 +136,9 @@ const AdminSettingsPage = () => {
         send_reminders: sendReminders,
         reminder_days: parseInt(reminderDays, 10) || 7,
         goal_minutes: parseInt(goalMinutes, 10) || 500,
+        class_milestone_enabled: classMilestoneEnabled,
+        class_milestone_goal: parseFloat(classMilestoneGoal) || 1000,
+        class_milestone_reward: classMilestoneReward,
       });
       setHasUnsavedChanges(false);
       toast.success("Event settings saved successfully!");
@@ -451,6 +464,72 @@ const AdminSettingsPage = () => {
                       className="max-w-[120px]"
                     />
                   </FormField>
+                )}
+              </div>
+            </div>
+
+            {/* Class Milestone Settings */}
+            <div className="bg-background p-6" style={handDrawnBorder}>
+              <div className="flex items-center gap-2 mb-6">
+                <Trophy className="h-5 w-5 text-primary" />
+                <h2 className="font-medium text-foreground">Class Milestone Reward</h2>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex items-center justify-between py-3 border-b border-border">
+                  <div>
+                    <Label htmlFor="classMilestoneEnabled" className="font-medium">Enable Class Milestone</Label>
+                    <p className="text-sm text-muted-foreground">Show fundraising progress toward class reward</p>
+                  </div>
+                  <Switch
+                    id="classMilestoneEnabled"
+                    checked={classMilestoneEnabled}
+                    onCheckedChange={(checked) => {
+                      setClassMilestoneEnabled(checked);
+                      handleFieldChange();
+                    }}
+                  />
+                </div>
+
+                {classMilestoneEnabled && (
+                  <>
+                    <FormField
+                      label="Milestone Goal ($)"
+                      htmlFor="classMilestoneGoal"
+                      helperText="When a class reaches this fundraising amount, they earn the reward"
+                    >
+                      <div className="relative max-w-[200px]">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                        <Input
+                          id="classMilestoneGoal"
+                          type="number"
+                          value={classMilestoneGoal}
+                          onChange={(e) => {
+                            setClassMilestoneGoal(e.target.value);
+                            handleFieldChange();
+                          }}
+                          min={1}
+                          className="pl-7"
+                        />
+                      </div>
+                    </FormField>
+
+                    <FormField
+                      label="Reward Description"
+                      htmlFor="classMilestoneReward"
+                      helperText="Describe what the class earns when they reach the goal"
+                    >
+                      <Input
+                        id="classMilestoneReward"
+                        value={classMilestoneReward}
+                        onChange={(e) => {
+                          setClassMilestoneReward(e.target.value);
+                          handleFieldChange();
+                        }}
+                        placeholder="Pizza party for the whole class!"
+                      />
+                    </FormField>
+                  </>
                 )}
               </div>
             </div>
