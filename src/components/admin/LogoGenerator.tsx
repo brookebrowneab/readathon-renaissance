@@ -4,9 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { Download, Image, FileText, Loader2 } from "lucide-react";
+import { Download, Image, FileText, Loader2, Upload, Check } from "lucide-react";
 import { useActiveEvent } from "@/hooks/useActiveEvent";
 import { handDrawnBorder } from "@/lib/admin-styles";
+import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 // Get ordinal suffix for a day number
 function getOrdinalSuffix(day: number): string {
@@ -132,11 +135,13 @@ const COOPER_BLACK_BASE64_PREFIX = `data:font/woff2;charset=utf-8;base64,`;
 
 export function LogoGenerator() {
   const { data: activeEvent, isLoading: eventLoading } = useActiveEvent();
+  const queryClient = useQueryClient();
   const svgRef = useRef<SVGSVGElement>(null);
   const [dateText, setDateText] = useState("");
   const [xPosition, setXPosition] = useState([50]); // 0-100 slider value
   const [fontLoaded, setFontLoaded] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [isApplying, setIsApplying] = useState(false);
   const [fontBase64, setFontBase64] = useState<string | null>(null);
 
   // Load Cooper Black font and convert to base64 for embedding
@@ -357,6 +362,52 @@ export function LogoGenerator() {
     }
   }, [generateSvgString]);
 
+  // Apply logo to site (upload to storage and update event)
+  const handleApplyToSite = useCallback(async () => {
+    if (!activeEvent) return;
+    
+    setIsApplying(true);
+    try {
+      // Generate SVG with embedded font
+      const svgString = generateSvgString(true);
+      const svgBlob = new Blob([svgString], { type: 'image/svg+xml' });
+      
+      // Upload to storage
+      const fileName = `logo-${activeEvent.id}.svg`;
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('event-logos')
+        .upload(fileName, svgBlob, {
+          upsert: true,
+          contentType: 'image/svg+xml',
+        });
+      
+      if (uploadError) throw uploadError;
+      
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from('event-logos')
+        .getPublicUrl(fileName);
+      
+      // Update event with logo URL
+      const { error: updateError } = await supabase
+        .from('events')
+        .update({ logo_url: urlData.publicUrl })
+        .eq('id', activeEvent.id);
+      
+      if (updateError) throw updateError;
+      
+      // Invalidate queries to refresh logo everywhere
+      queryClient.invalidateQueries({ queryKey: ['active-event'] });
+      
+      toast.success("Logo applied to site successfully!");
+    } catch (error) {
+      console.error("Failed to apply logo:", error);
+      toast.error("Failed to apply logo to site");
+    } finally {
+      setIsApplying(false);
+    }
+  }, [activeEvent, generateSvgString, queryClient]);
+
   if (eventLoading) {
     return (
       <div className="bg-background p-6" style={handDrawnBorder}>
@@ -468,25 +519,44 @@ export function LogoGenerator() {
           </div>
         </div>
 
-        {/* Download Buttons */}
-        <div className="flex gap-3 pt-2">
-          <Button onClick={handleDownloadSvg} variant="outline" className="flex-1">
-            <FileText className="h-4 w-4 mr-2" />
-            Download SVG
-          </Button>
+        {/* Action Buttons */}
+        <div className="space-y-3 pt-2">
+          {/* Apply to Site Button - Primary action */}
           <Button 
-            onClick={handleDownloadPng} 
-            variant="outline" 
-            className="flex-1"
-            disabled={isExporting}
+            onClick={handleApplyToSite} 
+            className="w-full"
+            disabled={isApplying}
           >
-            {isExporting ? (
+            {isApplying ? (
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : activeEvent?.logo_url ? (
+              <Check className="h-4 w-4 mr-2" />
             ) : (
-              <Download className="h-4 w-4 mr-2" />
+              <Upload className="h-4 w-4 mr-2" />
             )}
-            Download PNG
+            {isApplying ? "Applying..." : "Apply to Site"}
           </Button>
+          
+          {/* Download Buttons */}
+          <div className="flex gap-3">
+            <Button onClick={handleDownloadSvg} variant="outline" className="flex-1">
+              <FileText className="h-4 w-4 mr-2" />
+              SVG
+            </Button>
+            <Button 
+              onClick={handleDownloadPng} 
+              variant="outline" 
+              className="flex-1"
+              disabled={isExporting}
+            >
+              {isExporting ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Download className="h-4 w-4 mr-2" />
+              )}
+              PNG
+            </Button>
+          </div>
         </div>
       </div>
     </div>

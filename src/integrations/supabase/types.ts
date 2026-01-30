@@ -340,6 +340,7 @@ export type Database = {
           id: string
           is_active: boolean
           last_log_date: string
+          logo_url: string | null
           name: string
           payment_address: string
           reminder_days: number
@@ -361,6 +362,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           last_log_date: string
+          logo_url?: string | null
           name: string
           payment_address?: string
           reminder_days?: number
@@ -382,6 +384,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           last_log_date?: string
+          logo_url?: string | null
           name?: string
           payment_address?: string
           reminder_days?: number
