@@ -121,7 +121,7 @@ const HomePage = () => {
             <FontDebugOverlay enabled={debugFonts} targetRef={heroHeadingRef} />
 
             <p className="text-base md:text-lg text-muted-foreground max-w-2xl leading-relaxed mb-6">
-              Janney Elementary Read-a-thon runs February 24–March 8. Students read to raise funds for our school. 
+              Janney Elementary Read-a-thon runs February 23–March 8. Students read to raise funds for our school. 
               Ask friends and family to pledge per minute—or give a flat donation—and help fund the programs that make Janney exceptional.
             </p>
 
