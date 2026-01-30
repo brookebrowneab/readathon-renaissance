@@ -210,28 +210,32 @@ const StudentPinDashboardPage = () => {
 
       <main className="flex-1">
         {/* Hero Section - Full width background */}
-        <section className="bg-background py-8 md:py-10 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)]">
+        <section className="bg-background pt-6 md:pt-8 pb-8 md:pb-10">
           <div className="container">
-            <p className="text-sm text-muted-foreground mb-2">How many minutes has Janney read?</p>
-            <div className="relative inline-block">
-              <span className="relative">
-                <span className="font-serif text-5xl md:text-6xl lg:text-7xl font-normal tracking-tight text-foreground leading-[1.05]">
-                  {(schoolTotalMinutes ?? 0).toLocaleString()}
-                </span>
-                <span className="font-serif text-xl md:text-2xl text-muted-foreground ml-2">minutes</span>
-                {/* Highlighter effect - sits behind text */}
-                <span 
-                  className="absolute -skew-y-1 bg-accent/30 -z-10 transform -rotate-[0.5deg]"
-                  style={{
-                    top: '45%',
-                    height: '55%',
-                    left: '-2%',
-                    right: '-2%',
-                    borderRadius: '4px 8px 4px 6px',
-                  }}
-                  aria-hidden="true"
-                />
-              </span>
+            {/* Constrain hero content - matching homepage layout */}
+            <div className="max-w-4xl px-4 md:px-0 md:pl-14 lg:pl-20 md:ml-[30px] text-left">
+              <p className="text-sm text-muted-foreground mb-2">How many minutes has Janney read?</p>
+              {/* Large headline with highlighter effect */}
+              <div className="relative inline-block">
+                <h1 className="font-serif text-5xl md:text-6xl lg:text-7xl font-normal tracking-tight text-foreground leading-[1.05] relative">
+                  <span className="relative">
+                    {(schoolTotalMinutes ?? 0).toLocaleString()}
+                    <span className="font-serif text-xl md:text-2xl text-muted-foreground ml-2 font-normal">minutes</span>
+                    {/* Highlighter effect - sits behind text */}
+                    <span 
+                      className="absolute inset-0 -skew-y-1 bg-accent/30 -z-10 transform -rotate-[0.5deg]"
+                      style={{
+                        top: '45%',
+                        height: '55%',
+                        left: '-2%',
+                        right: '-2%',
+                        borderRadius: '4px 8px 4px 6px',
+                      }}
+                      aria-hidden="true"
+                    />
+                  </span>
+                </h1>
+              </div>
             </div>
           </div>
         </section>
