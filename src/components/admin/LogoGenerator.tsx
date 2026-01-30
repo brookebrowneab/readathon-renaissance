@@ -383,15 +383,18 @@ export function LogoGenerator() {
       
       if (uploadError) throw uploadError;
       
-      // Get public URL
+      // Get public URL with cache-busting timestamp
       const { data: urlData } = supabase.storage
         .from('event-logos')
         .getPublicUrl(fileName);
       
+      // Add cache-busting query parameter to force browsers to refetch
+      const logoUrlWithCacheBust = `${urlData.publicUrl}?v=${Date.now()}`;
+      
       // Update event with logo URL
       const { error: updateError } = await supabase
         .from('events')
-        .update({ logo_url: urlData.publicUrl })
+        .update({ logo_url: logoUrlWithCacheBust })
         .eq('id', activeEvent.id);
       
       if (updateError) throw updateError;
