@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ReadingGoalRing } from "@/components/legacy";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ClassFundraisingStack } from "@/components/ui/class-fundraising-stack";
+import { ClassFundraisingShelf } from "@/components/ui/class-fundraising-shelf";
 import {
   BookOpen,
   Plus,
@@ -480,19 +480,9 @@ const ChildProgressCard = ({ child, milestoneGoal, milestoneReward }: ChildProgr
         
         <div style={{ height: 15 }} />
         
-        {/* Reading Ring + Class Fundraising Stack side by side */}
-        <div className="flex items-center justify-center gap-6 w-full">
+        {/* Reading Ring */}
+        <div className="flex items-center justify-center w-full">
           <ReadingGoalRing progress={child.minutesRead} goal={child.goalMinutes} size={100} />
-          
-          {child.className !== "Not specified" && (
-            <ClassFundraisingStack
-              fundedAmount={child.classFundraisingTotal}
-              goalAmount={milestoneGoal}
-              classLabel="Class Goal"
-              rewardLabel={milestoneReward || undefined}
-              size="sm"
-            />
-          )}
         </div>
         
         {/* Personal Stats Grid */}
@@ -535,32 +525,18 @@ const ChildProgressCard = ({ child, milestoneGoal, milestoneReward }: ChildProgr
           </div>
         </div>
 
-        {/* Class Goal Progress - Prominent and Colorful */}
+        {/* Class Goal Progress - Horizontal Book Shelf */}
         {child.className !== "Not specified" && milestoneReward && (
-          <div className="w-full rounded-xl bg-gradient-to-r from-primary/15 via-accent/15 to-success/15 p-4 border-2 border-primary/30">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-foreground flex items-center gap-1.5">
-                <Star className="h-4 w-4 text-accent fill-accent" />
-                Class Goal Progress
-              </span>
-              <span className="text-xs text-muted-foreground">
-                {Math.min(Math.round((child.classMinutesRead / milestoneGoal) * 100), 100)}%
-              </span>
-            </div>
-            <div className="h-3 w-full bg-muted/50 rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-gradient-to-r from-primary via-accent to-success rounded-full transition-all duration-500"
-                style={{ width: `${Math.min((child.classMinutesRead / milestoneGoal) * 100, 100)}%` }}
-              />
-            </div>
-            <div className="mt-2 flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">
-                <span className="font-semibold text-foreground">{child.classMinutesRead.toLocaleString()}</span> / {milestoneGoal.toLocaleString()} min
-              </span>
-              {milestoneReward && (
-                <span className="font-medium text-success">🎉 {milestoneReward}</span>
-              )}
-            </div>
+          <div className="w-full pt-2">
+            <p className="text-xs text-muted-foreground mb-1.5 flex items-center gap-1">
+              <Star className="h-3 w-3 text-accent fill-accent" />
+              Class Goal
+            </p>
+            <ClassFundraisingShelf
+              currentMinutes={child.classMinutesRead}
+              goalMinutes={milestoneGoal}
+              rewardLabel={milestoneReward}
+            />
           </div>
         )}
 
