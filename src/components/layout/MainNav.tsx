@@ -5,7 +5,7 @@ import { Menu, User, LogOut, Bell, Clock, Mail, ChevronDown, GraduationCap, Hear
 import { useState } from "react";
 import { MobileNavDrawer } from "./MobileNavDrawer";
 import { UserRole } from "./BottomTabBar";
-import logo from "@/assets/logo.svg";
+import { useEventLogo } from "@/hooks/useEventLogo";
 import { useAuth } from "@/hooks/useAuth";
 import { useChildren } from "@/hooks/useChildren";
 import { useTeacherAuth } from "@/hooks/useTeacherAuth";
@@ -49,6 +49,7 @@ const MainNav = () => {
   const { user, isAdmin, signOut } = useAuth();
   const { children } = useChildren();
   const { isTeacher } = useTeacherAuth();
+  const { logoUrl } = useEventLogo();
 
   const desktopNavItemClass =
     "inline-flex items-start text-xs font-semibold tracking-widest text-muted-foreground transition-colors hover:text-foreground hover:underline py-2 px-0 m-0 leading-none";
@@ -86,7 +87,7 @@ const MainNav = () => {
           {/* Logo - Left (larger on home page) */}
           <Link to="/" className="flex items-center" style={{ marginTop: '10px', marginLeft: '20px' }}>
             <img 
-              src={logo} 
+              src={logoUrl} 
               alt="Read-a-thon" 
               className="h-18 w-auto" 
               style={{ 
@@ -259,10 +260,9 @@ const MainNav = () => {
         )}
       </header>
 
-      {/* Mobile Header */}
       <header className="sticky top-0 z-40 flex items-center justify-between h-14 px-4 bg-white/90 backdrop-blur-sm border-b border-slate-100 md:hidden">
         <Link to="/" className="flex items-center">
-          <img src={logo} alt="Read-a-thon" className="h-10 w-auto" />
+          <img src={logoUrl} alt="Read-a-thon" className="h-10 w-auto" />
         </Link>
         <div className="flex items-center gap-2">
           <button
