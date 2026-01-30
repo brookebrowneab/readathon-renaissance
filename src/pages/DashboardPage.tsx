@@ -326,6 +326,7 @@ const DashboardPage = () => {
                                   child={item.child}
                                   pledges={item.pledges}
                                   totalAmount={item.totalAmount}
+                                  books={item.books}
                                   horizontal
                                 />
                               ))}
@@ -399,6 +400,7 @@ const DashboardPage = () => {
                                     child={item.child}
                                     pledges={item.pledges}
                                     totalAmount={item.totalAmount}
+                                    books={item.books}
                                   />
                                 ))}
                               </div>
@@ -435,6 +437,7 @@ const DashboardPage = () => {
                                   child={item.child}
                                   pledges={item.pledges}
                                   totalAmount={item.totalAmount}
+                                  books={item.books}
                                 />
                               ))}
                             </div>
@@ -713,7 +716,7 @@ const DashboardPage = () => {
 };
 
 // Sponsored Child Card Component (Limited view for sponsors)
-import { SponsorPledge, SponsorClassPledge } from "@/hooks/useSponsorPledges";
+import { SponsorPledge, SponsorClassPledge, ChildBook } from "@/hooks/useSponsorPledges";
 
 interface SponsoredChildCardProps {
   childId: string;
@@ -727,11 +730,12 @@ interface SponsoredChildCardProps {
   } | null;
   pledges: SponsorPledge[];
   totalAmount: number;
+  books?: ChildBook[];
   compact?: boolean;
   horizontal?: boolean;
 }
 
-const SponsoredChildCard = ({ childId, childName, child, pledges, totalAmount, compact = false, horizontal = false }: SponsoredChildCardProps) => {
+const SponsoredChildCard = ({ childId, childName, child, pledges, totalAmount, books = [], compact = false, horizontal = false }: SponsoredChildCardProps) => {
   const totalMinutes = child?.total_minutes || 0;
   const goalMinutes = child?.goal_minutes || 300;
   const gradeInfo = child?.grade_info || "Student";
@@ -774,7 +778,7 @@ const SponsoredChildCard = ({ childId, childName, child, pledges, totalAmount, c
           </div>
           
           {/* Right side - Details */}
-          <div className="flex-1 p-5 flex flex-col justify-between">
+          <div className="flex-1 p-5 flex flex-col">
             {/* Header */}
             <div>
               <div className="flex items-start justify-between gap-2 mb-1">
@@ -785,7 +789,7 @@ const SponsoredChildCard = ({ childId, childName, child, pledges, totalAmount, c
                   {hasPendingPayment ? "Pledged" : "Paid"}
                 </Badge>
               </div>
-              <p className="text-sm text-muted-foreground mb-4">{gradeInfo}</p>
+              <p className="text-sm text-muted-foreground mb-3">{gradeInfo}</p>
             </div>
             
             {/* Pledge stats */}
@@ -802,8 +806,44 @@ const SponsoredChildCard = ({ childId, childName, child, pledges, totalAmount, c
               </div>
             </div>
             
+            {/* Books Read */}
+            {books.length > 0 && (
+              <div className="mb-4">
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-2">
+                  <BookOpen className="inline h-3 w-3 mr-1" />
+                  Books Read ({books.length})
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {books.slice(0, 5).map((book) => (
+                    <div 
+                      key={book.id}
+                      className="group relative"
+                      title={`${book.title}${book.author ? ` by ${book.author}` : ''}`}
+                    >
+                      {book.cover_url ? (
+                        <img 
+                          src={book.cover_url} 
+                          alt={book.title}
+                          className="h-10 w-7 object-cover rounded shadow-sm border border-border"
+                        />
+                      ) : (
+                        <div className="h-10 w-7 bg-muted rounded shadow-sm border border-border flex items-center justify-center">
+                          <BookOpen className="h-3 w-3 text-muted-foreground" />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  {books.length > 5 && (
+                    <div className="h-10 w-7 bg-muted/50 rounded shadow-sm border border-border flex items-center justify-center">
+                      <span className="text-[10px] text-muted-foreground font-medium">+{books.length - 5}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+            
             {/* Thank you */}
-            <div className="rounded-lg bg-primary/5 p-2.5 border border-primary/10">
+            <div className="rounded-lg bg-primary/5 p-2.5 border border-primary/10 mt-auto">
               <p className="text-xs text-center text-muted-foreground">
                 <Heart className="inline h-3 w-3 text-primary mr-1" />
                 Thank you for supporting {childName.split(" ")[0]}'s reading journey!
@@ -865,6 +905,42 @@ const SponsoredChildCard = ({ childId, childName, child, pledges, totalAmount, c
             </div>
           </div>
         </div>
+        
+        {/* Books Read */}
+        {books.length > 0 && (
+          <div className="w-full pt-2">
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-2 text-center">
+              <BookOpen className="inline h-3 w-3 mr-1" />
+              Books Read ({books.length})
+            </p>
+            <div className="flex flex-wrap justify-center gap-1.5">
+              {books.slice(0, 4).map((book) => (
+                <div 
+                  key={book.id}
+                  className="group relative"
+                  title={`${book.title}${book.author ? ` by ${book.author}` : ''}`}
+                >
+                  {book.cover_url ? (
+                    <img 
+                      src={book.cover_url} 
+                      alt={book.title}
+                      className="h-10 w-7 object-cover rounded shadow-sm border border-border"
+                    />
+                  ) : (
+                    <div className="h-10 w-7 bg-muted rounded shadow-sm border border-border flex items-center justify-center">
+                      <BookOpen className="h-3 w-3 text-muted-foreground" />
+                    </div>
+                  )}
+                </div>
+              ))}
+              {books.length > 4 && (
+                <div className="h-10 w-7 bg-muted/50 rounded shadow-sm border border-border flex items-center justify-center">
+                  <span className="text-[10px] text-muted-foreground font-medium">+{books.length - 4}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
         
         {/* Thank You Message */}
         <div className="w-full rounded-lg bg-primary/5 p-3 border border-primary/10">

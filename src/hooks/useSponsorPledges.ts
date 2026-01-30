@@ -3,6 +3,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSponsorAuth } from "./useSponsorAuth";
 
+export interface ChildBook {
+  id: string;
+  title: string;
+  author: string | null;
+  cover_url: string | null;
+}
+
 export interface SponsorPledge {
   id: string;
   child_id: string | null;
@@ -128,6 +135,54 @@ export const useSponsorPledges = () => {
     enabled: !!user?.id,
   });
 
+  // Get unique child IDs from pledges
+  const sponsoredChildIds = [...new Set(pledges.map(p => p.child_id).filter(Boolean))] as string[];
+
+  // Fetch books read by sponsored children
+  const {
+    data: childrenBooks = {},
+    isLoading: booksLoading,
+  } = useQuery({
+    queryKey: ["sponsored-children-books", sponsoredChildIds],
+    queryFn: async () => {
+      if (sponsoredChildIds.length === 0) return {};
+
+      // Fetch reading logs with book data for all sponsored children
+      const { data, error } = await supabase
+        .from("reading_logs")
+        .select(`
+          child_id,
+          book:books(id, title, author, cover_url)
+        `)
+        .in("child_id", sponsoredChildIds)
+        .not("book_id", "is", null);
+
+      if (error) throw error;
+
+      // Group books by child, removing duplicates
+      const booksByChild: Record<string, ChildBook[]> = {};
+      const seenBooks: Record<string, Set<string>> = {};
+
+      data?.forEach((log: any) => {
+        if (!log.child_id || !log.book) return;
+        
+        if (!booksByChild[log.child_id]) {
+          booksByChild[log.child_id] = [];
+          seenBooks[log.child_id] = new Set();
+        }
+        
+        // Avoid duplicates
+        if (!seenBooks[log.child_id].has(log.book.id)) {
+          seenBooks[log.child_id].add(log.book.id);
+          booksByChild[log.child_id].push(log.book);
+        }
+      });
+
+      return booksByChild;
+    },
+    enabled: sponsoredChildIds.length > 0,
+  });
+
   // Calculate stats from both pledge types
   const stats: SponsorPledgeStats = {
     totalPledged: 0,
@@ -191,7 +246,7 @@ export const useSponsorPledges = () => {
   const uniqueYears = new Set(allDates);
   stats.yearsSponsoring = uniqueYears.size;
 
-  // Group pledges by child
+  // Group pledges by child (including books)
   const pledgesByChild = pledges.reduce((acc, pledge) => {
     const childId = pledge.child_id || "unknown";
     const childName = pledge.child?.name || pledge.student_name;
@@ -203,6 +258,7 @@ export const useSponsorPledges = () => {
         child: pledge.child,
         pledges: [],
         totalAmount: 0,
+        books: childrenBooks[childId] || [],
       };
     }
 
@@ -215,7 +271,7 @@ export const useSponsorPledges = () => {
     acc[childId].totalAmount += pledgeAmount;
 
     return acc;
-  }, {} as Record<string, { childId: string; childName: string; child: SponsorPledge["child"]; pledges: SponsorPledge[]; totalAmount: number }>);
+  }, {} as Record<string, { childId: string; childName: string; child: SponsorPledge["child"]; pledges: SponsorPledge[]; totalAmount: number; books: ChildBook[] }>);
 
   // Group class pledges by class
   const pledgesByClass = classPledges.reduce((acc, pledge) => {
@@ -275,7 +331,7 @@ export const useSponsorPledges = () => {
     pledgesByChild: Object.values(pledgesByChild),
     pledgesByClass: Object.values(pledgesByClass),
     stats,
-    isLoading: authLoading || pledgesLoading || classPledgesLoading,
+    isLoading: authLoading || pledgesLoading || classPledgesLoading || booksLoading,
     error: pledgesError || classPledgesError,
     refetch,
     updatePledge,
