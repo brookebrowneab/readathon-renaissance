@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { useChildren } from "@/hooks/useChildren";
 import { useParentPledges } from "@/hooks/useParentPledges";
+import { useSponsorPledges } from "@/hooks/useSponsorPledges";
 import { usePledges } from "@/hooks/usePledges";
 import { useAllChildrenReadingLogs } from "@/hooks/useReadingLogs";
 import { useClassGradeTotals } from "@/hooks/useClassGradeTotals";
@@ -67,8 +68,39 @@ const DashboardPage = () => {
   const navigate = useNavigate();
   const [userName, setUserName] = useState<string>("");
   const { children, isLoading: childrenLoading } = useChildren();
-  const { pledgesByChild, totalPledges, totalSponsors, isLoading: pledgesLoading } = useParentPledges();
+  const { pledgesByChild: parentPledgesByChild, totalPledges: parentTotalPledges, isLoading: parentPledgesLoading } = useParentPledges();
+  const { pledgesByChild: sponsorPledgesByChild, stats: sponsorStats, isLoading: sponsorPledgesLoading, sponsor } = useSponsorPledges();
   const { deletePledge } = usePledges();
+  
+  // Determine if user is primarily a sponsor (has sponsor profile but no children)
+  const isSponsorOnly = sponsor && children.length === 0;
+  
+  // Merge pledges: Use sponsor pledges if sponsor-only, otherwise use parent pledges
+  // For users who are both parents and sponsors, show parent pledges (their children's incoming pledges)
+  const pledgesByChild = isSponsorOnly 
+    ? sponsorPledgesByChild.map(item => ({
+        childId: item.childId,
+        childName: item.childName,
+        pledges: item.pledges.map(p => ({
+          id: p.id,
+          child_id: p.child_id,
+          event_id: p.event_id,
+          sponsor_id: p.sponsor_id,
+          student_name: p.student_name,
+          pledge_type: p.pledge_type,
+          amount: p.amount,
+          is_paid: p.is_paid,
+          payment_status: p.payment_status,
+          expected_payment_method: p.expected_payment_method,
+          created_at: p.created_at,
+        })),
+        totalAmount: item.totalAmount,
+        sponsorCount: 1, // Sponsor is viewing their own pledges
+      }))
+    : parentPledgesByChild;
+  
+  const totalPledges = isSponsorOnly ? sponsorStats.totalPledged : parentTotalPledges;
+  const pledgesLoading = parentPledgesLoading || sponsorPledgesLoading;
   const { data: logsByChild, isLoading: logsLoading } = useAllChildrenReadingLogs();
   const { data: classGradeTotals } = useClassGradeTotals(children);
   const { data: activeEvent } = useActiveEvent();
@@ -423,9 +455,11 @@ const DashboardPage = () => {
                     </div>
                     <div className="relative flex flex-col items-center rounded-lg bg-muted/30 p-3">
                       <Star className="absolute -right-1 -top-1 h-4 w-4 fill-accent text-accent" />
-                      <span className="text-xs text-muted-foreground">Sponsors</span>
+                      <span className="text-xs text-muted-foreground">
+                        {isSponsorOnly ? "Children" : "Sponsors"}
+                      </span>
                       <span className="font-serif text-2xl text-primary">
-                        {totalSponsors}
+                        {isSponsorOnly ? sponsorStats.childrenSupported : pledgesByChild.reduce((sum, c) => sum + c.sponsorCount, 0)}
                       </span>
                     </div>
                   </div>
