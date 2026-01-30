@@ -43,6 +43,7 @@ import { VerifyLogsPage } from "./pages/reading-logs";
 import AdminUsersPage from "./pages/AdminUsersPage";
 import AdminFinancePage from "./pages/AdminFinancePage";
 import DebugRingPage from "./pages/DebugRingPage";
+import AccountSettingsPage from "./pages/AccountSettingsPage";
 import NotFound from "./pages/NotFound";
 import { RequireAdmin } from "./components/auth/RequireAdmin";
 
@@ -99,6 +100,7 @@ const App = () => (
           <Route path="/children/:id/add-sponsor" element={<AddSponsorPage />} />
           <Route path="/log-reading" element={<LogReadingPage />} />
           <Route path="/my-pledges" element={<MyPledgesPage />} />
+          <Route path="/account" element={<AccountSettingsPage />} />
           
           {/* Sponsor Dashboard */}
           <Route path="/sponsor/login" element={<SponsorLoginPage />} />
