@@ -533,8 +533,8 @@ const ChildProgressCard = ({ child, milestoneGoal, milestoneReward }: ChildProgr
               Class Goal
             </p>
             <ClassFundraisingShelf
-              currentMinutes={child.classMinutesRead}
-              goalMinutes={milestoneGoal}
+              fundedAmount={child.classFundraisingTotal}
+              goalAmount={milestoneGoal}
               rewardLabel={milestoneReward}
             />
           </div>
