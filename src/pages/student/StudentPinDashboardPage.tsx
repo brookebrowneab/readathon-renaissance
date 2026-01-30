@@ -214,10 +214,10 @@ const StudentPinDashboardPage = () => {
           <div className="container">
             {/* Constrain hero content - matching homepage layout */}
             <div className="max-w-4xl px-4 md:px-0 md:pl-14 lg:pl-20 md:ml-[30px] text-left">
-              <p className="text-sm text-muted-foreground mb-2">How many minutes has Janney read?</p>
               {/* Large headline with highlighter effect */}
               <div className="relative inline-block">
                 <h1 className="font-serif text-5xl md:text-6xl lg:text-7xl font-normal tracking-tight text-foreground leading-[1.05] relative">
+                  <span className="text-lg md:text-xl text-muted-foreground font-normal mr-3 align-baseline">How many minutes has Janney read?</span>
                   <span className="relative inline-block">
                     <span className="relative z-10">
                       {(schoolTotalMinutes ?? 0).toLocaleString()}
