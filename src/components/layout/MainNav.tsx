@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Menu, User, LogOut, Bell, Clock, Mail } from "lucide-react";
+import { Menu, User, LogOut, Bell, Clock, Mail, ChevronDown, GraduationCap, Heart } from "lucide-react";
 import { useState } from "react";
 import { MobileNavDrawer } from "./MobileNavDrawer";
 import { UserRole } from "./BottomTabBar";
@@ -12,6 +12,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface NavItem {
   label: string;
@@ -147,14 +153,31 @@ const MainNav = () => {
                       Login
                     </Button>
                   </Link>
-                  <Link to="/register">
-                    <Button 
-                      size="sm" 
-                      className="rounded-md m-0 leading-tight"
-                    >
-                      Sign Up
-                    </Button>
-                  </Link>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button 
+                        size="sm" 
+                        className="rounded-md m-0 leading-tight"
+                      >
+                        Sign Up
+                        <ChevronDown className="ml-1 h-3 w-3" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48 bg-background border border-border shadow-lg z-[70]">
+                      <DropdownMenuItem asChild>
+                        <Link to="/register" className="flex items-center gap-2 cursor-pointer">
+                          <GraduationCap className="h-4 w-4" />
+                          Enroll a Student
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to="/sponsor" className="flex items-center gap-2 cursor-pointer">
+                          <Heart className="h-4 w-4" />
+                          Become a Sponsor
+                        </Link>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
             )}
