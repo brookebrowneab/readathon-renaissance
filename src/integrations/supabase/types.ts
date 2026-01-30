@@ -539,6 +539,53 @@ export type Database = {
           },
         ]
       }
+      sponsor_invitations: {
+        Row: {
+          can_invite_others: boolean
+          child_id: string
+          created_at: string
+          id: string
+          invited_by_parent: boolean
+          invitee_email: string
+          invitee_user_id: string | null
+          inviter_user_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          can_invite_others?: boolean
+          child_id: string
+          created_at?: string
+          id?: string
+          invited_by_parent?: boolean
+          invitee_email: string
+          invitee_user_id?: string | null
+          inviter_user_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          can_invite_others?: boolean
+          child_id?: string
+          created_at?: string
+          id?: string
+          invited_by_parent?: boolean
+          invitee_email?: string
+          invitee_user_id?: string | null
+          inviter_user_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sponsor_invitations_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sponsors: {
         Row: {
           created_at: string
