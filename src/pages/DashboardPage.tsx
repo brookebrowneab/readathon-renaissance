@@ -142,6 +142,13 @@ const DashboardPage = () => {
       .slice(0, 5);
   }, [logsByChild, children]);
 
+  // Redirect sponsor-only users to /sponsor/dashboard
+  useEffect(() => {
+    if (!childrenLoading && !sponsorPledgesLoading && isSponsorOnly) {
+      navigate("/sponsor/dashboard", { replace: true });
+    }
+  }, [childrenLoading, sponsorPledgesLoading, isSponsorOnly, navigate]);
+
   useEffect(() => {
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
