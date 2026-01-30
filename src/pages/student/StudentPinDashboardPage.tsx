@@ -216,23 +216,25 @@ const StudentPinDashboardPage = () => {
               {/* School-wide Minutes Counter */}
               <div className="mb-2">
                 <p className="text-sm text-muted-foreground mb-1">How many minutes has Janney read?</p>
-                <div className="inline-block relative">
-                  <span className="font-handwritten text-6xl md:text-7xl lg:text-8xl text-foreground tracking-tight relative">
-                    {(schoolTotalMinutes ?? 0).toLocaleString()}
-                    {/* Highlighter effect */}
+                <div className="relative inline-block">
+                  <span className="relative">
+                    <span className="font-serif text-5xl md:text-6xl lg:text-7xl font-normal tracking-tight text-foreground leading-[1.05]">
+                      {(schoolTotalMinutes ?? 0).toLocaleString()}
+                    </span>
+                    <span className="font-serif text-xl md:text-2xl text-muted-foreground ml-2">minutes</span>
+                    {/* Highlighter effect - sits behind text */}
                     <span 
-                      className="absolute -skew-y-1 bg-accent/40 -z-10 transform -rotate-[0.5deg]"
+                      className="absolute -skew-y-1 bg-accent/30 -z-10 transform -rotate-[0.5deg]"
                       style={{
-                        top: '35%',
+                        top: '45%',
                         height: '55%',
-                        left: '-3%',
-                        right: '-3%',
+                        left: '-2%',
+                        right: '-2%',
                         borderRadius: '4px 8px 4px 6px',
                       }}
                       aria-hidden="true"
                     />
                   </span>
-                  <span className="text-sm text-muted-foreground ml-2">minutes</span>
                 </div>
               </div>
 
