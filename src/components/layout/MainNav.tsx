@@ -179,13 +179,13 @@ const MainNav = () => {
                       <DropdownMenuItem asChild>
                         <Link to="/register" className="flex items-center gap-2 cursor-pointer">
                           <GraduationCap className="h-4 w-4" />
-                          Enroll a Student
+                          I am a Parent
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
                         <Link to="/sponsor" className="flex items-center gap-2 cursor-pointer">
                           <Heart className="h-4 w-4" />
-                          Become a Sponsor
+                          I am a Sponsor
                         </Link>
                       </DropdownMenuItem>
                     </DropdownMenuContent>
