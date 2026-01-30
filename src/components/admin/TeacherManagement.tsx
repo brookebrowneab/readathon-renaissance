@@ -43,9 +43,12 @@ import {
   Shield,
   Link,
   Link2Off,
+  Mail,
+  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { handDrawnBorder } from "@/lib/admin-styles";
+import { supabase } from "@/integrations/supabase/client";
 import {
   useTeachers,
   useCreateTeacher,
@@ -90,7 +93,7 @@ export function TeacherManagement() {
   const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
   const [pendingUpload, setPendingUpload] = useState<CreateTeacherInput[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
+  const [sendingInvite, setSendingInvite] = useState<string | null>(null);
   // Form state
   const [formName, setFormName] = useState("");
   const [formEmail, setFormEmail] = useState("");
@@ -221,6 +224,50 @@ export function TeacherManagement() {
       toast.success("Removed class assignment");
     } catch (error) {
       // Error handled in hook
+    }
+  };
+
+  const handleSendInvite = async (teacher: Teacher) => {
+    if (!teacher.email) {
+      toast.error("Teacher must have an email address to send an invite");
+      return;
+    }
+
+    if (teacher.user_id) {
+      toast.error("Teacher already has a linked account");
+      return;
+    }
+
+    setSendingInvite(teacher.id);
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.access_token) {
+        toast.error("Authentication required");
+        setSendingInvite(null);
+        return;
+      }
+
+      const response = await supabase.functions.invoke("send-teacher-invite", {
+        body: {
+          teacherId: teacher.id,
+          teacherEmail: teacher.email,
+          teacherName: teacher.name,
+          redirectUrl: `${window.location.origin}/teacher/set-password`,
+        },
+      });
+
+      if (response.error) {
+        throw new Error(response.error.message || "Failed to send invite");
+      }
+
+      toast.success(`Invite sent to ${teacher.email}`);
+    } catch (error: any) {
+      console.error("Error sending invite:", error);
+      toast.error(error.message || "Failed to send invite");
+    } finally {
+      setSendingInvite(null);
     }
   };
 
@@ -440,6 +487,23 @@ export function TeacherManagement() {
                           )}
                         </div>
                         <div className="flex items-center gap-1">
+                          {/* Send Invite button - show for teachers with email but no linked account */}
+                          {teacher.email && !teacher.user_id && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleSendInvite(teacher)}
+                              disabled={sendingInvite === teacher.id}
+                              className="text-primary hover:text-primary"
+                              title="Send invite email"
+                            >
+                              {sendingInvite === teacher.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Mail className="h-4 w-4" />
+                              )}
+                            </Button>
+                          )}
                           {teacher.teacher_type === "partner" && (
                             <Button
                               variant="ghost"
