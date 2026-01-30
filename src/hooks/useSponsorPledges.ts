@@ -31,6 +31,33 @@ export interface SponsorPledge {
   } | null;
 }
 
+export interface SponsorClassPledge {
+  id: string;
+  class_name: string;
+  pledge_type: string;
+  amount: number;
+  is_paid: boolean;
+  is_unlocked: boolean;
+  payment_status: string;
+  milestone_minutes_target: number | null;
+  max_cap: number | null;
+  event_id: string | null;
+  teacher_id: string | null;
+  sponsor_user_id: string;
+  created_at: string;
+  // Joined data
+  teacher?: {
+    id: string;
+    name: string;
+  } | null;
+  event?: {
+    id: string;
+    name: string;
+    start_date: string;
+    end_date: string;
+  } | null;
+}
+
 export interface SponsorPledgeStats {
   totalPledged: number;
   totalPaid: number;
@@ -39,18 +66,20 @@ export interface SponsorPledgeStats {
   paidCount: number;
   pendingCount: number;
   childrenSupported: number;
+  classesSupported: number;
   yearsSponsoring: number;
 }
 
 export const useSponsorPledges = () => {
-  const { sponsor, loading: authLoading } = useSponsorAuth();
+  const { sponsor, user, loading: authLoading } = useSponsorAuth();
   const queryClient = useQueryClient();
 
+  // Fetch individual child pledges
   const {
     data: pledges = [],
     isLoading: pledgesLoading,
-    error,
-    refetch,
+    error: pledgesError,
+    refetch: refetchPledges,
   } = useQuery({
     queryKey: ["sponsor-pledges", sponsor?.id],
     queryFn: async () => {
@@ -72,46 +101,94 @@ export const useSponsorPledges = () => {
     enabled: !!sponsor?.id,
   });
 
-  // Calculate stats
-  const stats: SponsorPledgeStats = pledges.reduce(
-    (acc, pledge) => {
-      const pledgeAmount =
-        pledge.pledge_type === "per_minute" && pledge.child
-          ? pledge.amount * pledge.child.total_minutes
-          : pledge.amount;
+  // Fetch class pledges
+  const {
+    data: classPledges = [],
+    isLoading: classPledgesLoading,
+    error: classPledgesError,
+    refetch: refetchClassPledges,
+  } = useQuery({
+    queryKey: ["sponsor-class-pledges", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
 
-      if (pledge.is_paid) {
-        acc.totalPaid += pledgeAmount;
-        acc.paidCount += 1;
-      } else {
-        acc.pendingAmount += pledgeAmount;
-        acc.pendingCount += 1;
-      }
-      acc.totalPledged += pledgeAmount;
-      acc.pledgeCount += 1;
+      const { data, error } = await supabase
+        .from("class_pledges")
+        .select(`
+          *,
+          teacher:teachers(id, name),
+          event:events(id, name, start_date, end_date)
+        `)
+        .eq("sponsor_user_id", user.id)
+        .order("created_at", { ascending: false });
 
-      return acc;
+      if (error) throw error;
+      return data as SponsorClassPledge[];
     },
-    {
-      totalPledged: 0,
-      totalPaid: 0,
-      pendingAmount: 0,
-      pledgeCount: 0,
-      paidCount: 0,
-      pendingCount: 0,
-      childrenSupported: 0,
-      yearsSponsoring: 0,
+    enabled: !!user?.id,
+  });
+
+  // Calculate stats from both pledge types
+  const stats: SponsorPledgeStats = {
+    totalPledged: 0,
+    totalPaid: 0,
+    pendingAmount: 0,
+    pledgeCount: 0,
+    paidCount: 0,
+    pendingCount: 0,
+    childrenSupported: 0,
+    classesSupported: 0,
+    yearsSponsoring: 0,
+  };
+
+  // Process individual pledges
+  pledges.forEach((pledge) => {
+    const pledgeAmount =
+      pledge.pledge_type === "per_minute" && pledge.child
+        ? pledge.amount * pledge.child.total_minutes
+        : pledge.amount;
+
+    if (pledge.is_paid) {
+      stats.totalPaid += pledgeAmount;
+      stats.paidCount += 1;
+    } else {
+      stats.pendingAmount += pledgeAmount;
+      stats.pendingCount += 1;
     }
-  );
+    stats.totalPledged += pledgeAmount;
+    stats.pledgeCount += 1;
+  });
+
+  // Process class pledges
+  classPledges.forEach((pledge) => {
+    // For class pledges, just use the amount (milestone pledges show their tier amount)
+    const pledgeAmount = pledge.amount;
+
+    if (pledge.is_paid) {
+      stats.totalPaid += pledgeAmount;
+      stats.paidCount += 1;
+    } else {
+      stats.pendingAmount += pledgeAmount;
+      stats.pendingCount += 1;
+    }
+    stats.totalPledged += pledgeAmount;
+    stats.pledgeCount += 1;
+  });
 
   // Count unique children
   const uniqueChildren = new Set(pledges.map((p) => p.child_id).filter(Boolean));
   stats.childrenSupported = uniqueChildren.size;
 
-  // Count unique years
-  const uniqueYears = new Set(
-    pledges.map((p) => new Date(p.created_at).getFullYear())
-  );
+  // Count unique classes
+  const uniqueClasses = new Set(classPledges.map((p) => p.class_name));
+  stats.classesSupported = uniqueClasses.size;
+
+  // Count unique years from both pledge types
+  const allDates = [
+    ...pledges.map((p) => new Date(p.created_at).getFullYear()),
+    ...classPledges.map((p) => new Date(p.created_at).getFullYear()),
+  ];
+  const uniqueYears = new Set(allDates);
   stats.yearsSponsoring = uniqueYears.size;
 
   // Group pledges by child
@@ -140,6 +217,25 @@ export const useSponsorPledges = () => {
     return acc;
   }, {} as Record<string, { childId: string; childName: string; child: SponsorPledge["child"]; pledges: SponsorPledge[]; totalAmount: number }>);
 
+  // Group class pledges by class
+  const pledgesByClass = classPledges.reduce((acc, pledge) => {
+    const className = pledge.class_name;
+
+    if (!acc[className]) {
+      acc[className] = {
+        className,
+        teacher: pledge.teacher,
+        pledges: [],
+        totalAmount: 0,
+      };
+    }
+
+    acc[className].pledges.push(pledge);
+    acc[className].totalAmount += pledge.amount;
+
+    return acc;
+  }, {} as Record<string, { className: string; teacher: SponsorClassPledge["teacher"]; pledges: SponsorClassPledge[]; totalAmount: number }>);
+
   // Update pledge payment status
   const updatePledge = useMutation({
     mutationFn: async ({
@@ -165,14 +261,25 @@ export const useSponsorPledges = () => {
     },
   });
 
+  const refetch = () => {
+    refetchPledges();
+    refetchClassPledges();
+  };
+
+  // Determine if returning sponsor (has any pledges)
+  const hasAnyPledges = pledges.length > 0 || classPledges.length > 0;
+
   return {
     pledges,
+    classPledges,
     pledgesByChild: Object.values(pledgesByChild),
+    pledgesByClass: Object.values(pledgesByClass),
     stats,
-    isLoading: authLoading || pledgesLoading,
-    error,
+    isLoading: authLoading || pledgesLoading || classPledgesLoading,
+    error: pledgesError || classPledgesError,
     refetch,
     updatePledge,
     sponsor,
+    hasAnyPledges,
   };
 };

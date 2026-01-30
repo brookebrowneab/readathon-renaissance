@@ -29,7 +29,12 @@ import {
   User,
   BookOpen,
   CircleDollarSign,
+  GraduationCap,
+  Target,
 } from "lucide-react";
+import { ClassFundraisingShelf } from "@/components/ui/class-fundraising-shelf";
+import { useActiveEvent } from "@/hooks/useActiveEvent";
+import { useClassFundraisingTotal } from "@/hooks/useClassFundraising";
 
 // Hand-drawn border style matching FAQ/Privacy pages
 const handDrawnBorder = {
@@ -48,11 +53,142 @@ const menuItems = [
   { label: "Account", href: "/sponsor/dashboard", icon: User },
 ];
 
+// Class Support Card Component for displaying classroom pledges
+interface ClassGroupData {
+  className: string;
+  teacher: { id: string; name: string } | null;
+  pledges: {
+    id: string;
+    pledge_type: string;
+    amount: number;
+    is_paid: boolean;
+    is_unlocked: boolean;
+    milestone_minutes_target: number | null;
+    created_at: string;
+    event?: { id: string; name: string } | null;
+  }[];
+  totalAmount: number;
+}
+
+const ClassSupportCard = ({ classGroup }: { classGroup: ClassGroupData }) => {
+  const { data: activeEvent } = useActiveEvent();
+  const { data: fundraisingTotal = 0 } = useClassFundraisingTotal(
+    classGroup.className,
+    activeEvent?.id
+  );
+  
+  const milestoneGoal = activeEvent?.class_milestone_goal || 1000;
+  const milestoneReward = activeEvent?.class_milestone_reward || "Principal's Storytime";
+
+  return (
+    <div 
+      className="p-6 bg-background"
+      style={handDrawnBorder}
+    >
+      <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
+        <div>
+          <h3 className="font-serif text-xl text-foreground flex items-center gap-2">
+            <GraduationCap className="h-5 w-5 text-muted-foreground" />
+            {classGroup.className}
+          </h3>
+          {classGroup.teacher && (
+            <p className="text-muted-foreground text-sm">
+              {classGroup.teacher.name}
+            </p>
+          )}
+        </div>
+        <Badge variant="outline" className="gap-1">
+          {classGroup.pledges.length} pledge{classGroup.pledges.length !== 1 ? "s" : ""}
+        </Badge>
+      </div>
+
+      {/* Class Pledge Goal Progress */}
+      <div className="mb-4">
+        <p className="text-xs text-muted-foreground mb-1.5 flex items-center gap-1">
+          <Target className="h-3 w-3 text-accent" />
+          Class Pledge Goal
+        </p>
+        <ClassFundraisingShelf
+          fundedAmount={fundraisingTotal}
+          goalAmount={milestoneGoal}
+          rewardLabel={milestoneReward}
+        />
+      </div>
+
+      <div className="grid sm:grid-cols-2 gap-4">
+        <div className="bg-muted/30 rounded-lg p-4 text-center">
+          <p className="text-xs text-muted-foreground mb-1">Your Contribution</p>
+          <p className="font-handwritten text-2xl text-primary">
+            ${classGroup.totalAmount.toFixed(2)}
+          </p>
+        </div>
+        <div className="bg-muted/30 rounded-lg p-4 text-center">
+          <p className="text-xs text-muted-foreground mb-1">Class Total Raised</p>
+          <p className="font-handwritten text-2xl text-success">
+            ${fundraisingTotal.toFixed(2)}
+          </p>
+        </div>
+      </div>
+
+      {/* Individual pledges for this class */}
+      <div className="mt-4 pt-4 border-t border-border space-y-2">
+        {classGroup.pledges.map((pledge) => (
+          <div
+            key={pledge.id}
+            className="flex items-center justify-between p-3 rounded-lg bg-muted/20"
+          >
+            <div className="flex items-center gap-3">
+              {pledge.is_paid ? (
+                <CheckCircle className="h-4 w-4 text-success" />
+              ) : pledge.pledge_type === "milestone" && !pledge.is_unlocked ? (
+                <Clock className="h-4 w-4 text-muted-foreground" />
+              ) : (
+                <Clock className="h-4 w-4 text-accent" />
+              )}
+              <div>
+                <p className="text-sm font-medium text-foreground">
+                  {pledge.pledge_type === "flat" 
+                    ? "Flat donation" 
+                    : `Milestone pledge`}
+                  {pledge.pledge_type === "milestone" && pledge.milestone_minutes_target && (
+                    <span className="text-xs text-muted-foreground ml-1">
+                      @ {pledge.milestone_minutes_target.toLocaleString()} min
+                    </span>
+                  )}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {format(new Date(pledge.created_at), "MMM d, yyyy")}
+                  {pledge.event?.name && ` • ${pledge.event.name}`}
+                </p>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="font-serif text-lg text-primary">
+                ${pledge.amount.toFixed(2)}
+              </p>
+              <Badge
+                variant={pledge.is_paid ? "success" : pledge.is_unlocked ? "outline" : "secondary"}
+                className="text-xs"
+              >
+                {pledge.is_paid 
+                  ? "Paid" 
+                  : pledge.pledge_type === "milestone" && !pledge.is_unlocked 
+                    ? "Locked" 
+                    : "Pending"}
+              </Badge>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 const SponsorDashboardPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { signOut } = useSponsorAuth();
-  const { pledges, pledgesByChild, stats, isLoading, sponsor } = useSponsorPledges();
+  const { pledges, classPledges, pledgesByChild, pledgesByClass, stats, isLoading, sponsor, hasAnyPledges } = useSponsorPledges();
   
   const [sponsorCode, setSponsorCode] = useState("");
   const [isRequestingAccess, setIsRequestingAccess] = useState(false);
@@ -60,7 +196,7 @@ const SponsorDashboardPage = () => {
   const [showRequestConfirm, setShowRequestConfirm] = useState(false);
 
   const currentYear = new Date().getFullYear().toString();
-  const isReturning = pledges.length > 0;
+  const isReturning = hasAnyPledges;
 
   const isActive = (href: string) => location.pathname === href;
 
@@ -164,9 +300,15 @@ const SponsorDashboardPage = () => {
                       <Users className="h-6 w-6 text-success" />
                     </div>
                     <p className="font-handwritten text-4xl text-success mb-1">
-                      {stats.childrenSupported}
+                      {stats.childrenSupported + stats.classesSupported}
                     </p>
-                    <p className="text-sm text-muted-foreground">Children Supported</p>
+                    <p className="text-sm text-muted-foreground">
+                      {stats.classesSupported > 0 && stats.childrenSupported === 0 
+                        ? "Classes Supported" 
+                        : stats.classesSupported > 0 
+                          ? "Children & Classes" 
+                          : "Children Supported"}
+                    </p>
                   </div>
                   <div className="p-6 text-center">
                     <div className="p-3 rounded-full bg-accent/10 w-fit mx-auto mb-3">
@@ -299,7 +441,24 @@ const SponsorDashboardPage = () => {
                 </>
               )}
 
-              {/* Sponsor Section */}
+              {/* Classes Being Supported */}
+              {isReturning && pledgesByClass.length > 0 && (
+                <>
+                  <h2 className="font-serif text-2xl md:text-3xl text-foreground mb-4 pb-2 border-b border-foreground/20">
+                    Classrooms You're Supporting
+                  </h2>
+
+                  <div className="space-y-4 mb-10">
+                    {pledgesByClass.map((classGroup) => (
+                      <ClassSupportCard 
+                        key={classGroup.className} 
+                        classGroup={classGroup} 
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+
               <h2 className="font-serif text-2xl md:text-3xl text-foreground mb-4 pb-2 border-b border-foreground/20 flex items-center gap-3">
                 <Heart className="h-7 w-7 text-primary" />
                 {isReturning ? `Sponsor Again in ${currentYear}` : `Get Started`}
