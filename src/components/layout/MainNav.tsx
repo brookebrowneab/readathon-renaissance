@@ -7,6 +7,7 @@ import { MobileNavDrawer } from "./MobileNavDrawer";
 import { UserRole } from "./BottomTabBar";
 import logo from "@/assets/logo.svg";
 import { useAuth } from "@/hooks/useAuth";
+import { useChildren } from "@/hooks/useChildren";
 import {
   Popover,
   PopoverContent,
@@ -32,7 +33,7 @@ const authenticatedNav: NavItem[] = [
   { label: "DASHBOARD", href: "/dashboard" },
 ];
 
-// Mock notification data - replace with real data
+// Mock notification data - replace with real data (only for parents)
 const mockNotifications = {
   pendingLogApprovals: [
     { id: "1", childName: "Emma", minutes: 540, date: "March 5" },
@@ -45,19 +46,23 @@ const MainNav = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, isAdmin, signOut } = useAuth();
+  const { children } = useChildren();
 
   const desktopNavItemClass =
     "inline-flex items-start text-xs font-semibold tracking-widest text-muted-foreground transition-colors hover:text-foreground hover:underline py-2 px-0 m-0 leading-none";
 
   // Use real auth state
   const isAuthenticated = !!user;
-  const userRole: UserRole = isAdmin ? "parent" : (isAuthenticated ? "parent" : null);
+  // Determine if user is a parent (has children) vs sponsor-only
+  const isParent = children.length > 0;
+  const userRole: UserRole = isAdmin ? "parent" : (isParent ? "parent" : (isAuthenticated ? "sponsor" : null));
   const userName = user?.user_metadata?.display_name || user?.email?.split('@')[0] || "User";
   const userEmail = user?.email || "";
 
-  const totalNotifications = 
-    mockNotifications.pendingLogApprovals.length + 
-    (mockNotifications.pendingSponsorRequests > 0 ? 1 : 0);
+  // Only show parent-specific notifications for parents, not sponsor-only users
+  const totalNotifications = isParent 
+    ? mockNotifications.pendingLogApprovals.length + (mockNotifications.pendingSponsorRequests > 0 ? 1 : 0)
+    : 0;
 
   const handleLogout = async () => {
     await signOut();
