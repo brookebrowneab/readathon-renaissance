@@ -221,13 +221,13 @@ const StudentPinDashboardPage = () => {
                     {(schoolTotalMinutes ?? 0).toLocaleString()}
                     {/* Highlighter effect */}
                     <span 
-                      className="absolute inset-0 -skew-y-1 bg-accent/30 -z-10 transform -rotate-[0.5deg]"
+                      className="absolute -skew-y-1 bg-accent/40 -z-10 transform -rotate-[0.5deg]"
                       style={{
-                        top: '40%',
-                        height: '60%',
-                        left: '-4%',
-                        right: '-4%',
-                        borderRadius: '3px 6px 3px 5px',
+                        top: '35%',
+                        height: '55%',
+                        left: '-3%',
+                        right: '-3%',
+                        borderRadius: '4px 8px 4px 6px',
                       }}
                       aria-hidden="true"
                     />
