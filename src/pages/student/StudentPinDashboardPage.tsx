@@ -218,22 +218,22 @@ const StudentPinDashboardPage = () => {
               {/* Large headline with highlighter effect */}
               <div className="relative inline-block">
                 <h1 className="font-serif text-5xl md:text-6xl lg:text-7xl font-normal tracking-tight text-foreground leading-[1.05] relative">
-                  <span className="relative">
+                  <span className="relative inline-block">
                     {(schoolTotalMinutes ?? 0).toLocaleString()}
-                    <span className="font-serif text-xl md:text-2xl text-muted-foreground ml-2 font-normal">minutes</span>
                     {/* Highlighter effect - sits behind text */}
                     <span 
-                      className="absolute inset-0 -skew-y-1 bg-primary/25 -z-10 transform -rotate-[0.5deg]"
+                      className="absolute -skew-y-1 bg-primary/25 -z-10 transform -rotate-[0.5deg]"
                       style={{
-                        top: '45%',
-                        height: '55%',
-                        left: '-2%',
-                        right: '-2%',
+                        top: '40%',
+                        bottom: '0',
+                        left: '-4%',
+                        right: '-4%',
                         borderRadius: '4px 8px 4px 6px',
                       }}
                       aria-hidden="true"
                     />
                   </span>
+                  <span className="font-serif text-xl md:text-2xl text-muted-foreground ml-2 font-normal">minutes</span>
                 </h1>
               </div>
             </div>
