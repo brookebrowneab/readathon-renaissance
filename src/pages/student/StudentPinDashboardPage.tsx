@@ -208,35 +208,40 @@ const StudentPinDashboardPage = () => {
     <div className="flex min-h-screen flex-col">
       <MainNav />
 
-      <main className="flex-1 bg-background-warm shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
-        <div className="container py-8">
-          <div className="flex flex-col lg:flex-row gap-8">
-            {/* Main Content Area */}
-            <div className="flex-1 space-y-8">
-              {/* School-wide Minutes Counter */}
-              <div className="bg-background p-6 mb-2 shadow-sm" style={handDrawnBorder}>
-                <p className="text-sm text-muted-foreground mb-2">How many minutes has Janney read?</p>
-                <div className="relative inline-block">
-                  <span className="relative">
-                    <span className="font-serif text-5xl md:text-6xl lg:text-7xl font-normal tracking-tight text-foreground leading-[1.05]">
-                      {(schoolTotalMinutes ?? 0).toLocaleString()}
-                    </span>
-                    <span className="font-serif text-xl md:text-2xl text-muted-foreground ml-2">minutes</span>
-                    {/* Highlighter effect - sits behind text */}
-                    <span 
-                      className="absolute -skew-y-1 bg-accent/30 -z-10 transform -rotate-[0.5deg]"
-                      style={{
-                        top: '45%',
-                        height: '55%',
-                        left: '-2%',
-                        right: '-2%',
-                        borderRadius: '4px 8px 4px 6px',
-                      }}
-                      aria-hidden="true"
-                    />
-                  </span>
-                </div>
-              </div>
+      <main className="flex-1">
+        {/* Hero Section - Full width background */}
+        <section className="bg-background py-8 md:py-10 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)]">
+          <div className="container">
+            <p className="text-sm text-muted-foreground mb-2">How many minutes has Janney read?</p>
+            <div className="relative inline-block">
+              <span className="relative">
+                <span className="font-serif text-5xl md:text-6xl lg:text-7xl font-normal tracking-tight text-foreground leading-[1.05]">
+                  {(schoolTotalMinutes ?? 0).toLocaleString()}
+                </span>
+                <span className="font-serif text-xl md:text-2xl text-muted-foreground ml-2">minutes</span>
+                {/* Highlighter effect - sits behind text */}
+                <span 
+                  className="absolute -skew-y-1 bg-accent/30 -z-10 transform -rotate-[0.5deg]"
+                  style={{
+                    top: '45%',
+                    height: '55%',
+                    left: '-2%',
+                    right: '-2%',
+                    borderRadius: '4px 8px 4px 6px',
+                  }}
+                  aria-hidden="true"
+                />
+              </span>
+            </div>
+          </div>
+        </section>
+
+        {/* Main Content */}
+        <div className="bg-background-warm shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+          <div className="container py-8">
+            <div className="flex flex-col lg:flex-row gap-8">
+              {/* Main Content Area */}
+              <div className="flex-1 space-y-8">
 
               {/* Header Section */}
               <div className="space-y-4">
@@ -456,6 +461,7 @@ const StudentPinDashboardPage = () => {
               </div>
             </aside>
           </div>
+        </div>
         </div>
       </main>
 
