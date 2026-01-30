@@ -8,8 +8,51 @@ export interface SponsorInvitation {
   inviter_user_id: string;
   invitee_email: string;
   invitee_user_id: string | null;
-  status: "pending" | "accepted" | "declined";
+  status: "pending" | "approved" | "declined";
+  can_invite_others: boolean;
+  invited_by_parent: boolean;
   created_at: string;
+  updated_at: string;
+  // Joined data
+  child?: {
+    id: string;
+    name: string;
+    grade_info: string | null;
+    share_public_link: boolean;
+  } | null;
+}
+
+// Fetch invitations for children owned by the current user (parent view)
+export function useParentInvitations() {
+  return useQuery({
+    queryKey: ["sponsor-invitations", "parent"],
+    queryFn: async (): Promise<SponsorInvitation[]> => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+
+      // Get all children owned by user, then get their invitations
+      const { data: children } = await supabase
+        .from("children")
+        .select("id")
+        .eq("user_id", user.id);
+
+      if (!children?.length) return [];
+
+      const childIds = children.map(c => c.id);
+
+      const { data, error } = await (supabase as any)
+        .from("sponsor_invitations")
+        .select(`
+          *,
+          child:children(id, name, grade_info, share_public_link)
+        `)
+        .in("child_id", childIds)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return (data || []) as SponsorInvitation[];
+    },
+  });
 }
 
 // Fetch invitations sent by the current user
@@ -20,10 +63,12 @@ export function useSentInvitations() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return [];
 
-      // Using type assertion since table is new and types not yet regenerated
       const { data, error } = await (supabase as any)
         .from("sponsor_invitations")
-        .select("*")
+        .select(`
+          *,
+          child:children(id, name, grade_info, share_public_link)
+        `)
         .eq("inviter_user_id", user.id)
         .order("created_at", { ascending: false });
 
@@ -44,13 +89,50 @@ export function useReceivedInvitations() {
       // Get invitations where user is invitee (by user_id or email)
       const { data, error } = await (supabase as any)
         .from("sponsor_invitations")
-        .select("*")
+        .select(`
+          *,
+          child:children(id, name, grade_info, share_public_link)
+        `)
         .or(`invitee_user_id.eq.${user.id},invitee_email.eq.${user.email}`)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
       return (data || []) as SponsorInvitation[];
     },
+  });
+}
+
+// Check if a sponsor is approved for a specific child
+export function useIsSponsorApproved(childId: string | undefined) {
+  return useQuery({
+    queryKey: ["sponsor-approved", childId],
+    queryFn: async (): Promise<boolean> => {
+      if (!childId) return false;
+      
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return false;
+
+      // Check if child has public link enabled (auto-approve)
+      const { data: child } = await supabase
+        .from("children")
+        .select("share_public_link")
+        .eq("id", childId)
+        .single();
+
+      if (child?.share_public_link) return true;
+
+      // Check if there's an approved invitation for this sponsor
+      const { data: invitation } = await (supabase as any)
+        .from("sponsor_invitations")
+        .select("status")
+        .eq("child_id", childId)
+        .or(`invitee_user_id.eq.${user.id},invitee_email.eq.${user.email}`)
+        .eq("status", "approved")
+        .maybeSingle();
+
+      return !!invitation;
+    },
+    enabled: !!childId,
   });
 }
 
@@ -62,12 +144,23 @@ export function useCreateInvitation() {
     mutationFn: async ({
       childId,
       inviteeEmail,
+      invitedByParent = false,
     }: {
       childId: string;
       inviteeEmail: string;
+      invitedByParent?: boolean;
     }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
+
+      // Check if child is owned by user (parent) or sponsor has permission
+      const { data: child } = await supabase
+        .from("children")
+        .select("user_id")
+        .eq("id", childId)
+        .single();
+
+      const isParent = child?.user_id === user.id;
 
       const { data, error } = await (supabase as any)
         .from("sponsor_invitations")
@@ -75,6 +168,9 @@ export function useCreateInvitation() {
           child_id: childId,
           inviter_user_id: user.id,
           invitee_email: inviteeEmail.toLowerCase(),
+          invited_by_parent: isParent || invitedByParent,
+          // If parent sends, auto-approve. Otherwise pending.
+          status: isParent ? "approved" : "pending",
         })
         .select()
         .single();
@@ -94,7 +190,7 @@ export function useCreateInvitation() {
   });
 }
 
-// Update invitation status (accept/decline)
+// Approve or decline an invitation (parent action)
 export function useUpdateInvitationStatus() {
   const queryClient = useQueryClient();
 
@@ -102,18 +198,17 @@ export function useUpdateInvitationStatus() {
     mutationFn: async ({
       invitationId,
       status,
+      canInviteOthers = false,
     }: {
       invitationId: string;
-      status: "accepted" | "declined";
+      status: "approved" | "declined";
+      canInviteOthers?: boolean;
     }) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
-
       const { data, error } = await (supabase as any)
         .from("sponsor_invitations")
         .update({
           status,
-          invitee_user_id: user.id,
+          can_invite_others: status === "approved" ? canInviteOthers : false,
         })
         .eq("id", invitationId)
         .select()
@@ -125,16 +220,51 @@ export function useUpdateInvitationStatus() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["sponsor-invitations"] });
       queryClient.invalidateQueries({ queryKey: ["sponsorable-children"] });
+      queryClient.invalidateQueries({ queryKey: ["sponsor-approved"] });
       toast.success(
-        variables.status === "accepted"
-          ? "Invitation accepted!"
-          : "Invitation declined"
+        variables.status === "approved"
+          ? "Sponsor approved!"
+          : "Request declined"
       );
     },
     onError: (error) => {
       toast.error("Failed to update invitation", {
         description: error.message,
       });
+    },
+  });
+}
+
+// Link invitation to user when they make a pledge
+export function useLinkInvitationToUser() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      childId,
+    }: {
+      childId: string;
+    }) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      // Find invitation for this user/email and link it
+      const { data, error } = await (supabase as any)
+        .from("sponsor_invitations")
+        .update({
+          invitee_user_id: user.id,
+        })
+        .eq("child_id", childId)
+        .or(`invitee_email.eq.${user.email}`)
+        .is("invitee_user_id", null)
+        .select()
+        .maybeSingle();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["sponsor-invitations"] });
     },
   });
 }
