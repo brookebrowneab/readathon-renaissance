@@ -330,19 +330,22 @@ const DashboardPage = () => {
                                 />
                               ))}
                               
-                              {/* Classes below in grid (if any) */}
+                              {/* Classes below - centered with max-width constraints */}
                               {classCount > 0 && (
-                                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                                  {sponsorPledgesByClass.map((item) => (
-                                    <SponsoredClassCard 
-                                      key={item.className} 
-                                      className={item.className}
-                                      teacher={item.teacher}
-                                      pledges={item.pledges}
-                                      totalAmount={item.totalAmount}
-                                      compact
-                                    />
-                                  ))}
+                                <div className="flex justify-center">
+                                  <div className="flex flex-wrap justify-center gap-4 w-full max-w-2xl">
+                                    {sponsorPledgesByClass.map((item) => (
+                                      <div key={item.className} className="w-full sm:w-[calc(50%-0.5rem)] max-w-xs">
+                                        <SponsoredClassCard 
+                                          className={item.className}
+                                          teacher={item.teacher}
+                                          pledges={item.pledges}
+                                          totalAmount={item.totalAmount}
+                                          compact
+                                        />
+                                      </div>
+                                    ))}
+                                  </div>
                                 </div>
                               )}
                             </div>
@@ -400,17 +403,20 @@ const DashboardPage = () => {
                                 ))}
                               </div>
                               {classCount > 0 && (
-                                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                                  {sponsorPledgesByClass.map((item) => (
-                                    <SponsoredClassCard 
-                                      key={item.className} 
-                                      className={item.className}
-                                      teacher={item.teacher}
-                                      pledges={item.pledges}
-                                      totalAmount={item.totalAmount}
-                                      compact
-                                    />
-                                  ))}
+                                <div className="flex justify-center">
+                                  <div className="flex flex-wrap justify-center gap-4 w-full max-w-2xl">
+                                    {sponsorPledgesByClass.map((item) => (
+                                      <div key={item.className} className="w-full sm:w-[calc(50%-0.5rem)] max-w-xs">
+                                        <SponsoredClassCard 
+                                          className={item.className}
+                                          teacher={item.teacher}
+                                          pledges={item.pledges}
+                                          totalAmount={item.totalAmount}
+                                          compact
+                                        />
+                                      </div>
+                                    ))}
+                                  </div>
                                 </div>
                               )}
                             </div>
@@ -433,17 +439,20 @@ const DashboardPage = () => {
                               ))}
                             </div>
                             {classCount > 0 && (
-                              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                                {sponsorPledgesByClass.map((item) => (
-                                  <SponsoredClassCard 
-                                    key={item.className} 
-                                    className={item.className}
-                                    teacher={item.teacher}
-                                    pledges={item.pledges}
-                                    totalAmount={item.totalAmount}
-                                    compact
-                                  />
-                                ))}
+                              <div className="flex justify-center">
+                                <div className="flex flex-wrap justify-center gap-4 w-full max-w-2xl">
+                                  {sponsorPledgesByClass.map((item) => (
+                                    <div key={item.className} className="w-full sm:w-[calc(50%-0.5rem)] max-w-xs">
+                                      <SponsoredClassCard 
+                                        className={item.className}
+                                        teacher={item.teacher}
+                                        pledges={item.pledges}
+                                        totalAmount={item.totalAmount}
+                                        compact
+                                      />
+                                    </div>
+                                  ))}
+                                </div>
                               </div>
                             )}
                           </div>
