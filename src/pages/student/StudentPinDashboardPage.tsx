@@ -223,7 +223,7 @@ const StudentPinDashboardPage = () => {
                     <span className="font-serif text-xl md:text-2xl text-muted-foreground ml-2 font-normal">minutes</span>
                     {/* Highlighter effect - sits behind text */}
                     <span 
-                      className="absolute inset-0 -skew-y-1 bg-accent/30 -z-10 transform -rotate-[0.5deg]"
+                      className="absolute inset-0 -skew-y-1 bg-primary/25 -z-10 transform -rotate-[0.5deg]"
                       style={{
                         top: '45%',
                         height: '55%',
