@@ -96,13 +96,6 @@ const StudentPinDashboardPage = () => {
     requireAuth();
   }, [requireAuth]);
 
-  // Refresh session data if class/grade info is missing (handles old sessions)
-  useEffect(() => {
-    if (session && (!session.className || !session.gradeInfo)) {
-      refreshData();
-    }
-  }, [session, refreshData]);
-
   // Fetch reading logs with book info
   useEffect(() => {
     const fetchLogs = async () => {
