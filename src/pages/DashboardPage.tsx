@@ -731,63 +731,58 @@ const SponsoredChildCard = ({ childId, childName, child, pledges, totalAmount, c
   const totalOwed = calculateOwed();
   const hasPendingPayment = pledges.some(p => !p.is_paid);
   
-  // Horizontal layout for single sponsorship
+  // Horizontal layout for single sponsorship - uses flex-wrap to reflow on narrow widths
   if (horizontal) {
     return (
       <div 
-        className="bg-background p-6 shadow-md"
+        className="bg-background p-5 shadow-md"
         style={handDrawnBorder}
       >
-        <div className="flex flex-col md:flex-row md:items-center gap-6">
-          {/* Left: Reading Ring & Basic Info */}
-          <div className="flex items-center gap-4 md:gap-6">
-            <ReadingGoalRing progress={totalMinutes} goal={goalMinutes} size={90} />
-            <div className="flex flex-col">
-              <div className="flex items-center gap-2">
-                <h2 className="font-serif text-xl md:text-2xl font-normal tracking-tight text-foreground">
-                  {childName.split(" ")[0]}'s Progress
-                </h2>
-                <Badge variant={hasPendingPayment ? "secondary" : "default"} className="shrink-0">
-                  {hasPendingPayment ? "Pledged" : "Paid"}
-                </Badge>
-              </div>
-              <p className="text-sm text-muted-foreground">{gradeInfo}</p>
-              <p className="text-sm text-muted-foreground mt-1">
-                {totalMinutes.toLocaleString()} / {goalMinutes.toLocaleString()} minutes ({Math.min(progress, 100)}%)
-              </p>
-            </div>
+        {/* Header */}
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-serif text-xl font-normal tracking-tight text-foreground">
+            {childName.split(" ")[0]}'s Progress
+          </h2>
+          <Badge variant={hasPendingPayment ? "secondary" : "default"} className="shrink-0">
+            {hasPendingPayment ? "Pledged" : "Paid"}
+          </Badge>
+        </div>
+        
+        {/* Main content - wraps naturally */}
+        <div className="flex flex-wrap items-center gap-4">
+          {/* Reading Ring */}
+          <div className="shrink-0">
+            <ReadingGoalRing progress={totalMinutes} goal={goalMinutes} size={80} />
           </div>
           
-          {/* Right: Stats & Pledge Info */}
-          <div className="flex-1 flex flex-col sm:flex-row items-stretch gap-4 md:justify-end">
-            <div className="grid grid-cols-2 sm:flex gap-3">
-              <div className="flex flex-col items-center rounded-lg bg-muted/30 p-3 min-w-[100px]">
-                <span className="text-xs text-muted-foreground">Minutes Read</span>
-                <span className="font-serif text-xl text-primary">{totalMinutes.toLocaleString()}</span>
-              </div>
-              <div className="relative flex flex-col items-center rounded-lg bg-muted/30 p-3 min-w-[100px]">
-                <Star className="absolute -right-1 -top-1 h-4 w-4 fill-accent text-accent" />
-                <span className="text-xs text-muted-foreground">Goal Progress</span>
-                <span className="font-serif text-xl text-primary">{Math.min(progress, 100)}%</span>
-              </div>
+          {/* Info */}
+          <div className="flex-1 min-w-[140px]">
+            <p className="text-sm text-muted-foreground">{gradeInfo}</p>
+            <p className="text-sm font-medium text-foreground">
+              {totalMinutes.toLocaleString()} / {goalMinutes.toLocaleString()} min
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {Math.min(progress, 100)}% of goal
+            </p>
+          </div>
+          
+          {/* Stats - flex-wrap allows reflow */}
+          <div className="flex flex-wrap gap-2">
+            <div className="flex flex-col items-center rounded-lg bg-accent/10 px-3 py-2 border border-accent/20">
+              <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Pledge</span>
+              <span className="font-serif text-base text-accent">${totalOwed.toFixed(2)}</span>
             </div>
-            <div className="grid grid-cols-2 sm:flex gap-3">
-              <div className="flex flex-col items-center rounded-lg bg-accent/10 p-3 border border-accent/20 min-w-[100px]">
-                <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Your Pledge</span>
-                <span className="font-serif text-lg text-accent">${totalOwed.toFixed(2)}</span>
-              </div>
-              <div className="flex flex-col items-center rounded-lg bg-secondary/30 p-3 border border-secondary/40 min-w-[100px]">
-                <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Type</span>
-                <span className="font-serif text-lg text-secondary-foreground">
-                  {pledges[0]?.pledge_type === "per_minute" ? "Per Min" : "Flat"}
-                </span>
-              </div>
+            <div className="flex flex-col items-center rounded-lg bg-secondary/30 px-3 py-2 border border-secondary/40">
+              <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Type</span>
+              <span className="font-serif text-base text-secondary-foreground">
+                {pledges[0]?.pledge_type === "per_minute" ? "Per Min" : "Flat"}
+              </span>
             </div>
           </div>
         </div>
         
         {/* Thank You Message */}
-        <div className="mt-4 rounded-lg bg-primary/5 p-3 border border-primary/10">
+        <div className="mt-4 rounded-lg bg-primary/5 p-2 border border-primary/10">
           <p className="text-xs text-center text-muted-foreground">
             <Heart className="inline h-3 w-3 text-primary mr-1" />
             Thank you for supporting {childName.split(" ")[0]}'s reading journey!
