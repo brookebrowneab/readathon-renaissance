@@ -180,7 +180,7 @@ const TeacherLogReadingPage = () => {
                 <p className="text-sm text-muted-foreground mb-2">
                   {isBulkMode ? `${loggedNames.length} students` : loggedNames[0]}
                 </p>
-                <p className="font-handwritten text-2xl text-brand-blue">
+                <p className="font-serif text-2xl text-brand-blue">
                   {minutes} minutes
                 </p>
                 {bookTitle && (
@@ -485,7 +485,7 @@ const TeacherLogReadingPage = () => {
                         <Minus className="h-5 w-5" />
                       </Button>
                       <div className="text-center">
-                        <span className="font-handwritten text-5xl text-brand-blue">{minutes}</span>
+                        <span className="font-serif text-5xl text-brand-blue">{minutes}</span>
                         <p className="text-sm text-muted-foreground">minutes</p>
                       </div>
                       <Button
@@ -614,14 +614,14 @@ const TeacherLogReadingPage = () => {
                       <div className="w-full grid grid-cols-2 gap-3">
                         <div className="flex flex-col items-center rounded-lg bg-muted/50 p-3">
                           <span className="text-xs text-muted-foreground">Current</span>
-                          <span className="font-handwritten text-xl text-brand-blue">
+                          <span className="font-serif text-xl text-brand-blue">
                             {selectedStudent.minutes} min
                           </span>
                         </div>
                         <div className="relative flex flex-col items-center rounded-lg bg-muted/50 p-3">
                           <Star className="absolute -right-1 -top-1 h-4 w-4 fill-brand-yellow text-brand-yellow" />
                           <span className="text-xs text-muted-foreground">After Log</span>
-                          <span className="font-handwritten text-xl text-brand-green">
+                          <span className="font-serif text-xl text-brand-green">
                             {selectedStudent.minutes + minutes} min
                           </span>
                         </div>
@@ -640,7 +640,7 @@ const TeacherLogReadingPage = () => {
                             <p className="text-sm font-medium truncate">{entry.bookTitle}</p>
                             <p className="text-xs text-muted-foreground">{entry.date}</p>
                           </div>
-                          <span className="font-handwritten text-brand-blue">{entry.minutes}m</span>
+                          <span className="font-serif text-brand-blue">{entry.minutes}m</span>
                         </div>
                       ))}
                     </div>
@@ -654,11 +654,11 @@ const TeacherLogReadingPage = () => {
                   <div className="space-y-3">
                     <div className="flex flex-col items-center rounded-lg bg-muted/50 p-4">
                       <span className="text-sm text-muted-foreground">Each student will log</span>
-                      <span className="font-handwritten text-3xl text-brand-blue">{minutes} min</span>
+                      <span className="font-serif text-3xl text-brand-blue">{minutes} min</span>
                     </div>
                     <div className="flex flex-col items-center rounded-lg bg-brand-green/10 p-4">
                       <span className="text-sm text-muted-foreground">Total minutes logged</span>
-                      <span className="font-handwritten text-3xl text-brand-green">
+                      <span className="font-serif text-3xl text-brand-green">
                         {minutes * selectedStudents.length} min
                       </span>
                     </div>

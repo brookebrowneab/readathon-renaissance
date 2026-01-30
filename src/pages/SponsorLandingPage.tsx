@@ -338,7 +338,7 @@ const SponsorLandingPage = () => {
                   mobileSize={160}
                 />
                 <p className="text-sm text-muted-foreground text-center">
-                  {childData.childFirstName} has already read <span className="font-handwritten text-xl text-primary">{childData.minutesRead}</span> minutes!
+                  {childData.childFirstName} has already read <span className="font-serif text-xl text-primary">{childData.minutesRead}</span> minutes!
                 </p>
 
                 {/* Recent Activity */}
@@ -455,7 +455,7 @@ const SponsorLandingPage = () => {
                               type="button"
                               onClick={() => setPerMinuteRate(rate.toString())}
                               className={cn(
-                                "h-12 rounded-lg font-handwritten text-xl transition-all border-2",
+                                "h-12 rounded-lg font-serif text-xl transition-all border-2",
                                 parseFloat(perMinuteRate) === rate
                                   ? "bg-primary text-primary-foreground border-primary"
                                   : "bg-card text-foreground border-border hover:border-primary/50"
@@ -471,7 +471,7 @@ const SponsorLandingPage = () => {
                             <span className="text-sm text-muted-foreground">
                               If goal met ({childData.readingGoal} min):
                             </span>
-                            <span className="font-handwritten text-2xl text-primary">
+                            <span className="font-serif text-2xl text-primary">
                               ${calculatedPerMinute.toFixed(2)}
                             </span>
                           </div>
@@ -488,7 +488,7 @@ const SponsorLandingPage = () => {
                               setCustomAmount("");
                             }}
                             className={cn(
-                              "h-12 rounded-lg font-handwritten text-2xl transition-all border-2",
+                              "h-12 rounded-lg font-serif text-2xl transition-all border-2",
                               selectedAmount === amount && !customAmount
                                 ? "bg-primary text-primary-foreground border-primary"
                                 : "bg-card text-foreground border-border hover:border-primary/50"

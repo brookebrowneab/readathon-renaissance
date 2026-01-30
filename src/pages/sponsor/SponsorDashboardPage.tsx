@@ -118,13 +118,13 @@ const ClassSupportCard = ({ classGroup }: { classGroup: ClassGroupData }) => {
       <div className="grid sm:grid-cols-2 gap-4">
         <div className="bg-muted/30 rounded-lg p-4 text-center">
           <p className="text-xs text-muted-foreground mb-1">Your Contribution</p>
-          <p className="font-handwritten text-2xl text-primary">
+          <p className="font-serif text-2xl text-primary">
             ${classGroup.totalAmount.toFixed(2)}
           </p>
         </div>
         <div className="bg-muted/30 rounded-lg p-4 text-center">
           <p className="text-xs text-muted-foreground mb-1">Class Total Raised</p>
-          <p className="font-handwritten text-2xl text-success">
+          <p className="font-serif text-2xl text-success">
             ${fundraisingTotal.toFixed(2)}
           </p>
         </div>
@@ -290,7 +290,7 @@ const SponsorDashboardPage = () => {
                     <div className="p-3 rounded-full bg-primary/10 w-fit mx-auto mb-3">
                       <DollarSign className="h-6 w-6 text-primary" />
                     </div>
-                    <p className="font-handwritten text-4xl text-primary mb-1">
+                    <p className="font-serif text-4xl text-primary mb-1">
                       ${stats.totalPledged.toFixed(0)}
                     </p>
                     <p className="text-sm text-muted-foreground">Total Pledged</p>
@@ -299,7 +299,7 @@ const SponsorDashboardPage = () => {
                     <div className="p-3 rounded-full bg-success/10 w-fit mx-auto mb-3">
                       <Users className="h-6 w-6 text-success" />
                     </div>
-                    <p className="font-handwritten text-4xl text-success mb-1">
+                    <p className="font-serif text-4xl text-success mb-1">
                       {stats.childrenSupported + stats.classesSupported}
                     </p>
                     <p className="text-sm text-muted-foreground">
@@ -314,7 +314,7 @@ const SponsorDashboardPage = () => {
                     <div className="p-3 rounded-full bg-accent/10 w-fit mx-auto mb-3">
                       <Calendar className="h-6 w-6 text-accent" />
                     </div>
-                    <p className="font-handwritten text-4xl text-accent mb-1">
+                    <p className="font-serif text-4xl text-accent mb-1">
                       {stats.pledgeCount}
                     </p>
                     <p className="text-sm text-muted-foreground">Total Pledges</p>
@@ -374,20 +374,20 @@ const SponsorDashboardPage = () => {
                         <div className="grid sm:grid-cols-3 gap-4">
                           <div className="bg-muted/30 rounded-lg p-4 text-center">
                             <p className="text-xs text-muted-foreground mb-1">Total Pledged</p>
-                            <p className="font-handwritten text-2xl text-primary">
+                            <p className="font-serif text-2xl text-primary">
                               ${childGroup.totalAmount.toFixed(2)}
                             </p>
                           </div>
                           <div className="bg-muted/30 rounded-lg p-4 text-center">
                             <p className="text-xs text-muted-foreground mb-1">Minutes Read</p>
-                            <p className="font-handwritten text-2xl text-foreground flex items-center justify-center gap-1">
+                            <p className="font-serif text-2xl text-foreground flex items-center justify-center gap-1">
                               <BookOpen className="h-5 w-5" />
                               {childGroup.child?.total_minutes || 0}
                             </p>
                           </div>
                           <div className="bg-muted/30 rounded-lg p-4 text-center">
                             <p className="text-xs text-muted-foreground mb-1">Goal Progress</p>
-                            <p className="font-handwritten text-2xl text-success">
+                            <p className="font-serif text-2xl text-success">
                               {childGroup.child
                                 ? Math.round((childGroup.child.total_minutes / childGroup.child.goal_minutes) * 100)
                                 : 0}%
@@ -695,25 +695,25 @@ const SponsorDashboardPage = () => {
                     </h3>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="text-center">
-                        <p className="font-handwritten text-2xl text-primary">
+                        <p className="font-serif text-2xl text-primary">
                           ${stats.totalPledged.toFixed(0)}
                         </p>
                         <p className="text-xs text-muted-foreground">Total Pledged</p>
                       </div>
                       <div className="text-center">
-                        <p className="font-handwritten text-2xl text-success">
+                        <p className="font-serif text-2xl text-success">
                           {stats.paidCount}
                         </p>
                         <p className="text-xs text-muted-foreground">Paid</p>
                       </div>
                       <div className="text-center">
-                        <p className="font-handwritten text-2xl text-accent">
+                        <p className="font-serif text-2xl text-accent">
                           {stats.childrenSupported}
                         </p>
                         <p className="text-xs text-muted-foreground">Children</p>
                       </div>
                       <div className="text-center">
-                        <p className="font-handwritten text-2xl text-warning">
+                        <p className="font-serif text-2xl text-warning">
                           {stats.pendingCount}
                         </p>
                         <p className="text-xs text-muted-foreground">Pending</p>

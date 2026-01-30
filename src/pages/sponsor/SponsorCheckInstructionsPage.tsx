@@ -100,7 +100,7 @@ const SponsorCheckInstructionsPage = () => {
 
                   <div className="pt-2 border-t">
                     <p className="text-sm text-muted-foreground mb-1">Amount:</p>
-                    <p className="font-handwritten text-3xl text-brand-blue">
+                    <p className="font-serif text-3xl text-brand-blue">
                       ${data.amount}.00
                     </p>
                   </div>

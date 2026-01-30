@@ -190,15 +190,15 @@ const TeacherDashboardPage = () => {
             </div>
             <div className="flex items-center gap-4">
               <div className="text-center">
-                <p className="font-handwritten text-2xl text-brand-blue">{mockClassStats.totalStudents}</p>
+                <p className="font-serif text-2xl text-brand-blue">{mockClassStats.totalStudents}</p>
                 <p className="text-xs text-muted-foreground">Students</p>
               </div>
               <div className="text-center">
-                <p className="font-handwritten text-2xl text-brand-blue">{mockClassStats.totalMinutes.toLocaleString()}</p>
+                <p className="font-serif text-2xl text-brand-blue">{mockClassStats.totalMinutes.toLocaleString()}</p>
                 <p className="text-xs text-muted-foreground">Total Min</p>
               </div>
               <div className="text-center">
-                <p className="font-handwritten text-2xl text-brand-green">
+                <p className="font-serif text-2xl text-brand-green">
                   {Math.round((mockClassStats.participatingStudents / mockClassStats.totalStudents) * 100)}%
                 </p>
                 <p className="text-xs text-muted-foreground">Participating</p>
@@ -225,26 +225,26 @@ const TeacherDashboardPage = () => {
                     <div className="grid grid-cols-2 gap-4">
                       <div className="rounded-lg bg-muted/50 p-3">
                         <span className="text-xs text-muted-foreground">Total Minutes</span>
-                        <p className="font-handwritten text-2xl text-brand-blue">
+                        <p className="font-serif text-2xl text-brand-blue">
                           {mockClassStats.totalMinutes.toLocaleString()}
                         </p>
                       </div>
                       <div className="rounded-lg bg-muted/50 p-3">
                         <span className="text-xs text-muted-foreground">Class Goal</span>
-                        <p className="font-handwritten text-2xl text-brand-blue">
+                        <p className="font-serif text-2xl text-brand-blue">
                           {mockClassStats.classGoal.toLocaleString()}
                         </p>
                       </div>
                       <div className="rounded-lg bg-muted/50 p-3">
                         <span className="text-xs text-muted-foreground">Avg per Student</span>
-                        <p className="font-handwritten text-2xl text-brand-blue">
+                        <p className="font-serif text-2xl text-brand-blue">
                           {mockClassStats.averagePerStudent} min
                         </p>
                       </div>
                       <div className="relative rounded-lg bg-muted/50 p-3">
                         <Star className="absolute -right-1 -top-1 h-4 w-4 fill-brand-yellow text-brand-yellow" />
                         <span className="text-xs text-muted-foreground">Goal Reached</span>
-                        <p className="font-handwritten text-2xl text-brand-green">
+                        <p className="font-serif text-2xl text-brand-green">
                           {goalReachedCount} students
                         </p>
                       </div>
@@ -459,7 +459,7 @@ const TeacherDashboardPage = () => {
                             {index + 1}
                           </div>
                           <span className="flex-1 text-sm font-medium">{student.name}</span>
-                          <span className="font-handwritten text-brand-blue">{student.minutes}</span>
+                          <span className="font-serif text-brand-blue">{student.minutes}</span>
                         </div>
                       ))}
                   </div>
@@ -574,7 +574,7 @@ const StudentCard = ({ student }: StudentCardProps) => {
             />
           </svg>
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="font-handwritten text-lg text-brand-blue">{percentage}%</span>
+            <span className="font-serif text-lg text-brand-blue">{percentage}%</span>
           </div>
         </div>
         

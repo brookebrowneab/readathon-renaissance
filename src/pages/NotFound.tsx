@@ -14,7 +14,7 @@ const NotFound = () => {
               <BookIcon size="large" variant="primary" className="opacity-60" />
             </div>
             <div className="space-y-2">
-              <h1 className="font-handwritten text-6xl text-primary">404</h1>
+              <h1 className="font-serif text-6xl text-primary">404</h1>
               <h2 className="text-2xl font-bold text-foreground">Page Not Found</h2>
               <p className="text-muted-foreground max-w-sm mx-auto">
                 Looks like this page got lost in a good book! Let's get you back on track.

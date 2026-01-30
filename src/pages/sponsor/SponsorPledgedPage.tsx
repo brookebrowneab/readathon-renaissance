@@ -66,7 +66,7 @@ const SponsorPledgedPage = () => {
                     size={100}
                   />
                   <div className="text-left">
-                    <p className="font-handwritten text-3xl text-brand-blue">
+                    <p className="font-serif text-3xl text-brand-blue">
                       ${data.amount}
                     </p>
                     <p className="text-muted-foreground">

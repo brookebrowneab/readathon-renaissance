@@ -112,7 +112,7 @@ const StudentDashboardPage = () => {
             />
 
             <div className="text-center space-y-2">
-              <p className="font-handwritten text-5xl text-brand-blue">
+              <p className="font-serif text-5xl text-brand-blue">
                 {studentData.minutesRead} minutes!
               </p>
               <p className={`text-2xl font-medium ${milestone.color}`}>

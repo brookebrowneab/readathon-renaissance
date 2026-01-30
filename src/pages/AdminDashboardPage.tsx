@@ -216,7 +216,7 @@ const AdminDashboardPage = () => {
 
               <div className="flex items-center gap-6">
                 <div className="text-center">
-                  <p className="font-handwritten text-4xl text-primary">{eventDates.daysRemaining}</p>
+                  <p className="font-serif text-4xl text-primary">{eventDates.daysRemaining}</p>
                   <p className="text-sm text-muted-foreground">days left</p>
                 </div>
                 <div className="flex gap-2">
@@ -431,7 +431,7 @@ const AdminDashboardPage = () => {
                       {i + 1}
                     </span>
                     <span className="flex-1 truncate">{student.name}</span>
-                    <span className="font-handwritten text-primary">{student.minutes}</span>
+                    <span className="font-serif text-primary">{student.minutes}</span>
                   </div>
                 ))}
               </div>
@@ -458,7 +458,7 @@ const AdminDashboardPage = () => {
                       {i + 1}
                     </span>
                     <span className="flex-1 truncate">{cls.name}</span>
-                    <span className="font-handwritten text-primary">{cls.avgMinutes}</span>
+                    <span className="font-serif text-primary">{cls.avgMinutes}</span>
                   </div>
                 ))}
               </div>
@@ -485,7 +485,7 @@ const AdminDashboardPage = () => {
                       {i + 1}
                     </span>
                     <span className="flex-1 truncate">{sponsor.name}</span>
-                    <span className="font-handwritten text-accent">${sponsor.amount}</span>
+                    <span className="font-serif text-accent">${sponsor.amount}</span>
                   </div>
                 ))}
               </div>
@@ -540,19 +540,19 @@ const AdminDashboardPage = () => {
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <span className="text-sm text-muted-foreground">New readings</span>
-                <span className="font-handwritten text-xl text-primary">142</span>
+                <span className="font-serif text-xl text-primary">142</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-muted-foreground">Minutes logged</span>
-                <span className="font-handwritten text-xl text-primary">3,450</span>
+                <span className="font-serif text-xl text-primary">3,450</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-muted-foreground">New pledges</span>
-                <span className="font-handwritten text-xl text-accent">18</span>
+                <span className="font-serif text-xl text-accent">18</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-muted-foreground">Payments received</span>
-                <span className="font-handwritten text-xl text-accent">$425</span>
+                <span className="font-serif text-xl text-accent">$425</span>
               </div>
             </div>
           </div>
@@ -626,7 +626,7 @@ const MetricCard = ({ label, value, icon: Icon, color, subtext }: MetricCardProp
       <div>
         <p className="text-sm text-muted-foreground">{label}</p>
         <p className={cn(
-          "font-handwritten text-2xl mt-1",
+          "font-serif text-2xl mt-1",
           color === "blue" ? "text-primary" : "text-accent"
         )}>
           {value}

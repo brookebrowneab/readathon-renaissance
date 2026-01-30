@@ -121,7 +121,7 @@ const StudentLogReadingPage = () => {
               </h1>
               
               <p className="text-lg text-muted-foreground">
-                You logged <span className="font-handwritten text-2xl text-brand-blue">{minutes} minutes</span> of reading!
+                You logged <span className="font-serif text-2xl text-brand-blue">{minutes} minutes</span> of reading!
               </p>
 
               {willReachGoal && (
@@ -270,7 +270,7 @@ const StudentLogReadingPage = () => {
                   </Button>
                   
                   <div className="flex flex-col items-center">
-                    <span className="font-handwritten text-7xl text-brand-blue leading-none">
+                    <span className="font-serif text-7xl text-brand-blue leading-none">
                       {minutes}
                     </span>
                     <span className="text-muted-foreground text-lg">minutes</span>
@@ -399,7 +399,7 @@ const StudentLogReadingPage = () => {
                   <p className="text-muted-foreground">
                     This will bring you to
                   </p>
-                  <p className="font-handwritten text-3xl text-brand-blue">
+                  <p className="font-serif text-3xl text-brand-blue">
                     {previewProgress} minutes
                   </p>
                   <p className="text-muted-foreground">
