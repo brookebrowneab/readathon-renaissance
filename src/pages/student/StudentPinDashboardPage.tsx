@@ -25,7 +25,8 @@ import {
   Library,
   ChevronRight,
   Users,
-  GraduationCap
+  GraduationCap,
+  Star
 } from "lucide-react";
 import { toast } from "sonner";
 import { format, parseISO, isToday, isYesterday } from "date-fns";
@@ -104,6 +105,36 @@ const StudentPinDashboardPage = () => {
       });
       if (error) throw error;
       return data || 0;
+    },
+    enabled: !!session?.gradeInfo,
+  });
+
+  // Fetch class favorite books
+  const { data: classFavoriteBooks } = useQuery({
+    queryKey: ['class-favorite-books', session?.className],
+    queryFn: async () => {
+      if (!session?.className) return [];
+      const { data, error } = await supabase.rpc('get_class_favorite_books', {
+        p_class_name: session.className,
+        p_limit: 5,
+      });
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!session?.className,
+  });
+
+  // Fetch grade favorite books
+  const { data: gradeFavoriteBooks } = useQuery({
+    queryKey: ['grade-favorite-books', session?.gradeInfo],
+    queryFn: async () => {
+      if (!session?.gradeInfo) return [];
+      const { data, error } = await supabase.rpc('get_grade_favorite_books', {
+        p_grade_info: session.gradeInfo,
+        p_limit: 5,
+      });
+      if (error) throw error;
+      return data || [];
     },
     enabled: !!session?.gradeInfo,
   });
@@ -405,6 +436,68 @@ const StudentPinDashboardPage = () => {
                           {(gradeTotalMinutes ?? 0).toLocaleString()}
                         </p>
                         <p className="text-xs text-muted-foreground">grade minutes</p>
+                      </div>
+                    )}
+                  </div>
+                </section>
+              )}
+
+              {/* Favorite Books Rankings */}
+              {((classFavoriteBooks && classFavoriteBooks.length > 0) || (gradeFavoriteBooks && gradeFavoriteBooks.length > 0)) && (
+                <section>
+                  <h2 className="font-serif text-xl md:text-2xl font-normal text-foreground flex items-center gap-2 mb-4">
+                    <Star className="h-5 w-5 text-warning" />
+                    Popular Books
+                  </h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Class Favorite Books */}
+                    {session.className && classFavoriteBooks && classFavoriteBooks.length > 0 && (
+                      <div className="bg-background p-4 shadow-sm" style={handDrawnBorder}>
+                        <div className="flex items-center gap-2 mb-3">
+                          <Users className="h-4 w-4 text-primary" />
+                          <span className="text-sm font-medium">{session.className} Favorites</span>
+                        </div>
+                        <ol className="space-y-2">
+                          {classFavoriteBooks.map((book: { book_title: string; read_count: number }, index: number) => (
+                            <li key={book.book_title} className="flex items-center gap-2">
+                              <span className={`flex items-center justify-center h-5 w-5 rounded-full text-xs font-bold ${
+                                index === 0 ? 'bg-warning text-warning-foreground' :
+                                index === 1 ? 'bg-muted text-muted-foreground' :
+                                index === 2 ? 'bg-amber-600 text-white' :
+                                'bg-muted/50 text-muted-foreground'
+                              }`}>
+                                {index + 1}
+                              </span>
+                              <span className="flex-1 text-sm truncate">{book.book_title}</span>
+                              <span className="text-xs text-muted-foreground">{book.read_count}×</span>
+                            </li>
+                          ))}
+                        </ol>
+                      </div>
+                    )}
+                    {/* Grade Favorite Books */}
+                    {session.gradeInfo && gradeFavoriteBooks && gradeFavoriteBooks.length > 0 && (
+                      <div className="bg-background p-4 shadow-sm" style={handDrawnBorder}>
+                        <div className="flex items-center gap-2 mb-3">
+                          <GraduationCap className="h-4 w-4 text-primary" />
+                          <span className="text-sm font-medium">{session.gradeInfo} Favorites</span>
+                        </div>
+                        <ol className="space-y-2">
+                          {gradeFavoriteBooks.map((book: { book_title: string; read_count: number }, index: number) => (
+                            <li key={book.book_title} className="flex items-center gap-2">
+                              <span className={`flex items-center justify-center h-5 w-5 rounded-full text-xs font-bold ${
+                                index === 0 ? 'bg-warning text-warning-foreground' :
+                                index === 1 ? 'bg-muted text-muted-foreground' :
+                                index === 2 ? 'bg-amber-600 text-white' :
+                                'bg-muted/50 text-muted-foreground'
+                              }`}>
+                                {index + 1}
+                              </span>
+                              <span className="flex-1 text-sm truncate">{book.book_title}</span>
+                              <span className="text-xs text-muted-foreground">{book.read_count}×</span>
+                            </li>
+                          ))}
+                        </ol>
                       </div>
                     )}
                   </div>
