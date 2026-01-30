@@ -1,30 +1,39 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useStudentSession } from "@/hooks/useStudentSession";
 import { supabase } from "@/integrations/supabase/client";
 import { useActiveEvent } from "@/hooks/useActiveEvent";
+import { MainNav, Footer } from "@/components/layout";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Progress } from "@/components/ui/progress";
+import { ReadingGoalRing } from "@/components/legacy";
 import { BookSelector } from "@/components/books";
 import { Book, useBooks } from "@/hooks/useBooks";
 import { 
   BookOpen, 
   Clock, 
-  Target, 
   LogOut, 
   Plus, 
   Minus,
   Trophy,
   Calendar,
   Sparkles,
-  Library
+  Library,
+  ChevronRight
 } from "lucide-react";
 import { toast } from "sonner";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, isToday, isYesterday } from "date-fns";
+
+// Hand-drawn border style (consistent with parent dashboard)
+const handDrawnBorder = {
+  border: 'solid 1px #41403E',
+  borderTopLeftRadius: '255px 15px',
+  borderTopRightRadius: '15px 225px',
+  borderBottomRightRadius: '225px 15px',
+  borderBottomLeftRadius: '15px 255px',
+};
 
 interface ReadingLog {
   id: string;
@@ -40,6 +49,14 @@ interface BookInfo {
   author: string | null;
   cover_url: string | null;
 }
+
+// Helper to format date for display
+const formatLogDate = (dateStr: string): string => {
+  const date = parseISO(dateStr);
+  if (isToday(date)) return "Today";
+  if (isYesterday(date)) return "Yesterday";
+  return format(date, "MMM d");
+};
 
 const StudentPinDashboardPage = () => {
   const { session, isLoading: sessionLoading, logout, refreshData, requireAuth } = useStudentSession();
@@ -134,14 +151,34 @@ const StudentPinDashboardPage = () => {
     setMinutes((prev) => Math.max(1, Math.min(180, prev + delta)));
   };
 
+  // Calculate stats from logs
+  const stats = useMemo(() => {
+    const today = format(new Date(), "yyyy-MM-dd");
+    const todayMinutes = readingLogs
+      .filter(log => log.logged_at === today)
+      .reduce((sum, log) => sum + log.minutes, 0);
+    const longestSession = readingLogs.length > 0 
+      ? Math.max(...readingLogs.map(log => log.minutes))
+      : 0;
+    const uniqueBooks = new Set(readingLogs.filter(l => l.book_id || l.book_title).map(l => l.book_id || l.book_title)).size;
+    
+    return { todayMinutes, longestSession, uniqueBooks };
+  }, [readingLogs]);
+
   if (sessionLoading) {
     return (
-      <div className="min-h-screen bg-background-warm p-6">
-        <div className="max-w-2xl mx-auto space-y-6">
-          <Skeleton className="h-12 w-48" />
-          <Skeleton className="h-48" />
-          <Skeleton className="h-64" />
-        </div>
+      <div className="flex min-h-screen flex-col">
+        <MainNav />
+        <main className="flex-1 bg-background-warm shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+          <div className="container py-8">
+            <div className="max-w-4xl mx-auto space-y-6">
+              <Skeleton className="h-12 w-48" />
+              <Skeleton className="h-48" />
+              <Skeleton className="h-64" />
+            </div>
+          </div>
+        </main>
+        <Footer />
       </div>
     );
   }
@@ -154,196 +191,236 @@ const StudentPinDashboardPage = () => {
   const goalReached = session.totalMinutes >= session.goalMinutes;
 
   return (
-    <div className="min-h-screen bg-background-warm">
-      {/* Header */}
-      <header className="bg-card border-b px-4 py-3 sticky top-0 z-10">
-        <div className="max-w-2xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <BookOpen className="h-6 w-6 text-primary" />
-            <span className="font-serif text-lg">Read-a-thon</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-muted-foreground">Hi, {session.name}!</span>
-            <Button variant="ghost" size="sm" onClick={logout}>
-              <LogOut className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      </header>
+    <div className="flex min-h-screen flex-col">
+      <MainNav />
 
-      <main className="max-w-2xl mx-auto p-4 space-y-6">
-        {/* Progress Card */}
-        <Card className="overflow-hidden">
-          <CardHeader className={goalReached ? "bg-success/10" : "bg-primary/5"}>
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                {goalReached ? (
-                  <>
-                    <Trophy className="h-5 w-5 text-success" />
-                    Goal Reached! 🎉
-                  </>
-                ) : (
-                  <>
-                    <Target className="h-5 w-5 text-primary" />
-                    Your Reading Goal
-                  </>
-                )}
-              </CardTitle>
-              {goalReached && <Sparkles className="h-6 w-6 text-warning animate-pulse" />}
-            </div>
-          </CardHeader>
-          <CardContent className="pt-6">
-            <div className="text-center mb-4">
-              <div className="text-4xl font-bold text-primary">
-                {session.totalMinutes}
-                <span className="text-lg font-normal text-muted-foreground ml-1">
-                  / {session.goalMinutes} min
-                </span>
-              </div>
-            </div>
-            <Progress value={progressPercent} className="h-4" />
-            <p className="text-center text-sm text-muted-foreground mt-3">
-              {goalReached
-                ? "Amazing work! Keep reading to go even further!"
-                : `${session.goalMinutes - session.totalMinutes} minutes to go!`}
-            </p>
-            
-            {/* My Books Link */}
-            <div className="mt-4 pt-4 border-t">
-              <Button asChild variant="outline" className="w-full">
-                <Link to="/student/books" className="flex items-center gap-2">
-                  <Library className="h-4 w-4" />
-                  View My Books
-                </Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Log Reading Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Clock className="h-5 w-5" />
-              Log Your Reading
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleLogReading} className="space-y-4">
-              {/* Minutes Stepper */}
-              <div className="space-y-2">
-                <Label>How many minutes did you read?</Label>
-                <div className="flex items-center justify-center gap-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    onClick={() => adjustMinutes(-5)}
-                    disabled={minutes <= 1}
-                  >
-                    <Minus className="h-4 w-4" />
-                  </Button>
-                  <div className="text-center">
-                    <Input
-                      type="number"
-                      value={minutes}
-                      onChange={(e) => setMinutes(Math.max(1, Math.min(180, Number(e.target.value))))}
-                      className="w-20 text-center text-2xl font-bold"
-                      min={1}
-                      max={180}
-                    />
-                    <span className="text-xs text-muted-foreground">minutes</span>
+      <main className="flex-1 bg-background-warm shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+        <div className="container py-8">
+          <div className="flex flex-col lg:flex-row gap-8">
+            {/* Main Content Area */}
+            <div className="flex-1 space-y-8">
+              {/* Header Section */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h1 className="font-serif text-3xl font-normal tracking-tight text-foreground md:text-4xl">
+                      <span className="font-handwritten text-4xl text-primary">
+                        Welcome,
+                      </span>{" "}
+                      {session.name}!
+                    </h1>
+                    <p className="text-muted-foreground mt-1 text-sm md:text-base">
+                      {goalReached 
+                        ? "You reached your goal! Keep up the amazing reading! 🎉" 
+                        : `${session.goalMinutes - session.totalMinutes} minutes to reach your goal`
+                      }
+                    </p>
                   </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    onClick={() => adjustMinutes(5)}
-                    disabled={minutes >= 180}
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    style={handDrawnBorder}
+                    onClick={logout}
                   >
-                    <Plus className="h-4 w-4" />
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Log Out
                   </Button>
                 </div>
               </div>
 
-              {/* Book Selector with Barcode Scanning */}
-              <BookSelector
-                selectedBook={selectedBook}
-                onSelectBook={setSelectedBook}
-                manualTitle={bookTitle}
-                onManualTitleChange={setBookTitle}
-              />
+              {/* Progress Card */}
+              <section>
+                <div className="bg-background p-6 shadow-md" style={handDrawnBorder}>
+                  <div className="flex flex-col md:flex-row items-center gap-6">
+                    {/* Reading Goal Ring */}
+                    <div className="shrink-0">
+                      <ReadingGoalRing
+                        progress={session.totalMinutes}
+                        goal={session.goalMinutes}
+                        size={180}
+                        mobileSize={140}
+                      />
+                    </div>
 
-              <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
-                {isSubmitting ? "Saving..." : "Log My Reading! 📖"}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-
-        {/* Recent Reading Logs */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
-              Recent Reading
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isLoadingLogs ? (
-              <div className="space-y-2">
-                {[1, 2, 3].map((i) => (
-                  <Skeleton key={i} className="h-12" />
-                ))}
-              </div>
-            ) : readingLogs.length === 0 ? (
-              <p className="text-center text-muted-foreground py-6">
-                No reading logged yet. Start reading! 📚
-              </p>
-            ) : (
-              <div className="space-y-2">
-                {readingLogs.map((log) => {
-                  const bookInfo = getBookForLog(log);
-                  return (
-                    <div
-                      key={log.id}
-                      className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg"
-                    >
-                      {bookInfo?.cover_url ? (
-                        <img
-                          src={bookInfo.cover_url}
-                          alt={bookInfo.title}
-                          className="w-10 h-14 object-cover rounded shadow-sm"
-                        />
-                      ) : (
-                        <div className="w-10 h-14 bg-muted rounded flex items-center justify-center shrink-0">
-                          <BookOpen className="h-4 w-4 text-muted-foreground" />
-                        </div>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium">{log.minutes} minutes</p>
-                        {(bookInfo?.title || log.book_title) && (
-                          <p className="text-sm text-muted-foreground truncate">
-                            {bookInfo?.title || log.book_title}
-                          </p>
-                        )}
-                        {bookInfo?.author && (
-                          <p className="text-xs text-muted-foreground/70 truncate">
-                            by {bookInfo.author}
-                          </p>
+                    {/* Stats */}
+                    <div className="flex-1 space-y-4">
+                      <div className="flex items-center gap-2">
+                        {goalReached ? (
+                          <>
+                            <Trophy className="h-6 w-6 text-success" />
+                            <span className="text-xl font-medium text-success">Goal Reached!</span>
+                            <Sparkles className="h-5 w-5 text-warning animate-pulse" />
+                          </>
+                        ) : (
+                          <>
+                            <BookOpen className="h-6 w-6 text-primary" />
+                            <span className="text-xl font-medium">Your Reading Progress</span>
+                          </>
                         )}
                       </div>
-                      <span className="text-sm text-muted-foreground shrink-0">
-                        {format(parseISO(log.logged_at), "MMM d")}
-                      </span>
+
+                      <div className="grid grid-cols-3 gap-4">
+                        <div className="text-center p-3 bg-muted/30 rounded-lg">
+                          <p className="text-2xl font-bold text-primary">{stats.todayMinutes}</p>
+                          <p className="text-xs text-muted-foreground">Today</p>
+                        </div>
+                        <div className="text-center p-3 bg-muted/30 rounded-lg">
+                          <p className="text-2xl font-bold text-primary">{stats.longestSession} min</p>
+                          <p className="text-xs text-muted-foreground">Best Session</p>
+                        </div>
+                        <div className="text-center p-3 bg-muted/30 rounded-lg">
+                          <p className="text-2xl font-bold text-primary">{stats.uniqueBooks}</p>
+                          <p className="text-xs text-muted-foreground">Books</p>
+                        </div>
+                      </div>
+
+                      <Button asChild variant="outline" className="w-full md:w-auto">
+                        <Link to="/student/books" className="flex items-center gap-2">
+                          <Library className="h-4 w-4" />
+                          View My Books
+                          <ChevronRight className="h-4 w-4" />
+                        </Link>
+                      </Button>
                     </div>
-                  );
-                })}
+                  </div>
+                </div>
+              </section>
+
+              {/* Log Reading Card */}
+              <section>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="font-serif text-xl md:text-2xl font-normal text-foreground flex items-center gap-2">
+                    <Clock className="h-5 w-5" />
+                    Log Your Reading
+                  </h2>
+                </div>
+
+                <div className="bg-background p-6 shadow-md" style={handDrawnBorder}>
+                  <form onSubmit={handleLogReading} className="space-y-4">
+                    {/* Minutes Stepper */}
+                    <div className="space-y-2">
+                      <Label>How many minutes did you read?</Label>
+                      <div className="flex items-center justify-center gap-4">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() => adjustMinutes(-5)}
+                          disabled={minutes <= 1}
+                          style={handDrawnBorder}
+                        >
+                          <Minus className="h-4 w-4" />
+                        </Button>
+                        <div className="text-center">
+                          <Input
+                            type="number"
+                            value={minutes}
+                            onChange={(e) => setMinutes(Math.max(1, Math.min(180, Number(e.target.value))))}
+                            className="w-24 text-center text-3xl font-bold"
+                            min={1}
+                            max={180}
+                          />
+                          <span className="text-sm text-muted-foreground">minutes</span>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() => adjustMinutes(5)}
+                          disabled={minutes >= 180}
+                          style={handDrawnBorder}
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Book Selector with Barcode Scanning */}
+                    <BookSelector
+                      selectedBook={selectedBook}
+                      onSelectBook={setSelectedBook}
+                      manualTitle={bookTitle}
+                      onManualTitleChange={setBookTitle}
+                    />
+
+                    <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
+                      {isSubmitting ? "Saving..." : "Log My Reading! 📖"}
+                    </Button>
+                  </form>
+                </div>
+              </section>
+            </div>
+
+            {/* Sidebar - Recent Activity */}
+            <aside className="lg:w-80 xl:w-96 space-y-6">
+              <div className="bg-background p-6 shadow-md" style={handDrawnBorder}>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-serif text-lg font-normal text-foreground flex items-center gap-2">
+                    <Calendar className="h-4 w-4" />
+                    Recent Reading
+                  </h3>
+                </div>
+
+                {isLoadingLogs ? (
+                  <div className="space-y-3">
+                    {[1, 2, 3].map((i) => (
+                      <Skeleton key={i} className="h-16" />
+                    ))}
+                  </div>
+                ) : readingLogs.length === 0 ? (
+                  <div className="text-center py-8">
+                    <BookOpen className="h-10 w-10 text-muted-foreground/40 mx-auto mb-3" />
+                    <p className="text-muted-foreground">No reading logged yet</p>
+                    <p className="text-sm text-muted-foreground/70">Log your first reading above! 📚</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {readingLogs.map((log) => {
+                      const bookInfo = getBookForLog(log);
+                      return (
+                        <div
+                          key={log.id}
+                          className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg"
+                        >
+                          {bookInfo?.cover_url ? (
+                            <img
+                              src={bookInfo.cover_url}
+                              alt={bookInfo.title}
+                              className="w-10 h-14 object-cover rounded shadow-sm shrink-0"
+                            />
+                          ) : (
+                            <div className="w-10 h-14 bg-muted rounded flex items-center justify-center shrink-0">
+                              <BookOpen className="h-4 w-4 text-muted-foreground" />
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-foreground">{log.minutes} min</p>
+                            {(bookInfo?.title || log.book_title) && (
+                              <p className="text-sm text-muted-foreground truncate">
+                                {bookInfo?.title || log.book_title}
+                              </p>
+                            )}
+                            {bookInfo?.author && (
+                              <p className="text-xs text-muted-foreground/70 truncate">
+                                by {bookInfo.author}
+                              </p>
+                            )}
+                          </div>
+                          <span className="text-sm text-muted-foreground shrink-0">
+                            {formatLogDate(log.logged_at)}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
-            )}
-          </CardContent>
-        </Card>
+            </aside>
+          </div>
+        </div>
       </main>
+
+      <Footer />
     </div>
   );
 };
