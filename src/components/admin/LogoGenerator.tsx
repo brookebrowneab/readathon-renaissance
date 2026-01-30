@@ -400,7 +400,9 @@ export function LogoGenerator() {
       if (updateError) throw updateError;
       
       // Invalidate queries to refresh logo everywhere
-      queryClient.invalidateQueries({ queryKey: ['active-event'] });
+      // Use await to ensure the cache is invalidated before showing success
+      await queryClient.invalidateQueries({ queryKey: ['active-event'] });
+      await queryClient.refetchQueries({ queryKey: ['active-event'] });
       
       toast.success("Logo applied to site successfully!");
     } catch (error) {
