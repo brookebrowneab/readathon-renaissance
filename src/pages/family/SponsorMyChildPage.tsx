@@ -19,6 +19,7 @@ import { useAvailableClasses, useMultipleClassFundraisingTotals } from "@/hooks/
 import { usePledges } from "@/hooks/usePledges";
 import { useCreateClassPledge, useCreateMilestonePledges } from "@/hooks/useClassPledges";
 import { useActiveEvent } from "@/hooks/useActiveEvent";
+import { useSponsorAuth } from "@/hooks/useSponsorAuth";
 
 // Components
 import {
@@ -52,6 +53,7 @@ const SponsorMyChildPage = () => {
 
   // Data hooks
   const { children: myChildren, isLoading: childrenLoading } = useChildren();
+  const { sponsor } = useSponsorAuth();
   const { data: sponsorableChildren, isLoading: sponsorableLoading } = useSponsorableChildren();
   const { data: availableClasses, isLoading: classesLoading } = useAvailableClasses();
   const { data: activeEvent } = useActiveEvent();
@@ -217,7 +219,7 @@ const SponsorMyChildPage = () => {
           });
         }
       } else if (selectedChildId && selectedChild) {
-        // Create individual pledge
+        // Create individual pledge - include sponsor_id if user has a sponsor profile
         await addPledge.mutateAsync({
           child_id: selectedChildId,
           student_name: selectedChild.name,
@@ -226,6 +228,7 @@ const SponsorMyChildPage = () => {
             ? parseFloat(perMinuteAmount) 
             : parseFloat(flatAmount),
           event_id: activeEvent?.id,
+          sponsor_id: sponsor?.id || null,
         });
       }
 
