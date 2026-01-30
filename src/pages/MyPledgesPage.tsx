@@ -8,6 +8,7 @@ import { useParentPledges, ParentPledge } from "@/hooks/useParentPledges";
 import { usePledges } from "@/hooks/usePledges";
 import { useChildren } from "@/hooks/useChildren";
 import { DeleteConfirm, ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { EditPledgeDialog, EditablePledge } from "@/components/pledge/EditPledgeDialog";
 import { sendPledgeNotification } from "@/lib/notifications";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -22,6 +23,7 @@ import {
   Trash2,
   CircleDollarSign,
   Undo2,
+  Pencil,
 } from "lucide-react";
 import { format } from "date-fns";
 
@@ -42,6 +44,8 @@ const MyPledgesPage = () => {
   const [pledgeToDelete, setPledgeToDelete] = useState<string | null>(null);
   const [markPaidDialogOpen, setMarkPaidDialogOpen] = useState(false);
   const [pledgeToMarkPaid, setPledgeToMarkPaid] = useState<ParentPledge | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [pledgeToEdit, setPledgeToEdit] = useState<EditablePledge | null>(null);
 
   const paidCount = pledges.filter(p => p.is_paid).length;
   const pendingCount = pledges.filter(p => !p.is_paid).length;
@@ -113,6 +117,29 @@ const MyPledgesPage = () => {
     updatePledge.mutate(
       { id: pledgeId, is_paid: false, payment_status: "pending" },
       { onSuccess: () => refetch() }
+    );
+  };
+
+  const handleEditClick = (pledge: ParentPledge) => {
+    setPledgeToEdit({
+      id: pledge.id,
+      student_name: pledge.student_name,
+      pledge_type: pledge.pledge_type,
+      amount: pledge.amount,
+    });
+    setEditDialogOpen(true);
+  };
+
+  const handleSaveEdit = (id: string, pledgeType: string, amount: number) => {
+    updatePledge.mutate(
+      { id, pledge_type: pledgeType, amount },
+      {
+        onSuccess: () => {
+          refetch();
+          setEditDialogOpen(false);
+          setPledgeToEdit(null);
+        },
+      }
     );
   };
 
@@ -299,8 +326,18 @@ const MyPledgesPage = () => {
                               <Button
                                 variant="ghost"
                                 size="icon"
+                                className="h-8 w-8 text-muted-foreground hover:text-primary"
+                                onClick={() => handleEditClick(pledge)}
+                                title="Edit pledge"
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
                                 className="h-8 w-8 text-muted-foreground hover:text-destructive"
                                 onClick={() => handleDeleteClick(pledge.id)}
+                                title="Delete pledge"
                               >
                                 <Trash2 className="h-4 w-4" />
                               </Button>
@@ -365,6 +402,15 @@ const MyPledgesPage = () => {
         variant="default"
         icon={<CircleDollarSign className="h-5 w-5 text-success" />}
         loading={updatePledge.isPending}
+      />
+
+      {/* Edit Pledge Dialog */}
+      <EditPledgeDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        pledge={pledgeToEdit}
+        onSave={handleSaveEdit}
+        isLoading={updatePledge.isPending}
       />
     </div>
   );
