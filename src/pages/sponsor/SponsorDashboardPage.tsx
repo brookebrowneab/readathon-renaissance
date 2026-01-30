@@ -356,7 +356,7 @@ const SponsorDashboardPage = () => {
                       >
                         <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
                           <div>
-                            <h3 className="font-serif text-xl text-foreground flex items-center gap-2">
+                            <h3 className="font-serif text-2xl text-foreground flex items-center gap-2">
                               <User className="h-5 w-5 text-muted-foreground" />
                               {childGroup.childName}
                             </h3>
@@ -651,7 +651,7 @@ const SponsorDashboardPage = () => {
                   className="p-5 bg-background shadow-md"
                   style={handDrawnBorder}
                 >
-                  <h3 className="font-serif text-lg text-foreground mb-4 pb-2 border-b border-border">
+                  <h3 className="font-serif text-xl text-foreground mb-4 pb-2 border-b border-border">
                     Quick Actions
                   </h3>
                   <nav className="space-y-2">
@@ -690,7 +690,7 @@ const SponsorDashboardPage = () => {
                     className="p-5 bg-background shadow-md"
                     style={handDrawnBorder}
                   >
-                    <h3 className="font-serif text-lg text-foreground mb-4 pb-2 border-b border-border">
+                    <h3 className="font-serif text-xl text-foreground mb-4 pb-2 border-b border-border">
                       Your Impact
                     </h3>
                     <div className="grid grid-cols-2 gap-4">
