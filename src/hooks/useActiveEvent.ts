@@ -8,6 +8,16 @@ export interface ActiveEvent {
   end_date: string;
   last_log_date: string;
   is_active: boolean;
+  goal_minutes: number;
+  school_name: string;
+  payment_address: string;
+  accept_checks: boolean;
+  accept_cards: boolean;
+  send_reminders: boolean;
+  reminder_days: number;
+  class_milestone_enabled: boolean;
+  class_milestone_goal: number;
+  class_milestone_reward: string;
   created_at: string;
   updated_at: string;
 }
