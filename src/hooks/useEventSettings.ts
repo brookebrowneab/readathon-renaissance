@@ -21,6 +21,7 @@ export interface EventSettings {
   class_milestone_reward: string;
   class_milestone_enabled: boolean;
   teacher_logging_grades: string[];
+  timezone: string;
   created_at: string;
   updated_at: string;
 }
@@ -43,6 +44,7 @@ export interface UpdateEventParams {
   class_milestone_reward?: string;
   class_milestone_enabled?: boolean;
   teacher_logging_grades?: string[];
+  timezone?: string;
 }
 
 export function useEventSettings() {
@@ -84,7 +86,7 @@ export function useEventSettings() {
       if (updates.class_milestone_reward !== undefined) updateData.class_milestone_reward = updates.class_milestone_reward;
       if (updates.class_milestone_enabled !== undefined) updateData.class_milestone_enabled = updates.class_milestone_enabled;
       if (updates.teacher_logging_grades !== undefined) updateData.teacher_logging_grades = updates.teacher_logging_grades;
-
+      if (updates.timezone !== undefined) updateData.timezone = updates.timezone;
       const { data, error } = await supabase
         .from('events')
         .update(updateData)

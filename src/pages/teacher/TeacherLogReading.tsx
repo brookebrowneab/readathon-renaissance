@@ -23,11 +23,16 @@ import {
   CheckCircle,
   RotateCcw,
   Users,
+  Clock,
+  Calendar,
+  BookOpen,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useTeacherStudents } from "@/hooks/useTeacherStudents";
 import { useActiveEvent } from "@/hooks/useActiveEvent";
+import { useEventStatus } from "@/hooks/useEventStatus";
+import { format } from "date-fns";
 
 interface Student {
   id: string;
@@ -56,9 +61,10 @@ const TeacherLogReading = () => {
   const navigate = useNavigate();
   const { students: teacherStudents } = useTeacherStudents();
   const { data: activeEvent } = useActiveEvent();
+  const { phase, canTeachersLog, validLogDates, isLoading: statusLoading } = useEventStatus();
   
   // Check if teacher can log reading based on grade-level permissions
-  const canLogReading = useMemo(() => {
+  const hasGradePermission = useMemo(() => {
     if (!activeEvent?.teacher_logging_grades || activeEvent.teacher_logging_grades.length === 0) {
       return false;
     }
@@ -66,13 +72,16 @@ const TeacherLogReading = () => {
     return studentGrades.some(grade => activeEvent.teacher_logging_grades.includes(grade as string));
   }, [teacherStudents, activeEvent?.teacher_logging_grades]);
 
-  // Redirect if not allowed to log reading
+  // Combined permission check: phase AND grade-level
+  const canLogReading = canTeachersLog && hasGradePermission;
+
+  // Redirect if not allowed to log reading (only for grade permission issues)
   useEffect(() => {
-    if (activeEvent && !canLogReading) {
+    if (activeEvent && canTeachersLog && !hasGradePermission) {
       toast.error("Reading logging is not enabled for your grade level");
       navigate("/teacher");
     }
-  }, [activeEvent, canLogReading, navigate]);
+  }, [activeEvent, canTeachersLog, hasGradePermission, navigate]);
 
   const [bulkMode, setBulkMode] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<string>("");
@@ -135,6 +144,53 @@ const TeacherLogReading = () => {
     setIsSuccess(false);
     setLoggedInfo(null);
   };
+
+  // Phase-based blocking UI for teachers
+  if (!canTeachersLog && !statusLoading) {
+    const formatDate = (d: Date) => format(d, "MMMM d");
+    
+    let title = "";
+    let message = "";
+    let icon = <Clock className="h-12 w-12 text-muted-foreground/50" />;
+    
+    if (phase === 'pre_event' && validLogDates) {
+      title = "Reading Starts Soon";
+      message = `The read-a-thon begins on ${formatDate(validLogDates.start)}. You'll be able to log reading for your students then.`;
+      icon = <Calendar className="h-12 w-12 text-primary" />;
+    } else if (phase === 'grace_period') {
+      title = "Reading Period Ended";
+      message = "The active reading period has ended. Parents can still log missed minutes during the grace period.";
+    } else if (phase === 'closed') {
+      title = "Read-a-thon Complete";
+      message = "This year's read-a-thon has concluded. Check the results on your dashboard!";
+      icon = <BookOpen className="h-12 w-12 text-success" />;
+    } else {
+      title = "Logging Not Available";
+      message = "Reading logging is not currently open.";
+    }
+    
+    return (
+      <div className="flex min-h-screen flex-col">
+        <MainNav />
+        <main className="flex-1 bg-background-warm flex items-center justify-center">
+          <div className="text-center p-8 max-w-md">
+            <div className="mx-auto w-20 h-20 bg-muted/30 rounded-full flex items-center justify-center mb-6">
+              {icon}
+            </div>
+            <h1 className="font-serif text-2xl text-foreground mb-2">{title}</h1>
+            <p className="text-muted-foreground mb-6">{message}</p>
+            <Button asChild>
+              <Link to="/teacher">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Dashboard
+              </Link>
+            </Button>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen flex-col">
