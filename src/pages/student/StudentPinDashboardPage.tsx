@@ -217,7 +217,7 @@ const StudentPinDashboardPage = () => {
               <div className="mb-2">
                 <p className="text-sm text-muted-foreground mb-1">How many minutes has Janney read?</p>
                 <div className="inline-block relative">
-                  <span className="font-serif text-5xl md:text-6xl lg:text-7xl text-foreground tracking-tight relative">
+                  <span className="font-handwritten text-6xl md:text-7xl lg:text-8xl text-foreground tracking-tight relative">
                     {(schoolTotalMinutes ?? 0).toLocaleString()}
                     {/* Highlighter effect */}
                     <span 
