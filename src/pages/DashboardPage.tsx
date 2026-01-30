@@ -289,36 +289,103 @@ const DashboardPage = () => {
                 </section>
               )}
 
-              {/* Sponsored Children Overview (Sponsor View) */}
+              {/* Combined Sponsor Overview - Responsive Layout */}
               {isSponsorOnly && (
                 <section>
                   <div className="flex items-center justify-between mb-4">
                     <h2 className="font-serif text-xl md:text-2xl font-normal text-foreground">
-                      Readers You're Supporting
+                      Your Sponsorships
                     </h2>
                   </div>
 
                   {sponsorPledgesLoading ? (
-                    <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+                    <div className="grid gap-6 sm:grid-cols-2">
                       {[1, 2].map((i) => (
                         <div key={i} className="bg-background p-6 shadow-md" style={handDrawnBorder}>
                           <Skeleton className="h-40 w-full" />
                         </div>
                       ))}
                     </div>
-                  ) : sponsorPledgesByChild.length > 0 ? (
-                    <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-                      {sponsorPledgesByChild.map((item) => (
-                        <SponsoredChildCard 
-                          key={item.childId} 
-                          childId={item.childId}
-                          childName={item.childName}
-                          child={item.child}
-                          pledges={item.pledges}
-                          totalAmount={item.totalAmount}
-                        />
-                      ))}
-                    </div>
+                  ) : (sponsorPledgesByChild.length > 0 || sponsorPledgesByClass.length > 0) ? (
+                    <>
+                      {/* Responsive grid: side-by-side when few items, stacked when many */}
+                      {(() => {
+                        const totalItems = sponsorPledgesByChild.length + sponsorPledgesByClass.length;
+                        const useCompactLayout = totalItems <= 2;
+                        
+                        return (
+                          <div className={
+                            useCompactLayout 
+                              ? "grid gap-6 grid-cols-1 md:grid-cols-2" 
+                              : "space-y-8"
+                          }>
+                            {/* Child pledges */}
+                            {sponsorPledgesByChild.length > 0 && (
+                              useCompactLayout ? (
+                                sponsorPledgesByChild.map((item) => (
+                                  <SponsoredChildCard 
+                                    key={item.childId} 
+                                    childId={item.childId}
+                                    childName={item.childName}
+                                    child={item.child}
+                                    pledges={item.pledges}
+                                    totalAmount={item.totalAmount}
+                                    compact={useCompactLayout}
+                                  />
+                                ))
+                              ) : (
+                                <div>
+                                  <h3 className="font-serif text-lg text-muted-foreground mb-3">Readers</h3>
+                                  <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+                                    {sponsorPledgesByChild.map((item) => (
+                                      <SponsoredChildCard 
+                                        key={item.childId} 
+                                        childId={item.childId}
+                                        childName={item.childName}
+                                        child={item.child}
+                                        pledges={item.pledges}
+                                        totalAmount={item.totalAmount}
+                                      />
+                                    ))}
+                                  </div>
+                                </div>
+                              )
+                            )}
+                            
+                            {/* Class pledges */}
+                            {sponsorPledgesByClass.length > 0 && (
+                              useCompactLayout ? (
+                                sponsorPledgesByClass.map((item) => (
+                                  <SponsoredClassCard 
+                                    key={item.className} 
+                                    className={item.className}
+                                    teacher={item.teacher}
+                                    pledges={item.pledges}
+                                    totalAmount={item.totalAmount}
+                                    compact={useCompactLayout}
+                                  />
+                                ))
+                              ) : (
+                                <div>
+                                  <h3 className="font-serif text-lg text-muted-foreground mb-3">Classes</h3>
+                                  <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+                                    {sponsorPledgesByClass.map((item) => (
+                                      <SponsoredClassCard 
+                                        key={item.className} 
+                                        className={item.className}
+                                        teacher={item.teacher}
+                                        pledges={item.pledges}
+                                        totalAmount={item.totalAmount}
+                                      />
+                                    ))}
+                                  </div>
+                                </div>
+                              )
+                            )}
+                          </div>
+                        );
+                      })()}
+                    </>
                   ) : (
                     <div className="bg-background p-6 shadow-md text-center" style={handDrawnBorder}>
                       <Heart className="h-10 w-10 text-muted-foreground/40 mx-auto mb-3" />
@@ -331,28 +398,6 @@ const DashboardPage = () => {
                       </Button>
                     </div>
                   )}
-                </section>
-              )}
-
-              {/* Sponsored Classes Section (Sponsor View) */}
-              {isSponsorOnly && sponsorPledgesByClass.length > 0 && (
-                <section>
-                  <div className="flex items-center justify-between mb-4">
-                    <h2 className="font-serif text-xl md:text-2xl font-normal text-foreground">
-                      Classes You're Supporting
-                    </h2>
-                  </div>
-                  <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-                    {sponsorPledgesByClass.map((item) => (
-                      <SponsoredClassCard 
-                        key={item.className} 
-                        className={item.className}
-                        teacher={item.teacher}
-                        pledges={item.pledges}
-                        totalAmount={item.totalAmount}
-                      />
-                    ))}
-                  </div>
                 </section>
               )}
 
@@ -599,9 +644,10 @@ interface SponsoredChildCardProps {
   } | null;
   pledges: SponsorPledge[];
   totalAmount: number;
+  compact?: boolean;
 }
 
-const SponsoredChildCard = ({ childId, childName, child, pledges, totalAmount }: SponsoredChildCardProps) => {
+const SponsoredChildCard = ({ childId, childName, child, pledges, totalAmount, compact = false }: SponsoredChildCardProps) => {
   const totalMinutes = child?.total_minutes || 0;
   const goalMinutes = child?.goal_minutes || 300;
   const gradeInfo = child?.grade_info || "Student";
@@ -688,9 +734,10 @@ interface SponsoredClassCardProps {
   teacher: { id: string; name: string } | null;
   pledges: SponsorClassPledge[];
   totalAmount: number;
+  compact?: boolean;
 }
 
-const SponsoredClassCard = ({ className, teacher, pledges, totalAmount }: SponsoredClassCardProps) => {
+const SponsoredClassCard = ({ className, teacher, pledges, totalAmount, compact = false }: SponsoredClassCardProps) => {
   const hasPendingPayment = pledges.some(p => !p.is_paid);
   const latestPledge = pledges[0];
   const isUnlocked = latestPledge?.is_unlocked;
