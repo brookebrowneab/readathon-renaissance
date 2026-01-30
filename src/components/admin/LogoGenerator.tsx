@@ -329,20 +329,21 @@ export function LogoGenerator() {
     try {
       const font = await opentype.load(fontUrl);
       const fontSize = 24;
-      const textPath = font.getPath(dateText, 0, 0, fontSize);
       
-      // Get bounding box to center the text
-      const bbox = textPath.getBoundingBox();
+      // opentype.js getPath uses x, y as baseline position (same as SVG text element)
+      // Generate path at origin first to measure, then position correctly
+      const measurePath = font.getPath(dateText, 0, 0, fontSize);
+      const bbox = measurePath.getBoundingBox();
       const textWidth = bbox.x2 - bbox.x1;
-      const textHeight = bbox.y2 - bbox.y1;
       
-      // Calculate translation to center at textX, baseline at y=104
-      const translateX = textX - textWidth / 2 - bbox.x1;
-      const translateY = 104 + textHeight * 0.3; // Adjust for baseline
+      // Center horizontally at textX, baseline at y=104 (matching the preview <text> element)
+      const centeredX = textX - textWidth / 2 - bbox.x1;
+      const baselineY = 104;
       
-      // Get path data and apply transform
+      // Generate the final path at the correct position
+      const textPath = font.getPath(dateText, centeredX, baselineY, fontSize);
       const pathData = textPath.toPathData(2);
-      textPathData = `<path d="${pathData}" transform="translate(${translateX}, ${translateY})" fill="#3761ad"/>`;
+      textPathData = `<path d="${pathData}" fill="#3761ad"/>`;
     } catch (error) {
       console.error('Failed to load font for vectorization, falling back to text element:', error);
       // Fallback to regular text element if font loading fails
