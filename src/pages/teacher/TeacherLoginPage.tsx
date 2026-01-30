@@ -47,6 +47,10 @@ const TeacherLoginPage = () => {
         .eq("user_id", user.id)
         .maybeSingle();
 
+      if (teacherError) {
+        console.error("Error checking teacher record by user_id:", teacherError);
+      }
+
       // Step 4: If no linked record, try to auto-link by email
       if (!teacherRecord && user.email) {
         const { data: teacherByEmail, error: emailError } = await supabase
@@ -56,7 +60,11 @@ const TeacherLoginPage = () => {
           .is("user_id", null)
           .maybeSingle();
 
-        if (teacherByEmail && !emailError) {
+        if (emailError) {
+          console.error("Error checking teacher by email:", emailError);
+        }
+
+        if (teacherByEmail) {
           // Found a matching teacher by email - link the account
           const { error: updateError } = await supabase
             .from("teachers")
@@ -78,16 +86,10 @@ const TeacherLoginPage = () => {
             }).catch((err) => {
               console.error("Failed to send welcome email:", err);
             });
+          } else {
+            console.error("Failed to link teacher account:", updateError);
           }
         }
-      }
-
-      if (teacherError) {
-        console.error("Error checking teacher record:", teacherError);
-        await signOut();
-        toast.error("Error verifying teacher access. Please try again.");
-        setIsLoading(false);
-        return;
       }
 
       if (!teacherRecord) {
