@@ -308,79 +308,103 @@ const DashboardPage = () => {
                     </div>
                   ) : (sponsorPledgesByChild.length > 0 || sponsorPledgesByClass.length > 0) ? (
                     <>
-                      {/* Responsive grid: side-by-side when few items, stacked when many */}
+                      {/* Responsive grid: single item = full width horizontal, 2 items = side-by-side, 3+ = stacked sections */}
                       {(() => {
                         const totalItems = sponsorPledgesByChild.length + sponsorPledgesByClass.length;
-                        const useCompactLayout = totalItems <= 2;
+                        const isSingleItem = totalItems === 1;
+                        const useSideBySide = totalItems === 2;
                         
+                        if (isSingleItem) {
+                          // Single sponsorship - full width horizontal card
+                          return (
+                            <div className="space-y-6">
+                              {sponsorPledgesByChild.map((item) => (
+                                <SponsoredChildCard 
+                                  key={item.childId} 
+                                  childId={item.childId}
+                                  childName={item.childName}
+                                  child={item.child}
+                                  pledges={item.pledges}
+                                  totalAmount={item.totalAmount}
+                                  horizontal
+                                />
+                              ))}
+                              {sponsorPledgesByClass.map((item) => (
+                                <SponsoredClassCard 
+                                  key={item.className} 
+                                  className={item.className}
+                                  teacher={item.teacher}
+                                  pledges={item.pledges}
+                                  totalAmount={item.totalAmount}
+                                  horizontal
+                                />
+                              ))}
+                            </div>
+                          );
+                        }
+                        
+                        if (useSideBySide) {
+                          // Two items - side by side
+                          return (
+                            <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
+                              {sponsorPledgesByChild.map((item) => (
+                                <SponsoredChildCard 
+                                  key={item.childId} 
+                                  childId={item.childId}
+                                  childName={item.childName}
+                                  child={item.child}
+                                  pledges={item.pledges}
+                                  totalAmount={item.totalAmount}
+                                />
+                              ))}
+                              {sponsorPledgesByClass.map((item) => (
+                                <SponsoredClassCard 
+                                  key={item.className} 
+                                  className={item.className}
+                                  teacher={item.teacher}
+                                  pledges={item.pledges}
+                                  totalAmount={item.totalAmount}
+                                />
+                              ))}
+                            </div>
+                          );
+                        }
+                        
+                        // Many items - stacked sections
                         return (
-                          <div className={
-                            useCompactLayout 
-                              ? "grid gap-6 grid-cols-1 md:grid-cols-2" 
-                              : "space-y-8"
-                          }>
-                            {/* Child pledges */}
+                          <div className="space-y-8">
                             {sponsorPledgesByChild.length > 0 && (
-                              useCompactLayout ? (
-                                sponsorPledgesByChild.map((item) => (
-                                  <SponsoredChildCard 
-                                    key={item.childId} 
-                                    childId={item.childId}
-                                    childName={item.childName}
-                                    child={item.child}
-                                    pledges={item.pledges}
-                                    totalAmount={item.totalAmount}
-                                    compact={useCompactLayout}
-                                  />
-                                ))
-                              ) : (
-                                <div>
-                                  <h3 className="font-serif text-lg text-muted-foreground mb-3">Readers</h3>
-                                  <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-                                    {sponsorPledgesByChild.map((item) => (
-                                      <SponsoredChildCard 
-                                        key={item.childId} 
-                                        childId={item.childId}
-                                        childName={item.childName}
-                                        child={item.child}
-                                        pledges={item.pledges}
-                                        totalAmount={item.totalAmount}
-                                      />
-                                    ))}
-                                  </div>
+                              <div>
+                                <h3 className="font-serif text-lg text-muted-foreground mb-3">Readers</h3>
+                                <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+                                  {sponsorPledgesByChild.map((item) => (
+                                    <SponsoredChildCard 
+                                      key={item.childId} 
+                                      childId={item.childId}
+                                      childName={item.childName}
+                                      child={item.child}
+                                      pledges={item.pledges}
+                                      totalAmount={item.totalAmount}
+                                    />
+                                  ))}
                                 </div>
-                              )
+                              </div>
                             )}
-                            
-                            {/* Class pledges */}
                             {sponsorPledgesByClass.length > 0 && (
-                              useCompactLayout ? (
-                                sponsorPledgesByClass.map((item) => (
-                                  <SponsoredClassCard 
-                                    key={item.className} 
-                                    className={item.className}
-                                    teacher={item.teacher}
-                                    pledges={item.pledges}
-                                    totalAmount={item.totalAmount}
-                                    compact={useCompactLayout}
-                                  />
-                                ))
-                              ) : (
-                                <div>
-                                  <h3 className="font-serif text-lg text-muted-foreground mb-3">Classes</h3>
-                                  <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-                                    {sponsorPledgesByClass.map((item) => (
-                                      <SponsoredClassCard 
-                                        key={item.className} 
-                                        className={item.className}
-                                        teacher={item.teacher}
-                                        pledges={item.pledges}
-                                        totalAmount={item.totalAmount}
-                                      />
-                                    ))}
-                                  </div>
+                              <div>
+                                <h3 className="font-serif text-lg text-muted-foreground mb-3">Classes</h3>
+                                <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+                                  {sponsorPledgesByClass.map((item) => (
+                                    <SponsoredClassCard 
+                                      key={item.className} 
+                                      className={item.className}
+                                      teacher={item.teacher}
+                                      pledges={item.pledges}
+                                      totalAmount={item.totalAmount}
+                                    />
+                                  ))}
                                 </div>
-                              )
+                              </div>
                             )}
                           </div>
                         );
@@ -645,9 +669,10 @@ interface SponsoredChildCardProps {
   pledges: SponsorPledge[];
   totalAmount: number;
   compact?: boolean;
+  horizontal?: boolean;
 }
 
-const SponsoredChildCard = ({ childId, childName, child, pledges, totalAmount, compact = false }: SponsoredChildCardProps) => {
+const SponsoredChildCard = ({ childId, childName, child, pledges, totalAmount, compact = false, horizontal = false }: SponsoredChildCardProps) => {
   const totalMinutes = child?.total_minutes || 0;
   const goalMinutes = child?.goal_minutes || 300;
   const gradeInfo = child?.grade_info || "Student";
@@ -666,6 +691,73 @@ const SponsoredChildCard = ({ childId, childName, child, pledges, totalAmount, c
   const totalOwed = calculateOwed();
   const hasPendingPayment = pledges.some(p => !p.is_paid);
   
+  // Horizontal layout for single sponsorship
+  if (horizontal) {
+    return (
+      <div 
+        className="bg-background p-6 shadow-md"
+        style={handDrawnBorder}
+      >
+        <div className="flex flex-col md:flex-row md:items-center gap-6">
+          {/* Left: Reading Ring & Basic Info */}
+          <div className="flex items-center gap-4 md:gap-6">
+            <ReadingGoalRing progress={totalMinutes} goal={goalMinutes} size={90} />
+            <div className="flex flex-col">
+              <div className="flex items-center gap-2">
+                <h2 className="font-serif text-xl md:text-2xl font-normal tracking-tight text-foreground">
+                  {childName.split(" ")[0]}'s Progress
+                </h2>
+                <Badge variant={hasPendingPayment ? "secondary" : "default"} className="shrink-0">
+                  {hasPendingPayment ? "Pledged" : "Paid"}
+                </Badge>
+              </div>
+              <p className="text-sm text-muted-foreground">{gradeInfo}</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                {totalMinutes.toLocaleString()} / {goalMinutes.toLocaleString()} minutes ({Math.min(progress, 100)}%)
+              </p>
+            </div>
+          </div>
+          
+          {/* Right: Stats & Pledge Info */}
+          <div className="flex-1 flex flex-col sm:flex-row items-stretch gap-4 md:justify-end">
+            <div className="grid grid-cols-2 sm:flex gap-3">
+              <div className="flex flex-col items-center rounded-lg bg-muted/30 p-3 min-w-[100px]">
+                <span className="text-xs text-muted-foreground">Minutes Read</span>
+                <span className="font-serif text-xl text-primary">{totalMinutes.toLocaleString()}</span>
+              </div>
+              <div className="relative flex flex-col items-center rounded-lg bg-muted/30 p-3 min-w-[100px]">
+                <Star className="absolute -right-1 -top-1 h-4 w-4 fill-accent text-accent" />
+                <span className="text-xs text-muted-foreground">Goal Progress</span>
+                <span className="font-serif text-xl text-primary">{Math.min(progress, 100)}%</span>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 sm:flex gap-3">
+              <div className="flex flex-col items-center rounded-lg bg-accent/10 p-3 border border-accent/20 min-w-[100px]">
+                <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Your Pledge</span>
+                <span className="font-serif text-lg text-accent">${totalOwed.toFixed(2)}</span>
+              </div>
+              <div className="flex flex-col items-center rounded-lg bg-secondary/30 p-3 border border-secondary/40 min-w-[100px]">
+                <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Type</span>
+                <span className="font-serif text-lg text-secondary-foreground">
+                  {pledges[0]?.pledge_type === "per_minute" ? "Per Min" : "Flat"}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Thank You Message */}
+        <div className="mt-4 rounded-lg bg-primary/5 p-3 border border-primary/10">
+          <p className="text-xs text-center text-muted-foreground">
+            <Heart className="inline h-3 w-3 text-primary mr-1" />
+            Thank you for supporting {childName.split(" ")[0]}'s reading journey!
+          </p>
+        </div>
+      </div>
+    );
+  }
+  
+  // Default vertical layout
   return (
     <div 
       className="bg-background p-6 shadow-md"
@@ -735,9 +827,10 @@ interface SponsoredClassCardProps {
   pledges: SponsorClassPledge[];
   totalAmount: number;
   compact?: boolean;
+  horizontal?: boolean;
 }
 
-const SponsoredClassCard = ({ className, teacher, pledges, totalAmount, compact = false }: SponsoredClassCardProps) => {
+const SponsoredClassCard = ({ className, teacher, pledges, totalAmount, compact = false, horizontal = false }: SponsoredClassCardProps) => {
   const hasPendingPayment = pledges.some(p => !p.is_paid);
   const latestPledge = pledges[0];
   const isUnlocked = latestPledge?.is_unlocked;
