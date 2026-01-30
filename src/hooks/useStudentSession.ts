@@ -7,6 +7,8 @@ interface StudentSession {
   name: string;
   totalMinutes: number;
   goalMinutes: number;
+  className: string | null;
+  gradeInfo: string | null;
 }
 
 export function useStudentSession() {
@@ -33,7 +35,7 @@ export function useStudentSession() {
 
     const { data, error } = await supabase
       .from("children")
-      .select("id, name, total_minutes, goal_minutes")
+      .select("id, name, total_minutes, goal_minutes, class_name, grade_info")
       .eq("id", session.childId)
       .maybeSingle();
 
@@ -47,6 +49,8 @@ export function useStudentSession() {
       name: data.name,
       totalMinutes: data.total_minutes,
       goalMinutes: data.goal_minutes,
+      className: data.class_name,
+      gradeInfo: data.grade_info,
     };
 
     setSession(updated);

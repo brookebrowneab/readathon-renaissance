@@ -23,7 +23,9 @@ import {
   Calendar,
   Sparkles,
   Library,
-  ChevronRight
+  ChevronRight,
+  Users,
+  GraduationCap
 } from "lucide-react";
 import { toast } from "sonner";
 import { format, parseISO, isToday, isYesterday } from "date-fns";
@@ -76,6 +78,34 @@ const StudentPinDashboardPage = () => {
       if (error) throw error;
       return data?.reduce((sum, child) => sum + (child.total_minutes || 0), 0) || 0;
     },
+  });
+
+  // Fetch class total minutes
+  const { data: classTotalMinutes } = useQuery({
+    queryKey: ['class-total-minutes', session?.className],
+    queryFn: async () => {
+      if (!session?.className) return 0;
+      const { data, error } = await supabase.rpc('get_class_total_minutes', {
+        p_class_name: session.className,
+      });
+      if (error) throw error;
+      return data || 0;
+    },
+    enabled: !!session?.className,
+  });
+
+  // Fetch grade total minutes
+  const { data: gradeTotalMinutes } = useQuery({
+    queryKey: ['grade-total-minutes', session?.gradeInfo],
+    queryFn: async () => {
+      if (!session?.gradeInfo) return 0;
+      const { data, error } = await supabase.rpc('get_grade_total_minutes', {
+        p_grade_info: session.gradeInfo,
+      });
+      if (error) throw error;
+      return data || 0;
+    },
+    enabled: !!session?.gradeInfo,
   });
   
   const [readingLogs, setReadingLogs] = useState<ReadingLog[]>([]);
@@ -348,6 +378,38 @@ const StudentPinDashboardPage = () => {
                   </div>
                 </div>
               </section>
+
+              {/* Class & Grade Stats */}
+              {(session.className || session.gradeInfo) && (
+                <section>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {session.className && (
+                      <div className="bg-background p-4 shadow-sm" style={handDrawnBorder}>
+                        <div className="flex items-center gap-2 mb-2">
+                          <Users className="h-4 w-4 text-primary" />
+                          <span className="text-sm text-muted-foreground">{session.className}</span>
+                        </div>
+                        <p className="font-serif text-3xl font-normal text-foreground">
+                          {(classTotalMinutes ?? 0).toLocaleString()}
+                        </p>
+                        <p className="text-xs text-muted-foreground">class minutes</p>
+                      </div>
+                    )}
+                    {session.gradeInfo && (
+                      <div className="bg-background p-4 shadow-sm" style={handDrawnBorder}>
+                        <div className="flex items-center gap-2 mb-2">
+                          <GraduationCap className="h-4 w-4 text-primary" />
+                          <span className="text-sm text-muted-foreground">{session.gradeInfo}</span>
+                        </div>
+                        <p className="font-serif text-3xl font-normal text-foreground">
+                          {(gradeTotalMinutes ?? 0).toLocaleString()}
+                        </p>
+                        <p className="text-xs text-muted-foreground">grade minutes</p>
+                      </div>
+                    )}
+                  </div>
+                </section>
+              )}
 
               {/* Log Reading Card */}
               <section>
