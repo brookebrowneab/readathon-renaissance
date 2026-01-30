@@ -496,7 +496,7 @@ const SponsorMyChildPage = () => {
                     </div>
                     <div className="flex justify-between pt-2 border-t">
                       <span className="text-muted-foreground">Total Pledged</span>
-                      <span className="font-handwritten text-xl text-primary">
+                      <span className="text-xl font-semibold text-primary">
                         ${milestoneTotalPledged.toFixed(2)}
                       </span>
                     </div>
@@ -504,7 +504,7 @@ const SponsorMyChildPage = () => {
                 ) : (
                   <div className="flex justify-between pt-2 border-t">
                     <span className="text-muted-foreground">Donation Amount</span>
-                    <span className="font-handwritten text-xl text-primary">
+                    <span className="text-xl font-semibold text-primary">
                       ${classroomFlatAmount}
                     </span>
                   </div>
@@ -528,7 +528,7 @@ const SponsorMyChildPage = () => {
                 )}
                 <div className="flex justify-between pt-2 border-t">
                   <span className="text-muted-foreground">Projected Total</span>
-                  <span className="font-handwritten text-xl text-primary">
+                  <span className="text-xl font-semibold text-primary">
                     ${calculateProjected().toFixed(2)}
                   </span>
                 </div>
