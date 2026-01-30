@@ -81,6 +81,10 @@ const LOGO_SVG_CONTENT = `
     <path class="st2" d="M35.9,44.8c4.3,1.5,7.4,8.3,5.8,12.7-.5,1.5-1.6,2.7-3,3.4-1.8.9-3.3.8-4.7-.6-2.8-3-4-6.6-3.2-10.7.5-2.7,2.5-4.2,5-4.8h0Z"/>
     <path class="st2" d="M64,41.8c0,1.8-.2,3.5-.9,5.2-1,2.3-2.5,3.5-4.3,3.3-2.1-.2-4-1.8-4.7-4-.9-3-.3-5.9.8-8.8.4-1,.9-1.9,1.5-2.7,1.9-2.4,4.1-2.3,5.9.2,1.4,2,1.7,4.3,1.6,6.7Z"/>
     <path class="st2" d="M68.5,61.9c-2.2-1.4-3.9-3.4-4.9-5.8-2-5,3-9.6,6.5-9.9,1.6-.1,2.7.7,3.3,2.8,1.1,4,.4,7.7-1.8,11.1-.6,1-1.4,1.7-3.1,1.8h0Z"/>
+    <!-- JANNEY text (white, curved at top) -->
+    <text x="53.7" y="16" text-anchor="middle" style="font-family: 'Cooper Black', 'Arial Black', sans-serif; font-size: 11px; fill: #fff; letter-spacing: 2px;">JANNEY</text>
+    <!-- JAGUARS text (white, curved at bottom) -->
+    <text x="53.7" y="100" text-anchor="middle" style="font-family: 'Cooper Black', 'Arial Black', sans-serif; font-size: 9px; fill: #fff; letter-spacing: 1.5px;">JAGUARS</text>
   </g>
   <!-- Read-a-thon text paths (teal) -->
   <g id="Layer_8">
@@ -239,8 +243,8 @@ export function LogoGenerator() {
       </g>
     </g>
   </g>
-  <!-- Date text -->
-  <text x="${textX}" y="145" text-anchor="middle" class="date-text">${dateText}</text>
+  <!-- Date text - baseline aligned with bottom of circle (y=107.6) -->
+  <text x="${textX}" y="107" text-anchor="middle" class="date-text">${dateText}</text>
 </svg>`;
   }, [calculateTextX, dateText, fontBase64]);
 
@@ -371,9 +375,10 @@ export function LogoGenerator() {
               `}</style>
             </defs>
             <g dangerouslySetInnerHTML={{ __html: LOGO_SVG_CONTENT }} />
+            {/* Date text - baseline aligned with bottom of circle (y=107.6) */}
             <text
               x={textX}
-              y="145"
+              y="107"
               textAnchor="middle"
               className="date-text"
               style={{
