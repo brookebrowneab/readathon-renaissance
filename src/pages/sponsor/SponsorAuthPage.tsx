@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { FormField } from "@/components/ui/form-field";
 import { useSponsorAuth } from "@/hooks/useSponsorAuth";
 import { toast } from "sonner";
-import { Mail, Lock, User, ArrowRight, BookOpen } from "lucide-react";
+import { Mail, Lock, User, ArrowRight, BookOpen, Phone } from "lucide-react";
 import booksShelfBannerV2 from "@/assets/books-shelf-banner-v2.png";
 import { z } from "zod";
 
@@ -14,6 +14,7 @@ import { z } from "zod";
 const emailSchema = z.string().email("Please enter a valid email address");
 const passwordSchema = z.string().min(6, "Password must be at least 6 characters");
 const nameSchema = z.string().min(2, "Name must be at least 2 characters");
+const phoneSchema = z.string().regex(/^[\d\s\-\+\(\)]{7,20}$/, "Please enter a valid phone number").or(z.literal(""));
 
 // Hand-drawn border style
 const handDrawnBorder = {
@@ -35,8 +36,9 @@ const SponsorAuthPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string; name?: string }>({});
+  const [errors, setErrors] = useState<{ email?: string; password?: string; name?: string; phone?: string }>({});
 
   // Get the redirect URL from location state or default to invite page
   const from = (location.state as { from?: string })?.from || "/invite";
@@ -75,6 +77,17 @@ const SponsorAuthPage = () => {
           newErrors.name = e.errors[0]?.message;
         }
       }
+      
+      // Phone is optional, only validate if provided
+      if (phone) {
+        try {
+          phoneSchema.parse(phone);
+        } catch (e) {
+          if (e instanceof z.ZodError) {
+            newErrors.phone = e.errors[0]?.message;
+          }
+        }
+      }
     }
     
     setErrors(newErrors);
@@ -102,7 +115,7 @@ const SponsorAuthPage = () => {
           navigate(from, { replace: true });
         }
       } else {
-        const { error } = await signUp(email, password, name);
+        const { error } = await signUp(email, password, name, phone);
         if (error) {
           if (error.message?.includes("already registered")) {
             toast.error("This email is already registered. Please log in instead.");
@@ -192,7 +205,29 @@ const SponsorAuthPage = () => {
                   </FormField>
                 )}
 
-                <FormField 
+                {mode === "signup" && (
+                  <FormField 
+                    label="Phone number (optional)" 
+                    htmlFor="phone"
+                    error={errors.phone}
+                    helperText="For pledge reminders and event updates"
+                  >
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                      <Input
+                        id="phone"
+                        type="tel"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        placeholder="(555) 123-4567"
+                        className="h-12 pl-10"
+                        disabled={isSubmitting}
+                      />
+                    </div>
+                  </FormField>
+                )}
+
+                <FormField
                   label="Email address" 
                   htmlFor="email"
                   error={errors.email}

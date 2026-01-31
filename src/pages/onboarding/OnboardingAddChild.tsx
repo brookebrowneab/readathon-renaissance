@@ -18,6 +18,7 @@ import { User, GraduationCap, BookOpen, Shield } from "lucide-react";
 import { useChildren } from "@/hooks/useChildren";
 import { useHomeroomTeachers } from "@/hooks/useTeachers";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const GRADES = [
@@ -84,6 +85,18 @@ const OnboardingAddChild = () => {
     setIsSubmitting(true);
 
     try {
+      // Update parent profile with phone if stored from registration
+      const parentDataStr = sessionStorage.getItem('parentData');
+      if (parentDataStr) {
+        const parentData = JSON.parse(parentDataStr);
+        if (parentData.phone) {
+          await supabase
+            .from('profiles')
+            .update({ phone: parentData.phone })
+            .eq('user_id', user.id);
+        }
+      }
+
       const childName = `${formData.firstName} ${formData.lastName.charAt(0).toUpperCase()}.`;
       const className = teacherNotListed 
         ? formData.customTeacher 

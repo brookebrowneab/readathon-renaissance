@@ -6,7 +6,7 @@ import { FormField } from "@/components/ui/form-field";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { useState, useMemo } from "react";
-import { Eye, EyeOff, Mail, Lock, User, Users, Check, X } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, Users, Check, X, Phone } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
@@ -21,6 +21,7 @@ const RegisterPage = () => {
     firstName: "",
     lastName: "",
     email: "",
+    phone: "",
     password: "",
     confirmPassword: "",
   });
@@ -28,6 +29,7 @@ const RegisterPage = () => {
     firstName: false,
     lastName: false,
     email: false,
+    phone: false,
     password: false,
     confirmPassword: false,
   });
@@ -48,6 +50,14 @@ const RegisterPage = () => {
     if (!emailRegex.test(formData.email)) return "Please enter a valid email";
     return undefined;
   }, [formData.email, touched.email]);
+
+  // Phone validation (optional but validate format if provided)
+  const phoneError = useMemo(() => {
+    if (!touched.phone || !formData.phone) return undefined;
+    const phoneRegex = /^[\d\s\-\+\(\)]{7,20}$/;
+    if (!phoneRegex.test(formData.phone)) return "Please enter a valid phone number";
+    return undefined;
+  }, [formData.phone, touched.phone]);
 
   // Password validation
   const passwordChecks = useMemo(() => {
@@ -112,11 +122,12 @@ const RegisterPage = () => {
       return;
     }
     
-    // Store parent data for onboarding flow
+    // Store parent data for onboarding flow (including phone for profile update)
     sessionStorage.setItem('parentData', JSON.stringify({
       firstName: formData.firstName,
       lastName: formData.lastName,
       email: formData.email,
+      phone: formData.phone,
     }));
     
     toast.success("Account created! Let's add your child.");
@@ -222,6 +233,26 @@ const RegisterPage = () => {
                         onBlur={() => markTouched("email")}
                         className="pl-10"
                         required
+                      />
+                    </div>
+                  </FormField>
+
+                  <FormField 
+                    label="Phone Number" 
+                    htmlFor="phone"
+                    error={phoneError}
+                    helperText="Optional - for event updates and reminders"
+                  >
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <Input
+                        id="phone"
+                        type="tel"
+                        placeholder="(555) 123-4567"
+                        value={formData.phone}
+                        onChange={(e) => updateField("phone", e.target.value)}
+                        onBlur={() => markTouched("phone")}
+                        className="pl-10"
                       />
                     </div>
                   </FormField>
