@@ -372,12 +372,6 @@ export default function AdminFinancePage() {
         </DialogContent>
       </Dialog>
 
-      <Link to="/login">
-        <Button variant="outline">
-          <LogOut className="h-4 w-4 mr-2" />
-          Exit
-        </Button>
-      </Link>
     </>
   );
 
