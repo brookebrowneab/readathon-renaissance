@@ -14,7 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ReadingGoalRing } from "@/components/legacy";
 import { BookSelector } from "@/components/books";
 import { Book, useBooks } from "@/hooks/useBooks";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Dialog,
   DialogContent,
@@ -35,10 +35,14 @@ import {
   ChevronRight,
   Users,
   GraduationCap,
-  Star
+  Star,
+  Pencil,
+  Trash2,
+  CalendarDays,
+  History
 } from "lucide-react";
 import { toast } from "sonner";
-import { format, parseISO, isToday, isYesterday } from "date-fns";
+import { format, parseISO, isToday, isYesterday, startOfWeek, endOfWeek, subYears, startOfYear, endOfYear } from "date-fns";
 
 // Hand-drawn border style (consistent with parent dashboard)
 const handDrawnBorder = {
@@ -55,6 +59,7 @@ interface ReadingLog {
   book_title: string | null;
   logged_at: string;
   book_id: string | null;
+  created_at: string;
 }
 
 interface BookInfo {
@@ -62,6 +67,10 @@ interface BookInfo {
   title: string;
   author: string | null;
   cover_url: string | null;
+}
+
+interface ChildInfo {
+  total_verified: boolean;
 }
 
 // Helper to format date for display
@@ -153,10 +162,75 @@ const StudentPinDashboardPage = () => {
     session?.className,
     activeEvent?.id
   );
+
+  // Fetch child verification status
+  const { data: childInfo } = useQuery({
+    queryKey: ['child-verification', session?.childId],
+    queryFn: async () => {
+      if (!session?.childId) return null;
+      const { data, error } = await supabase
+        .from('children')
+        .select('total_verified')
+        .eq('id', session.childId)
+        .single();
+      if (error) throw error;
+      return data as ChildInfo;
+    },
+    enabled: !!session?.childId,
+  });
+
+  // Fetch weekly reading total
+  const { data: weeklyMinutes } = useQuery({
+    queryKey: ['weekly-minutes', session?.childId],
+    queryFn: async () => {
+      if (!session?.childId) return 0;
+      const now = new Date();
+      const weekStart = format(startOfWeek(now, { weekStartsOn: 0 }), 'yyyy-MM-dd');
+      const weekEnd = format(endOfWeek(now, { weekStartsOn: 0 }), 'yyyy-MM-dd');
+      
+      const { data, error } = await supabase
+        .from('reading_logs')
+        .select('minutes')
+        .eq('child_id', session.childId)
+        .gte('logged_at', weekStart)
+        .lte('logged_at', weekEnd);
+      
+      if (error) throw error;
+      return data?.reduce((sum, log) => sum + (log.minutes || 0), 0) || 0;
+    },
+    enabled: !!session?.childId,
+  });
+
+  // Fetch last year's reading total
+  const { data: lastYearMinutes } = useQuery({
+    queryKey: ['last-year-minutes', session?.childId],
+    queryFn: async () => {
+      if (!session?.childId) return 0;
+      const lastYear = subYears(new Date(), 1);
+      const yearStart = format(startOfYear(lastYear), 'yyyy-MM-dd');
+      const yearEnd = format(endOfYear(lastYear), 'yyyy-MM-dd');
+      
+      const { data, error } = await supabase
+        .from('reading_logs')
+        .select('minutes')
+        .eq('child_id', session.childId)
+        .gte('logged_at', yearStart)
+        .lte('logged_at', yearEnd);
+      
+      if (error) throw error;
+      return data?.reduce((sum, log) => sum + (log.minutes || 0), 0) || 0;
+    },
+    enabled: !!session?.childId,
+  });
+
+  const queryClient = useQueryClient();
   
   const [readingLogs, setReadingLogs] = useState<ReadingLog[]>([]);
   const [isLoadingLogs, setIsLoadingLogs] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editingLog, setEditingLog] = useState<ReadingLog | null>(null);
+  const [editMinutes, setEditMinutes] = useState(0);
+  const [editBookTitle, setEditBookTitle] = useState("");
   
   // Log reading form state
   const [minutes, setMinutes] = useState(15);
@@ -175,10 +249,10 @@ const StudentPinDashboardPage = () => {
 
       const { data, error } = await supabase
         .from("reading_logs")
-        .select("id, minutes, book_title, logged_at, book_id")
+        .select("id, minutes, book_title, logged_at, book_id, created_at")
         .eq("child_id", session.childId)
         .order("logged_at", { ascending: false })
-        .limit(10);
+        .limit(50);
 
       if (error) {
         console.error("Error fetching logs:", error);
@@ -241,6 +315,55 @@ const StudentPinDashboardPage = () => {
 
   const adjustMinutes = (delta: number) => {
     setMinutes((prev) => Math.max(1, Math.min(180, prev + delta)));
+  };
+
+  // Check if logs are editable (not verified by parent)
+  const canEditLogs = childInfo ? !childInfo.total_verified : true;
+
+  // Handle edit log
+  const handleEditLog = async () => {
+    if (!editingLog) return;
+    
+    const { error } = await supabase
+      .from('reading_logs')
+      .update({
+        minutes: editMinutes,
+        book_title: editBookTitle || null,
+      })
+      .eq('id', editingLog.id);
+
+    if (error) {
+      toast.error("Couldn't update the log. Try again!");
+    } else {
+      toast.success("Reading log updated! ✏️");
+      setReadingLogs(prev => 
+        prev.map(log => 
+          log.id === editingLog.id 
+            ? { ...log, minutes: editMinutes, book_title: editBookTitle || null }
+            : log
+        )
+      );
+      setEditingLog(null);
+      refreshData();
+      queryClient.invalidateQueries({ queryKey: ['weekly-minutes'] });
+    }
+  };
+
+  // Handle delete log
+  const handleDeleteLog = async (logId: string) => {
+    const { error } = await supabase
+      .from('reading_logs')
+      .delete()
+      .eq('id', logId);
+
+    if (error) {
+      toast.error("Couldn't delete the log. Try again!");
+    } else {
+      toast.success("Reading log removed 🗑️");
+      setReadingLogs(prev => prev.filter(log => log.id !== logId));
+      refreshData();
+      queryClient.invalidateQueries({ queryKey: ['weekly-minutes'] });
+    }
   };
 
   // Calculate stats from logs
@@ -395,19 +518,30 @@ const StudentPinDashboardPage = () => {
                         )}
                       </div>
 
-                      <div className="grid grid-cols-3 gap-4">
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                         <div className="text-center p-3 bg-muted/30 rounded-lg">
                           <p className="text-2xl font-bold text-primary">{stats.todayMinutes}</p>
                           <p className="text-xs text-muted-foreground">Today</p>
                         </div>
                         <div className="text-center p-3 bg-muted/30 rounded-lg">
-                          <p className="text-2xl font-bold text-primary">{stats.longestSession} min</p>
-                          <p className="text-xs text-muted-foreground">Best Session</p>
+                          <p className="text-2xl font-bold text-primary">{weeklyMinutes ?? 0}</p>
+                          <p className="text-xs text-muted-foreground">This Week</p>
                         </div>
                         <div className="text-center p-3 bg-muted/30 rounded-lg">
                           <p className="text-2xl font-bold text-primary">{stats.uniqueBooks}</p>
                           <p className="text-xs text-muted-foreground">Books</p>
                         </div>
+                        {lastYearMinutes && lastYearMinutes > 0 ? (
+                          <div className="text-center p-3 bg-muted/30 rounded-lg">
+                            <p className="text-2xl font-bold text-primary">{lastYearMinutes.toLocaleString()}</p>
+                            <p className="text-xs text-muted-foreground">Last Year</p>
+                          </div>
+                        ) : (
+                          <div className="text-center p-3 bg-muted/30 rounded-lg">
+                            <p className="text-2xl font-bold text-primary">{stats.longestSession}</p>
+                            <p className="text-xs text-muted-foreground">Best Session</p>
+                          </div>
+                        )}
                       </div>
 
                       <Button asChild variant="outline" className="w-full md:w-auto">
@@ -639,13 +773,18 @@ const StudentPinDashboardPage = () => {
                 </DialogContent>
               </Dialog>
 
-              {/* Recent Reading Card */}
+              {/* Reading Logs Card */}
               <div className="bg-background p-6 shadow-md" style={handDrawnBorder}>
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-serif text-lg font-normal text-foreground flex items-center gap-2">
-                    <Calendar className="h-4 w-4" />
-                    Recent Reading
+                    <History className="h-4 w-4" />
+                    My Reading Logs
                   </h3>
+                  {!canEditLogs && (
+                    <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
+                      ✓ Verified by parent
+                    </span>
+                  )}
                 </div>
 
                 {isLoadingLogs ? (
@@ -661,13 +800,15 @@ const StudentPinDashboardPage = () => {
                     <p className="text-sm text-muted-foreground/70">Log your first reading above! 📚</p>
                   </div>
                 ) : (
-                  <div className="space-y-3">
+                  <div className="space-y-3 max-h-[400px] overflow-y-auto">
                     {readingLogs.map((log) => {
                       const bookInfo = getBookForLog(log);
+                      const isEditing = editingLog?.id === log.id;
+                      
                       return (
                         <div
                           key={log.id}
-                          className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg"
+                          className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg group"
                         >
                           {bookInfo?.cover_url ? (
                             <img
@@ -680,22 +821,83 @@ const StudentPinDashboardPage = () => {
                               <BookOpen className="h-4 w-4 text-muted-foreground" />
                             </div>
                           )}
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium text-foreground">{log.minutes} min</p>
-                            {(bookInfo?.title || log.book_title) && (
-                              <p className="text-sm text-muted-foreground truncate">
-                                {bookInfo?.title || log.book_title}
-                              </p>
-                            )}
-                            {bookInfo?.author && (
-                              <p className="text-xs text-muted-foreground/70 truncate">
-                                by {bookInfo.author}
-                              </p>
-                            )}
-                          </div>
-                          <span className="text-sm text-muted-foreground shrink-0">
-                            {formatLogDate(log.logged_at)}
-                          </span>
+                          
+                          {isEditing ? (
+                            // Edit mode
+                            <div className="flex-1 space-y-2">
+                              <div className="flex items-center gap-2">
+                                <Input
+                                  type="number"
+                                  value={editMinutes}
+                                  onChange={(e) => setEditMinutes(Math.max(1, Math.min(180, Number(e.target.value))))}
+                                  className="w-20 h-8 text-center"
+                                  min={1}
+                                  max={180}
+                                />
+                                <span className="text-sm text-muted-foreground">min</span>
+                              </div>
+                              <Input
+                                value={editBookTitle}
+                                onChange={(e) => setEditBookTitle(e.target.value)}
+                                placeholder="Book title"
+                                className="h-8"
+                              />
+                              <div className="flex gap-2">
+                                <Button size="sm" onClick={handleEditLog}>
+                                  Save
+                                </Button>
+                                <Button size="sm" variant="ghost" onClick={() => setEditingLog(null)}>
+                                  Cancel
+                                </Button>
+                              </div>
+                            </div>
+                          ) : (
+                            // View mode
+                            <>
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium text-foreground">{log.minutes} min</p>
+                                {(bookInfo?.title || log.book_title) && (
+                                  <p className="text-sm text-muted-foreground truncate">
+                                    {bookInfo?.title || log.book_title}
+                                  </p>
+                                )}
+                                {bookInfo?.author && (
+                                  <p className="text-xs text-muted-foreground/70 truncate">
+                                    by {bookInfo.author}
+                                  </p>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-2 shrink-0">
+                                <span className="text-sm text-muted-foreground">
+                                  {formatLogDate(log.logged_at)}
+                                </span>
+                                {canEditLogs && (
+                                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      className="h-7 w-7 p-0"
+                                      onClick={() => {
+                                        setEditingLog(log);
+                                        setEditMinutes(log.minutes);
+                                        setEditBookTitle(log.book_title || "");
+                                      }}
+                                    >
+                                      <Pencil className="h-3.5 w-3.5" />
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+                                      onClick={() => handleDeleteLog(log.id)}
+                                    >
+                                      <Trash2 className="h-3.5 w-3.5" />
+                                    </Button>
+                                  </div>
+                                )}
+                              </div>
+                            </>
+                          )}
                         </div>
                       );
                     })}
