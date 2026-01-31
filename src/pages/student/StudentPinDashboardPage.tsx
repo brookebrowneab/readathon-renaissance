@@ -305,7 +305,7 @@ const StudentPinDashboardPage = () => {
                       aria-hidden="true"
                     />
                   </span>
-                  <span className="font-serif text-xl md:text-2xl text-muted-foreground ml-2 font-normal">minutes</span>
+                  <span className="font-serif text-xl md:text-2xl text-muted-foreground ml-2 font-normal tracking-normal">minutes</span>
                 </h1>
               </div>
             </div>
