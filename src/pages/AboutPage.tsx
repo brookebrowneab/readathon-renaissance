@@ -18,25 +18,23 @@ const AboutPage = () => {
       <section className="bg-background-warm py-16 md:py-24">
         <div className="container">
           <div className="mx-auto max-w-3xl text-center">
-            <div className="relative inline-block mb-4">
-              <h1 className="font-serif text-4xl font-normal text-foreground md:text-5xl relative">
-                <span className="relative">
-                  About Read-a-thon
-                  {/* Highlighter effect */}
-                  <span 
-                    className="absolute inset-0 -skew-y-1 bg-accent/30 -z-10 transform -rotate-[0.5deg]"
-                    style={{
-                      top: '45%',
-                      height: '55%',
-                      left: '-2%',
-                      right: '-2%',
-                      borderRadius: '4px 8px 4px 6px',
-                    }}
-                    aria-hidden="true"
-                  />
-                </span>
-              </h1>
-            </div>
+            <h1 className="font-serif text-4xl font-normal text-foreground md:text-5xl relative inline-block">
+              <span className="relative">
+                About
+                {/* Highlighter effect */}
+                <span 
+                  className="absolute inset-0 -skew-y-1 bg-accent/50 -z-10"
+                  style={{
+                    top: '45%',
+                    height: '55%',
+                    left: '-4%',
+                    right: '-4%',
+                    borderRadius: '4px 8px 4px 6px',
+                  }}
+                  aria-hidden="true"
+                />
+              </span>
+            </h1>
             <p className="text-lg text-muted-foreground md:text-xl">
               Inspiring a lifelong love of reading while supporting schools and communities.
             </p>
