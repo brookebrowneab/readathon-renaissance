@@ -4,83 +4,52 @@ import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import booksShelfBannerV2 from "@/assets/books-shelf-banner-v2.png";
 import checkmarkImage from "@/assets/checkmark.png";
-const HowItWorksPage = () => {
-  const steps = [
-    {
-      number: "1",
-      title: "Register Your Family",
-      description:
-        "Parents create an account and add their children. Each child receives a unique sponsor link for their fundraising.",
-      details: [
-        "Quick 2-minute signup process",
-        "Add multiple children to one account",
-        "Set individual reading goals",
-      ],
-    },
-    {
-      number: "2",
-      title: "Invite Sponsors",
-      description:
-        "Share your child's unique sponsor link with family, friends, and neighbors. Sponsors can pledge per minute read or a flat donation.",
-      details: [
-        "Shareable link via email or social media",
-        "Per-minute or flat-rate pledges",
-        "No account required for sponsors",
-      ],
-    },
-    {
-      number: "3",
-      title: "Read & Log Minutes",
-      description:
-        "Students read every day and log their minutes. Parents approve logs, and teachers can see classroom progress.",
-      details: [
-        "Easy daily logging from any device",
-        "Optional student login for older readers",
-        "Visual progress tracking",
-      ],
-    },
-    {
-      number: "4",
-      title: "Collect Pledges",
-      description:
-        "At the end of the read-a-thon, sponsors receive an email with the total pledge amount. Secure payment processing.",
-      details: [
-        "Automatic pledge calculations",
-        "Secure payment processing",
-        "Digital receipts for sponsors",
-      ],
-    },
-    {
-      number: "5",
-      title: "Celebrate Success",
-      description:
-        "Students who meet their goals earn recognition, and Janney receives the funds raised to support programs.",
-      details: [
-        "Achievement badges and certificates",
-        "Classroom and school leaderboards",
-        "Funds go directly to Janney",
-      ],
-    },
-  ];
+import {
+  useSiteContentMultiple,
+  parseJsonContent,
+  DEFAULT_CONTENT,
+} from "@/hooks/useSiteContent";
 
-  const faqs = [
-    {
-      q: "Is there a minimum pledge amount?",
-      a: "Sponsors can pledge as little as $0.01 per minute or a $5 flat donation. Pledges under $5 total are waived to minimize processing fees.",
-    },
-    {
-      q: "How long does the Read-a-thon last?",
-      a: "The Janney Read-a-thon runs February 24–March 8. The typical goal is 600 minutes (10 hours) of reading.",
-    },
-    {
-      q: "Can siblings share sponsors?",
-      a: "Yes! Parents can manage multiple children from one account, and sponsors can easily pledge to support multiple readers.",
-    },
-    {
-      q: "What if my child exceeds their goal?",
-      a: "Great news! Our progress rings show overflow with stacked circles. Sponsors can cap their per-minute pledges if they prefer.",
-    },
-  ];
+interface Step {
+  title: string;
+  description: string;
+  details: string[];
+}
+
+interface FAQ {
+  q: string;
+  a: string;
+}
+
+interface Stats {
+  event_duration: string;
+  typical_goal: string;
+  to_school: string;
+}
+
+const HowItWorksPage = () => {
+  // Fetch dynamic content
+  const { content } = useSiteContentMultiple([
+    "howitworks.hero_description",
+    "howitworks.steps",
+    "howitworks.faqs",
+    "howitworks.stats",
+  ]);
+
+  // Parse content with fallbacks
+  const heroDescription = content["howitworks.hero_description"] || DEFAULT_CONTENT["howitworks.hero_description"];
+  const steps = parseJsonContent<Step[]>(
+    content["howitworks.steps"],
+    JSON.parse(DEFAULT_CONTENT["howitworks.steps"])
+  );
+  const faqs = parseJsonContent<FAQ[]>(
+    content["howitworks.faqs"],
+    JSON.parse(DEFAULT_CONTENT["howitworks.faqs"])
+  );
+  const stats = parseJsonContent<Stats>(
+    content["howitworks.stats"],
+    JSON.parse(DEFAULT_CONTENT["howitworks.stats"])
+  );
 
   return (
     <PublicLayout>
@@ -105,7 +74,7 @@ const HowItWorksPage = () => {
               </span>
             </h1>
             <p className="text-base md:text-lg text-muted-foreground max-w-2xl leading-relaxed">
-              A simple 5-step process to get your students reading and fundraising for Janney Elementary.
+              {heroDescription}
             </p>
           </div>
         </div>
@@ -218,7 +187,7 @@ const HowItWorksPage = () => {
           >
             <div className="text-center">
               <p className="font-serif text-2xl md:text-3xl lg:text-4xl text-foreground tracking-tight">
-                2 weeks
+                {stats.event_duration}
               </p>
               <p className="text-xs md:text-sm text-muted-foreground mt-1">
                 Event Duration
@@ -232,7 +201,7 @@ const HowItWorksPage = () => {
               }}
             >
               <p className="font-serif text-2xl md:text-3xl lg:text-4xl text-foreground tracking-tight">
-                600 min
+                {stats.typical_goal}
               </p>
               <p className="text-xs md:text-sm text-muted-foreground mt-1">
                 Typical Goal
@@ -240,7 +209,7 @@ const HowItWorksPage = () => {
             </div>
             <div className="text-center">
               <p className="font-serif text-2xl md:text-3xl lg:text-4xl text-foreground tracking-tight">
-                100%
+                {stats.to_school}
               </p>
               <p className="text-xs md:text-sm text-muted-foreground mt-1">
                 To Janney
