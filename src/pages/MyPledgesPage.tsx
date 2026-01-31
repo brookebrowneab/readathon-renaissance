@@ -8,6 +8,7 @@ import { useParentPledges, ParentPledge } from "@/hooks/useParentPledges";
 import { usePledges } from "@/hooks/usePledges";
 import { useChildren } from "@/hooks/useChildren";
 import { useEventStatus } from "@/hooks/useEventStatus";
+import { useUserPayments } from "@/hooks/usePayments";
 import { DeleteConfirm } from "@/components/ui/confirm-dialog";
 import { EditPledgeDialog, EditablePledge } from "@/components/pledge/EditPledgeDialog";
 import {
@@ -22,6 +23,7 @@ import {
   Trash2,
   Pencil,
   ExternalLink,
+  Receipt,
 } from "lucide-react";
 import { format } from "date-fns";
 
@@ -39,6 +41,7 @@ const MyPledgesPage = () => {
   const { deletePledge, updatePledge } = usePledges();
   const { children } = useChildren();
   const { isPaymentsDue } = useEventStatus();
+  const { payments: userPayments, isLoading: isLoadingPayments } = useUserPayments();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [pledgeToDelete, setPledgeToDelete] = useState<string | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -133,6 +136,11 @@ const MyPledgesPage = () => {
     const child = children.find(c => c.id === pledge.child_id);
     const totalMinutes = child?.total_minutes || 0;
     return pledge.amount * totalMinutes;
+  };
+
+  // Get payments for a specific pledge
+  const getPaymentsForPledge = (pledgeId: string) => {
+    return userPayments.filter(p => p.pledge_id === pledgeId);
   };
 
   return (
@@ -331,6 +339,46 @@ const MyPledgesPage = () => {
                               )}
                             </div>
                           </div>
+
+                          {/* Payment History Section */}
+                          {getPaymentsForPledge(pledge.id).length > 0 && (
+                            <div className="mt-4 pt-4 border-t border-border">
+                              <h4 className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-1">
+                                <Receipt className="h-3 w-3" />
+                                Payment History
+                              </h4>
+                              <div className="space-y-2">
+                                {getPaymentsForPledge(pledge.id).map((payment) => (
+                                  <div 
+                                    key={payment.id}
+                                    className="flex items-center justify-between text-sm bg-muted/30 rounded px-3 py-2"
+                                  >
+                                    <div className="flex items-center gap-2">
+                                      <CheckCircle className="h-3.5 w-3.5 text-success" />
+                                      <span className="font-medium">${payment.amount.toFixed(2)}</span>
+                                      <span className="text-muted-foreground">
+                                        {format(new Date(payment.created_at), "MMM d, yyyy")}
+                                      </span>
+                                      <Badge variant="outline" className="text-xs">
+                                        {payment.pledge_type === 'per_minute' ? 'Per Min' : 'One-Time'}
+                                      </Badge>
+                                    </div>
+                                    {payment.square_receipt_url && (
+                                      <a
+                                        href={payment.square_receipt_url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center gap-1 text-primary hover:underline text-xs"
+                                      >
+                                        <ExternalLink className="h-3 w-3" />
+                                        Receipt
+                                      </a>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
 
                           {/* Pay Now section - only for unpaid pledges */}
                           {canPayNow(pledge) && (
