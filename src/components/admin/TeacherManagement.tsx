@@ -105,6 +105,7 @@ export function TeacherManagement() {
   const [formFullAccess, setFormFullAccess] = useState(false);
   const [formSendInvite, setFormSendInvite] = useState(true);
   const [formGradeLevel, setFormGradeLevel] = useState<string>("");
+  const [formAssignmentMode, setFormAssignmentMode] = useState<"grade" | "homeroom">("homeroom");
   const [selectedHomeroomId, setSelectedHomeroomId] = useState("");
 
   // Get assignments for selected partner teacher
@@ -119,6 +120,7 @@ export function TeacherManagement() {
     setFormFullAccess(false);
     setFormSendInvite(true);
     setFormGradeLevel("");
+    setFormAssignmentMode("homeroom");
   };
 
   const handleAddTeacher = async () => {
@@ -238,6 +240,7 @@ export function TeacherManagement() {
     setFormType(teacher.teacher_type);
     setFormFullAccess(teacher.has_full_access);
     setFormGradeLevel(teacher.grade_level || "");
+    setFormAssignmentMode(teacher.grade_level ? "grade" : "homeroom");
     setShowEditDialog(true);
   };
 
@@ -642,25 +645,61 @@ export function TeacherManagement() {
               </Select>
             </FormField>
             {formType === "partner" && (
-              <FormField 
-                label="Grade Level (Optional)" 
-                htmlFor="teacherGradeLevel"
-                helperText="Assign to an entire grade instead of specific homerooms"
-              >
-                <Select value={formGradeLevel || "__none__"} onValueChange={(v) => setFormGradeLevel(v === "__none__" ? "" : v)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select grade (or leave empty for homeroom assignments)" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="__none__">No grade (use homeroom assignments)</SelectItem>
-                    {availableGrades.map((grade) => (
-                      <SelectItem key={grade} value={grade}>
-                        {grade}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </FormField>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between py-2">
+                  <div>
+                    <Label className="font-medium">Assignment Type</Label>
+                    <p className="text-sm text-muted-foreground">
+                      {formAssignmentMode === "grade" 
+                        ? "Access all students in a grade level" 
+                        : "Access students from specific homeroom classes"}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className={formAssignmentMode === "homeroom" ? "font-medium text-foreground" : "text-muted-foreground"}>
+                      Homerooms
+                    </span>
+                    <Switch
+                      checked={formAssignmentMode === "grade"}
+                      onCheckedChange={(checked) => {
+                        setFormAssignmentMode(checked ? "grade" : "homeroom");
+                        if (!checked) setFormGradeLevel("");
+                      }}
+                    />
+                    <span className={formAssignmentMode === "grade" ? "font-medium text-foreground" : "text-muted-foreground"}>
+                      Grade
+                    </span>
+                  </div>
+                </div>
+                
+                {formAssignmentMode === "grade" && (
+                  <FormField 
+                    label="Grade Level" 
+                    htmlFor="teacherGradeLevel"
+                    required
+                  >
+                    <Select value={formGradeLevel || "__none__"} onValueChange={(v) => setFormGradeLevel(v === "__none__" ? "" : v)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select grade" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__" disabled>Select grade</SelectItem>
+                        {availableGrades.map((grade) => (
+                          <SelectItem key={grade} value={grade}>
+                            {grade}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormField>
+                )}
+                
+                {formAssignmentMode === "homeroom" && (
+                  <p className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-md">
+                    After adding this teacher, use the <Users className="inline h-4 w-4 mx-1" /> button to assign them to specific homeroom classes.
+                  </p>
+                )}
+              </div>
             )}
             {(formType === "staff" || formType === "specials") && (
               <div className="flex items-center justify-between py-2">
@@ -751,25 +790,61 @@ export function TeacherManagement() {
               </Select>
             </FormField>
             {formType === "partner" && (
-              <FormField 
-                label="Grade Level (Optional)" 
-                htmlFor="editTeacherGradeLevel"
-                helperText="Assign to an entire grade instead of specific homerooms"
-              >
-                <Select value={formGradeLevel || "__none__"} onValueChange={(v) => setFormGradeLevel(v === "__none__" ? "" : v)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select grade (or leave empty for homeroom assignments)" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="__none__">No grade (use homeroom assignments)</SelectItem>
-                    {availableGrades.map((grade) => (
-                      <SelectItem key={grade} value={grade}>
-                        {grade}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </FormField>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between py-2">
+                  <div>
+                    <Label className="font-medium">Assignment Type</Label>
+                    <p className="text-sm text-muted-foreground">
+                      {formAssignmentMode === "grade" 
+                        ? "Access all students in a grade level" 
+                        : "Access students from specific homeroom classes"}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className={formAssignmentMode === "homeroom" ? "font-medium text-foreground" : "text-muted-foreground"}>
+                      Homerooms
+                    </span>
+                    <Switch
+                      checked={formAssignmentMode === "grade"}
+                      onCheckedChange={(checked) => {
+                        setFormAssignmentMode(checked ? "grade" : "homeroom");
+                        if (!checked) setFormGradeLevel("");
+                      }}
+                    />
+                    <span className={formAssignmentMode === "grade" ? "font-medium text-foreground" : "text-muted-foreground"}>
+                      Grade
+                    </span>
+                  </div>
+                </div>
+                
+                {formAssignmentMode === "grade" && (
+                  <FormField 
+                    label="Grade Level" 
+                    htmlFor="editTeacherGradeLevel"
+                    required
+                  >
+                    <Select value={formGradeLevel || "__none__"} onValueChange={(v) => setFormGradeLevel(v === "__none__" ? "" : v)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select grade" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__" disabled>Select grade</SelectItem>
+                        {availableGrades.map((grade) => (
+                          <SelectItem key={grade} value={grade}>
+                            {grade}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormField>
+                )}
+                
+                {formAssignmentMode === "homeroom" && (
+                  <p className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-md">
+                    Use the <Users className="inline h-4 w-4 mx-1" /> button in the teacher list to manage homeroom assignments.
+                  </p>
+                )}
+              </div>
             )}
             {(formType === "staff" || formType === "specials") && (
               <div className="flex items-center justify-between py-2">
