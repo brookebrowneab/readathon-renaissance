@@ -174,7 +174,7 @@ const AboutPage = () => {
               </h2>
               <p className="text-primary-foreground/80">
                 We take the privacy and safety of our young readers seriously. Our platform is 
-                designed with COPPA and GDPR compliance in mind. We collect minimal data, never 
+                designed with COPPA compliance in mind. We collect minimal data, never 
                 store birth dates or full names of children, and give parents full control over 
                 their family's information.
               </p>
