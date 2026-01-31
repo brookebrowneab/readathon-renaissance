@@ -37,7 +37,7 @@ import { StudentLoginPage, StudentDashboardPage as StudentDashboard, StudentLogR
 import StudentPinLoginPage from "./pages/student/StudentPinLoginPage";
 import StudentPinDashboardPage from "./pages/student/StudentPinDashboardPage";
 import { TeacherDashboard, TeacherLogReading, TeacherLoginPage, TeacherRegisterPage, TeacherSetPasswordPage } from "./pages/teacher";
-import { AdminDashboard, AdminOutstandingPage, AdminChecksPage, AdminSettingsPage, AdminEmailPage, AdminSiteContentPage } from "./pages/admin";
+import { AdminDashboard, AdminOutstandingPage, AdminChecksPage, AdminSettingsPage, AdminEmailPage, AdminSiteContentPage, AdminReadingLogsPage } from "./pages/admin";
 import { SponsorRequestsPage, SponsorMyChildPage, ManageChildrenPage, ChildDetailsPage } from "./pages/family";
 import { VerifyLogsPage } from "./pages/reading-logs";
 import AdminUsersPage from "./pages/AdminUsersPage";
@@ -124,6 +124,7 @@ const App = () => (
           
           {/* Admin Dashboard - Protected */}
           <Route path="/admin" element={<RequireAdmin><AdminDashboard /></RequireAdmin>} />
+          <Route path="/admin/reading" element={<RequireAdmin><AdminReadingLogsPage /></RequireAdmin>} />
           <Route path="/admin/outstanding" element={<RequireAdmin><AdminOutstandingPage /></RequireAdmin>} />
           <Route path="/admin/checks" element={<RequireAdmin><AdminChecksPage /></RequireAdmin>} />
           <Route path="/admin/emails" element={<RequireAdmin><AdminEmailPage /></RequireAdmin>} />

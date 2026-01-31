@@ -8,6 +8,7 @@ import {
   Settings,
   Mail,
   PenLine,
+  BookOpen,
 } from "lucide-react";
 import booksShelfDivider from "@/assets/books-shelf-divider.png";
 
@@ -17,6 +18,7 @@ interface AdminLayoutProps {
 
 const navItems = [
   { label: "Dashboard", path: "/admin", icon: LayoutDashboard },
+  { label: "Reading", path: "/admin/reading", icon: BookOpen },
   { label: "Outstanding", path: "/admin/outstanding", icon: DollarSign },
   { label: "Checks", path: "/admin/checks", icon: FileText },
   { label: "Emails", path: "/admin/emails", icon: Mail },
