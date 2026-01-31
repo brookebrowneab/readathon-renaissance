@@ -647,12 +647,12 @@ export function TeacherManagement() {
                 htmlFor="teacherGradeLevel"
                 helperText="Assign to an entire grade instead of specific homerooms"
               >
-                <Select value={formGradeLevel} onValueChange={setFormGradeLevel}>
+                <Select value={formGradeLevel || "__none__"} onValueChange={(v) => setFormGradeLevel(v === "__none__" ? "" : v)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select grade (or leave empty for homeroom assignments)" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">No grade (use homeroom assignments)</SelectItem>
+                    <SelectItem value="__none__">No grade (use homeroom assignments)</SelectItem>
                     {availableGrades.map((grade) => (
                       <SelectItem key={grade} value={grade}>
                         {grade}
@@ -756,12 +756,12 @@ export function TeacherManagement() {
                 htmlFor="editTeacherGradeLevel"
                 helperText="Assign to an entire grade instead of specific homerooms"
               >
-                <Select value={formGradeLevel} onValueChange={setFormGradeLevel}>
+                <Select value={formGradeLevel || "__none__"} onValueChange={(v) => setFormGradeLevel(v === "__none__" ? "" : v)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select grade (or leave empty for homeroom assignments)" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">No grade (use homeroom assignments)</SelectItem>
+                    <SelectItem value="__none__">No grade (use homeroom assignments)</SelectItem>
                     {availableGrades.map((grade) => (
                       <SelectItem key={grade} value={grade}>
                         {grade}
