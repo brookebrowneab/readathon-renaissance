@@ -11,27 +11,59 @@ import bookStackAccent from "@/assets/book-stack-accent.png";
 import booksShelfBannerV2 from "@/assets/books-shelf-banner-v2.png";
 import { useActiveEvent } from "@/hooks/useActiveEvent";
 import { FontDebugOverlay } from "@/components/debug/FontDebugOverlay";
-
-
-const HERO_HEADLINES = [
-  "Every Page Counts.",
-  "Read More. Grow Together.",
-  "Read books. Support Janney.",
-];
+import {
+  useSiteContentMultiple,
+  parseJsonContent,
+  DEFAULT_CONTENT,
+} from "@/hooks/useSiteContent";
 
 const HomePage = () => {
   const { data: activeEvent } = useActiveEvent();
   const heroHeadingRef = useRef<HTMLHeadingElement | null>(null);
+
+  // Fetch dynamic content
+  const { content } = useSiteContentMultiple([
+    "home.hero_headlines",
+    "home.hero_description",
+    "home.stats",
+    "home.how_it_works_steps",
+    "home.making_difference_intro",
+    "home.making_difference_items",
+    "home.cta_title",
+    "home.cta_description",
+  ]);
 
   const debugFonts = useMemo(() => {
     if (typeof window === "undefined") return false;
     return new URLSearchParams(window.location.search).get("debugFonts") === "1";
   }, []);
 
+  // Parse content with fallbacks
+  const heroHeadlines = parseJsonContent<string[]>(
+    content["home.hero_headlines"],
+    JSON.parse(DEFAULT_CONTENT["home.hero_headlines"])
+  );
+  const heroDescription = content["home.hero_description"] || DEFAULT_CONTENT["home.hero_description"];
+  const stats = parseJsonContent<{ minutes_logged: string; books_completed: string; funds_raised: string }>(
+    content["home.stats"],
+    JSON.parse(DEFAULT_CONTENT["home.stats"])
+  );
+  const howItWorksSteps = parseJsonContent<Array<{ title: string; description: string }>>(
+    content["home.how_it_works_steps"],
+    JSON.parse(DEFAULT_CONTENT["home.how_it_works_steps"])
+  );
+  const makingDifferenceIntro = content["home.making_difference_intro"] || DEFAULT_CONTENT["home.making_difference_intro"];
+  const makingDifferenceItems = parseJsonContent<string[]>(
+    content["home.making_difference_items"],
+    JSON.parse(DEFAULT_CONTENT["home.making_difference_items"])
+  );
+  const ctaTitle = content["home.cta_title"] || DEFAULT_CONTENT["home.cta_title"];
+  const ctaDescription = content["home.cta_description"] || DEFAULT_CONTENT["home.cta_description"];
+
   // Randomize hero text on page load (stable for component lifecycle)
   const heroHeadline = useMemo(() => {
-    return HERO_HEADLINES[Math.floor(Math.random() * HERO_HEADLINES.length)];
-  }, []);
+    return heroHeadlines[Math.floor(Math.random() * heroHeadlines.length)];
+  }, [heroHeadlines]);
 
   // Calculate countdown - before event starts, count to start; during/after, count to end
   const countdown = useMemo(() => {
@@ -121,8 +153,7 @@ const HomePage = () => {
             <FontDebugOverlay enabled={debugFonts} targetRef={heroHeadingRef} />
 
             <p className="text-base md:text-lg text-muted-foreground max-w-2xl leading-relaxed mb-6">
-              Janney Elementary Read-a-thon runs February 23–March 8. Students read to raise funds for our school. 
-              Ask friends and family to pledge per minute—or give a flat donation—and help fund the programs that make Janney exceptional.
+              {heroDescription}
             </p>
 
             {/* CTA Buttons */}
@@ -188,7 +219,7 @@ const HomePage = () => {
             >
               <div className="text-center px-4 min-w-[120px]">
                 <p className="font-serif text-2xl text-foreground tracking-tight">
-                  128,400
+                  {stats.minutes_logged}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1 tracking-wide">
                   Minutes Logged
@@ -202,7 +233,7 @@ const HomePage = () => {
                 }}
               >
                 <p className="font-serif text-2xl text-foreground tracking-tight">
-                  4,875
+                  {stats.books_completed}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1 tracking-wide">
                   Books Completed
@@ -210,7 +241,7 @@ const HomePage = () => {
               </div>
               <div className="text-center px-4 min-w-[120px]">
                 <p className="font-serif text-2xl text-foreground tracking-tight">
-                  $21,320
+                  {stats.funds_raised}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1 tracking-wide">
                   Funds Raised
@@ -232,7 +263,7 @@ const HomePage = () => {
           >
             <div className="text-center">
               <p className="font-serif text-3xl md:text-4xl lg:text-5xl text-foreground tracking-tight">
-                128,400
+                {stats.minutes_logged}
               </p>
               <p className="text-xs md:text-sm text-muted-foreground mt-1 tracking-wide">
                 Minutes Logged
@@ -246,7 +277,7 @@ const HomePage = () => {
               }}
             >
               <p className="font-serif text-3xl md:text-4xl lg:text-5xl text-foreground tracking-tight">
-                4,875
+                {stats.books_completed}
               </p>
               <p className="text-xs md:text-sm text-muted-foreground mt-1 tracking-wide">
                 Books Completed
@@ -254,7 +285,7 @@ const HomePage = () => {
             </div>
             <div className="text-center">
               <p className="font-serif text-3xl md:text-4xl lg:text-5xl text-foreground tracking-tight">
-                $21,320
+                {stats.funds_raised}
               </p>
               <p className="text-xs md:text-sm text-muted-foreground mt-1 tracking-wide">
                 Funds Raised
@@ -286,53 +317,19 @@ const HomePage = () => {
             </div>
 
             <div className="grid md:grid-cols-2 gap-x-10 gap-y-6">
-              <div className="flex gap-4">
-                <span className="font-serif text-xl text-muted-foreground/50 shrink-0">1.</span>
-                <div>
-                  <h3 className="font-serif text-lg text-foreground mb-1">
-                    Sign Up & Set Goals
-                  </h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    Create your family profile and choose your reading targets. Each child gets a unique sponsor link.
-                  </p>
+              {howItWorksSteps.map((step, index) => (
+                <div key={index} className="flex gap-4">
+                  <span className="font-serif text-xl text-muted-foreground/50 shrink-0">{index + 1}.</span>
+                  <div>
+                    <h3 className="font-serif text-lg text-foreground mb-1">
+                      {step.title}
+                    </h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {step.description}
+                    </p>
+                  </div>
                 </div>
-              </div>
-
-              <div className="flex gap-4">
-                <span className="font-serif text-xl text-muted-foreground/50 shrink-0">2.</span>
-                <div>
-                  <h3 className="font-serif text-lg text-foreground mb-1">
-                    Read & Track Progress
-                  </h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    Log reading time and watch your progress grow. Parents can approve logs from any device.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex gap-4">
-                <span className="font-serif text-xl text-muted-foreground/50 shrink-0">3.</span>
-                <div>
-                  <h3 className="font-serif text-lg text-foreground mb-1">
-                    Share with Sponsors
-                  </h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    Invite family and friends to pledge their support—per minute read or as a flat donation.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex gap-4">
-                <span className="font-serif text-xl text-muted-foreground/50 shrink-0">4.</span>
-                <div>
-                  <h3 className="font-serif text-lg text-foreground mb-1">
-                    Celebrate Success
-                  </h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    At the end, sponsors pay their pledges and funds go directly to supporting our school.
-                  </p>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         </div>
@@ -346,8 +343,7 @@ const HomePage = () => {
               Making a Difference
             </h2>
             <p className="text-sm md:text-base text-muted-foreground leading-relaxed mb-6">
-              Janney relies on PTA funds to pay for programs that make our school exceptional. 
-              Your donations help fund:
+              {makingDifferenceIntro}
             </p>
 
             {/* What funds support */}
@@ -361,16 +357,7 @@ const HomePage = () => {
                 borderBottomLeftRadius: '15px 255px',
               }}
             >
-              {[
-                "Technology materials & support",
-                "Classroom supplies",
-                "Textbooks",
-                "Teacher professional development",
-                "Instructional materials",
-                "Custodial equipment & supplies",
-                "Facilities repairs",
-                "Staff positions (10 teachers & support)",
-              ].map((item) => (
+              {makingDifferenceItems.map((item) => (
                 <li key={item} className="flex items-start gap-2 text-sm text-muted-foreground">
                   <span className="text-primary mt-0.5">•</span>
                   {item}
@@ -399,10 +386,10 @@ const HomePage = () => {
         
         <div className="container text-center relative">
           <h2 className="font-serif text-3xl md:text-4xl text-primary-foreground mb-3">
-            Ready to Join the Read-a-thon?
+            {ctaTitle}
           </h2>
           <p className="text-sm md:text-base text-primary-foreground/80 mb-6 max-w-lg mx-auto leading-relaxed">
-            Create your family account and start logging reading minutes today.
+            {ctaDescription}
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link to="/register">
@@ -430,8 +417,7 @@ const HomePage = () => {
               className="inline-flex items-center gap-2 text-primary-foreground/80 hover:text-primary-foreground transition-colors text-sm"
             >
               <GraduationCap className="h-4 w-4" />
-              <span>I'm a student — log my reading</span>
-              <ArrowRight className="h-3 w-3" />
+              Student Login
             </Link>
           </div>
         </div>

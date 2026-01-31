@@ -2,6 +2,11 @@ import { PublicLayout } from "@/components/layout";
 import { Users, School, Heart, Target, Award, BookOpen } from "lucide-react";
 import booksShelfBannerV2 from "@/assets/books-shelf-banner-v2.png";
 import openBook from "@/assets/open-book.png";
+import {
+  useSiteContentMultiple,
+  parseJsonContent,
+  DEFAULT_CONTENT,
+} from "@/hooks/useSiteContent";
 
 const handDrawnBorder = {
   border: 'solid 1px #41403E',
@@ -11,7 +16,39 @@ const handDrawnBorder = {
   borderBottomLeftRadius: '15px 255px',
 };
 
+// Icon mapping for dynamic content
+const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+  Users,
+  School,
+  Heart,
+  Target,
+  Award,
+  BookOpen,
+};
+
 const AboutPage = () => {
+  // Fetch dynamic content
+  const { content } = useSiteContentMultiple([
+    "about.mission_title",
+    "about.mission_text",
+    "about.statistics",
+    "about.values",
+    "about.privacy_text",
+  ]);
+
+  // Parse content with fallbacks
+  const missionTitle = content["about.mission_title"] || "Our Mission";
+  const missionText = content["about.mission_text"] || DEFAULT_CONTENT["about.mission_text"];
+  const statistics = parseJsonContent<Array<{ icon: string; value: string; label: string }>>(
+    content["about.statistics"],
+    JSON.parse(DEFAULT_CONTENT["about.statistics"])
+  );
+  const values = parseJsonContent<Array<{ icon: string; title: string; description: string }>>(
+    content["about.values"],
+    JSON.parse(DEFAULT_CONTENT["about.values"])
+  );
+  const privacyText = content["about.privacy_text"] || DEFAULT_CONTENT["about.privacy_text"];
+
   return (
     <PublicLayout>
       {/* Hero */}
@@ -69,37 +106,30 @@ const AboutPage = () => {
               style={handDrawnBorder}
             >
               <div className="space-y-4">
-                <h2 className="font-serif text-2xl text-primary">Our Mission</h2>
-                <p className="text-muted-foreground">
-                  Read-a-thon was founded with a simple belief: every child deserves the opportunity 
-                  to discover the joy of reading. We combine the excitement of friendly competition 
-                  with community support to create meaningful reading experiences.
-                </p>
-                <p className="text-muted-foreground">
-                  Since 2020, we have helped thousands of students build reading habits while 
-                  raising funds for their schools. Our platform makes it easy for families, 
-                  teachers, and sponsors to participate in this rewarding journey.
-                </p>
+                <h2 className="font-serif text-2xl text-primary">{missionTitle}</h2>
+                {missionText.split('\n\n').map((paragraph, index) => (
+                  <p key={index} className="text-muted-foreground">
+                    {paragraph}
+                  </p>
+                ))}
               </div>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
-              {[
-                { icon: Users, value: "1,000+", label: "Students Participated" },
-                { icon: BookOpen, value: "1M+", label: "Minutes Read" },
-                { icon: School, value: "2,000+", label: "Books Read" },
-                { icon: Heart, value: "2020", label: "Since" },
-              ].map((stat, index) => (
-                <div 
-                  key={index} 
-                  className="bg-background p-6 text-center"
-                  style={handDrawnBorder}
-                >
-                  <stat.icon className="mx-auto mb-2 h-8 w-8 text-primary" />
-                  <p className="font-serif text-3xl text-foreground">{stat.value}</p>
-                  <p className="text-sm text-muted-foreground">{stat.label}</p>
-                </div>
-              ))}
+              {statistics.map((stat, index) => {
+                const IconComponent = iconMap[stat.icon] || Users;
+                return (
+                  <div 
+                    key={index} 
+                    className="bg-background p-6 text-center"
+                    style={handDrawnBorder}
+                  >
+                    <IconComponent className="mx-auto mb-2 h-8 w-8 text-primary" />
+                    <p className="font-serif text-3xl text-foreground">{stat.value}</p>
+                    <p className="text-sm text-muted-foreground">{stat.label}</p>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -117,38 +147,22 @@ const AboutPage = () => {
           <h2 className="mb-12 text-center font-serif text-3xl font-normal text-foreground">Our Values</h2>
 
           <div className="grid gap-8 md:grid-cols-3">
-            {[
-              {
-                icon: Target,
-                title: "Goal-Oriented",
-                description:
-                  "We believe in setting achievable reading goals that challenge and motivate students to read more.",
-              },
-              {
-                icon: Heart,
-                title: "Community-Driven",
-                description:
-                  "Our platform connects families, friends, and communities to support young readers together.",
-              },
-              {
-                icon: Award,
-                title: "Celebration of Success",
-                description:
-                  "Every minute read is an achievement. We celebrate progress at every stage of the journey.",
-              },
-            ].map((value, index) => (
-              <div 
-                key={index} 
-                className="bg-background p-6"
-                style={handDrawnBorder}
-              >
-                <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-accent/20 text-primary">
-                  <value.icon className="h-6 w-6" />
+            {values.map((value, index) => {
+              const IconComponent = iconMap[value.icon] || Target;
+              return (
+                <div 
+                  key={index} 
+                  className="bg-background p-6"
+                  style={handDrawnBorder}
+                >
+                  <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-accent/20 text-primary">
+                    <IconComponent className="h-6 w-6" />
+                  </div>
+                  <h3 className="font-serif text-xl text-foreground mb-2">{value.title}</h3>
+                  <p className="text-muted-foreground">{value.description}</p>
                 </div>
-                <h3 className="font-serif text-xl text-foreground mb-2">{value.title}</h3>
-                <p className="text-muted-foreground">{value.description}</p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
@@ -171,10 +185,7 @@ const AboutPage = () => {
                 Privacy & Child Safety
               </h2>
               <p className="text-primary-foreground/80">
-                We take the privacy and safety of our young readers seriously. Our platform is 
-                designed with COPPA compliance in mind. We collect minimal data, never 
-                store birth dates or full names of children, and give parents full control over 
-                their family's information.
+                {privacyText}
               </p>
               <p className="text-sm text-primary-foreground/60">
                 All financial transactions are processed securely through Square, and we never 

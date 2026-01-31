@@ -10,100 +10,38 @@ import {
 import { ArrowRight } from "lucide-react";
 import booksShelfDivider from "@/assets/books-shelf-divider.png";
 import booksShelfBannerV2 from "@/assets/books-shelf-banner-v2.png";
+import {
+  useSiteContentMultiple,
+  parseJsonContent,
+  DEFAULT_CONTENT,
+} from "@/hooks/useSiteContent";
 
-const FAQ_ITEMS = [
-  {
-    category: "Getting Started",
-    questions: [
-      {
-        q: "How do I register my family for the Read-a-thon?",
-        a: "Click 'Get Started' on the homepage to create a parent account. Once registered, you can add your children and set reading goals. Each child will receive a unique sponsor link to share with friends and family.",
-      },
-      {
-        q: "When does the Read-a-thon take place?",
-        a: "The Janney Elementary Read-a-thon runs from February 24 through March 9. Students can log reading minutes throughout this period.",
-      },
-      {
-        q: "Can I register multiple children?",
-        a: "Yes! After creating your family account, you can add as many children as needed. Each child will have their own reading log and sponsor link.",
-      },
-    ],
-  },
-  {
-    category: "Reading & Logging",
-    questions: [
-      {
-        q: "How do students log their reading time?",
-        a: "Students or parents can log reading minutes through the dashboard. Simply enter the number of minutes read and the book title. Parents can review and approve entries from any device.",
-      },
-      {
-        q: "What counts as reading?",
-        a: "Any independent reading counts—chapter books, picture books, graphic novels, magazines, or e-books. Audiobooks count too when students are actively listening and following along.",
-      },
-      {
-        q: "Is there a minimum or maximum reading time per day?",
-        a: "There's no minimum requirement, but we encourage consistent daily reading. There's also no maximum—every minute counts toward your child's goal and fundraising total.",
-      },
-    ],
-  },
-  {
-    category: "Sponsors & Pledges",
-    questions: [
-      {
-        q: "How do pledges work?",
-        a: "Sponsors can pledge a certain amount per minute read (e.g., 5¢ per minute) or make a flat donation. Per-minute pledges are calculated at the end of the Read-a-thon based on total minutes logged.",
-      },
-      {
-        q: "How do I invite sponsors?",
-        a: "From your dashboard, you can share your child's unique sponsor link via email, text, or social media. Sponsors click the link to make their pledge—no account required.",
-      },
-      {
-        q: "When do sponsors pay?",
-        a: "Sponsors receive a payment reminder after the Read-a-thon ends. They can pay securely online or by check. Payment is typically due within two weeks of the event ending.",
-      },
-      {
-        q: "Is there a minimum pledge amount?",
-        a: "There's no minimum for per-minute pledges. Flat donations have a suggested minimum of $10, but any amount is appreciated.",
-      },
-    ],
-  },
-  {
-    category: "Payments & Donations",
-    questions: [
-      {
-        q: "How are payments processed?",
-        a: "We use Square for secure online payments. Sponsors can pay by credit card, debit card, or Apple Pay. Check payments can also be mailed to the school.",
-      },
-      {
-        q: "Are donations tax-deductible?",
-        a: "Yes, donations to Janney Elementary through the Read-a-thon are tax-deductible. Sponsors will receive a receipt for their records.",
-      },
-      {
-        q: "Where does the money go?",
-        a: "All funds raised go directly to Janney Elementary to support enrichment programs, classroom resources, library books, and school-wide initiatives.",
-      },
-    ],
-  },
-  {
-    category: "Technical Support",
-    questions: [
-      {
-        q: "I forgot my password. How do I reset it?",
-        a: "Click 'Forgot Password' on the login page and enter your email address. You'll receive a link to reset your password within a few minutes.",
-      },
-      {
-        q: "The sponsor link isn't working. What should I do?",
-        a: "Make sure you're copying the full link. If issues persist, try generating a new link from your dashboard or contact us for assistance.",
-      },
-      {
-        q: "Who do I contact if I have a problem?",
-        a: "For technical issues or questions, please email the Read-a-thon coordinators at janneyreadathon@janneyschool.org.",
-      },
-    ],
-  },
-];
+interface FAQItem {
+  q: string;
+  a: string;
+}
+
+interface FAQCategory {
+  category: string;
+  questions: FAQItem[];
+}
 
 const FAQPage = () => {
+  // Fetch dynamic content
+  const { content } = useSiteContentMultiple([
+    "faq.hero_description",
+    "faq.items",
+    "faq.still_questions_text",
+  ]);
+
+  // Parse content with fallbacks
+  const heroDescription = content["faq.hero_description"] || DEFAULT_CONTENT["faq.hero_description"];
+  const faqItems = parseJsonContent<FAQCategory[]>(
+    content["faq.items"],
+    JSON.parse(DEFAULT_CONTENT["faq.items"])
+  );
+  const stillQuestionsText = content["faq.still_questions_text"] || DEFAULT_CONTENT["faq.still_questions_text"];
+
   return (
     <PublicLayout>
       {/* Hero Section */}
@@ -131,7 +69,7 @@ const FAQPage = () => {
               </h1>
             </div>
             <p className="text-base md:text-lg text-muted-foreground max-w-2xl leading-relaxed">
-              Find answers to common questions about the Janney Elementary Read-a-thon.
+              {heroDescription}
             </p>
           </div>
         </div>
@@ -153,7 +91,7 @@ const FAQPage = () => {
       <section className="py-10 md:py-14 bg-background-warm">
         <div className="container">
           <div className="max-w-3xl mx-auto space-y-10">
-            {FAQ_ITEMS.map((section, sectionIndex) => (
+            {faqItems.map((section, sectionIndex) => (
               <div key={sectionIndex}>
                 <h2 className="font-serif text-2xl md:text-3xl text-foreground mb-4 pb-2 border-b border-foreground/20">
                   {section.category}
@@ -222,7 +160,7 @@ const FAQPage = () => {
               Still Have Questions?
             </h2>
             <p className="text-muted-foreground mb-6 leading-relaxed">
-              We're here to help. Reach out to our Read-a-thon coordinators or explore more resources.
+              {stillQuestionsText}
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <a href="mailto:janneyreadathon@janneyschool.org">

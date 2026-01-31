@@ -671,6 +671,36 @@ export type Database = {
           },
         ]
       }
+      site_content: {
+        Row: {
+          content_type: string
+          description: string | null
+          id: string
+          key: string
+          updated_at: string | null
+          updated_by: string | null
+          value: string
+        }
+        Insert: {
+          content_type?: string
+          description?: string | null
+          id?: string
+          key: string
+          updated_at?: string | null
+          updated_by?: string | null
+          value?: string
+        }
+        Update: {
+          content_type?: string
+          description?: string | null
+          id?: string
+          key?: string
+          updated_at?: string | null
+          updated_by?: string | null
+          value?: string
+        }
+        Relationships: []
+      }
       sponsor_invitations: {
         Row: {
           can_invite_others: boolean
