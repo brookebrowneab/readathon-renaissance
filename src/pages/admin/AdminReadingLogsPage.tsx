@@ -25,7 +25,8 @@ import { Search, BookOpen, Calendar, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
-const LARGE_LOG_THRESHOLD = 480; // 8 hours in minutes
+const LARGE_LOG_THRESHOLD = 480; // 8 hours in minutes for single log
+const HIGH_DAILY_THRESHOLD = 600; // 10 hours in minutes for daily total
 
 interface ReadingLogWithChild {
   id: string;
@@ -48,13 +49,15 @@ export default function AdminReadingLogsPage() {
   const [gradeFilter, setGradeFilter] = useState<string>("all");
   const [classFilter, setClassFilter] = useState<string>("all");
   const [dateFilter, setDateFilter] = useState<string>("all");
-  const [showLargeOnly, setShowLargeOnly] = useState(searchParams.get('filter') === 'large');
+  const filterParam = searchParams.get('filter');
+  const [showLargeOnly, setShowLargeOnly] = useState(filterParam === 'large');
+  const [showHighDailyOnly, setShowHighDailyOnly] = useState(filterParam === 'high_daily');
 
   // Sync URL filter param
   useEffect(() => {
-    if (searchParams.get('filter') === 'large') {
-      setShowLargeOnly(true);
-    }
+    const filter = searchParams.get('filter');
+    setShowLargeOnly(filter === 'large');
+    setShowHighDailyOnly(filter === 'high_daily');
   }, [searchParams]);
 
   // Fetch all reading logs with child info
@@ -85,15 +88,48 @@ export default function AdminReadingLogsPage() {
     },
   });
 
+  // Calculate daily totals per child for high daily filter
+  const dailyTotals = useMemo(() => {
+    const totals: Record<string, { total: number; childId: string; date: string }> = {};
+    logs.forEach(log => {
+      if (!log.child_id) return;
+      const key = `${log.child_id}_${log.logged_at}`;
+      if (!totals[key]) {
+        totals[key] = { total: 0, childId: log.child_id, date: log.logged_at };
+      }
+      totals[key].total += log.minutes;
+    });
+    return totals;
+  }, [logs]);
+
+  // Get child-dates that exceed high daily threshold
+  const highDailyChildDates = useMemo(() => {
+    const highDays = new Set<string>();
+    Object.entries(dailyTotals).forEach(([key, val]) => {
+      if (val.total > HIGH_DAILY_THRESHOLD) {
+        highDays.add(key);
+      }
+    });
+    return highDays;
+  }, [dailyTotals]);
+
   // Get unique grades and classes for filters
   const grades = [...new Set(logs.map(l => l.children?.grade_info).filter(Boolean))].sort();
   const classes = [...new Set(logs.map(l => l.children?.class_name).filter(Boolean))].sort();
 
   // Filter logs
   const filteredLogs = logs.filter(log => {
-    // Large log filter
+    // Large log filter (single log over 8 hours)
     if (showLargeOnly && log.minutes <= LARGE_LOG_THRESHOLD) {
       return false;
+    }
+
+    // High daily filter (student's daily total over 10 hours)
+    if (showHighDailyOnly) {
+      const key = `${log.child_id}_${log.logged_at}`;
+      if (!highDailyChildDates.has(key)) {
+        return false;
+      }
     }
 
     // Search filter
@@ -133,12 +169,25 @@ export default function AdminReadingLogsPage() {
   });
 
   const largeLogsCount = logs.filter(l => l.minutes > LARGE_LOG_THRESHOLD).length;
+  const highDailyCount = highDailyChildDates.size;
 
   const handleToggleLargeOnly = () => {
     const newValue = !showLargeOnly;
     setShowLargeOnly(newValue);
+    setShowHighDailyOnly(false);
     if (newValue) {
       setSearchParams({ filter: 'large' });
+    } else {
+      setSearchParams({});
+    }
+  };
+
+  const handleToggleHighDailyOnly = () => {
+    const newValue = !showHighDailyOnly;
+    setShowHighDailyOnly(newValue);
+    setShowLargeOnly(false);
+    if (newValue) {
+      setSearchParams({ filter: 'high_daily' });
     } else {
       setSearchParams({});
     }
@@ -172,7 +221,7 @@ export default function AdminReadingLogsPage() {
         </div>
 
         {/* Stats Summary */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
           <div className="bg-background border rounded-lg p-4">
             <p className="text-sm text-muted-foreground">Total Logs</p>
             <p className="font-serif text-2xl">{filteredLogs.length}</p>
@@ -207,6 +256,23 @@ export default function AdminReadingLogsPage() {
               {largeLogsCount}
             </p>
             {showLargeOnly && (
+              <p className="text-xs text-destructive mt-1">Filtering active</p>
+            )}
+          </button>
+          <button
+            onClick={handleToggleHighDailyOnly}
+            className={`bg-background border rounded-lg p-4 text-left transition-colors hover:border-destructive/50 ${
+              showHighDailyOnly ? 'border-destructive bg-destructive/5' : ''
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <AlertTriangle className={`h-4 w-4 ${highDailyCount > 0 ? 'text-destructive' : 'text-muted-foreground'}`} />
+              <p className="text-sm text-muted-foreground">10+ Hrs/Day</p>
+            </div>
+            <p className={`font-serif text-2xl ${highDailyCount > 0 ? 'text-destructive' : ''}`}>
+              {highDailyCount}
+            </p>
+            {showHighDailyOnly && (
               <p className="text-xs text-destructive mt-1">Filtering active</p>
             )}
           </button>
@@ -309,15 +375,22 @@ export default function AdminReadingLogsPage() {
                         )}
                       </TableCell>
                       <TableCell className="text-center">
-                        <Badge 
-                          variant={log.minutes > LARGE_LOG_THRESHOLD ? "destructive" : "secondary"} 
-                          className="font-mono"
-                        >
-                          {log.minutes}
-                          {log.minutes > LARGE_LOG_THRESHOLD && (
-                            <AlertTriangle className="h-3 w-3 ml-1" />
-                          )}
-                        </Badge>
+                        {(() => {
+                          const key = `${log.child_id}_${log.logged_at}`;
+                          const isHighDaily = highDailyChildDates.has(key);
+                          const isLargeLog = log.minutes > LARGE_LOG_THRESHOLD;
+                          return (
+                            <Badge 
+                              variant={isLargeLog || isHighDaily ? "destructive" : "secondary"} 
+                              className="font-mono"
+                            >
+                              {log.minutes}
+                              {(isLargeLog || isHighDaily) && (
+                                <AlertTriangle className="h-3 w-3 ml-1" />
+                              )}
+                            </Badge>
+                          );
+                        })()}
                       </TableCell>
                       <TableCell>
                         {log.children?.class_name || (

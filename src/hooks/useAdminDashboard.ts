@@ -196,7 +196,7 @@ export function useAdminDashboard() {
     enabled: !!activeEvent?.id,
   });
 
-  // Fetch unusually large reading logs (over 480 minutes / 8 hours in a day)
+  // Fetch unusually large reading logs (over 480 minutes / 8 hours in a single log)
   const { data: largeLogsData, isLoading: largeLogsLoading } = useQuery({
     queryKey: ['admin-dashboard-large-logs'],
     queryFn: async () => {
@@ -207,6 +207,31 @@ export function useAdminDashboard() {
 
       if (error) throw error;
       return logs?.length || 0;
+    },
+  });
+
+  // Fetch students with high daily totals (over 600 minutes / 10 hours in a day)
+  const { data: highDailyTotalsData, isLoading: highDailyLoading } = useQuery({
+    queryKey: ['admin-dashboard-high-daily-totals'],
+    queryFn: async () => {
+      // Get all reading logs, group by child_id and logged_at date
+      const { data: logs, error } = await supabase
+        .from('reading_logs')
+        .select('child_id, logged_at, minutes');
+
+      if (error) throw error;
+      
+      // Group by child_id + date and sum minutes
+      const dailyTotals: Record<string, number> = {};
+      logs?.forEach(log => {
+        if (!log.child_id) return;
+        const key = `${log.child_id}_${log.logged_at}`;
+        dailyTotals[key] = (dailyTotals[key] || 0) + log.minutes;
+      });
+
+      // Count how many child-days exceed 600 minutes (10 hours)
+      const highDays = Object.values(dailyTotals).filter(total => total > 600);
+      return highDays.length;
     },
   });
 
@@ -358,6 +383,16 @@ export function useAdminDashboard() {
     });
   }
 
+  if (highDailyTotalsData && highDailyTotalsData > 0) {
+    alerts.push({
+      id: 'high_daily',
+      type: 'large_reading',
+      count: highDailyTotalsData,
+      label: 'students with 10+ hours in a day',
+      link: '/admin/reading?filter=high_daily',
+    });
+  }
+
   // Calculate days remaining
   const daysRemaining = activeEvent?.end_date 
     ? Math.max(0, differenceInDays(parseISO(activeEvent.end_date), new Date()))
@@ -370,6 +405,6 @@ export function useAdminDashboard() {
     activity: activityData || [],
     outstanding: pledgesData?.outstanding || [],
     daysRemaining,
-    isLoading: eventLoading || childrenLoading || readingLoading || pledgesLoading || activityLoading || largeLogsLoading,
+    isLoading: eventLoading || childrenLoading || readingLoading || pledgesLoading || activityLoading || largeLogsLoading || highDailyLoading,
   };
 }
