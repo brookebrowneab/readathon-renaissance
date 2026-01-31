@@ -7,6 +7,7 @@ interface SponsorProfile {
   user_id: string;
   name: string;
   email: string;
+  phone?: string;
 }
 
 export function useSponsorAuth() {
@@ -69,7 +70,7 @@ export function useSponsorAuth() {
     }
   };
 
-  const signUp = async (email: string, password: string, name: string) => {
+  const signUp = async (email: string, password: string, name: string, phone?: string) => {
     const redirectUrl = `${window.location.origin}/`;
     
     const { data, error } = await supabase.auth.signUp({
@@ -92,6 +93,7 @@ export function useSponsorAuth() {
           user_id: data.user.id,
           name,
           email,
+          phone: phone || null,
         });
 
       if (profileError) {
