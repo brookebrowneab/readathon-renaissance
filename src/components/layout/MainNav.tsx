@@ -2,7 +2,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Menu, User, LogOut, Bell, Clock, Mail, ChevronDown, GraduationCap, Heart } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { MobileNavDrawer } from "./MobileNavDrawer";
 import { UserRole } from "./BottomTabBar";
 import { useEventLogo } from "@/hooks/useEventLogo";
@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useChildren } from "@/hooks/useChildren";
 import { useTeacherAuth } from "@/hooks/useTeacherAuth";
 import { useStudentSession } from "@/hooks/useStudentSession";
+import { useAllPendingVerifications } from "@/hooks/useLogVerificationRequests";
 import {
   Popover,
   PopoverContent,
@@ -31,18 +32,6 @@ const publicNav: NavItem[] = [
   { label: "HOW THE READ-A-THON WORKS", href: "/how-it-works" },
 ];
 
-const authenticatedNav: NavItem[] = [
-  { label: "DASHBOARD", href: "/dashboard" },
-];
-
-// Mock notification data - replace with real data (only for parents)
-const mockNotifications = {
-  pendingLogApprovals: [
-    { id: "1", childName: "Emma", minutes: 540, date: "March 5" },
-  ],
-  pendingSponsorRequests: 2,
-};
-
 const MainNav = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
@@ -52,6 +41,9 @@ const MainNav = () => {
   const { isTeacher } = useTeacherAuth();
   const { logoUrl } = useEventLogo();
   const { session: studentSession, logout: studentLogout } = useStudentSession();
+  
+  // Fetch real pending verification requests
+  const { data: pendingVerifications = [] } = useAllPendingVerifications();
 
   const desktopNavItemClass =
     "inline-flex items-start text-xs font-semibold tracking-widest text-muted-foreground transition-colors hover:text-foreground hover:underline py-2 px-0 m-0 leading-none";
@@ -66,9 +58,8 @@ const MainNav = () => {
   const userEmail = isStudentLoggedIn ? "" : (user?.email || "");
 
   // Only show parent-specific notifications for parents, not teachers or sponsor-only users
-  const totalNotifications = (isParent && !isTeacher)
-    ? mockNotifications.pendingLogApprovals.length + (mockNotifications.pendingSponsorRequests > 0 ? 1 : 0)
-    : 0;
+  const pendingLogCount = pendingVerifications.length;
+  const totalNotifications = (isParent && !isTeacher) ? pendingLogCount : 0;
 
   const handleLogout = async () => {
     if (isStudentLoggedIn) {
@@ -236,39 +227,23 @@ const MainNav = () => {
                   <p className="font-medium text-sm">Notifications</p>
                 </div>
                 <div className="divide-y divide-border">
-                  {mockNotifications.pendingLogApprovals.length > 0 && (
+                  {pendingLogCount > 0 && (
                     <Link 
-                      to="/reading-logs/approve" 
+                      to="/reading-logs/verify" 
                       className="flex items-center gap-3 p-3 hover:bg-muted/50 transition-colors"
                     >
-                      <div className="h-9 w-9 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
-                        <Clock className="h-4 w-4 text-amber-600" />
+                      <div className="h-9 w-9 rounded-full bg-warning/20 flex items-center justify-center shrink-0">
+                        <Clock className="h-4 w-4 text-warning" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-foreground">
-                          {mockNotifications.pendingLogApprovals.length} reading log{mockNotifications.pendingLogApprovals.length > 1 ? "s" : ""} to verify
+                          {pendingLogCount} reading log{pendingLogCount > 1 ? "s" : ""} to verify
                         </p>
-                        <p className="text-xs text-muted-foreground truncate">
-                          {mockNotifications.pendingLogApprovals[0].childName} logged {Math.floor(mockNotifications.pendingLogApprovals[0].minutes / 60)}+ hours
-                        </p>
-                      </div>
-                    </Link>
-                  )}
-                  {mockNotifications.pendingSponsorRequests > 0 && (
-                    <Link 
-                      to="/family/sponsor-requests" 
-                      className="flex items-center gap-3 p-3 hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="h-9 w-9 rounded-full bg-accent/20 flex items-center justify-center shrink-0">
-                        <Mail className="h-4 w-4 text-accent" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-foreground">
-                          {mockNotifications.pendingSponsorRequests} sponsor request{mockNotifications.pendingSponsorRequests > 1 ? "s" : ""}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          Review and approve sponsors
-                        </p>
+                        {pendingVerifications[0] && (
+                          <p className="text-xs text-muted-foreground truncate">
+                            {pendingVerifications[0].child?.name} logged {pendingVerifications[0].minutes} min
+                          </p>
+                        )}
                       </div>
                     </Link>
                   )}
@@ -311,32 +286,17 @@ const MainNav = () => {
                   <p className="font-medium text-sm">Notifications</p>
                 </div>
                 <div className="divide-y divide-border">
-                  {mockNotifications.pendingLogApprovals.length > 0 && (
+                  {pendingLogCount > 0 && (
                     <Link 
-                      to="/reading-logs/approve" 
+                      to="/reading-logs/verify" 
                       className="flex items-center gap-3 p-3 hover:bg-muted/50 transition-colors"
                     >
-                      <div className="h-8 w-8 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
-                        <Clock className="h-4 w-4 text-amber-600" />
+                      <div className="h-8 w-8 rounded-full bg-warning/20 flex items-center justify-center shrink-0">
+                        <Clock className="h-4 w-4 text-warning" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-foreground">
-                          {mockNotifications.pendingLogApprovals.length} log{mockNotifications.pendingLogApprovals.length > 1 ? "s" : ""} to verify
-                        </p>
-                      </div>
-                    </Link>
-                  )}
-                  {mockNotifications.pendingSponsorRequests > 0 && (
-                    <Link 
-                      to="/family/sponsor-requests" 
-                      className="flex items-center gap-3 p-3 hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="h-8 w-8 rounded-full bg-accent/20 flex items-center justify-center shrink-0">
-                        <Mail className="h-4 w-4 text-accent" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-foreground">
-                          {mockNotifications.pendingSponsorRequests} sponsor request{mockNotifications.pendingSponsorRequests > 1 ? "s" : ""}
+                          {pendingLogCount} log{pendingLogCount > 1 ? "s" : ""} to verify
                         </p>
                       </div>
                     </Link>
