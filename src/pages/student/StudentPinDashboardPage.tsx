@@ -280,39 +280,28 @@ const StudentPinDashboardPage = () => {
 
       <main className="flex-1">
         {/* Hero Section - Full width background */}
-        <section className="bg-background pt-8 md:pt-12 pb-10 md:pb-14">
+        <section className="bg-background pt-8 md:pt-10 pb-8 md:pb-10">
           <div className="container">
             {/* Constrain hero content - matching homepage layout */}
             <div className="max-w-4xl px-4 md:px-0 md:pl-14 lg:pl-20 md:ml-[30px] text-left">
-              {/* Editorial headline treatment */}
-              <div className="space-y-1">
-                <p className="text-sm md:text-base text-muted-foreground uppercase tracking-widest font-sans">
-                  How many minutes has Janney read?
-                </p>
-                <div className="relative inline-block">
-                  <h1 className="font-serif text-6xl md:text-7xl lg:text-8xl font-normal tracking-tight text-foreground leading-none">
-                    <span className="relative inline-block">
-                      <span className="relative z-10">
-                        {(schoolTotalMinutes ?? 0).toLocaleString()}
-                      </span>
-                      {/* Highlighter effect - sits behind text */}
-                      <span
-                        className="pointer-events-none absolute -skew-y-1 bg-accent/40 z-0 transform -rotate-[0.5deg]"
-                        style={{
-                          top: '50%',
-                          bottom: '-5%',
-                          left: '-3%',
-                          right: '-3%',
-                          borderRadius: '2px 4px 2px 3px',
-                        }}
-                        aria-hidden="true"
-                      />
-                    </span>
-                  </h1>
-                  <p className="font-serif text-2xl md:text-3xl text-muted-foreground font-normal tracking-normal mt-1 italic">
-                    minutes read
-                  </p>
-                </div>
+              {/* Editorial headline treatment - magazine style */}
+              <div className="flex items-baseline gap-3 flex-wrap">
+                <span className="font-serif text-xl md:text-2xl text-muted-foreground italic">
+                  Janney has read
+                </span>
+                <span className="relative">
+                  <span className="font-serif text-5xl md:text-6xl lg:text-7xl font-normal tracking-tight text-foreground">
+                    {(schoolTotalMinutes ?? 0).toLocaleString()}
+                  </span>
+                  {/* Underline accent */}
+                  <span 
+                    className="absolute left-0 right-0 h-1 bg-accent/60 -bottom-1 rounded-full"
+                    aria-hidden="true"
+                  />
+                </span>
+                <span className="font-serif text-xl md:text-2xl text-muted-foreground italic">
+                  minutes
+                </span>
               </div>
             </div>
           </div>
