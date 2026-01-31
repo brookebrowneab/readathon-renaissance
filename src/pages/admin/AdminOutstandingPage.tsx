@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { Link } from "react-router-dom";
+import { useState, useMemo, useEffect } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import AdminLayout from "@/components/layout/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -57,14 +57,33 @@ interface OutstandingPayment {
   totalMinutes: number;
 }
 
-type FilterOption = "all" | "overdue" | "no-reminder";
+type FilterOption = "all" | "overdue" | "no-reminder" | "large";
 
+const LARGE_PLEDGE_THRESHOLD = 1500;
 const AdminOutstandingPage = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterBy, setFilterBy] = useState<FilterOption>("all");
+  const [filterBy, setFilterBy] = useState<FilterOption>(
+    searchParams.get('filter') === 'large' ? 'large' : 'all'
+  );
   const [selectedPayments, setSelectedPayments] = useState<string[]>([]);
   const [isSending, setIsSending] = useState(false);
 
+  // Sync URL filter param
+  useEffect(() => {
+    if (searchParams.get('filter') === 'large') {
+      setFilterBy('large');
+    }
+  }, [searchParams]);
+
+  const handleFilterChange = (value: FilterOption) => {
+    setFilterBy(value);
+    if (value === 'large') {
+      setSearchParams({ filter: 'large' });
+    } else {
+      setSearchParams({});
+    }
+  };
   // Fetch real pledges from database
   const { data: pledgesData = [], isLoading } = useQuery({
     queryKey: ["admin-outstanding-pledges"],
@@ -123,8 +142,13 @@ const AdminOutstandingPage = () => {
     if (filterBy === "no-reminder") {
       return matchesSearch && !payment.lastReminder;
     }
+    if (filterBy === "large") {
+      return matchesSearch && payment.amount > LARGE_PLEDGE_THRESHOLD;
+    }
     return matchesSearch;
   });
+
+  const largePledgesCount = payments.filter(p => p.amount > LARGE_PLEDGE_THRESHOLD).length;
 
   // Pagination
   const {
@@ -253,8 +277,8 @@ const AdminOutstandingPage = () => {
                 className="pl-10"
               />
             </div>
-            <Select value={filterBy} onValueChange={(v) => setFilterBy(v as FilterOption)}>
-              <SelectTrigger className="w-[180px]">
+            <Select value={filterBy} onValueChange={(v) => handleFilterChange(v as FilterOption)}>
+              <SelectTrigger className="w-[200px]">
                 <Filter className="h-4 w-4 mr-2" />
                 <SelectValue placeholder="Filter" />
               </SelectTrigger>
@@ -262,6 +286,9 @@ const AdminOutstandingPage = () => {
                 <SelectItem value="all">All Outstanding</SelectItem>
                 <SelectItem value="overdue">Overdue (7+ days)</SelectItem>
                 <SelectItem value="no-reminder">No Reminder Sent</SelectItem>
+                <SelectItem value="large">
+                  Large Pledges (&gt;$1,500) {largePledgesCount > 0 && `(${largePledgesCount})`}
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -324,7 +351,12 @@ const AdminOutstandingPage = () => {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right font-medium">
-                      ${payment.amount.toFixed(2)}
+                      <span className={payment.amount > LARGE_PLEDGE_THRESHOLD ? "text-destructive font-bold" : ""}>
+                        ${payment.amount.toFixed(2)}
+                        {payment.amount > LARGE_PLEDGE_THRESHOLD && (
+                          <AlertTriangle className="h-3 w-3 inline ml-1" />
+                        )}
+                      </span>
                     </TableCell>
                     <TableCell className="text-right">
                       <span

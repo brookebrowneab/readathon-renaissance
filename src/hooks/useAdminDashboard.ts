@@ -16,7 +16,7 @@ export interface DashboardMetrics {
 
 export interface DashboardAlert {
   id: string;
-  type: "checks" | "collection" | "review";
+  type: "checks" | "collection" | "review" | "large_pledge" | "large_reading";
   count: number;
   label: string;
   link: string;
@@ -132,7 +132,7 @@ export function useAdminDashboard() {
       const today = startOfDay(new Date());
       const outstanding: OutstandingPayment[] = [];
       let pendingChecks = 0;
-      let highValuePledges = 0;
+      let largePledges = 0; // Over $1500
 
       pledges?.forEach(pledge => {
         const childMinutes = pledge.child?.total_minutes || 0;
@@ -167,11 +167,11 @@ export function useAdminDashboard() {
           if (pledge.expected_payment_method === 'check') {
             pendingChecks++;
           }
+        }
 
-          // Track high-value pledges (over $100)
-          if (pledgeAmount > 100) {
-            highValuePledges++;
-          }
+        // Track unusually large pledges (over $1500) - regardless of payment status
+        if (pledgeAmount > 1500) {
+          largePledges++;
         }
 
         // Check if created today
@@ -189,11 +189,25 @@ export function useAdminDashboard() {
         todayPledged,
         outstanding,
         pendingChecks,
-        highValuePledges,
+        largePledges,
         awaitingCollection: outstanding.length,
       };
     },
     enabled: !!activeEvent?.id,
+  });
+
+  // Fetch unusually large reading logs (over 480 minutes / 8 hours in a day)
+  const { data: largeLogsData, isLoading: largeLogsLoading } = useQuery({
+    queryKey: ['admin-dashboard-large-logs'],
+    queryFn: async () => {
+      const { data: logs, error } = await supabase
+        .from('reading_logs')
+        .select('id, minutes')
+        .gt('minutes', 480);
+
+      if (error) throw error;
+      return logs?.length || 0;
+    },
   });
 
   // Fetch recent activity
@@ -324,13 +338,23 @@ export function useAdminDashboard() {
     });
   }
 
-  if (pledgesData?.highValuePledges && pledgesData.highValuePledges > 0) {
+  if (pledgesData?.largePledges && pledgesData.largePledges > 0) {
     alerts.push({
-      id: 'review',
-      type: 'review',
-      count: pledgesData.highValuePledges,
-      label: 'high-value pledges need review',
-      link: '/admin/outstanding',
+      id: 'large_pledge',
+      type: 'large_pledge',
+      count: pledgesData.largePledges,
+      label: 'unusually large pledges (>$1,500)',
+      link: '/admin/outstanding?filter=large',
+    });
+  }
+
+  if (largeLogsData && largeLogsData > 0) {
+    alerts.push({
+      id: 'large_reading',
+      type: 'large_reading',
+      count: largeLogsData,
+      label: 'reading logs over 8 hours',
+      link: '/admin/reading?filter=large',
     });
   }
 
@@ -346,6 +370,6 @@ export function useAdminDashboard() {
     activity: activityData || [],
     outstanding: pledgesData?.outstanding || [],
     daysRemaining,
-    isLoading: eventLoading || childrenLoading || readingLoading || pledgesLoading || activityLoading,
+    isLoading: eventLoading || childrenLoading || readingLoading || pledgesLoading || activityLoading || largeLogsLoading,
   };
 }
