@@ -62,7 +62,8 @@ import { useToast } from "@/hooks/use-toast";
 import { handDrawnBorder } from "@/lib/admin-styles";
 import { cn } from "@/lib/utils";
 import { useAdminFinance, Payment, PaymentStatus, PaymentMethod, LARGE_PLEDGE_THRESHOLD } from "@/hooks/useAdminFinance";
-import { AlertTriangle } from "lucide-react";
+import { usePayments, Payment as SquarePayment } from "@/hooks/usePayments";
+import { AlertTriangle, ExternalLink, Receipt } from "lucide-react";
 import { format } from "date-fns";
 
 const statusConfig: Record<PaymentStatus, { label: string; variant: "default" | "secondary" | "destructive" | "outline"; icon: React.ReactNode }> = {
@@ -97,6 +98,9 @@ export default function AdminFinancePage() {
 
   const [pledgeFilter, setPledgeFilter] = useState<string>("all");
   const [showLargeOnly, setShowLargeOnly] = useState(false);
+
+  // Fetch actual Square payments from the payments table
+  const { payments: squarePayments, isLoading: isLoadingPayments } = usePayments();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -614,12 +618,12 @@ export default function AdminFinancePage() {
             </Card>
           </TabsContent>
 
-          {/* Payments Tab */}
+          {/* Payments Tab - Shows actual Square payment transactions */}
           <TabsContent value="payments" className="space-y-4">
             <Card>
               <CardHeader>
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                  <CardTitle>Payments</CardTitle>
+                  <CardTitle>Payment Transactions</CardTitle>
                   <div className="flex flex-col gap-2 md:flex-row md:items-center">
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -632,14 +636,12 @@ export default function AdminFinancePage() {
                     </div>
                     <Select value={statusFilter} onValueChange={setStatusFilter}>
                       <SelectTrigger className="w-full md:w-40">
-                        <SelectValue placeholder="Status" />
+                        <SelectValue placeholder="Pledge Type" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">All Status</SelectItem>
-                        <SelectItem value="completed">Completed</SelectItem>
-                        <SelectItem value="pending">Pending</SelectItem>
-                        <SelectItem value="failed">Failed</SelectItem>
-                        <SelectItem value="refunded">Refunded</SelectItem>
+                        <SelectItem value="all">All Types</SelectItem>
+                        <SelectItem value="flat">One-Time</SelectItem>
+                        <SelectItem value="per_minute">Per Minute</SelectItem>
                       </SelectContent>
                     </Select>
                     <div className="flex gap-2">
@@ -662,66 +664,115 @@ export default function AdminFinancePage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Sponsor</TableHead>
-                      <TableHead>Student</TableHead>
-                      <TableHead>Amount</TableHead>
-                      <TableHead>Method</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredPayments.map((payment) => (
-                      <TableRow key={payment.id}>
-                        <TableCell className="font-medium">
-                          {format(new Date(payment.date), 'MMM d, yyyy')}
-                        </TableCell>
-                        <TableCell>
-                          <div>
-                            <p className="font-medium">{payment.payerName}</p>
-                            <p className="text-sm text-muted-foreground">{payment.payerEmail}</p>
-                          </div>
-                        </TableCell>
-                        <TableCell>{payment.studentName}</TableCell>
-                        <TableCell className="font-medium">
-                          ${payment.amount.toFixed(2)}
-                          {payment.pledgeType === 'per_minute' && (
-                            <span className="text-xs text-muted-foreground block">
-                              ({payment.childMinutes} min)
-                            </span>
-                          )}
-                        </TableCell>
-                        <TableCell>{methodLabels[payment.method]}</TableCell>
-                        <TableCell>
-                          <Badge variant={statusConfig[payment.status].variant} className="gap-1">
-                            {statusConfig[payment.status].icon}
-                            {statusConfig[payment.status].label}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setSelectedPayment(payment)}
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                    {filteredPayments.length === 0 && (
+                {isLoadingPayments ? (
+                  <div className="text-center py-8 text-muted-foreground">Loading payments...</div>
+                ) : squarePayments.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <Receipt className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                    <p className="font-medium">No payment transactions yet</p>
+                    <p className="text-sm mt-1">Payment records will appear here once sponsors make payments.</p>
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
                       <TableRow>
-                        <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                          No payments found matching your criteria.
-                        </TableCell>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Payer</TableHead>
+                        <TableHead>Student</TableHead>
+                        <TableHead>Type</TableHead>
+                        <TableHead>Amount</TableHead>
+                        <TableHead>Method</TableHead>
+                        <TableHead>Square ID</TableHead>
+                        <TableHead className="text-right">Receipt</TableHead>
                       </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {squarePayments
+                        .filter((payment) => {
+                          const matchesSearch =
+                            (payment.payer_name?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+                            (payment.payer_email?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+                            (payment.student_name?.toLowerCase() || '').includes(searchQuery.toLowerCase());
+                          const matchesType = statusFilter === "all" || payment.pledge_type === statusFilter;
+                          const paymentDate = format(new Date(payment.created_at), 'yyyy-MM-dd');
+                          const matchesDateFrom = !dateFrom || paymentDate >= dateFrom;
+                          const matchesDateTo = !dateTo || paymentDate <= dateTo;
+                          return matchesSearch && matchesType && matchesDateFrom && matchesDateTo;
+                        })
+                        .map((payment) => (
+                          <TableRow key={payment.id}>
+                            <TableCell className="font-medium">
+                              <div>
+                                {format(new Date(payment.created_at), 'MMM d, yyyy')}
+                                <span className="text-xs text-muted-foreground block">
+                                  {format(new Date(payment.created_at), 'h:mm a')}
+                                </span>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div>
+                                <p className="font-medium">{payment.payer_name || 'Unknown'}</p>
+                                <p className="text-sm text-muted-foreground">{payment.payer_email || ''}</p>
+                              </div>
+                            </TableCell>
+                            <TableCell>{payment.student_name || '-'}</TableCell>
+                            <TableCell>
+                              <Badge variant="outline">
+                                {payment.pledge_type === 'per_minute' ? 'Per Minute' : 'One-Time'}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="font-medium">
+                              ${payment.amount.toFixed(2)}
+                            </TableCell>
+                            <TableCell className="capitalize">
+                              {payment.payment_method}
+                            </TableCell>
+                            <TableCell>
+                              {payment.square_payment_id ? (
+                                <code className="text-xs bg-muted px-1 py-0.5 rounded">
+                                  {payment.square_payment_id.slice(0, 8)}...
+                                </code>
+                              ) : (
+                                <span className="text-muted-foreground">-</span>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              {payment.square_receipt_url ? (
+                                <a 
+                                  href={payment.square_receipt_url} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 text-primary hover:underline"
+                                >
+                                  <ExternalLink className="h-4 w-4" />
+                                  View
+                                </a>
+                              ) : (
+                                <span className="text-muted-foreground">-</span>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      {squarePayments.filter((payment) => {
+                        const matchesSearch =
+                          (payment.payer_name?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+                          (payment.payer_email?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+                          (payment.student_name?.toLowerCase() || '').includes(searchQuery.toLowerCase());
+                        const matchesType = statusFilter === "all" || payment.pledge_type === statusFilter;
+                        const paymentDate = format(new Date(payment.created_at), 'yyyy-MM-dd');
+                        const matchesDateFrom = !dateFrom || paymentDate >= dateFrom;
+                        const matchesDateTo = !dateTo || paymentDate <= dateTo;
+                        return matchesSearch && matchesType && matchesDateFrom && matchesDateTo;
+                      }).length === 0 && (
+                        <TableRow>
+                          <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                            No payments found matching your criteria.
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

@@ -516,6 +516,75 @@ export type Database = {
           },
         ]
       }
+      payments: {
+        Row: {
+          amount: number
+          class_pledge_id: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          payer_email: string | null
+          payer_name: string | null
+          payer_user_id: string | null
+          payment_method: string
+          pledge_id: string | null
+          pledge_type: string
+          square_payment_id: string | null
+          square_receipt_url: string | null
+          student_name: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          class_pledge_id?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          payer_email?: string | null
+          payer_name?: string | null
+          payer_user_id?: string | null
+          payment_method?: string
+          pledge_id?: string | null
+          pledge_type: string
+          square_payment_id?: string | null
+          square_receipt_url?: string | null
+          student_name?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          class_pledge_id?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          payer_email?: string | null
+          payer_name?: string | null
+          payer_user_id?: string | null
+          payment_method?: string
+          pledge_id?: string | null
+          pledge_type?: string
+          square_payment_id?: string | null
+          square_receipt_url?: string | null
+          student_name?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_class_pledge_id_fkey"
+            columns: ["class_pledge_id"]
+            isOneToOne: false
+            referencedRelation: "class_pledges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_pledge_id_fkey"
+            columns: ["pledge_id"]
+            isOneToOne: false
+            referencedRelation: "pledges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pledges: {
         Row: {
           amount: number
