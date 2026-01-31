@@ -61,7 +61,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { handDrawnBorder } from "@/lib/admin-styles";
 import { cn } from "@/lib/utils";
-import { useAdminFinance, Payment, PaymentStatus, PaymentMethod } from "@/hooks/useAdminFinance";
+import { useAdminFinance, Payment, PaymentStatus, PaymentMethod, LARGE_PLEDGE_THRESHOLD } from "@/hooks/useAdminFinance";
+import { AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
 
 const statusConfig: Record<PaymentStatus, { label: string; variant: "default" | "secondary" | "destructive" | "outline"; icon: React.ReactNode }> = {
@@ -83,6 +84,7 @@ export default function AdminFinancePage() {
   const { 
     payments, 
     outstandingPledges, 
+    allPledges,
     summary, 
     isLoading, 
     markAsPaid, 
@@ -92,6 +94,9 @@ export default function AdminFinancePage() {
     isUpdating,
     isSendingReminders,
   } = useAdminFinance();
+
+  const [pledgeFilter, setPledgeFilter] = useState<string>("all");
+  const [showLargeOnly, setShowLargeOnly] = useState(false);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -396,7 +401,7 @@ export default function AdminFinancePage() {
       actions={headerActions}
     >
         {/* Financial Summary */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5 mb-8">
           <div className="bg-background p-4" style={handDrawnBorder}>
             <div className="flex items-center justify-between mb-2">
               <p className="text-sm text-muted-foreground">Total Pledged</p>
@@ -434,19 +439,180 @@ export default function AdminFinancePage() {
               />
             </div>
           </div>
+          <button 
+            onClick={() => setShowLargeOnly(!showLargeOnly)}
+            className={cn(
+              "bg-background p-4 text-left transition-all cursor-pointer hover:ring-2 hover:ring-destructive/50",
+              showLargeOnly && "ring-2 ring-destructive"
+            )}
+            style={handDrawnBorder}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm text-muted-foreground">Large Pledges</p>
+              <AlertTriangle className="h-4 w-4 text-destructive" />
+            </div>
+            <p className="font-serif text-2xl text-destructive">{summary.largePledgeCount}</p>
+            <p className="text-xs text-muted-foreground mt-1">&gt;${LARGE_PLEDGE_THRESHOLD.toLocaleString()}</p>
+          </button>
         </div>
 
-        {/* Tabs for Payments and Outstanding Pledges */}
-        <Tabs defaultValue="payments" className="space-y-4">
+        {/* Tabs for Payments, Pledges and Outstanding Pledges */}
+        <Tabs defaultValue="pledges" className="space-y-4">
           <TabsList>
-            <TabsTrigger value="payments">All Payments ({payments.length})</TabsTrigger>
+            <TabsTrigger value="pledges">
+              All Pledges
+              <Badge variant="secondary" className="ml-2">
+                {allPledges.length}
+              </Badge>
+            </TabsTrigger>
+            <TabsTrigger value="payments">Payments ({payments.length})</TabsTrigger>
             <TabsTrigger value="outstanding">
-              Outstanding Pledges
+              Outstanding
               <Badge variant="secondary" className="ml-2">
                 {outstandingPledges.length}
               </Badge>
             </TabsTrigger>
           </TabsList>
+
+          {/* All Pledges Tab */}
+          <TabsContent value="pledges" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                  <div className="flex items-center gap-2">
+                    <CardTitle>All Pledges</CardTitle>
+                    {showLargeOnly && (
+                      <Badge variant="destructive" className="gap-1">
+                        <AlertTriangle className="h-3 w-3" />
+                        Showing Large Only
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="flex flex-col gap-2 md:flex-row md:items-center">
+                    <Select value={pledgeFilter} onValueChange={setPledgeFilter}>
+                      <SelectTrigger className="w-full md:w-40">
+                        <SelectValue placeholder="Status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Pledges</SelectItem>
+                        <SelectItem value="paid">Paid</SelectItem>
+                        <SelectItem value="unpaid">Unpaid</SelectItem>
+                        <SelectItem value="large">Large (&gt;${LARGE_PLEDGE_THRESHOLD.toLocaleString()})</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {showLargeOnly && (
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => setShowLargeOnly(false)}
+                      >
+                        Clear Filter
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Sponsor</TableHead>
+                      <TableHead>Student</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Amount</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {allPledges
+                      .filter(pledge => {
+                        if (showLargeOnly && !pledge.isLarge) return false;
+                        if (pledgeFilter === "paid") return pledge.isPaid;
+                        if (pledgeFilter === "unpaid") return !pledge.isPaid;
+                        if (pledgeFilter === "large") return pledge.isLarge;
+                        return true;
+                      })
+                      .map((pledge) => (
+                        <TableRow key={pledge.id} className={cn(pledge.isLarge && "bg-destructive/5")}>
+                          <TableCell className="font-medium">
+                            {format(new Date(pledge.createdAt), 'MMM d, yyyy')}
+                          </TableCell>
+                          <TableCell>
+                            <div>
+                              <p className="font-medium">{pledge.sponsorName}</p>
+                              <p className="text-sm text-muted-foreground">{pledge.sponsorEmail}</p>
+                            </div>
+                          </TableCell>
+                          <TableCell>{pledge.studentName}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline">
+                              {pledge.pledgeType === 'per_minute' ? 'Per Minute' : 'Flat'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className={cn("font-medium", pledge.isLarge && "text-destructive flex items-center gap-1")}>
+                              {pledge.isLarge && <AlertTriangle className="h-4 w-4" />}
+                              ${pledge.amount.toFixed(2)}
+                            </div>
+                            {pledge.pledgeType === 'per_minute' && (
+                              <span className="text-xs text-muted-foreground block">
+                                ({pledge.childMinutes} min)
+                              </span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={pledge.isPaid ? "default" : "secondary"} className="gap-1">
+                              {pledge.isPaid ? (
+                                <><CheckCircle2 className="h-3 w-3" /> Paid</>
+                              ) : (
+                                <><Clock className="h-3 w-3" /> Pending</>
+                              )}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right space-x-1">
+                            {!pledge.isPaid && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => markAsPaid(pledge.id)}
+                                disabled={isUpdating}
+                              >
+                                <CheckCircle2 className="h-4 w-4 text-success" />
+                              </Button>
+                            )}
+                            {pledge.isPaid && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => markAsUnpaid(pledge.id)}
+                                disabled={isUpdating}
+                              >
+                                <RotateCcw className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    {allPledges.filter(pledge => {
+                      if (showLargeOnly && !pledge.isLarge) return false;
+                      if (pledgeFilter === "paid") return pledge.isPaid;
+                      if (pledgeFilter === "unpaid") return !pledge.isPaid;
+                      if (pledgeFilter === "large") return pledge.isLarge;
+                      return true;
+                    }).length === 0 && (
+                      <TableRow>
+                        <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                          No pledges found matching your criteria.
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           {/* Payments Tab */}
           <TabsContent value="payments" className="space-y-4">

@@ -33,13 +33,31 @@ export interface OutstandingPledge {
   pledgeType: string;
   childMinutes: number;
   childId: string;
+  isLarge?: boolean;
 }
+
+export interface AllPledge {
+  id: string;
+  sponsorName: string;
+  sponsorEmail: string;
+  studentName: string;
+  amount: number;
+  pledgeType: string;
+  childMinutes: number;
+  childId: string;
+  isPaid: boolean;
+  createdAt: string;
+  isLarge: boolean;
+}
+
+export const LARGE_PLEDGE_THRESHOLD = 1500;
 
 export interface FinanceSummary {
   totalPledged: number;
   totalCollected: number;
   outstanding: number;
   collectionRate: number;
+  largePledgeCount: number;
 }
 
 function mapPaymentMethod(method: string | null): PaymentMethod {
@@ -85,8 +103,10 @@ export function useAdminFinance() {
 
       const payments: Payment[] = [];
       const outstandingPledges: OutstandingPledge[] = [];
+      const allPledges: AllPledge[] = [];
       let totalPledged = 0;
       let totalCollected = 0;
+      let largePledgeCount = 0;
 
       pledges?.forEach(pledge => {
         const childMinutes = pledge.child?.total_minutes || 0;
@@ -99,6 +119,8 @@ export function useAdminFinance() {
         }
 
         totalPledged += pledgeAmount;
+        const isLarge = pledgeAmount > LARGE_PLEDGE_THRESHOLD;
+        if (isLarge) largePledgeCount++;
 
         const paymentRecord: Payment = {
           id: pledge.id,
@@ -115,6 +137,21 @@ export function useAdminFinance() {
         };
 
         payments.push(paymentRecord);
+
+        // Build allPledges array
+        allPledges.push({
+          id: pledge.id,
+          sponsorName: pledge.sponsor?.name || 'Unknown',
+          sponsorEmail: pledge.sponsor?.email || '',
+          studentName: pledge.child?.name || 'Unknown',
+          amount: pledgeAmount,
+          pledgeType: pledge.pledge_type,
+          childMinutes,
+          childId: pledge.child_id || '',
+          isPaid: pledge.is_paid,
+          createdAt: pledge.created_at,
+          isLarge,
+        });
 
         if (pledge.is_paid) {
           totalCollected += pledgeAmount;
@@ -133,6 +170,7 @@ export function useAdminFinance() {
             pledgeType: pledge.pledge_type,
             childMinutes,
             childId: pledge.child_id || '',
+            isLarge,
           });
         }
       });
@@ -143,16 +181,21 @@ export function useAdminFinance() {
       // Sort outstanding by days (oldest first - most urgent)
       outstandingPledges.sort((a, b) => b.daysSincePledge - a.daysSincePledge);
 
+      // Sort allPledges by date (newest first)
+      allPledges.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
       const summary: FinanceSummary = {
         totalPledged,
         totalCollected,
         outstanding: totalPledged - totalCollected,
         collectionRate: totalPledged > 0 ? Math.round((totalCollected / totalPledged) * 100) : 0,
+        largePledgeCount,
       };
 
       return {
         payments,
         outstandingPledges,
+        allPledges,
         summary,
       };
     },
@@ -271,7 +314,8 @@ export function useAdminFinance() {
   return {
     payments: data?.payments || [],
     outstandingPledges: data?.outstandingPledges || [],
-    summary: data?.summary || { totalPledged: 0, totalCollected: 0, outstanding: 0, collectionRate: 0 },
+    allPledges: data?.allPledges || [],
+    summary: data?.summary || { totalPledged: 0, totalCollected: 0, outstanding: 0, collectionRate: 0, largePledgeCount: 0 },
     isLoading,
     error,
     markAsPaid: markAsPaidMutation.mutateAsync,
