@@ -19,6 +19,7 @@ interface AdminLayoutProps {
 const navItems = [
   { label: "Dashboard", path: "/admin", icon: LayoutDashboard },
   { label: "Reading", path: "/admin/reading", icon: BookOpen },
+  { label: "Finance", path: "/admin-finance", icon: DollarSign },
   { label: "Outstanding", path: "/admin/outstanding", icon: DollarSign },
   { label: "Checks", path: "/admin/checks", icon: FileText },
   { label: "Emails", path: "/admin/emails", icon: Mail },
