@@ -287,7 +287,7 @@ const StudentPinDashboardPage = () => {
               {/* Large headline with highlighter effect */}
               <div className="relative inline-block">
                 <h1 className="font-serif text-5xl md:text-6xl lg:text-7xl font-normal tracking-tight text-foreground leading-[1.05] relative">
-                  <span className="text-lg md:text-xl text-muted-foreground font-normal mr-3 align-baseline">How many minutes has Janney read?</span>
+                  <span className="text-lg md:text-xl text-muted-foreground font-normal mr-3 align-baseline tracking-wide">How many minutes has Janney read?</span>
                   <span className="relative inline-block">
                     <span className="relative z-10">
                       {(schoolTotalMinutes ?? 0).toLocaleString()}
