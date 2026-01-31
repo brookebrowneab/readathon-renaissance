@@ -88,7 +88,7 @@ const AboutPage = () => {
                 { icon: Users, value: "1,000+", label: "Students Participated" },
                 { icon: BookOpen, value: "1M+", label: "Minutes Read" },
                 { icon: School, value: "2,000+", label: "Books Read" },
-                { icon: Heart, value: "$500K+", label: "Funds Raised" },
+                { icon: Heart, value: "2020", label: "Since" },
               ].map((stat, index) => (
                 <div 
                   key={index} 
