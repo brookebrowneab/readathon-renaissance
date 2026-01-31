@@ -280,7 +280,7 @@ const StudentPinDashboardPage = () => {
 
       <main className="flex-1">
         {/* Hero Section - Full width background */}
-        <section className="bg-background pt-5 md:pt-7 pb-[47px] md:pb-[55px]">
+        <section className="bg-background pt-5 md:pt-7 pb-[52px] md:pb-[60px]">
           <div className="container">
             {/* Constrain hero content - matching homepage layout */}
             <div className="max-w-4xl px-4 md:px-0 md:pl-14 lg:pl-20 md:ml-[30px] text-left">
