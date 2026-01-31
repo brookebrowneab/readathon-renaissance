@@ -397,6 +397,8 @@ export type Database = {
           id: string
           is_active: boolean
           last_log_date: string
+          log_verification_enabled: boolean
+          log_verification_thresholds: Json
           logo_date_x_offset: number | null
           logo_url: string | null
           name: string
@@ -421,6 +423,8 @@ export type Database = {
           id?: string
           is_active?: boolean
           last_log_date: string
+          log_verification_enabled?: boolean
+          log_verification_thresholds?: Json
           logo_date_x_offset?: number | null
           logo_url?: string | null
           name: string
@@ -445,6 +449,8 @@ export type Database = {
           id?: string
           is_active?: boolean
           last_log_date?: string
+          log_verification_enabled?: boolean
+          log_verification_thresholds?: Json
           logo_date_x_offset?: number | null
           logo_url?: string | null
           name?: string
@@ -458,6 +464,57 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      log_verification_requests: {
+        Row: {
+          child_id: string
+          created_at: string
+          id: string
+          minutes: number
+          reading_log_id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          threshold_at_time: number
+        }
+        Insert: {
+          child_id: string
+          created_at?: string
+          id?: string
+          minutes: number
+          reading_log_id: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          threshold_at_time: number
+        }
+        Update: {
+          child_id?: string
+          created_at?: string
+          id?: string
+          minutes?: number
+          reading_log_id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          threshold_at_time?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "log_verification_requests_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "log_verification_requests_reading_log_id_fkey"
+            columns: ["reading_log_id"]
+            isOneToOne: true
+            referencedRelation: "reading_logs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       pledges: {
         Row: {
@@ -834,6 +891,10 @@ export type Database = {
       }
       get_grade_total_minutes: {
         Args: { p_grade_info: string }
+        Returns: number
+      }
+      get_verification_threshold: {
+        Args: { p_child_id: string }
         Returns: number
       }
       has_role: {
