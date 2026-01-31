@@ -287,15 +287,22 @@ const StudentPinDashboardPage = () => {
               {/* Editorial headline treatment - magazine style */}
               <div className="flex items-baseline gap-3 flex-wrap">
                 <span className="font-serif text-xl md:text-2xl text-muted-foreground italic">
-                  Janney has read
+                  Janney students have read
                 </span>
-                <span className="relative">
-                  <span className="font-serif text-5xl md:text-6xl lg:text-7xl font-normal tracking-tight text-foreground">
+                <span className="relative inline-block">
+                  <span className="font-serif text-5xl md:text-6xl lg:text-7xl font-normal tracking-tight text-foreground relative z-10">
                     {(schoolTotalMinutes ?? 0).toLocaleString()}
                   </span>
-                  {/* Underline accent */}
-                  <span 
-                    className="absolute left-0 right-0 h-1 bg-accent/60 -bottom-1 rounded-full"
+                  {/* Highlighter effect */}
+                  <span
+                    className="pointer-events-none absolute -skew-y-1 bg-accent/50 z-0 transform -rotate-[0.5deg]"
+                    style={{
+                      top: '45%',
+                      bottom: '-2%',
+                      left: '-3%',
+                      right: '-3%',
+                      borderRadius: '3px 5px 3px 4px',
+                    }}
                     aria-hidden="true"
                   />
                 </span>
