@@ -1,400 +1,204 @@
 
-# Enhanced Parent Dashboard Cleanup Plan
+# Plan: Configurable Per-Grade Reading Log Verification System
 
 ## Overview
-This comprehensive plan consolidates the parent experience by simplifying pledge management, unifying child settings, reducing navigation complexity, and adding new features for class/grade progress, inline log editing, validation, and enhanced child account management. The goal is to make the parent dashboard more intuitive while maintaining clear separation between parent-owned children and sponsor-only views.
+
+Create a verification system where:
+- Admins set per-grade minute thresholds (e.g., 90 mins for K, 120 mins for 5th grade)
+- When students log/edit reading that exceeds their grade's threshold, a verification request is created
+- Parents see pending verifications in their dashboard and can approve/dismiss them
+- If a log is edited to fall below threshold, its verification request is automatically removed
 
 ---
 
-## Summary of All Changes
+## Database Changes
 
-| Area | Current State | Solution |
-|------|---------------|----------|
-| My Pledges | Parents can mark pledges paid/unpaid | Remove payment status controls, add "Pay Now" with event status logic |
-| Child Details | Links to separate Settings page with mock data | Add inline EditChildDialog, class/grade progress, inline log editing |
-| Account Page | Only profile and password settings | Add Children's Accounts section with full management |
-| Navigation | Too many clicks to reach settings | Streamline from dashboard to details |
-| Sponsor View | N/A | Verify proper read-only separation |
-| Reading Logs | View only on details page | Add inline editing and validation checkboxes |
-| Delete Child | Not available in UI | Add to Account page with cascade handling |
+### 1. New Column on Events Table
+Add a JSONB column to store per-grade verification thresholds:
 
----
-
-## Phase 1: My Pledges Page - Payment Controls Update
-
-**File:** `src/pages/MyPledgesPage.tsx`
-
-### Changes Required:
-
-1. **Remove Admin-Only Payment Controls**
-   - Remove "Mark as Paid" and "Mark as Unpaid" buttons
-   - Remove `handleMarkPaidClick`, `handleConfirmMarkPaid`, and `handleMarkUnpaid` functions
-   - Remove `markPaidDialogOpen`, `pledgeToMarkPaid` state
-   - Remove the `ConfirmDialog` for marking paid
-
-2. **Add "Pay Now" Button with Event Status Logic**
-   - Import `useEventStatus` hook to check if read-a-thon is closed
-   - Add "Pay Now" button that is:
-     - **Always enabled** for `flat` (one-time) pledges that are unpaid
-     - **Only enabled when event is `closed`** for `per_minute` pledges
-     - **Disabled/hidden** for already paid pledges
-   - Link "Pay Now" to `/sponsor/pay?pledge={pledgeId}`
-
-3. **Display Logic**
-   - Show payment status as read-only badge (Paid/Pending)
-   - For per-minute pledges during active event: show "Final amount calculated when read-a-thon ends"
-   - Paid pledges show "Paid" badge, no actions available
-
-### New Payment Button Logic:
-```typescript
-const { phase, isPaymentsDue } = useEventStatus();
-
-const canPayNow = (pledge: ParentPledge) => {
-  if (pledge.is_paid) return false;
-  if (pledge.pledge_type === "flat") return true;
-  if (pledge.pledge_type === "per_minute") return isPaymentsDue; // only when closed
-  return false;
-};
-```
-
----
-
-## Phase 2: Enhance ChildDetailsPage
-
-**File:** `src/pages/family/ChildDetailsPage.tsx`
-
-### 2a. Add Class and Grade Reading Progress
-
-**New imports:**
-- `useClassGradeTotals` hook for aggregated stats
-- `useClassReadingStats` for detailed class info
-
-**New UI Section** (between Reading Progress and Reading Log):
 ```text
-+------------------------------------------+
-|  Community Progress                      |
-|  +----------------+ +------------------+ |
-|  | Class Total    | | Grade Total      | |
-|  | Mrs. Smith     | | 3rd Grade        | |
-|  | 4,520 min      | | 12,340 min       | |
-|  | 24 students    | | 89 students      | |
-|  +----------------+ +------------------+ |
-+------------------------------------------+
+┌─────────────────────────────────────────┐
+│ events table (add column)               │
+├─────────────────────────────────────────┤
+│ log_verification_thresholds JSONB       │
+│   default: {}                           │
+│   example: {"K": 60, "1st": 90,         │
+│             "5th": 120, "default": 90}  │
+└─────────────────────────────────────────┘
 ```
 
-### 2b. Inline Reading Log Editing
+### 2. New Table: log_verification_requests
+Tracks logs that need parent verification:
 
-**Changes to Reading History section:**
-- Replace simple log display with `ReadingLogsTable` component (already exists)
-- Add edit icons to each log entry
-- Import `useReadingLogs` for mutation access
-- On edit: show inline inputs for minutes and book title
-- On save: call `updateLog.mutate()`
-- On delete: call `deleteLog.mutate()`
-
-### 2c. Reading Log Validation Feature
-
-**New functionality:**
-- Add checkbox next to each reading log entry
-- Checkbox toggles a "verified" state
-- Verified logs get a checkmark badge
-- Add "Select All" and "Validate Selected" bulk actions
-- Store validation in database fields (`verified_at`, `verified_by`)
-
-**New UI pattern:**
 ```text
-[ ] 30 min - "Charlotte's Web" - Jan 15  [Edit] [Delete]
-[x] 45 min - "Magic Tree House" - Jan 14 ✓Verified
+┌─────────────────────────────────────────┐
+│ log_verification_requests               │
+├─────────────────────────────────────────┤
+│ id              UUID PK                 │
+│ reading_log_id  UUID FK → reading_logs  │
+│ child_id        UUID FK → children      │
+│ minutes         INTEGER                 │
+│ threshold_at_time INTEGER               │
+│ status          TEXT ('pending','approved','dismissed')
+│ created_at      TIMESTAMPTZ             │
+│ reviewed_at     TIMESTAMPTZ             │
+│ reviewed_by     UUID                    │
+└─────────────────────────────────────────┘
 ```
 
-**Note:** This requires checking if reading_logs table has `verified_at` and `verified_by` columns. Currently, children table has these for child-level verification, but log-level verification may need a migration.
+### 3. Database Function: check_log_verification_needed
+A function that:
+- Looks up the child's grade
+- Gets the threshold for that grade from the active event
+- Returns whether verification is needed
 
-### 2d. Replace Settings Link with Inline Dialog
-
-**Changes:**
-- Import `EditChildDialog` component
-- Add state: `editDialogOpen`, `selectedChild`
-- Change Settings button to open dialog instead of navigating
-- Add ownership check to show/hide edit capabilities
-
-### 2e. Add Link to Account Page for Student Login Settings
-
-**New sidebar quick action:**
-```typescript
-<Button variant="outline" className="w-full justify-start" asChild>
-  <Link to="/account#children">
-    <User className="h-4 w-4 mr-2" />
-    Manage Student Account
-  </Link>
-</Button>
-```
+### 4. Database Trigger: manage_log_verification
+On INSERT/UPDATE to reading_logs:
+- **INSERT**: If minutes exceed threshold → create verification request
+- **UPDATE**: 
+  - If minutes now exceed threshold but no request exists → create request
+  - If minutes now below threshold and request exists → delete request
+- **DELETE**: Remove any associated verification request
 
 ---
 
-## Phase 3: Expand Account Settings Page
+## Admin Settings UI Changes
 
-**File:** `src/pages/AccountSettingsPage.tsx`
+### New Section: "Reading Log Verification"
+Location: Admin Settings page, after "Teacher Reading Log Permissions"
 
-### 3a. Add Children's Accounts Section
+Features:
+- Toggle: "Require parent verification for long reading sessions"
+- Default threshold input (applies to grades without specific setting)
+- Per-grade threshold override:
+  - List each grade with input field
+  - Ability to set different thresholds per grade
+  - Clear "use default" option
 
-**New imports:**
-- `useChildren` hook
-- `useParentInvitations` hook
-- `EditChildDialog` component
-- `useDeleteInvitation`, `useUpdateInvitationStatus` hooks
-
-**New section structure:**
+Example UI layout:
 ```text
-+------------------------------------------+
-| Children's Accounts                       |
-| Manage your children's profiles and login |
-+------------------------------------------+
-| [Child Card 1: Emma]                      |
-| Grade: 3rd Grade | Teacher: Mrs. Smith   |
-| Login: Enabled ✓ | Username: emma_reader |
-| Public Link: Enabled                      |
-| [Edit Profile] [View Details]             |
-|                                           |
-| Pending Sponsor Requests (2)              |
-| > Grandma Smith - [Approve] [Decline]     |
-| > Uncle Bob - [Approve] [Decline]         |
-|                                           |
-| [Delete Child] <-- Danger Zone            |
-+------------------------------------------+
-```
-
-### 3b. Fields to Display Per Child
-- **Grade** (from `grade_info`)
-- **Homeroom Teacher** (from `class_name` or teacher lookup)
-- **Public Sponsor Link Toggle** (from `share_public_link`)
-- **Student Login Status** (from `student_login_enabled`)
-- **Username** (from `student_username`)
-
-### 3c. Sponsor Request Approval Inline
-
-**Integration:**
-- Fetch invitations using `useParentInvitations()`
-- Group by child
-- Show pending requests with Approve/Decline buttons
-- Use `useUpdateInvitationStatus` mutation
-
-### 3d. Delete Child Functionality
-
-**New "Danger Zone" per child:**
-- Add expandable danger section
-- Requires typing child's name to confirm
-- On delete:
-  1. Cancel all unpaid pledges for this child
-  2. Send notification to sponsors about cancellation
-  3. Delete child record (cascades to reading_logs)
-  4. Show confirmation toast
-
-**Deletion cascade logic:**
-```typescript
-const handleDeleteChild = async (childId: string, childName: string) => {
-  // 1. Get all unpaid pledges for this child
-  const { data: unpaidPledges } = await supabase
-    .from("pledges")
-    .select("*, sponsors(*)")
-    .eq("child_id", childId)
-    .eq("is_paid", false);
-  
-  // 2. Notify sponsors (optional edge function call)
-  for (const pledge of unpaidPledges || []) {
-    // Send cancellation notification
-  }
-  
-  // 3. Delete child (cascades reading_logs, pledges)
-  await deleteChild.mutateAsync(childId);
-  
-  toast.success(`${childName} removed from Read-a-thon`);
-};
+┌────────────────────────────────────────────────────┐
+│ 📋 Reading Log Verification                        │
+├────────────────────────────────────────────────────┤
+│ [✓] Require parent verification for long sessions  │
+│                                                    │
+│ Default threshold: [90] minutes                    │
+│                                                    │
+│ Per-grade overrides:                               │
+│   K        [60] min  (younger kids, lower limit)   │
+│   1st      [60] min                                │
+│   2nd      [—] use default                         │
+│   3rd      [—] use default                         │
+│   4th      [—] use default                         │
+│   5th      [120] min (older kids can read longer)  │
+└────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Phase 4: Update Dashboard Navigation
+## Parent Dashboard Changes
 
-**File:** `src/pages/DashboardPage.tsx`
+### Notification Badge Integration
+Replace mock notification data with real queries:
+- Query `log_verification_requests` WHERE status = 'pending'
+- Count pending requests per child
+- Show in notification bell
 
-### Changes:
-- Update "Manage Children" link to point to `/account#children`
-- Keep child card "Details" button pointing to `/family/children/:id`
-- No major structural changes needed
-
----
-
-## Phase 5: Verify Sponsor-Only View Separation
-
-**File:** `src/pages/family/ChildDetailsPage.tsx`
-
-### Ownership Check:
-```typescript
-const { children } = useChildren();
-const isOwner = children.some(c => c.id === id);
-
-// If not owner, show limited view
-if (!isOwner) {
-  return <SponsorViewOfChild childId={id} />;
-}
-```
-
-### Sponsor View Features (read-only):
-- Reading progress ring
-- Total minutes
-- Days remaining
-- No edit buttons
-- No settings access
-- No reading log management
+### Verification UI
+Add to Child Details page or new dedicated page:
+- List of pending verification requests
+- For each: show date, book title, minutes logged
+- Actions: "Approve" (marks as approved) or "Dismiss" (marks as dismissed, doesn't count toward verified total)
 
 ---
 
-## Phase 6: Remove Deprecated Routes
+## Student Dashboard Edit Logic
 
-**File:** `src/App.tsx`
+### When Student Edits a Log
+Modify `handleEditLog` in StudentPinDashboardPage:
 
-### Routes to Remove/Redirect:
-```typescript
-// Remove this route:
-<Route path="/family/children/:id/settings" element={<ChildSettingsPage />} />
+1. After successful edit, call a function to check verification need
+2. The database trigger handles the logic automatically:
+   - If new minutes > threshold: creates/updates verification request
+   - If new minutes ≤ threshold: deletes existing request if any
 
-// Or redirect to child details:
-<Route path="/family/children/:id/settings" element={<Navigate to="/family/children/:id" replace />} />
-```
-
-**File:** `src/pages/family/index.ts`
-- Remove `ChildSettingsPage` export (if removing entirely)
-
----
-
-## Database Considerations
-
-### Potential Migration Needed
-If log-level verification is required (beyond child-level), add to `reading_logs` table:
-- `verified_at: timestamp with time zone | nullable`
-- `verified_by: uuid | nullable | references auth.users`
-- `is_verified: boolean | default false`
-
-**Note:** Currently, verification exists at the child level (`total_verified`, `verified_at`, `verified_by` on `children` table). The plan assumes we validate logs at the child level, but inline log validation could be implemented as a UI pattern that updates the child's `total_verified` status.
+### Visual Indicator
+Show students when a log is "pending parent review":
+- Small badge/icon on logs that have pending verification
+- Tooltip: "Your parent needs to approve this entry"
 
 ---
 
-## Technical Implementation Details
+## Technical Implementation
+
+### Files to Create
+1. **Database migration** - New column and table with RLS policies
+2. **`src/hooks/useLogVerificationRequests.ts`** - Fetch pending verification requests
+3. **`src/hooks/useLogVerificationThresholds.ts`** - Admin CRUD for thresholds
+4. **`src/components/family/PendingLogVerifications.tsx`** - Parent UI component
 
 ### Files to Modify
+1. **`src/pages/admin/AdminSettingsPage.tsx`** - Add threshold configuration section
+2. **`src/hooks/useEventSettings.ts`** - Add threshold fields to update logic
+3. **`src/pages/student/StudentPinDashboardPage.tsx`** - Show verification status on logs
+4. **`src/pages/family/ChildDetailsPage.tsx`** - Add verification approval UI
+5. **`src/components/layout/MainNav.tsx`** - Replace mock notifications with real data
 
-1. `src/pages/MyPledgesPage.tsx`
-   - Remove payment status controls
-   - Add "Pay Now" with event status logic
-   
-2. `src/pages/family/ChildDetailsPage.tsx`
-   - Add class/grade progress section
-   - Add inline log editing via ReadingLogsTable
-   - Add validation checkbox functionality
-   - Replace Settings navigation with EditChildDialog
-   - Add link to Account page
-   - Add ownership check for sponsor view
-   
-3. `src/pages/AccountSettingsPage.tsx`
-   - Add Children's Accounts section
-   - Display grade, teacher, public link toggle
-   - Add sponsor approval workflow
-   - Add delete child functionality
-   
-4. `src/pages/DashboardPage.tsx`
-   - Update navigation links
-   
-5. `src/App.tsx`
-   - Remove/redirect ChildSettingsPage route
-
-### Files to Potentially Remove
-
-1. `src/pages/family/ChildSettingsPage.tsx` - Deprecated by inline dialog
-
-### New Components (inline in existing files)
-
-1. `ChildAccountCard` - In AccountSettingsPage for displaying child management
-2. `SponsorRequestCard` - In AccountSettingsPage for approval workflow
-3. `CommunityProgressCard` - In ChildDetailsPage for class/grade stats
+### RLS Policies for log_verification_requests
+- Parents can SELECT/UPDATE requests for their children
+- Admins have full access
+- No public access
 
 ---
 
-## Navigation Flow After Changes
+## User Flow
 
-```text
-PARENT DASHBOARD (/dashboard)
-├── Child Card
-│   ├── [Details] -> ChildDetailsPage (/family/children/:id)
-│   │   ├── Reading Progress (ring + stats)
-│   │   ├── Community Progress (NEW: class + grade totals)
-│   │   ├── Reading Log with inline editing + validation
-│   │   ├── Sponsors List
-│   │   ├── [Edit Profile] -> Opens EditChildDialog (inline)
-│   │   ├── [Manage Student Account] -> Account page (/account#children)
-│   │   └── [Log Reading] -> LogReadingPage
-│   └── [Log] -> LogReadingPage
-├── Sidebar Quick Actions
-│   ├── Add Reading Log
-│   ├── Invite Sponsor
-│   ├── My Pledges -> MyPledgesPage (view/edit, "Pay Now" button)
-│   ├── Make a Pledge
-│   └── Add a Child
+### Admin Flow
+1. Go to Admin Settings
+2. Enable "Require parent verification"
+3. Set default threshold (e.g., 90 minutes)
+4. Optionally set grade-specific thresholds
+5. Save
 
-ACCOUNT PAGE (/account)
-├── Children's Accounts (NEW section)
-│   ├── [Per child card]
-│   │   ├── Grade, Teacher, Public Link toggle
-│   │   ├── Student login status + credentials
-│   │   ├── [Edit Profile] -> Opens EditChildDialog
-│   │   ├── [View Details] -> ChildDetailsPage
-│   │   ├── Pending Sponsor Requests (approve/decline)
-│   │   └── [Delete Child] -> Confirmation dialog
-├── Profile Information
-├── Change Password
-└── Danger Zone (delete account)
+### Student Flow
+1. Log reading of 150 minutes (exceeds threshold)
+2. System creates verification request automatically
+3. Student sees "Pending parent review" badge on that log
+4. Student can still edit the log
+5. If edited to 60 minutes (below threshold), request auto-deletes
+6. If edited to 180 minutes, request updates (not duplicated)
 
-MY PLEDGES PAGE (/my-pledges)
-├── Summary Stats (read-only: Total, Paid, Pending)
-├── Pledges by Child
-│   ├── [Per pledge]
-│   │   ├── Status badge (read-only)
-│   │   ├── Amount + type
-│   │   ├── [Edit] -> Edit amount/type only
-│   │   ├── [Delete] -> Delete pledge
-│   │   └── [Pay Now] -> Payment flow (conditional visibility)
-
-SPONSOR VIEW (non-parent viewing sponsored child)
-└── Read-only progress view (no edit/settings/management)
-```
+### Parent Flow
+1. See notification badge "1 log to verify"
+2. Click to view pending requests
+3. See: "Emma logged 150 minutes on Jan 30 reading 'Charlotte's Web'"
+4. Click "Approve" → request marked approved, counts toward verified total
+5. Or click "Dismiss" → request marked dismissed, parent can investigate
 
 ---
 
-## Implementation Order
+## Edge Cases Handled
 
-1. **Phase 1** - My Pledges payment controls cleanup + Pay Now logic
-2. **Phase 2** - ChildDetailsPage enhancements (class/grade progress, inline editing, validation)
-3. **Phase 3** - Account page children section with full management
-4. **Phase 4** - Dashboard navigation streamlining
-5. **Phase 5** - Ownership verification for sponsor views
-6. **Phase 6** - Remove deprecated routes and cleanup
+| Scenario | Behavior |
+|----------|----------|
+| No threshold set for grade | Uses default threshold |
+| No default set | Verification disabled for that grade |
+| Log edited multiple times | Single request updated, not duplicated |
+| Log deleted | Associated request auto-deleted |
+| Parent already verified child's total | Logs still flagged but parent sees "already verified" context |
 
 ---
 
-## Testing Checklist
+## Summary of Changes
 
-- [ ] My Pledges: Cannot mark paid/unpaid
-- [ ] My Pledges: Pay Now works for flat pledges anytime
-- [ ] My Pledges: Pay Now only appears for per-minute when event closed
-- [ ] My Pledges: Paid pledges show status but no actions
-- [ ] Child Details: Class total minutes display correctly
-- [ ] Child Details: Grade total minutes display correctly
-- [ ] Child Details: Can edit reading logs inline
-- [ ] Child Details: Can validate reading logs with checkbox
-- [ ] Child Details: Edit Profile opens dialog (not navigates)
-- [ ] Account: Children section shows all children
-- [ ] Account: Can edit grade, teacher, public link per child
-- [ ] Account: Can approve/decline sponsor requests
-- [ ] Account: Can delete child with confirmation
-- [ ] Account: Deleting child notifies sponsors
-- [ ] Sponsor View: Cannot see edit controls when viewing non-owned child
-- [ ] Navigation: Settings route redirects properly
+| Component | Change Type |
+|-----------|-------------|
+| events table | Add JSONB column |
+| log_verification_requests | New table + RLS |
+| Database trigger | New function |
+| Admin Settings | New section |
+| useEventSettings | Extended interface |
+| StudentPinDashboard | Visual indicators |
+| ChildDetailsPage | Approval UI |
+| MainNav | Real notifications |
+| New hooks (2) | Verification data management |
