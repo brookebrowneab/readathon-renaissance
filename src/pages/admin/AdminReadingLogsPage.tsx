@@ -1,5 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import AdminLayout from "@/components/layout/AdminLayout";
 import { Input } from "@/components/ui/input";
@@ -20,9 +21,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { TablePagination, usePagination } from "@/components/ui/table-pagination";
-import { Search, BookOpen, Calendar } from "lucide-react";
+import { Search, BookOpen, Calendar, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+
+const LARGE_LOG_THRESHOLD = 480; // 8 hours in minutes
 
 interface ReadingLogWithChild {
   id: string;
@@ -40,10 +43,19 @@ interface ReadingLogWithChild {
 }
 
 export default function AdminReadingLogsPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState("");
   const [gradeFilter, setGradeFilter] = useState<string>("all");
   const [classFilter, setClassFilter] = useState<string>("all");
   const [dateFilter, setDateFilter] = useState<string>("all");
+  const [showLargeOnly, setShowLargeOnly] = useState(searchParams.get('filter') === 'large');
+
+  // Sync URL filter param
+  useEffect(() => {
+    if (searchParams.get('filter') === 'large') {
+      setShowLargeOnly(true);
+    }
+  }, [searchParams]);
 
   // Fetch all reading logs with child info
   const { data: logs = [], isLoading } = useQuery({
@@ -79,6 +91,11 @@ export default function AdminReadingLogsPage() {
 
   // Filter logs
   const filteredLogs = logs.filter(log => {
+    // Large log filter
+    if (showLargeOnly && log.minutes <= LARGE_LOG_THRESHOLD) {
+      return false;
+    }
+
     // Search filter
     const searchLower = searchQuery.toLowerCase();
     const matchesSearch = !searchQuery || 
@@ -115,6 +132,18 @@ export default function AdminReadingLogsPage() {
     return matchesSearch && matchesGrade && matchesClass && matchesDate;
   });
 
+  const largeLogsCount = logs.filter(l => l.minutes > LARGE_LOG_THRESHOLD).length;
+
+  const handleToggleLargeOnly = () => {
+    const newValue = !showLargeOnly;
+    setShowLargeOnly(newValue);
+    if (newValue) {
+      setSearchParams({ filter: 'large' });
+    } else {
+      setSearchParams({});
+    }
+  };
+
   // Pagination
   const {
     currentPage,
@@ -143,7 +172,7 @@ export default function AdminReadingLogsPage() {
         </div>
 
         {/* Stats Summary */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           <div className="bg-background border rounded-lg p-4">
             <p className="text-sm text-muted-foreground">Total Logs</p>
             <p className="font-serif text-2xl">{filteredLogs.length}</p>
@@ -164,6 +193,23 @@ export default function AdminReadingLogsPage() {
               {filteredLogs.length ? Math.round(totalMinutes / filteredLogs.length) : 0}
             </p>
           </div>
+          <button
+            onClick={handleToggleLargeOnly}
+            className={`bg-background border rounded-lg p-4 text-left transition-colors hover:border-destructive/50 ${
+              showLargeOnly ? 'border-destructive bg-destructive/5' : ''
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <AlertTriangle className={`h-4 w-4 ${largeLogsCount > 0 ? 'text-destructive' : 'text-muted-foreground'}`} />
+              <p className="text-sm text-muted-foreground">Over 8 Hours</p>
+            </div>
+            <p className={`font-serif text-2xl ${largeLogsCount > 0 ? 'text-destructive' : ''}`}>
+              {largeLogsCount}
+            </p>
+            {showLargeOnly && (
+              <p className="text-xs text-destructive mt-1">Filtering active</p>
+            )}
+          </button>
         </div>
 
         {/* Filters */}
@@ -263,8 +309,14 @@ export default function AdminReadingLogsPage() {
                         )}
                       </TableCell>
                       <TableCell className="text-center">
-                        <Badge variant="secondary" className="font-mono">
+                        <Badge 
+                          variant={log.minutes > LARGE_LOG_THRESHOLD ? "destructive" : "secondary"} 
+                          className="font-mono"
+                        >
                           {log.minutes}
+                          {log.minutes > LARGE_LOG_THRESHOLD && (
+                            <AlertTriangle className="h-3 w-3 ml-1" />
+                          )}
                         </Badge>
                       </TableCell>
                       <TableCell>
