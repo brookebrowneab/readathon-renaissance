@@ -4,6 +4,8 @@ import { useStudentSession } from "@/hooks/useStudentSession";
 import { supabase } from "@/integrations/supabase/client";
 import { useActiveEvent } from "@/hooks/useActiveEvent";
 import booksShelfDividerV2 from "@/assets/books-shelf-divider-v2.png";
+import { ClassFundraisingShelf } from "@/components/ui/class-fundraising-shelf";
+import { useClassFundraisingTotal } from "@/hooks/useClassFundraising";
 import { MainNav, Footer } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -145,6 +147,12 @@ const StudentPinDashboardPage = () => {
     },
     enabled: !!session?.gradeInfo,
   });
+
+  // Fetch class fundraising total
+  const { data: classFundraisingTotal } = useClassFundraisingTotal(
+    session?.className,
+    activeEvent?.id
+  );
   
   const [readingLogs, setReadingLogs] = useState<ReadingLog[]>([]);
   const [isLoadingLogs, setIsLoadingLogs] = useState(true);
@@ -442,6 +450,25 @@ const StudentPinDashboardPage = () => {
                         <p className="text-xs text-muted-foreground">grade minutes</p>
                       </div>
                     )}
+                  </div>
+                </section>
+              )}
+
+              {/* Class Fundraising Goal */}
+              {session.className && activeEvent?.class_milestone_enabled && (
+                <section>
+                  <div className="bg-background p-5 shadow-sm" style={handDrawnBorder}>
+                    <div className="flex items-center gap-2 mb-3">
+                      <Trophy className="h-5 w-5 text-warning" />
+                      <h2 className="font-serif text-xl font-normal text-foreground">
+                        {session.className} Fundraising Goal
+                      </h2>
+                    </div>
+                    <ClassFundraisingShelf
+                      fundedAmount={classFundraisingTotal ?? 0}
+                      goalAmount={activeEvent.class_milestone_goal}
+                      rewardLabel={activeEvent.class_milestone_reward}
+                    />
                   </div>
                 </section>
               )}
