@@ -833,30 +833,48 @@ export function TeacherManagement() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <div className="flex gap-2">
-              <Select value={selectedHomeroomId} onValueChange={setSelectedHomeroomId}>
-                <SelectTrigger className="flex-1">
-                  <SelectValue placeholder="Select homeroom teacher" />
-                </SelectTrigger>
-                <SelectContent>
-                  {homeroomTeachers
-                    .filter(
-                      (t) => !assignments.some((a) => a.homeroom_teacher_id === t.id)
-                    )
-                    .map((teacher) => (
-                      <SelectItem key={teacher.id} value={teacher.id}>
-                        {teacher.name}
+            {(() => {
+              const availableHomeroomTeachers = homeroomTeachers.filter(
+                (t) => !assignments.some((a) => a.homeroom_teacher_id === t.id)
+              );
+              
+              if (availableHomeroomTeachers.length === 0) {
+                return (
+                  <p className="text-sm text-muted-foreground text-center py-2">
+                    All homeroom teachers are already assigned.
+                  </p>
+                );
+              }
+              
+              return (
+                <div className="flex gap-2">
+                  <Select 
+                    value={selectedHomeroomId || "__none__"} 
+                    onValueChange={(v) => setSelectedHomeroomId(v === "__none__" ? "" : v)}
+                  >
+                    <SelectTrigger className="flex-1">
+                      <SelectValue placeholder="Select homeroom teacher" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__" disabled>
+                        Select homeroom teacher
                       </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
-              <Button
-                onClick={handleAddAssignment}
-                disabled={!selectedHomeroomId || addClassAssignment.isPending}
-              >
-                Add
-              </Button>
-            </div>
+                      {availableHomeroomTeachers.map((teacher) => (
+                        <SelectItem key={teacher.id} value={teacher.id}>
+                          {teacher.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    onClick={handleAddAssignment}
+                    disabled={!selectedHomeroomId || addClassAssignment.isPending}
+                  >
+                    Add
+                  </Button>
+                </div>
+              );
+            })()}
 
             {assignments.length > 0 ? (
               <div className="space-y-2">
