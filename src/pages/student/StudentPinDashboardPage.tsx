@@ -314,7 +314,7 @@ const StudentPinDashboardPage = () => {
 
         {/* Blue Divider Line */}
         <div 
-          className="h-px w-full bg-primary shadow-[0_1px_3px_0px_rgba(0,0,0,0.2)]"
+          className="h-px w-full bg-primary shadow-[0_4px_6px_0px_rgba(0,0,0,0.15)]"
           aria-hidden="true"
         />
 
