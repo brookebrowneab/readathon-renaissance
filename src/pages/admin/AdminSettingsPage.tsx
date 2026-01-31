@@ -50,6 +50,7 @@ import { useEventSettings } from "@/hooks/useEventSettings";
 import { useAvailableGrades } from "@/hooks/useAvailableGrades";
 import { EditEventDialog } from "@/components/admin/EditEventDialog";
 import { TeacherManagement } from "@/components/admin/TeacherManagement";
+import { LogVerificationSettings } from "@/components/admin/LogVerificationSettings";
 import { LogoGenerator } from "@/components/admin/LogoGenerator";
 
 const US_TIMEZONES = [
@@ -643,6 +644,9 @@ const AdminSettingsPage = () => {
                 </div>
               )}
             </div>
+
+            {/* Log Verification Settings */}
+            <LogVerificationSettings onUnsavedChange={handleFieldChange} />
 
             {/* Teachers & Staff */}
             <TeacherManagement />

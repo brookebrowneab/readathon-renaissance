@@ -22,6 +22,8 @@ export interface EventSettings {
   class_milestone_enabled: boolean;
   teacher_logging_grades: string[];
   timezone: string;
+  log_verification_enabled: boolean;
+  log_verification_thresholds: Record<string, number>;
   created_at: string;
   updated_at: string;
 }

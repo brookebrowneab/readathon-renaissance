@@ -15,6 +15,7 @@ import { ReadingGoalRing } from "@/components/legacy";
 import { BookSelector } from "@/components/books";
 import { Book, useBooks } from "@/hooks/useBooks";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useLogsVerificationStatuses } from "@/hooks/useLogVerificationRequests";
 import {
   Dialog,
   DialogContent,
@@ -39,8 +40,10 @@ import {
   Pencil,
   Trash2,
   CalendarDays,
-  History
+  History,
+  AlertCircle
 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { format, parseISO, isToday, isYesterday, startOfWeek, endOfWeek, subYears, startOfYear, endOfYear } from "date-fns";
 
@@ -227,6 +230,10 @@ const StudentPinDashboardPage = () => {
   
   const [readingLogs, setReadingLogs] = useState<ReadingLog[]>([]);
   const [isLoadingLogs, setIsLoadingLogs] = useState(true);
+
+  // Get verification statuses for all reading logs
+  const logIds = readingLogs.map(log => log.id);
+  const { data: verificationStatuses = {} } = useLogsVerificationStatuses(logIds);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingLog, setEditingLog] = useState<ReadingLog | null>(null);
   const [editMinutes, setEditMinutes] = useState(0);
@@ -299,6 +306,7 @@ const StudentPinDashboardPage = () => {
       setSelectedBook(null);
       setIsLogModalOpen(false);
       refreshData();
+      queryClient.invalidateQueries({ queryKey: ['logs-verification-statuses'] });
     }
 
     setIsSubmitting(false);
@@ -346,6 +354,7 @@ const StudentPinDashboardPage = () => {
       setEditingLog(null);
       refreshData();
       queryClient.invalidateQueries({ queryKey: ['weekly-minutes'] });
+      queryClient.invalidateQueries({ queryKey: ['logs-verification-statuses'] });
     }
   };
 
@@ -363,6 +372,7 @@ const StudentPinDashboardPage = () => {
       setReadingLogs(prev => prev.filter(log => log.id !== logId));
       refreshData();
       queryClient.invalidateQueries({ queryKey: ['weekly-minutes'] });
+      queryClient.invalidateQueries({ queryKey: ['logs-verification-statuses'] });
     }
   };
 
@@ -804,6 +814,8 @@ const StudentPinDashboardPage = () => {
                     {readingLogs.map((log) => {
                       const bookInfo = getBookForLog(log);
                       const isEditing = editingLog?.id === log.id;
+                      const verificationStatus = verificationStatuses[log.id];
+                      const isPendingVerification = verificationStatus?.status === 'pending';
                       
                       return (
                         <div
@@ -855,7 +867,15 @@ const StudentPinDashboardPage = () => {
                             // View mode
                             <>
                               <div className="flex-1 min-w-0">
-                                <p className="font-medium text-foreground">{log.minutes} min</p>
+                                <div className="flex items-center gap-2">
+                                  <p className="font-medium text-foreground">{log.minutes} min</p>
+                                  {isPendingVerification && (
+                                    <Badge variant="pending" className="text-[10px] px-1.5 py-0">
+                                      <AlertCircle className="h-2.5 w-2.5 mr-0.5" />
+                                      Pending
+                                    </Badge>
+                                  )}
+                                </div>
                                 {(bookInfo?.title || log.book_title) && (
                                   <p className="text-sm text-muted-foreground truncate">
                                     {bookInfo?.title || log.book_title}
