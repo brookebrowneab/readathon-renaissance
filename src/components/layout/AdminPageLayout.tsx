@@ -8,6 +8,7 @@ import {
   Mail,
   Settings,
   PenLine,
+  BookOpen,
 } from "lucide-react";
 
 interface AdminPageLayoutProps {
@@ -20,6 +21,7 @@ interface AdminPageLayoutProps {
 // Admin navigation items
 const adminNavItems = [
   { label: "Dashboard", path: "/admin", icon: LayoutDashboard },
+  { label: "Reading", path: "/admin/reading", icon: BookOpen },
   { label: "Users", path: "/admin-users", icon: Users },
   { label: "Finance", path: "/admin-finance", icon: DollarSign },
   { label: "Emails", path: "/admin/emails", icon: Mail },
