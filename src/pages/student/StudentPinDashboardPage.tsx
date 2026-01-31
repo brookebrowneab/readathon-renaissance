@@ -511,7 +511,7 @@ const StudentPinDashboardPage = () => {
             </div>
 
             {/* Sidebar - Recent Activity & Log Reading */}
-            <aside className="lg:w-80 xl:w-96 space-y-6 lg:mt-[88px]">
+            <aside className="lg:w-80 xl:w-96 space-y-6">
               {/* Log Reading Button */}
               <Dialog open={isLogModalOpen} onOpenChange={setIsLogModalOpen}>
                 <DialogTrigger asChild>
