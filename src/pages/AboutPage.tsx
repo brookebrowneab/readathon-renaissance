@@ -65,7 +65,7 @@ const AboutPage = () => {
         <div className="container relative">
           <div className="grid items-center gap-12 lg:grid-cols-2">
             <div 
-              className="bg-background p-8"
+              className="bg-background p-8 max-h-80 overflow-y-auto"
               style={handDrawnBorder}
             >
               <div className="space-y-4">
@@ -76,7 +76,7 @@ const AboutPage = () => {
                   with community support to create meaningful reading experiences.
                 </p>
                 <p className="text-muted-foreground">
-                  Since 2010, we have helped thousands of students build reading habits while 
+                  Since 2020, we have helped thousands of students build reading habits while 
                   raising funds for their schools. Our platform makes it easy for families, 
                   teachers, and sponsors to participate in this rewarding journey.
                 </p>
@@ -85,9 +85,9 @@ const AboutPage = () => {
 
             <div className="grid gap-4 sm:grid-cols-2">
               {[
-                { icon: Users, value: "50,000+", label: "Students Participated" },
-                { icon: School, value: "200+", label: "Schools Served" },
-                { icon: BookOpen, value: "2M+", label: "Minutes Read" },
+                { icon: Users, value: "1,000+", label: "Students Participated" },
+                { icon: BookOpen, value: "1M+", label: "Minutes Read" },
+                { icon: School, value: "2,000+", label: "Books Read" },
                 { icon: Heart, value: "$500K+", label: "Funds Raised" },
               ].map((stat, index) => (
                 <div 
