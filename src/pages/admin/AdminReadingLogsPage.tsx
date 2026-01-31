@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import AdminLayout from "@/components/layout/AdminLayout";
@@ -19,7 +19,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Search, BookOpen, Calendar, Clock } from "lucide-react";
+import { TablePagination, usePagination } from "@/components/ui/table-pagination";
+import { Search, BookOpen, Calendar } from "lucide-react";
 import { format } from "date-fns";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
@@ -113,6 +114,18 @@ export default function AdminReadingLogsPage() {
 
     return matchesSearch && matchesGrade && matchesClass && matchesDate;
   });
+
+  // Pagination
+  const {
+    currentPage,
+    pageSize,
+    totalPages,
+    handlePageChange,
+    handlePageSizeChange,
+    paginatedItems,
+  } = usePagination(filteredLogs.length, 25);
+
+  const paginatedLogs = useMemo(() => paginatedItems(filteredLogs), [filteredLogs, currentPage, pageSize]);
 
   const totalMinutes = filteredLogs.reduce((sum, log) => sum + log.minutes, 0);
 
@@ -227,7 +240,7 @@ export default function AdminReadingLogsPage() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredLogs.map((log) => (
+                  paginatedLogs.map((log) => (
                     <TableRow key={log.id}>
                       <TableCell>
                         <div className="flex items-center gap-2">
@@ -270,13 +283,18 @@ export default function AdminReadingLogsPage() {
                 )}
               </TableBody>
             </Table>
+            
+            {filteredLogs.length > 0 && (
+              <TablePagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                pageSize={pageSize}
+                totalItems={filteredLogs.length}
+                onPageChange={handlePageChange}
+                onPageSizeChange={handlePageSizeChange}
+              />
+            )}
           </div>
-        )}
-
-        {filteredLogs.length > 0 && (
-          <p className="text-sm text-muted-foreground text-center">
-            Showing {filteredLogs.length} of {logs.length} logs
-          </p>
         )}
       </div>
     </AdminLayout>

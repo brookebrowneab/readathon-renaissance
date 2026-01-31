@@ -33,6 +33,7 @@ import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { sendPaymentReminders } from "@/lib/notifications";
+import { TablePagination, usePagination } from "@/components/ui/table-pagination";
 
 // Hand-drawn border style
 const handDrawnBorder = {
@@ -124,6 +125,18 @@ const AdminOutstandingPage = () => {
     }
     return matchesSearch;
   });
+
+  // Pagination
+  const {
+    currentPage,
+    pageSize,
+    totalPages,
+    handlePageChange,
+    handlePageSizeChange,
+    paginatedItems,
+  } = usePagination(filteredPayments.length, 25);
+
+  const paginatedPayments = useMemo(() => paginatedItems(filteredPayments), [filteredPayments, currentPage, pageSize]);
 
   const totalOutstanding = filteredPayments.reduce((sum, p) => sum + p.amount, 0);
 
@@ -285,7 +298,7 @@ const AdminOutstandingPage = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredPayments.map((payment) => (
+                {paginatedPayments.map((payment) => (
                   <TableRow key={payment.id}>
                     <TableCell>
                       <Checkbox
@@ -380,6 +393,17 @@ const AdminOutstandingPage = () => {
             <div className="p-8 text-center text-muted-foreground">
               No outstanding payments match your criteria.
             </div>
+          )}
+
+          {!isLoading && filteredPayments.length > 0 && (
+            <TablePagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              pageSize={pageSize}
+              totalItems={filteredPayments.length}
+              onPageChange={handlePageChange}
+              onPageSizeChange={handlePageSizeChange}
+            />
           )}
         </div>
       </div>
