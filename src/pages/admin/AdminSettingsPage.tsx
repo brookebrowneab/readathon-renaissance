@@ -52,7 +52,6 @@ import { EditEventDialog } from "@/components/admin/EditEventDialog";
 import { TeacherManagement } from "@/components/admin/TeacherManagement";
 import { LogVerificationSettings } from "@/components/admin/LogVerificationSettings";
 import { LogoGenerator } from "@/components/admin/LogoGenerator";
-import { SiteContentEditor } from "@/components/admin/SiteContentEditor";
 
 const US_TIMEZONES = [
   { value: "America/New_York", label: "Eastern Time (ET)" },
@@ -709,9 +708,6 @@ const AdminSettingsPage = () => {
 
             {/* Logo Generator */}
             <LogoGenerator />
-
-            {/* Site Content Editor */}
-            <SiteContentEditor />
           </div>
         )}
       </div>

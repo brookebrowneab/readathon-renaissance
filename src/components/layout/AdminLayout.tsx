@@ -7,6 +7,7 @@ import {
   FileText,
   Settings,
   Mail,
+  PenLine,
 } from "lucide-react";
 import booksShelfDivider from "@/assets/books-shelf-divider.png";
 
@@ -19,6 +20,7 @@ const navItems = [
   { label: "Outstanding", path: "/admin/outstanding", icon: DollarSign },
   { label: "Checks", path: "/admin/checks", icon: FileText },
   { label: "Emails", path: "/admin/emails", icon: Mail },
+  { label: "Content", path: "/admin/content", icon: PenLine },
   { label: "Settings", path: "/admin/settings", icon: Settings },
 ];
 

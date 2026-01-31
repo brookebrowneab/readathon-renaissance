@@ -7,6 +7,7 @@ import {
   DollarSign,
   Mail,
   Settings,
+  PenLine,
 } from "lucide-react";
 
 interface AdminPageLayoutProps {
@@ -22,6 +23,7 @@ const adminNavItems = [
   { label: "Users", path: "/admin-users", icon: Users },
   { label: "Finance", path: "/admin-finance", icon: DollarSign },
   { label: "Emails", path: "/admin/emails", icon: Mail },
+  { label: "Content", path: "/admin/content", icon: PenLine },
   { label: "Settings", path: "/admin/settings", icon: Settings },
 ];
 
