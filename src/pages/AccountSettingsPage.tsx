@@ -31,7 +31,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { useTeacherAuth } from "@/hooks/useTeacherAuth";
 import { useChildren, Child } from "@/hooks/useChildren";
-import { useParentInvitations, useUpdateInvitationStatus, useDeleteInvitation, SponsorInvitation } from "@/hooks/useSponsorInvitations";
+import { useParentInvitations, useDeleteInvitation, SponsorInvitation } from "@/hooks/useSponsorInvitations";
 import { EditChildDialog } from "@/components/family/EditChildDialog";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -59,7 +59,6 @@ const AccountSettingsPage = () => {
   // Children management
   const { children, isLoading: childrenLoading, updateChild, deleteChild } = useChildren();
   const { data: invitations = [], isLoading: invitationsLoading } = useParentInvitations();
-  const updateInvitation = useUpdateInvitationStatus();
   const deleteInvitation = useDeleteInvitation();
   
   const [displayName, setDisplayName] = useState(
@@ -78,9 +77,8 @@ const AccountSettingsPage = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isDeletingChild, setIsDeletingChild] = useState(false);
 
-  // Group invitations by child
-  const pendingInvitationsByChild = invitations
-    .filter(inv => inv.status === "pending")
+  // Group invitations by child (all active invitations, no pending approval needed)
+  const invitationsByChild = invitations
     .reduce((acc, inv) => {
       const childId = inv.child_id;
       if (!acc[childId]) acc[childId] = [];
@@ -145,19 +143,8 @@ const AccountSettingsPage = () => {
     });
   };
 
-  const handleApproveInvitation = (invitationId: string) => {
-    updateInvitation.mutate({
-      invitationId,
-      status: "approved",
-      canInviteOthers: false,
-    });
-  };
-
-  const handleDeclineInvitation = (invitationId: string) => {
-    updateInvitation.mutate({
-      invitationId,
-      status: "declined",
-    });
+  const handleDeleteInvitation = (invitationId: string) => {
+    deleteInvitation.mutate(invitationId);
   };
 
   const handleDeleteChild = async () => {
@@ -301,7 +288,7 @@ const AccountSettingsPage = () => {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {children.map((child) => {
-                    const pendingForChild = pendingInvitationsByChild[child.id] || [];
+                    const sponsorsForChild = invitationsByChild[child.id] || [];
                     const isExpanded = expandedChildId === child.id;
                     
                     return (
@@ -341,9 +328,9 @@ const AccountSettingsPage = () => {
                               <LinkIcon className="h-3 w-3 mr-1" />
                               {child.share_public_link ? "Public link" : "Private"}
                             </Badge>
-                            {pendingForChild.length > 0 && (
-                              <Badge variant="warning" className="text-xs">
-                                {pendingForChild.length} pending request{pendingForChild.length !== 1 ? "s" : ""}
+                            {sponsorsForChild.length > 0 && (
+                              <Badge variant="secondary" className="text-xs">
+                                {sponsorsForChild.length} sponsor{sponsorsForChild.length !== 1 ? "s" : ""}
                               </Badge>
                             )}
                           </div>
@@ -410,14 +397,15 @@ const AccountSettingsPage = () => {
                             </div>
 
                             {/* Pending Sponsor Requests */}
-                            {pendingForChild.length > 0 && (
+                            {/* Active Sponsors */}
+                            {sponsorsForChild.length > 0 && (
                               <div className="space-y-2">
                                 <h5 className="text-sm font-medium flex items-center gap-2">
                                   <Users className="h-4 w-4" />
-                                  Pending Sponsor Requests
+                                  Active Sponsors
                                 </h5>
                                 <div className="space-y-2">
-                                  {pendingForChild.map((invitation) => (
+                                  {sponsorsForChild.map((invitation) => (
                                     <div 
                                       key={invitation.id}
                                       className="flex items-center justify-between p-3 rounded-lg bg-muted/30"
@@ -425,28 +413,17 @@ const AccountSettingsPage = () => {
                                       <div>
                                         <p className="text-sm font-medium">{invitation.invitee_email}</p>
                                         <p className="text-xs text-muted-foreground">
-                                          Requested to sponsor
+                                          Sponsor
                                         </p>
                                       </div>
-                                      <div className="flex gap-2">
-                                        <Button
-                                          variant="outline"
-                                          size="sm"
-                                          onClick={() => handleApproveInvitation(invitation.id)}
-                                          disabled={updateInvitation.isPending}
-                                        >
-                                          <Check className="h-3 w-3 mr-1" />
-                                          Approve
-                                        </Button>
-                                        <Button
-                                          variant="ghost"
-                                          size="sm"
-                                          onClick={() => handleDeclineInvitation(invitation.id)}
-                                          disabled={updateInvitation.isPending}
-                                        >
-                                          <X className="h-3 w-3" />
-                                        </Button>
-                                      </div>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => handleDeleteInvitation(invitation.id)}
+                                        disabled={deleteInvitation.isPending}
+                                      >
+                                        <X className="h-3 w-3" />
+                                      </Button>
                                     </div>
                                   ))}
                                 </div>
