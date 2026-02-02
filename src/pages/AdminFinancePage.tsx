@@ -18,6 +18,9 @@ import {
   Mail,
   FileText,
   LogOut,
+  Users,
+  Copy,
+  ExternalLink as ExternalLinkIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -62,9 +65,11 @@ import { useToast } from "@/hooks/use-toast";
 import { handDrawnBorder } from "@/lib/admin-styles";
 import { cn } from "@/lib/utils";
 import { useAdminFinance, Payment, PaymentStatus, PaymentMethod, LARGE_PLEDGE_THRESHOLD } from "@/hooks/useAdminFinance";
+import { useAdminGuestPledges } from "@/hooks/useAdminGuestPledges";
 import { usePayments, Payment as SquarePayment } from "@/hooks/usePayments";
 import { AlertTriangle, ExternalLink, Receipt } from "lucide-react";
 import { format } from "date-fns";
+import { toast as sonnerToast } from "sonner";
 
 const statusConfig: Record<PaymentStatus, { label: string; variant: "default" | "secondary" | "destructive" | "outline"; icon: React.ReactNode }> = {
   completed: { label: "Completed", variant: "default", icon: <CheckCircle2 className="h-3 w-3" /> },
@@ -101,6 +106,16 @@ export default function AdminFinancePage() {
 
   // Fetch actual Square payments from the payments table
   const { payments: squarePayments, isLoading: isLoadingPayments } = usePayments();
+
+  // Fetch guest class pledges
+  const { 
+    guestPledges, 
+    summary: guestSummary, 
+    isLoading: isLoadingGuests,
+    markAsPaid: markGuestAsPaid,
+    markAsUnpaid: markGuestAsUnpaid,
+    isUpdating: isUpdatingGuest,
+  } = useAdminGuestPledges();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -463,6 +478,12 @@ export default function AdminFinancePage() {
                 {allPledges.length}
               </Badge>
             </TabsTrigger>
+            <TabsTrigger value="guest">
+              Guest Pledges
+              <Badge variant="secondary" className="ml-2">
+                {guestPledges.length}
+              </Badge>
+            </TabsTrigger>
             <TabsTrigger value="payments">Payments ({payments.length})</TabsTrigger>
             <TabsTrigger value="outstanding">
               Outstanding
@@ -608,6 +629,165 @@ export default function AdminFinancePage() {
                     )}
                   </TableBody>
                 </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Guest Pledges Tab - Class pledges from non-authenticated sponsors */}
+          <TabsContent value="guest" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <Users className="h-5 w-5" />
+                      Guest Class Pledges
+                    </CardTitle>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Pledges from sponsors who haven't created an account
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-4 text-sm">
+                    <div className="text-center">
+                      <p className="text-muted-foreground">Total</p>
+                      <p className="font-bold text-lg">${guestSummary.totalAmount.toFixed(2)}</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-muted-foreground">Paid</p>
+                      <p className="font-bold text-lg text-success">${guestSummary.paidAmount.toFixed(2)}</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-muted-foreground">Pending</p>
+                      <p className="font-bold text-lg text-warning">${guestSummary.pendingAmount.toFixed(2)}</p>
+                    </div>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {isLoadingGuests ? (
+                  <div className="text-center py-8 text-muted-foreground">Loading guest pledges...</div>
+                ) : guestPledges.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <Users className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                    <p className="font-medium">No guest pledges yet</p>
+                    <p className="text-sm mt-1">Guest pledges from /sponsor/class will appear here.</p>
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Guest</TableHead>
+                        <TableHead>Class</TableHead>
+                        <TableHead>Amount</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Payment Link</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {guestPledges.map((pledge) => {
+                        const paymentUrl = pledge.paymentToken 
+                          ? `${window.location.origin}/sponsor/guest-pay?token=${pledge.paymentToken}`
+                          : null;
+                        
+                        return (
+                          <TableRow key={pledge.id}>
+                            <TableCell className="font-medium">
+                              {format(new Date(pledge.createdAt), 'MMM d, yyyy')}
+                            </TableCell>
+                            <TableCell>
+                              <div>
+                                <p className="font-medium">{pledge.payerName || 'Unknown'}</p>
+                                <p className="text-sm text-muted-foreground">{pledge.payerEmail}</p>
+                                {pledge.payerPhone && (
+                                  <p className="text-xs text-muted-foreground">{pledge.payerPhone}</p>
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div>
+                                <p className="font-medium">
+                                  {pledge.teacherName ? `${pledge.teacherName}'s Class` : pledge.className}
+                                </p>
+                                {pledge.gradeLevel && (
+                                  <p className="text-sm text-muted-foreground">{pledge.gradeLevel}</p>
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell className="font-medium">
+                              ${pledge.amount.toFixed(2)}
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant={pledge.isPaid ? "default" : "secondary"} className="gap-1">
+                                {pledge.isPaid ? (
+                                  <><CheckCircle2 className="h-3 w-3" /> Paid</>
+                                ) : (
+                                  <><Clock className="h-3 w-3" /> Pending</>
+                                )}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              {paymentUrl && !pledge.isPaid ? (
+                                <div className="flex items-center gap-1">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(paymentUrl);
+                                      sonnerToast.success("Payment link copied!");
+                                    }}
+                                    title="Copy payment link"
+                                  >
+                                    <Copy className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    asChild
+                                    title="Open payment page"
+                                  >
+                                    <a href={paymentUrl} target="_blank" rel="noopener noreferrer">
+                                      <ExternalLinkIcon className="h-4 w-4" />
+                                    </a>
+                                  </Button>
+                                </div>
+                              ) : (
+                                <span className="text-muted-foreground text-sm">
+                                  {pledge.isPaid ? "—" : "No token"}
+                                </span>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-right space-x-1">
+                              {!pledge.isPaid && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => markGuestAsPaid(pledge.id)}
+                                  disabled={isUpdatingGuest}
+                                  title="Mark as paid"
+                                >
+                                  <CheckCircle2 className="h-4 w-4 text-success" />
+                                </Button>
+                              )}
+                              {pledge.isPaid && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => markGuestAsUnpaid(pledge.id)}
+                                  disabled={isUpdatingGuest}
+                                  title="Mark as unpaid"
+                                >
+                                  <RotateCcw className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
