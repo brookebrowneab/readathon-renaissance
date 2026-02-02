@@ -22,6 +22,9 @@ import {
   User,
   Phone,
   ArrowRight,
+  Lock,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -47,7 +50,7 @@ const FamilySponsorPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
-  const { isAuthenticated, loading: authLoading, sponsor, signOut, needsProfileCompletion, updateSponsorProfile, user } = useSponsorAuth();
+  const { isAuthenticated, loading: authLoading, sponsor, signOut, needsProfileCompletion, updateSponsorProfile, setPassword, user } = useSponsorAuth();
   
   // Fetch family's children
   const { data: children, isLoading: childrenLoading, error: childrenError } = useFamilyChildren(userId);
@@ -74,6 +77,8 @@ const FamilySponsorPage = () => {
   // Profile completion state (for returning magic link users)
   const [profileName, setProfileName] = useState("");
   const [profilePhone, setProfilePhone] = useState("");
+  const [profilePassword, setProfilePassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
 
   // Set sponsor name from profile when available
@@ -232,19 +237,36 @@ const FamilySponsorPage = () => {
       return;
     }
     
+    // Validate password if provided
+    if (profilePassword && profilePassword.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+    
     setIsUpdatingProfile(true);
     try {
-      const { error } = await updateSponsorProfile({
+      // Update profile
+      const { error: profileError } = await updateSponsorProfile({
         name: profileName.trim(),
         phone: profilePhone.trim() || undefined,
       });
       
-      if (error) {
-        toast.error("Failed to save profile", { description: error.message });
-      } else {
-        toast.success("Profile saved!");
-        setSponsorName(profileName.trim());
+      if (profileError) {
+        toast.error("Failed to save profile", { description: profileError.message });
+        return;
       }
+      
+      // Set password if provided
+      if (profilePassword) {
+        const { error: passwordError } = await setPassword(profilePassword);
+        if (passwordError) {
+          toast.error("Failed to set password", { description: passwordError.message });
+          return;
+        }
+      }
+      
+      toast.success(profilePassword ? "Profile saved! You can now log in with your password." : "Profile saved!");
+      setSponsorName(profileName.trim());
     } finally {
       setIsUpdatingProfile(false);
     }
@@ -357,6 +379,33 @@ const FamilySponsorPage = () => {
                         className="h-12 pl-10"
                         disabled={isUpdatingProfile}
                       />
+                    </div>
+                  </FormField>
+
+                  <FormField 
+                    label="Create a password (optional)" 
+                    htmlFor="profilePassword"
+                    helperText="Set a password to log back in and track progress"
+                  >
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                      <Input
+                        id="profilePassword"
+                        type={showPassword ? "text" : "password"}
+                        value={profilePassword}
+                        onChange={(e) => setProfilePassword(e.target.value)}
+                        placeholder="At least 6 characters"
+                        className="h-12 pl-10 pr-12"
+                        disabled={isUpdatingProfile}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        tabIndex={-1}
+                      >
+                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                      </button>
                     </div>
                   </FormField>
 

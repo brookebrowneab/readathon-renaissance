@@ -160,6 +160,14 @@ export function useSponsorAuth() {
     }
   };
 
+  // Set password for magic-link users who want to log in with password later
+  const setPassword = async (password: string) => {
+    if (!user) return { error: new Error("Not authenticated") };
+    
+    const { error } = await supabase.auth.updateUser({ password });
+    return { error };
+  };
+
   const isAuthenticated = !!session;
 
   return {
@@ -171,6 +179,7 @@ export function useSponsorAuth() {
     signIn,
     signOut,
     updateSponsorProfile,
+    setPassword,
     isAuthenticated,
     needsProfileCompletion: isAuthenticated && isProfileIncomplete(sponsor),
   };
