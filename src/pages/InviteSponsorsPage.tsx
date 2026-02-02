@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { FormField } from "@/components/ui/form-field";
-import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -23,10 +22,8 @@ import {
   Check,
   Send,
   ArrowLeft,
-  AlertTriangle,
   RotateCcw,
   X,
-  ExternalLink,
   UserCheck,
   Users,
   Calendar,
@@ -155,7 +152,7 @@ const InviteSponsorsPage = () => {
   const [previousSponsors] = useState<PreviousSponsor[]>(mockPreviousSponsors);
   const [invitedPreviousIds, setInvitedPreviousIds] = useState<Set<string>>(new Set());
   const [copied, setCopied] = useState(false);
-  const [publicLinkEnabled, setPublicLinkEnabled] = useState(false);
+  
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isInvitingAll, setIsInvitingAll] = useState(false);
 
@@ -668,58 +665,6 @@ const InviteSponsorsPage = () => {
               </div>
             )}
 
-            {/* Section 5: Public Link Toggle */}
-            <div 
-              className="bg-background p-6 shadow-md"
-              style={handDrawnBorder}
-            >
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-1">
-                    <h2 className="font-serif text-xl text-foreground">
-                      Public sponsor link
-                    </h2>
-                    <p className="text-sm text-muted-foreground">
-                      Allow anyone with the link to sponsor your children
-                    </p>
-                  </div>
-                  <Switch
-                    checked={publicLinkEnabled}
-                    onCheckedChange={setPublicLinkEnabled}
-                  />
-                </div>
-
-                {publicLinkEnabled && (
-                  <div className="space-y-3 pt-2">
-                    <div className="flex items-start gap-3 p-3 bg-warning/10 border border-warning/20 rounded-lg">
-                      <AlertTriangle className="h-5 w-5 text-warning shrink-0 mt-0.5" />
-                      <p className="text-sm text-foreground">
-                        Anyone with this link can view your children's reading
-                        progress and make a pledge. Only share with people you trust.
-                      </p>
-                    </div>
-
-                    <div className="flex gap-2">
-                      <div className="flex-1 p-3 bg-muted/30 rounded-lg text-sm truncate font-mono">
-                        {sponsorLink}
-                      </div>
-                      <Button variant="outline" onClick={handleCopyLink} className="shrink-0">
-                        <ExternalLink className="h-4 w-4 mr-2" />
-                        Open
-                      </Button>
-                    </div>
-
-                    <Button
-                      variant="outline"
-                      className="text-destructive hover:text-destructive"
-                      onClick={() => setPublicLinkEnabled(false)}
-                    >
-                      Disable Public Link
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </div>
           </div>
         </div>
 
