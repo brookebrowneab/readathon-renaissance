@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { FormField } from "@/components/ui/form-field";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/hooks/useAuth";
 import {
   Select,
   SelectContent,
@@ -148,6 +149,7 @@ const handDrawnBorder = {
 
 const InviteSponsorsPage = () => {
   const { id } = useParams<{ id: string }>();
+  const { user } = useAuth();
   const [childData] = useState(() => getMockChildData(id || "1"));
   const [invitations, setInvitations] = useState<Invitation[]>(mockInvitations);
   const [previousSponsors] = useState<PreviousSponsor[]>(mockPreviousSponsors);
@@ -164,7 +166,10 @@ const InviteSponsorsPage = () => {
     message: "",
   });
 
-  const sponsorLink = `${window.location.origin}/s/${childData.publicCode}`;
+  // Family sponsor link - uses parent's user ID
+  const sponsorLink = user?.id 
+    ? `${window.location.origin}/f/${user.id}` 
+    : `${window.location.origin}/sponsor`;
 
   const updateField = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -232,7 +237,7 @@ const InviteSponsorsPage = () => {
   };
 
   const handleShare = (method: "sms" | "whatsapp" | "print") => {
-    const message = `Help ${childData.firstName} reach their reading goal! Pledge to support their reading journey: ${sponsorLink}`;
+    const message = `Help support our children's reading! Pledge to sponsor them in the Read-a-thon: ${sponsorLink}`;
 
     switch (method) {
       case "sms":
@@ -313,11 +318,10 @@ const InviteSponsorsPage = () => {
             {/* Header */}
             <div>
               <h1 className="font-serif text-3xl md:text-4xl font-normal tracking-tight text-foreground">
-                Invite sponsors for{" "}
-                <span className="text-primary">{childData.firstName}</span>
+                Invite sponsors for your family
               </h1>
               <p className="text-muted-foreground mt-2">
-                Send personalized invitations to family and friends
+                Send personalized invitations to family and friends — they can sponsor any of your children
               </p>
             </div>
 
@@ -338,7 +342,7 @@ const InviteSponsorsPage = () => {
                           Previous Sponsors
                         </h2>
                         <p className="text-sm text-muted-foreground">
-                          These people sponsored {childData.firstName} before
+                          These people sponsored your children before
                         </p>
                       </div>
                     </div>
@@ -549,7 +553,7 @@ const InviteSponsorsPage = () => {
               <div className="space-y-4">
                 <div>
                   <h2 className="font-serif text-xl text-foreground mb-1">
-                    Or share {childData.firstName}'s link directly
+                    Or share your family's sponsor link directly
                   </h2>
                 </div>
 
@@ -676,7 +680,7 @@ const InviteSponsorsPage = () => {
                       Public sponsor link
                     </h2>
                     <p className="text-sm text-muted-foreground">
-                      Allow anyone with the link to sponsor {childData.firstName}
+                      Allow anyone with the link to sponsor your children
                     </p>
                   </div>
                   <Switch
@@ -687,10 +691,10 @@ const InviteSponsorsPage = () => {
 
                 {publicLinkEnabled && (
                   <div className="space-y-3 pt-2">
-                    <div className="flex items-start gap-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                      <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+                    <div className="flex items-start gap-3 p-3 bg-warning/10 border border-warning/20 rounded-lg">
+                      <AlertTriangle className="h-5 w-5 text-warning shrink-0 mt-0.5" />
                       <p className="text-sm text-foreground">
-                        Anyone with this link can view {childData.firstName}'s reading
+                        Anyone with this link can view your children's reading
                         progress and make a pledge. Only share with people you trust.
                       </p>
                     </div>
