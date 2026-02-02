@@ -11,6 +11,8 @@ import {
   ArrowRight,
   Sparkles,
   Link as LinkIcon,
+  Users,
+  BookOpen,
 } from "lucide-react";
 
 const SponsorGatewayPage = () => {
@@ -72,29 +74,53 @@ const SponsorGatewayPage = () => {
             </p>
           </div>
 
-          {/* Main Question */}
+          {/* Main Options */}
           <BookContainer variant="warm" className="p-8 mb-6">
             <h2 className="text-2xl font-medium text-foreground text-center mb-8">
-              Have you sponsored before?
+              How would you like to help?
             </h2>
 
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid gap-6">
+              {/* Support a Classroom - Primary Option */}
+              <Link to="/sponsor/class" className="block">
+                <div className="p-6 rounded-xl border-2 border-primary bg-primary/5 hover:bg-primary/10 transition-all cursor-pointer group">
+                  <div className="flex flex-col md:flex-row items-center text-center md:text-left gap-4">
+                    <div className="p-4 rounded-full bg-primary/20 group-hover:bg-primary/30 transition-colors shrink-0">
+                      <Users className="h-8 w-8 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-xl font-medium text-foreground mb-2">
+                        Support a Classroom
+                      </h3>
+                      <p className="text-muted-foreground">
+                        Make a pledge that supports an entire class of readers. 
+                        Your contribution motivates all students to reach their goals!
+                      </p>
+                    </div>
+                    <Button className="h-12 text-lg shrink-0" size="lg">
+                      Get Started
+                      <ArrowRight className="h-5 w-5 ml-2" />
+                    </Button>
+                  </div>
+                </div>
+              </Link>
+
               {/* Returning Sponsor */}
               <Link to="/sponsor/login" className="block">
-                <div className="h-full p-6 rounded-xl border-2 border-border bg-background hover:border-primary hover:bg-primary/5 transition-all cursor-pointer group">
-                  <div className="flex flex-col items-center text-center gap-4">
-                    <div className="p-4 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                <div className="p-6 rounded-xl border-2 border-border bg-background hover:border-primary hover:bg-primary/5 transition-all cursor-pointer group">
+                  <div className="flex flex-col md:flex-row items-center text-center md:text-left gap-4">
+                    <div className="p-4 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors shrink-0">
                       <Sparkles className="h-8 w-8 text-primary" />
                     </div>
-                    <div>
+                    <div className="flex-1">
                       <h3 className="text-xl font-medium text-foreground mb-2">
-                        Yes, I'm returning!
+                        I've sponsored before
                       </h3>
-                      <p className="text-lg text-muted-foreground">
+                      <p className="text-muted-foreground">
                         Sign in to see your history and sponsor again
                       </p>
                     </div>
-                    <Button className="mt-2 h-14 text-lg w-full" size="lg">
+                    <Button variant="outline" className="h-12 text-lg shrink-0" size="lg">
                       Sign In
                       <ArrowRight className="h-5 w-5 ml-2" />
                     </Button>
@@ -102,21 +128,21 @@ const SponsorGatewayPage = () => {
                 </div>
               </Link>
 
-              {/* New Sponsor */}
-              <div className="h-full p-6 rounded-xl border-2 border-border bg-background">
+              {/* Have a Link */}
+              <div className="p-6 rounded-xl border-2 border-border bg-background">
                 <div className="flex flex-col items-center text-center gap-4">
                   <div className="p-4 rounded-full bg-muted">
-                    <UserPlus className="h-8 w-8 text-muted-foreground" />
+                    <LinkIcon className="h-8 w-8 text-muted-foreground" />
                   </div>
                   <div>
                     <h3 className="text-xl font-medium text-foreground mb-2">
-                      I'm new here
+                      Have a sponsor link?
                     </h3>
-                    <p className="text-lg text-muted-foreground">
-                      Enter the code or link the family shared with you
+                    <p className="text-muted-foreground">
+                      Enter the code or link from a family
                     </p>
                   </div>
-                  <form onSubmit={handleSubmitCode} className="w-full mt-2 space-y-3">
+                  <form onSubmit={handleSubmitCode} className="w-full mt-2 space-y-3 max-w-md">
                     <div className="relative">
                       <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                       <Input
@@ -130,7 +156,7 @@ const SponsorGatewayPage = () => {
                       type="submit"
                       variant="outline"
                       disabled={!sponsorCode.trim()}
-                      className="h-14 text-lg w-full"
+                      className="h-12 text-lg w-full"
                       size="lg"
                     >
                       Continue
@@ -143,12 +169,15 @@ const SponsorGatewayPage = () => {
           </BookContainer>
 
           {/* Help Text */}
-          <p className="text-center text-lg text-muted-foreground">
-            Don't have a sponsor link?{" "}
-            <span className="text-foreground">
-              Ask the family to send you one from their dashboard.
-            </span>
-          </p>
+          <div className="text-center space-y-2">
+            <p className="text-lg text-muted-foreground flex items-center justify-center gap-2">
+              <BookOpen className="h-5 w-5" />
+              Want to support a specific child?
+            </p>
+            <p className="text-foreground">
+              Ask their parent for a sponsor link from their dashboard.
+            </p>
+          </div>
         </div>
       </main>
 
