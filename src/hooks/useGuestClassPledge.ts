@@ -50,11 +50,7 @@ export function useGuestClassPledge() {
         sponsorUserId = "00000000-0000-0000-0000-000000000000"; // Guest placeholder
       }
 
-      // Create the class pledge
-      // For guest pledges, we need to store the guest info somewhere
-      // The class_pledges table has sponsor_user_id - we'll need to handle this differently
-      
-      // Let's insert the pledge with guest info in a transaction-like manner
+      // Create the class pledge with payment_token for guest access
       const { data: pledge, error: pledgeError } = await supabase
         .from("class_pledges")
         .insert({
@@ -66,7 +62,7 @@ export function useGuestClassPledge() {
           amount: input.amount,
           milestone_minutes_target: input.milestoneMinutesTarget || null,
         })
-        .select()
+        .select("*, payment_token")
         .single();
 
       if (pledgeError) {

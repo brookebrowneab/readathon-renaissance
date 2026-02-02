@@ -196,6 +196,7 @@ export type Database = {
           max_cap: number | null
           milestone_minutes_target: number | null
           payment_status: string
+          payment_token: string | null
           pledge_type: string
           sponsor_user_id: string
           teacher_id: string | null
@@ -211,6 +212,7 @@ export type Database = {
           max_cap?: number | null
           milestone_minutes_target?: number | null
           payment_status?: string
+          payment_token?: string | null
           pledge_type: string
           sponsor_user_id: string
           teacher_id?: string | null
@@ -226,6 +228,7 @@ export type Database = {
           max_cap?: number | null
           milestone_minutes_target?: number | null
           payment_status?: string
+          payment_token?: string | null
           pledge_type?: string
           sponsor_user_id?: string
           teacher_id?: string | null
