@@ -31,7 +31,11 @@ import {
   CircleDollarSign,
   GraduationCap,
   Target,
+  Phone,
+  ArrowRight,
+  Plus,
 } from "lucide-react";
+import { FormField } from "@/components/ui/form-field";
 import { ClassFundraisingShelf } from "@/components/ui/class-fundraising-shelf";
 import { useActiveEvent } from "@/hooks/useActiveEvent";
 import { useClassFundraisingTotal } from "@/hooks/useClassFundraising";
@@ -187,13 +191,18 @@ const ClassSupportCard = ({ classGroup }: { classGroup: ClassGroupData }) => {
 const SponsorDashboardPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { signOut } = useSponsorAuth();
+  const { signOut, needsProfileCompletion, updateSponsorProfile, user } = useSponsorAuth();
   const { pledges, classPledges, pledgesByChild, pledgesByClass, stats, isLoading, sponsor, hasAnyPledges } = useSponsorPledges();
   
   const [sponsorCode, setSponsorCode] = useState("");
   const [isRequestingAccess, setIsRequestingAccess] = useState(false);
   const [accessRequested, setAccessRequested] = useState(false);
   const [showRequestConfirm, setShowRequestConfirm] = useState(false);
+  
+  // Profile completion state
+  const [profileName, setProfileName] = useState("");
+  const [profilePhone, setProfilePhone] = useState("");
+  const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
 
   const currentYear = new Date().getFullYear().toString();
   const isReturning = hasAnyPledges;
@@ -230,6 +239,39 @@ const SponsorDashboardPage = () => {
     }
   };
 
+  const handleProfileComplete = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!profileName.trim()) {
+      toast.error("Please enter your name");
+      return;
+    }
+    
+    setIsUpdatingProfile(true);
+    try {
+      const { error } = await updateSponsorProfile({
+        name: profileName.trim(),
+        phone: profilePhone.trim() || undefined,
+      });
+      
+      if (error) {
+        toast.error("Failed to save profile", { description: error.message });
+      } else {
+        toast.success("Profile saved!");
+      }
+    } finally {
+      setIsUpdatingProfile(false);
+    }
+  };
+
+  const handleSponsorAgain = (childId: string) => {
+    // Navigate to family sponsor page for the child's parent
+    const pledge = pledges.find(p => p.child_id === childId);
+    if (pledge?.child) {
+      // Use the child link which will redirect to family page
+      navigate(`/s/${childId}`);
+    }
+  };
+
   // Loading state
   if (isLoading) {
     return (
@@ -248,6 +290,90 @@ const SponsorDashboardPage = () => {
           </div>
         </main>
         <Footer />
+      </div>
+    );
+  }
+
+  // Profile completion screen for returning sponsors missing name/phone
+  if (needsProfileCompletion) {
+    return (
+      <div className="flex min-h-screen flex-col">
+        <MainNav />
+        <main className="flex-1 bg-background-warm">
+          <div className="container py-12">
+            <div className="max-w-md mx-auto">
+              <div className="text-center mb-8">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
+                  <User className="h-8 w-8 text-primary" />
+                </div>
+                <h1 className="font-serif text-3xl md:text-4xl font-normal tracking-tight text-foreground mb-2">
+                  Welcome Back!
+                </h1>
+                <p className="text-muted-foreground">
+                  Please complete your profile to continue.
+                </p>
+              </div>
+
+              <div 
+                className="bg-background p-6 md:p-8 shadow-md"
+                style={handDrawnBorder}
+              >
+                <form onSubmit={handleProfileComplete} className="space-y-5">
+                  <FormField label="Your name" htmlFor="profileName">
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                      <Input
+                        id="profileName"
+                        type="text"
+                        value={profileName}
+                        onChange={(e) => setProfileName(e.target.value)}
+                        placeholder="Enter your name"
+                        className="h-12 pl-10"
+                        disabled={isUpdatingProfile}
+                        autoFocus
+                      />
+                    </div>
+                  </FormField>
+
+                  <FormField 
+                    label="Phone number (optional)" 
+                    htmlFor="profilePhone"
+                    helperText="For pledge reminders and event updates"
+                  >
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                      <Input
+                        id="profilePhone"
+                        type="tel"
+                        value={profilePhone}
+                        onChange={(e) => setProfilePhone(e.target.value)}
+                        placeholder="(555) 123-4567"
+                        className="h-12 pl-10"
+                        disabled={isUpdatingProfile}
+                      />
+                    </div>
+                  </FormField>
+
+                  <Button 
+                    type="submit" 
+                    className="w-full h-12 text-lg"
+                    disabled={isUpdatingProfile || !profileName.trim()}
+                    style={handDrawnBorder}
+                  >
+                    {isUpdatingProfile ? "Saving..." : (
+                      <>
+                        Continue
+                        <ArrowRight className="ml-2 h-5 w-5" />
+                      </>
+                    )}
+                  </Button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </main>
+        <Footer />
+        <BottomTabBar role="sponsor" />
       </div>
     );
   }
@@ -434,6 +560,18 @@ const SponsorDashboardPage = () => {
                               </div>
                             </div>
                           ))}
+                        </div>
+
+                        {/* Sponsor Again Button */}
+                        <div className="mt-4 pt-4 border-t border-border">
+                          <Button
+                            onClick={() => handleSponsorAgain(childGroup.childId)}
+                            className="w-full"
+                            variant="outline"
+                          >
+                            <Plus className="h-4 w-4 mr-2" />
+                            Sponsor {childGroup.childName.split(" ")[0]} Again
+                          </Button>
                         </div>
                       </div>
                     ))}
