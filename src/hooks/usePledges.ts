@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { sendSponsorThankYou } from "@/lib/notifications";
 
 export interface Pledge {
   id: string;
@@ -24,6 +25,9 @@ export interface PledgeInsert {
   event_id?: string | null;
   sponsor_id?: string | null;
   expected_payment_method?: string | null;
+  // For sending thank you email
+  sponsorEmail?: string;
+  sponsorName?: string;
 }
 
 export const usePledges = (childId?: string) => {
@@ -47,7 +51,7 @@ export const usePledges = (childId?: string) => {
   });
 
   const addPledge = useMutation({
-    mutationFn: async (pledge: PledgeInsert) => {
+    mutationFn: async ({ sponsorEmail, sponsorName, ...pledge }: PledgeInsert) => {
       const { data, error } = await supabase
         .from("pledges")
         .insert(pledge)
@@ -55,6 +59,19 @@ export const usePledges = (childId?: string) => {
         .single();
 
       if (error) throw error;
+
+      // Send thank you email if we have sponsor info
+      if (sponsorEmail && sponsorName) {
+        sendSponsorThankYou({
+          sponsorEmail,
+          sponsorName,
+          studentName: pledge.student_name,
+          pledgeType: pledge.pledge_type,
+          amount: pledge.amount,
+          isClassPledge: false,
+        }).catch(err => console.error("Failed to send thank you email:", err));
+      }
+
       return data as Pledge;
     },
     onSuccess: () => {

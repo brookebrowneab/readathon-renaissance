@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { sendSponsorThankYou } from "@/lib/notifications";
 
 export interface ClassPledge {
   id: string;
@@ -72,6 +73,8 @@ export function useCreateClassPledge() {
       amount,
       maxCap,
       milestoneMinutesTarget,
+      sponsorEmail,
+      sponsorName,
     }: {
       className: string;
       teacherId?: string;
@@ -80,6 +83,8 @@ export function useCreateClassPledge() {
       amount: number;
       maxCap?: number;
       milestoneMinutesTarget?: number;
+      sponsorEmail?: string;
+      sponsorName?: string;
     }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
@@ -100,6 +105,20 @@ export function useCreateClassPledge() {
         .single();
 
       if (error) throw error;
+
+      // Send thank you email if we have sponsor info
+      if (sponsorEmail && sponsorName) {
+        sendSponsorThankYou({
+          sponsorEmail,
+          sponsorName,
+          studentName: className,
+          pledgeType,
+          amount,
+          className,
+          isClassPledge: true,
+        }).catch(err => console.error("Failed to send thank you email:", err));
+      }
+
       return data;
     },
     onSuccess: () => {

@@ -32,3 +32,9 @@ verify_jwt = false
 
 [functions.send-guest-payment-email]
 verify_jwt = false
+
+[functions.send-sponsor-thank-you]
+verify_jwt = false
+
+[functions.send-parent-welcome]
+verify_jwt = false
