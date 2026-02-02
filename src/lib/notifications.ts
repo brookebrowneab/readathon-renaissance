@@ -118,3 +118,65 @@ export const sendGuestPaymentEmails = async (
     return { success: false, error: err.message };
   }
 };
+
+// Sponsor thank you email
+interface SendSponsorThankYouParams {
+  sponsorEmail: string;
+  sponsorName: string;
+  studentName: string;
+  pledgeType: "flat" | "per_minute" | "milestone";
+  amount: number;
+  className?: string;
+  isClassPledge?: boolean;
+}
+
+export const sendSponsorThankYou = async (
+  params: SendSponsorThankYouParams
+): Promise<{ success: boolean; error?: string }> => {
+  try {
+    const { data, error } = await supabase.functions.invoke(
+      "send-sponsor-thank-you",
+      { body: params }
+    );
+
+    if (error) {
+      console.error("Error sending sponsor thank you:", error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  } catch (err: any) {
+    console.error("Error invoking sponsor thank you function:", err);
+    return { success: false, error: err.message };
+  }
+};
+
+// Parent welcome email
+interface SendParentWelcomeParams {
+  parentEmail: string;
+  parentName: string;
+  childName: string;
+  familyPledgeUrl: string;
+  dashboardUrl: string;
+}
+
+export const sendParentWelcome = async (
+  params: SendParentWelcomeParams
+): Promise<{ success: boolean; error?: string }> => {
+  try {
+    const { data, error } = await supabase.functions.invoke(
+      "send-parent-welcome",
+      { body: params }
+    );
+
+    if (error) {
+      console.error("Error sending parent welcome:", error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  } catch (err: any) {
+    console.error("Error invoking parent welcome function:", err);
+    return { success: false, error: err.message };
+  }
+};

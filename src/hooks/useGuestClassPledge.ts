@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { sendSponsorThankYou } from "@/lib/notifications";
 
 export interface GuestPledgeInput {
   guestName: string;
@@ -8,6 +9,7 @@ export interface GuestPledgeInput {
   guestPhone: string;
   className: string;
   teacherId?: string;
+  teacherName?: string;
   eventId?: string;
   pledgeType: "flat" | "milestone";
   amount: number;
@@ -83,6 +85,17 @@ export function useGuestClassPledge() {
           payer_email: input.guestEmail,
           notes: `Guest pledge - Phone: ${input.guestPhone}`,
         });
+
+      // Send thank you email to guest sponsor (fire and forget)
+      sendSponsorThankYou({
+        sponsorEmail: input.guestEmail,
+        sponsorName: input.guestName,
+        studentName: input.className,
+        pledgeType: input.pledgeType,
+        amount: input.amount,
+        className: input.className,
+        isClassPledge: true,
+      }).catch(err => console.error("Failed to send thank you email:", err));
 
       return pledge;
     },

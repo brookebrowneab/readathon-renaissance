@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { PublicLayout } from "@/components/layout";
 import { ReadingGoalRing } from "@/components/legacy";
@@ -17,11 +17,13 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
+import { sendParentWelcome } from "@/lib/notifications";
 
 const OnboardingComplete = () => {
   const navigate = useNavigate();
   const { user, isLoading: authLoading } = useAuth();
   const [copied, setCopied] = useState(false);
+  const welcomeEmailSent = useRef(false);
   const [childData, setChildData] = useState<{
     id: string;
     firstName: string;
@@ -60,6 +62,24 @@ const OnboardingComplete = () => {
       navigate('/login');
     }
   }, [user, authLoading, navigate]);
+
+  // Send parent welcome email once when component mounts with valid data
+  useEffect(() => {
+    if (user?.email && childData && !welcomeEmailSent.current) {
+      welcomeEmailSent.current = true;
+      
+      const parentName = user.user_metadata?.display_name || user.email.split('@')[0];
+      const baseUrl = window.location.origin;
+      
+      sendParentWelcome({
+        parentEmail: user.email,
+        parentName,
+        childName: `${childData.firstName} ${childData.lastInitial}.`,
+        familyPledgeUrl: `${baseUrl}/invite`,
+        dashboardUrl: `${baseUrl}/dashboard`,
+      }).catch(err => console.error("Failed to send welcome email:", err));
+    }
+  }, [user, childData]);
 
   // Generate sponsor link using child ID for uniqueness
   const sponsorLink = childData?.id 
