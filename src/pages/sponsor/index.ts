@@ -11,3 +11,4 @@ export { default as ReturningSponsorPage } from "./ReturningSponsorPage";
 export { default as FamilySponsorPage } from "./FamilySponsorPage";
 export { default as ChildToFamilyRedirect } from "./ChildToFamilyRedirect";
 export { default as SponsorClassPage } from "./SponsorClassPage";
+export { default as GuestPaymentPage } from "./GuestPaymentPage";

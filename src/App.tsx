@@ -35,6 +35,7 @@ import {
   FamilySponsorPage,
   ChildToFamilyRedirect,
   SponsorClassPage,
+  GuestPaymentPage,
 } from "./pages/sponsor";
 import { StudentLoginPage, StudentDashboardPage as StudentDashboard, StudentLogReadingPage as StudentLogReading, StudentBooksPage } from "./pages/student";
 import StudentPinLoginPage from "./pages/student/StudentPinLoginPage";
@@ -114,6 +115,7 @@ const App = () => (
           <Route path="/sponsor/dashboard" element={<SponsorDashboardPage />} />
           <Route path="/sponsor/pay" element={<SponsorPaymentPage />} />
           <Route path="/sponsor/class" element={<SponsorClassPage />} />
+          <Route path="/sponsor/guest-pay" element={<GuestPaymentPage />} />
           
           {/* Student Dashboard */}
           <Route path="/student/login" element={<StudentPinLoginPage />} />
