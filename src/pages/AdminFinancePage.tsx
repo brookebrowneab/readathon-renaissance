@@ -114,8 +114,12 @@ export default function AdminFinancePage() {
     isLoading: isLoadingGuests,
     markAsPaid: markGuestAsPaid,
     markAsUnpaid: markGuestAsUnpaid,
+    sendPaymentEmails: sendGuestPaymentEmails,
     isUpdating: isUpdatingGuest,
+    isSendingEmails: isSendingGuestEmails,
   } = useAdminGuestPledges();
+  
+  const [selectedGuestPledges, setSelectedGuestPledges] = useState<string[]>([]);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -647,19 +651,40 @@ export default function AdminFinancePage() {
                       Pledges from sponsors who haven't created an account
                     </p>
                   </div>
-                  <div className="flex items-center gap-4 text-sm">
-                    <div className="text-center">
-                      <p className="text-muted-foreground">Total</p>
-                      <p className="font-bold text-lg">${guestSummary.totalAmount.toFixed(2)}</p>
+                  <div className="flex flex-wrap items-center gap-4">
+                    <div className="flex items-center gap-4 text-sm">
+                      <div className="text-center">
+                        <p className="text-muted-foreground">Total</p>
+                        <p className="font-bold text-lg">${guestSummary.totalAmount.toFixed(2)}</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-muted-foreground">Paid</p>
+                        <p className="font-bold text-lg text-success">${guestSummary.paidAmount.toFixed(2)}</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-muted-foreground">Pending</p>
+                        <p className="font-bold text-lg text-warning">${guestSummary.pendingAmount.toFixed(2)}</p>
+                      </div>
                     </div>
-                    <div className="text-center">
-                      <p className="text-muted-foreground">Paid</p>
-                      <p className="font-bold text-lg text-success">${guestSummary.paidAmount.toFixed(2)}</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-muted-foreground">Pending</p>
-                      <p className="font-bold text-lg text-warning">${guestSummary.pendingAmount.toFixed(2)}</p>
-                    </div>
+                    <Button
+                      variant="outline"
+                      onClick={async () => {
+                        const unpaidWithEmail = guestPledges.filter(p => !p.isPaid && p.payerEmail && p.paymentToken);
+                        if (unpaidWithEmail.length === 0) {
+                          sonnerToast.error("No unpaid guests with email addresses");
+                          return;
+                        }
+                        await sendGuestPaymentEmails(unpaidWithEmail.map(p => p.id));
+                      }}
+                      disabled={isSendingGuestEmails || guestPledges.filter(p => !p.isPaid && p.payerEmail).length === 0}
+                    >
+                      {isSendingGuestEmails ? (
+                        <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <Mail className="mr-2 h-4 w-4" />
+                      )}
+                      {isSendingGuestEmails ? "Sending..." : `Email All Unpaid (${guestPledges.filter(p => !p.isPaid && p.payerEmail && p.paymentToken).length})`}
+                    </Button>
                   </div>
                 </div>
               </CardHeader>
@@ -759,6 +784,17 @@ export default function AdminFinancePage() {
                               )}
                             </TableCell>
                             <TableCell className="text-right space-x-1">
+                              {!pledge.isPaid && pledge.payerEmail && pledge.paymentToken && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => sendGuestPaymentEmails([pledge.id])}
+                                  disabled={isSendingGuestEmails}
+                                  title="Send payment email"
+                                >
+                                  <Mail className="h-4 w-4" />
+                                </Button>
+                              )}
                               {!pledge.isPaid && (
                                 <Button
                                   variant="ghost"

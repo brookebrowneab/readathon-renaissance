@@ -29,3 +29,6 @@ verify_jwt = false
 
 [functions.send-teacher-invite]
 verify_jwt = false
+
+[functions.send-guest-payment-email]
+verify_jwt = false
