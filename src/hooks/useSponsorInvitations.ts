@@ -8,7 +8,7 @@ export interface SponsorInvitation {
   inviter_user_id: string;
   invitee_email: string;
   invitee_user_id: string | null;
-  status: "pending" | "approved" | "declined";
+  status: "active"; // Simplified - sponsors don't need parent approval
   can_invite_others: boolean;
   invited_by_parent: boolean;
   created_at: string;
@@ -121,13 +121,12 @@ export function useIsSponsorApproved(childId: string | undefined) {
 
       if (child?.share_public_link) return true;
 
-      // Check if there's an approved invitation for this sponsor
+      // Check if there's an invitation for this sponsor (no approval needed)
       const { data: invitation } = await (supabase as any)
         .from("sponsor_invitations")
         .select("status")
         .eq("child_id", childId)
         .or(`invitee_user_id.eq.${user.id},invitee_email.eq.${user.email}`)
-        .eq("status", "approved")
         .maybeSingle();
 
       return !!invitation;
@@ -169,8 +168,7 @@ export function useCreateInvitation() {
           inviter_user_id: user.id,
           invitee_email: inviteeEmail.toLowerCase(),
           invited_by_parent: isParent || invitedByParent,
-          // If parent sends, auto-approve. Otherwise pending.
-          status: isParent ? "approved" : "pending",
+          status: "active", // No approval needed
         })
         .select()
         .single();
@@ -190,25 +188,22 @@ export function useCreateInvitation() {
   });
 }
 
-// Approve or decline an invitation (parent action)
-export function useUpdateInvitationStatus() {
+// Update invitation settings (e.g., can_invite_others)
+export function useUpdateInvitation() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async ({
       invitationId,
-      status,
       canInviteOthers = false,
     }: {
       invitationId: string;
-      status: "approved" | "declined";
       canInviteOthers?: boolean;
     }) => {
       const { data, error } = await (supabase as any)
         .from("sponsor_invitations")
         .update({
-          status,
-          can_invite_others: status === "approved" ? canInviteOthers : false,
+          can_invite_others: canInviteOthers,
         })
         .eq("id", invitationId)
         .select()
@@ -217,15 +212,11 @@ export function useUpdateInvitationStatus() {
       if (error) throw error;
       return data;
     },
-    onSuccess: (_, variables) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sponsor-invitations"] });
       queryClient.invalidateQueries({ queryKey: ["sponsorable-children"] });
       queryClient.invalidateQueries({ queryKey: ["sponsor-approved"] });
-      toast.success(
-        variables.status === "approved"
-          ? "Sponsor approved!"
-          : "Request declined"
-      );
+      toast.success("Invitation updated");
     },
     onError: (error) => {
       toast.error("Failed to update invitation", {
