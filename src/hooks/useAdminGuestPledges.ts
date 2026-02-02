@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useActiveEvent } from "./useActiveEvent";
 import { toast } from "sonner";
+import { sendGuestPaymentEmails } from "@/lib/notifications";
 
 export interface GuestPledge {
   id: string;
@@ -147,6 +148,48 @@ export function useAdminGuestPledges() {
     },
   });
 
+  const sendPaymentEmailsMutation = useMutation({
+    mutationFn: async (pledgeIds: string[]) => {
+      const pledgesToEmail = guestPledges.filter(
+        p => pledgeIds.includes(p.id) && !p.isPaid && p.payerEmail && p.paymentToken
+      );
+      
+      if (pledgesToEmail.length === 0) {
+        throw new Error("No valid pledges to send emails for (missing email or already paid)");
+      }
+
+      const emailData = pledgesToEmail.map(pledge => ({
+        pledgeId: pledge.id,
+        recipientEmail: pledge.payerEmail!,
+        recipientName: pledge.payerName || '',
+        className: pledge.className,
+        teacherName: pledge.teacherName || undefined,
+        amount: pledge.amount,
+        paymentToken: pledge.paymentToken!,
+      }));
+
+      const result = await sendGuestPaymentEmails(emailData);
+      
+      if (!result.success) {
+        throw new Error(result.error || "Failed to send emails");
+      }
+
+      return result.summary;
+    },
+    onSuccess: (summary) => {
+      if (summary) {
+        if (summary.failed === 0) {
+          toast.success(`${summary.sent} payment email(s) sent successfully`);
+        } else {
+          toast.warning(`${summary.sent} sent, ${summary.failed} failed`);
+        }
+      }
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to send emails: ${error.message}`);
+    },
+  });
+
   // Calculate summary
   const summary = {
     total: guestPledges.length,
@@ -164,6 +207,8 @@ export function useAdminGuestPledges() {
     error,
     markAsPaid: markAsPaidMutation.mutateAsync,
     markAsUnpaid: markAsUnpaidMutation.mutateAsync,
+    sendPaymentEmails: sendPaymentEmailsMutation.mutateAsync,
     isUpdating: markAsPaidMutation.isPending || markAsUnpaidMutation.isPending,
+    isSendingEmails: sendPaymentEmailsMutation.isPending,
   };
 }

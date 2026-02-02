@@ -74,3 +74,47 @@ export const sendPaymentReminders = async (
     return { success: false, error: err.message };
   }
 };
+
+interface GuestPaymentEmailPledge {
+  pledgeId: string;
+  recipientEmail: string;
+  recipientName: string;
+  className: string;
+  teacherName?: string;
+  amount: number;
+  paymentToken: string;
+}
+
+interface SendGuestPaymentEmailsResult {
+  success: boolean;
+  summary?: { sent: number; failed: number };
+  error?: string;
+}
+
+export const sendGuestPaymentEmails = async (
+  pledges: GuestPaymentEmailPledge[]
+): Promise<SendGuestPaymentEmailsResult> => {
+  try {
+    // Get the base URL for payment links
+    const baseUrl = window.location.origin;
+    
+    const { data, error } = await supabase.functions.invoke(
+      "send-guest-payment-email",
+      {
+        body: { 
+          pledges: pledges.map(p => ({ ...p, baseUrl }))
+        },
+      }
+    );
+
+    if (error) {
+      console.error("Error sending guest payment emails:", error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true, summary: data.summary };
+  } catch (err: any) {
+    console.error("Error invoking guest payment email function:", err);
+    return { success: false, error: err.message };
+  }
+};
