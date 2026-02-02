@@ -32,6 +32,8 @@ import {
   SponsorDashboardPage,
   SponsorPaymentPage,
   ReturningSponsorPage,
+  FamilySponsorPage,
+  ChildToFamilyRedirect,
 } from "./pages/sponsor";
 import { StudentLoginPage, StudentDashboardPage as StudentDashboard, StudentLogReadingPage as StudentLogReading, StudentBooksPage } from "./pages/student";
 import StudentPinLoginPage from "./pages/student/StudentPinLoginPage";
@@ -65,8 +67,11 @@ const App = () => (
           <Route path="/debug/progress-ring" element={<DebugRingPage />} />
           <Route path="/sponsor" element={<SponsorGatewayPage />} />
           <Route path="/sponsor/:childId" element={<SponsorPage />} />
-          <Route path="/invite/:token" element={<SponsorLandingPage />} />
-          <Route path="/s/:code" element={<SponsorLandingPage />} />
+          {/* Family sponsor page - new primary sponsor route */}
+          <Route path="/f/:userId" element={<FamilySponsorPage />} />
+          {/* Legacy child-specific routes - redirect to family page */}
+          <Route path="/invite/:token" element={<ChildToFamilyRedirect />} />
+          <Route path="/s/:code" element={<ChildToFamilyRedirect />} />
           <Route path="/returning/:code" element={<ReturningSponsorPage />} />
           <Route path="/sponsor/thank-you" element={<SponsorThankYouPage />} />
           <Route path="/sponsor/pledged" element={<SponsorPledgedPage />} />

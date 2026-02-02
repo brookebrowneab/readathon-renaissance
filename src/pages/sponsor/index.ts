@@ -8,3 +8,5 @@ export { default as SponsorCheckEmailPage } from "./SponsorCheckEmailPage";
 export { default as SponsorDashboardPage } from "./SponsorDashboardPage";
 export { default as SponsorPaymentPage } from "./SponsorPaymentPage";
 export { default as ReturningSponsorPage } from "./ReturningSponsorPage";
+export { default as FamilySponsorPage } from "./FamilySponsorPage";
+export { default as ChildToFamilyRedirect } from "./ChildToFamilyRedirect";
