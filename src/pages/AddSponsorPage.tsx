@@ -1,7 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { MainNav, Footer, BottomTabBar } from "@/components/layout";
-import { BookContainer } from "@/components/legacy";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -24,11 +23,20 @@ import {
   RotateCcw,
   ChevronRight,
   Sparkles,
-  Calendar,
   History,
+  TrendingUp,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+
+// Hand-drawn border style matching family pledge forms
+const handDrawnBorder = {
+  border: 'solid 1px #41403E',
+  borderTopLeftRadius: '255px 15px',
+  borderTopRightRadius: '15px 225px',
+  borderBottomRightRadius: '225px 15px',
+  borderBottomLeftRadius: '15px 255px',
+};
 
 // Mock data
 const getMockChildData = (id: string) => ({
@@ -266,23 +274,29 @@ const AddSponsorPage = () => {
                 </p>
               </div>
 
-              <BookContainer variant="default" className="p-6">
-                <form onSubmit={handleSubmit} className="space-y-8">
-                  {/* Sponsor Information */}
+              <div 
+                className="bg-background p-6 md:p-8 shadow-md"
+                style={handDrawnBorder}
+              >
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  {/* Step 1: Sponsor Information */}
                   <div className="space-y-4">
-                    <h2 className="font-serif text-xl text-brand-blue">
-                      Sponsor Information
-                    </h2>
+                    <div className="flex items-center gap-2 text-lg font-medium">
+                      <div className="flex items-center justify-center w-7 h-7 rounded-full bg-primary text-primary-foreground text-sm font-bold">
+                        1
+                      </div>
+                      <span>Sponsor Information</span>
+                    </div>
 
                     <FormField label="Sponsor's Name" htmlFor="name" required>
                       <div className="relative">
-                        <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <User className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                         <Input
                           id="name"
                           placeholder="Grandma Betty"
                           value={formData.name}
                           onChange={(e) => updateField("name", e.target.value)}
-                          className="pl-10"
+                          className="h-12 pl-10"
                           required
                         />
                       </div>
@@ -294,7 +308,7 @@ const AddSponsorPage = () => {
                       helperText="If provided, we can send them a payment link"
                     >
                       <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Mail className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                         <Input
                           id="email"
                           type="email"
@@ -302,7 +316,7 @@ const AddSponsorPage = () => {
                           value={formData.email}
                           onChange={(e) => updateField("email", e.target.value)}
                           className={cn(
-                            "pl-10",
+                            "h-12 pl-10",
                             foundPreviousSponsor && "border-success focus-visible:ring-success"
                           )}
                         />
@@ -368,50 +382,80 @@ const AddSponsorPage = () => {
                       helperText="For text message payment link"
                     >
                       <div className="relative">
-                        <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Phone className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                         <Input
                           id="phone"
                           type="tel"
                           placeholder="(555) 123-4567"
                           value={formData.phone}
                           onChange={(e) => updateField("phone", e.target.value)}
-                          className="pl-10"
+                          className="h-12 pl-10"
                         />
                       </div>
                     </FormField>
                   </div>
 
-                  {/* Pledge Details */}
-                  <div className="space-y-4">
-                    <h2 className="font-serif text-xl text-brand-blue">
-                      Pledge Details
-                    </h2>
+                  {/* Step 2: Pledge Details */}
+                  <div className="space-y-4 pt-4 border-t border-border">
+                    <div className="flex items-center gap-2 text-lg font-medium">
+                      <div className="flex items-center justify-center w-7 h-7 rounded-full bg-primary text-primary-foreground text-sm font-bold">
+                        2
+                      </div>
+                      <span>Pledge Details</span>
+                    </div>
 
-                    <FormField label="Pledge Type">
-                      <RadioGroup
-                        value={formData.pledgeType}
-                        onValueChange={(v) => updateField("pledgeType", v as PledgeType)}
-                        className="flex gap-4"
+                    <RadioGroup
+                      value={formData.pledgeType}
+                      onValueChange={(v) => updateField("pledgeType", v as PledgeType)}
+                      className="space-y-3"
+                    >
+                      <Label 
+                        htmlFor="fixed" 
+                        className={cn(
+                          "flex items-start gap-4 p-4 rounded-lg border-2 cursor-pointer transition-all",
+                          formData.pledgeType === "fixed" 
+                            ? "border-primary bg-primary/5" 
+                            : "border-border hover:border-primary/50"
+                        )}
                       >
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="fixed" id="fixed" />
-                          <Label htmlFor="fixed" className="cursor-pointer">
-                            Fixed amount
-                          </Label>
+                        <RadioGroupItem value="fixed" id="fixed" className="mt-1" />
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <DollarSign className="h-4 w-4 text-primary" />
+                            <span className="font-medium">Fixed Amount</span>
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            A set donation amount regardless of reading time
+                          </p>
                         </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="per-minute" id="per-minute" />
-                          <Label htmlFor="per-minute" className="cursor-pointer">
-                            Per minute
-                          </Label>
+                      </Label>
+
+                      <Label 
+                        htmlFor="per-minute" 
+                        className={cn(
+                          "flex items-start gap-4 p-4 rounded-lg border-2 cursor-pointer transition-all",
+                          formData.pledgeType === "per-minute" 
+                            ? "border-primary bg-primary/5" 
+                            : "border-border hover:border-primary/50"
+                        )}
+                      >
+                        <RadioGroupItem value="per-minute" id="per-minute" className="mt-1" />
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <TrendingUp className="h-4 w-4 text-primary" />
+                            <span className="font-medium">Per Minute</span>
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            Pledge per minute read — grows with their progress!
+                          </p>
                         </div>
-                      </RadioGroup>
-                    </FormField>
+                      </Label>
+                    </RadioGroup>
 
                     {formData.pledgeType === "fixed" ? (
                       <FormField label="Amount" htmlFor="amount" required>
                         <div className="relative">
-                          <DollarSign className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                          <DollarSign className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                           <Input
                             id="amount"
                             type="number"
@@ -420,7 +464,7 @@ const AddSponsorPage = () => {
                             placeholder="50.00"
                             value={formData.amount}
                             onChange={(e) => updateField("amount", e.target.value)}
-                            className="pl-10"
+                            className="h-12 pl-10"
                             required
                           />
                         </div>
@@ -429,7 +473,7 @@ const AddSponsorPage = () => {
                       <div className="space-y-3">
                         <FormField label="Rate per minute" htmlFor="perMinuteRate" required>
                           <div className="relative">
-                            <DollarSign className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                            <DollarSign className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                             <Input
                               id="perMinuteRate"
                               type="number"
@@ -437,7 +481,7 @@ const AddSponsorPage = () => {
                               step="0.01"
                               value={formData.perMinuteRate}
                               onChange={(e) => updateField("perMinuteRate", e.target.value)}
-                              className="pl-10"
+                              className="h-12 pl-10"
                               required
                             />
                           </div>
@@ -450,11 +494,14 @@ const AddSponsorPage = () => {
                     )}
                   </div>
 
-                  {/* Payment Method */}
-                  <div className="space-y-4">
-                    <h2 className="font-serif text-xl text-brand-blue">
-                      How will they pay?
-                    </h2>
+                  {/* Step 3: Payment Method */}
+                  <div className="space-y-4 pt-4 border-t border-border">
+                    <div className="flex items-center gap-2 text-lg font-medium">
+                      <div className="flex items-center justify-center w-7 h-7 rounded-full bg-primary text-primary-foreground text-sm font-bold">
+                        3
+                      </div>
+                      <span>How will they pay?</span>
+                    </div>
 
                     <RadioGroup
                       value={formData.paymentMethod || ""}
@@ -580,43 +627,61 @@ const AddSponsorPage = () => {
                   </div>
 
                   {/* Notes */}
-                  <FormField
-                    label="Notes (optional)"
-                    htmlFor="notes"
-                    helperText="Any additional context about this pledge"
-                  >
-                    <Textarea
-                      id="notes"
-                      placeholder="e.g., Grandma called on phone"
-                      value={formData.notes}
-                      onChange={(e) => updateField("notes", e.target.value)}
-                      rows={2}
-                    />
-                  </FormField>
+                  <div className="pt-4 border-t border-border">
+                    <FormField
+                      label="Notes (optional)"
+                      htmlFor="notes"
+                      helperText="Any additional context about this pledge"
+                    >
+                      <Textarea
+                        id="notes"
+                        placeholder="e.g., Grandma called on phone"
+                        value={formData.notes}
+                        onChange={(e) => updateField("notes", e.target.value)}
+                        rows={2}
+                      />
+                    </FormField>
+                  </div>
+
+                  {/* Summary */}
+                  {effectiveAmount > 0 && (
+                    <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
+                      <div className="flex items-center gap-3">
+                        <CheckCircle className="h-5 w-5 text-primary shrink-0" />
+                        <p className="text-foreground">
+                          Recording <strong>${effectiveAmount.toFixed(2)}</strong> pledge from{" "}
+                          <strong>{formData.name || "sponsor"}</strong>
+                        </p>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Submit */}
                   <Button
                     type="submit"
                     disabled={!isFormValid || isSubmitting}
                     loading={isSubmitting}
-                    className="w-full"
-                    size="lg"
+                    className="w-full h-14 text-lg"
+                    style={handDrawnBorder}
                   >
                     Record This Pledge
                   </Button>
                 </form>
-              </BookContainer>
+              </div>
             </div>
           ) : (
             /* Success State */
-            <BookContainer variant="default" className="p-8 text-center">
+            <div 
+              className="bg-background p-8 shadow-md text-center"
+              style={handDrawnBorder}
+            >
               <div className="space-y-6">
                 <div className="w-20 h-20 rounded-full bg-success/20 flex items-center justify-center mx-auto">
                   <CheckCircle className="h-10 w-10 text-success" />
                 </div>
 
                 <div>
-                  <h1 className="text-3xl font-bold text-foreground mb-2">
+                  <h1 className="font-serif text-3xl text-foreground mb-2">
                     Pledge recorded!
                   </h1>
                   {recordedPledge && (
@@ -626,17 +691,21 @@ const AddSponsorPage = () => {
                   )}
                 </div>
 
-                <div className="p-4 bg-primary/5 rounded-lg">
+                <div className="p-4 bg-primary/5 rounded-lg border border-primary/20">
                   <p className="text-foreground">{getSuccessMessage()}</p>
                 </div>
 
                 <div className="space-y-3 pt-4">
-                  <Button onClick={handleRecordAnother} className="w-full" size="lg">
+                  <Button 
+                    onClick={handleRecordAnother} 
+                    className="w-full h-14 text-lg"
+                    style={handDrawnBorder}
+                  >
                     <RotateCcw className="h-4 w-4 mr-2" />
                     Record Another Pledge
                   </Button>
 
-                  <Button variant="outline" asChild className="w-full" size="lg">
+                  <Button variant="outline" asChild className="w-full h-14 text-lg">
                     <Link to={`/children/${id}/invite`}>
                       Back to {childData.firstName}'s Sponsors
                       <ChevronRight className="h-4 w-4 ml-2" />
@@ -644,7 +713,7 @@ const AddSponsorPage = () => {
                   </Button>
                 </div>
               </div>
-            </BookContainer>
+            </div>
           )}
         </div>
 
