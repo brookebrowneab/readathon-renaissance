@@ -19,6 +19,9 @@ import {
   Users,
   LogOut,
   BookOpen,
+  User,
+  Phone,
+  ArrowRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -44,7 +47,7 @@ const FamilySponsorPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
-  const { isAuthenticated, loading: authLoading, sponsor, signOut } = useSponsorAuth();
+  const { isAuthenticated, loading: authLoading, sponsor, signOut, needsProfileCompletion, updateSponsorProfile, user } = useSponsorAuth();
   
   // Fetch family's children
   const { data: children, isLoading: childrenLoading, error: childrenError } = useFamilyChildren(userId);
@@ -67,6 +70,11 @@ const FamilySponsorPage = () => {
   const [cardExpiry, setCardExpiry] = useState("");
   const [cardCvv, setCardCvv] = useState("");
   const [cardZip, setCardZip] = useState("");
+
+  // Profile completion state (for returning magic link users)
+  const [profileName, setProfileName] = useState("");
+  const [profilePhone, setProfilePhone] = useState("");
+  const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
 
   // Set sponsor name from profile when available
   useEffect(() => {
@@ -217,6 +225,31 @@ const FamilySponsorPage = () => {
     navigate("/");
   };
 
+  const handleProfileComplete = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!profileName.trim()) {
+      toast.error("Please enter your name");
+      return;
+    }
+    
+    setIsUpdatingProfile(true);
+    try {
+      const { error } = await updateSponsorProfile({
+        name: profileName.trim(),
+        phone: profilePhone.trim() || undefined,
+      });
+      
+      if (error) {
+        toast.error("Failed to save profile", { description: error.message });
+      } else {
+        toast.success("Profile saved!");
+        setSponsorName(profileName.trim());
+      }
+    } finally {
+      setIsUpdatingProfile(false);
+    }
+  };
+
   const isLoading = authLoading || childrenLoading;
 
   // Show loading state
@@ -255,13 +288,107 @@ const FamilySponsorPage = () => {
   // Get family name from first child (First Name's Family)
   const familyName = children[0]?.name?.split(' ')[0] || 'This';
 
+  // Profile completion screen for returning sponsors via magic link
+  if (needsProfileCompletion) {
+    return (
+      <PublicLayout>
+        {/* User Header Bar */}
+        <div className="border-b border-border bg-background">
+          <div className="container py-3 flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">
+              Signed in as <span className="text-foreground font-medium">{user?.email}</span>
+            </p>
+            <Button variant="ghost" size="sm" onClick={handleSignOut}>
+              <LogOut className="h-4 w-4 mr-2" />
+              Sign Out
+            </Button>
+          </div>
+        </div>
+
+        <section className="py-12 md:py-16">
+          <div className="container">
+            <div className="max-w-md mx-auto">
+              <div className="text-center mb-8">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
+                  <User className="h-8 w-8 text-primary" />
+                </div>
+                <h1 className="font-serif text-3xl md:text-4xl font-normal tracking-tight text-foreground mb-2">
+                  Welcome Back!
+                </h1>
+                <p className="text-muted-foreground">
+                  Please complete your profile to continue sponsoring {familyName}'s family.
+                </p>
+              </div>
+
+              <div 
+                className="bg-background p-6 md:p-8 shadow-md"
+                style={handDrawnBorder}
+              >
+                <form onSubmit={handleProfileComplete} className="space-y-5">
+                  <FormField label="Your name" htmlFor="profileName">
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                      <Input
+                        id="profileName"
+                        type="text"
+                        value={profileName}
+                        onChange={(e) => setProfileName(e.target.value)}
+                        placeholder="Enter your name"
+                        className="h-12 pl-10"
+                        disabled={isUpdatingProfile}
+                        autoFocus
+                      />
+                    </div>
+                  </FormField>
+
+                  <FormField 
+                    label="Phone number (optional)" 
+                    htmlFor="profilePhone"
+                    helperText="For pledge reminders and event updates"
+                  >
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                      <Input
+                        id="profilePhone"
+                        type="tel"
+                        value={profilePhone}
+                        onChange={(e) => setProfilePhone(e.target.value)}
+                        placeholder="(555) 123-4567"
+                        className="h-12 pl-10"
+                        disabled={isUpdatingProfile}
+                      />
+                    </div>
+                  </FormField>
+
+                  <Button 
+                    type="submit" 
+                    className="w-full h-12 text-lg"
+                    disabled={isUpdatingProfile || !profileName.trim()}
+                    style={handDrawnBorder}
+                  >
+                    {isUpdatingProfile ? "Saving..." : (
+                      <>
+                        Continue
+                        <ArrowRight className="ml-2 h-5 w-5" />
+                      </>
+                    )}
+                  </Button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </section>
+      </PublicLayout>
+    );
+  }
+
   return (
     <PublicLayout>
       {/* User Header Bar */}
       <div className="border-b border-border bg-background">
         <div className="container py-3 flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            Signed in as <span className="text-foreground font-medium">{sponsor?.email}</span>
+            Signed in as <span className="text-foreground font-medium">{sponsor?.email || user?.email}</span>
           </p>
           <Button variant="ghost" size="sm" onClick={handleSignOut}>
             <LogOut className="h-4 w-4 mr-2" />
