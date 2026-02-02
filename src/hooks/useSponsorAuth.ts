@@ -7,8 +7,14 @@ interface SponsorProfile {
   user_id: string;
   name: string;
   email: string;
-  phone?: string;
+  phone?: string | null;
 }
+
+// Check if sponsor profile is missing required info
+const isProfileIncomplete = (sponsor: SponsorProfile | null): boolean => {
+  if (!sponsor) return true;
+  return !sponsor.name || sponsor.name.trim() === "";
+};
 
 export function useSponsorAuth() {
   const [user, setUser] = useState<User | null>(null);
@@ -121,6 +127,41 @@ export function useSponsorAuth() {
     return { error };
   };
 
+  const updateSponsorProfile = async (updates: { name?: string; phone?: string }) => {
+    if (!user) return { error: new Error("Not authenticated") };
+    
+    // Check if sponsor profile exists
+    if (sponsor) {
+      // Update existing profile
+      const { error } = await supabase
+        .from("sponsors")
+        .update(updates)
+        .eq("user_id", user.id);
+      
+      if (!error) {
+        setSponsor({ ...sponsor, ...updates });
+      }
+      return { error };
+    } else {
+      // Create new profile (for magic link users who don't have one)
+      const { error } = await supabase
+        .from("sponsors")
+        .insert({
+          user_id: user.id,
+          name: updates.name || "",
+          email: user.email || "",
+          phone: updates.phone || null,
+        });
+      
+      if (!error) {
+        fetchSponsorProfile(user.id);
+      }
+      return { error };
+    }
+  };
+
+  const isAuthenticated = !!session;
+
   return {
     user,
     session,
@@ -129,6 +170,8 @@ export function useSponsorAuth() {
     signUp,
     signIn,
     signOut,
-    isAuthenticated: !!session,
+    updateSponsorProfile,
+    isAuthenticated,
+    needsProfileCompletion: isAuthenticated && isProfileIncomplete(sponsor),
   };
 }
