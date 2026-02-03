@@ -19,7 +19,7 @@ import InviteSponsorsPage from "./pages/InviteSponsorsPage";
 import AddSponsorPage from "./pages/AddSponsorPage";
 import LogReadingPage from "./pages/LogReadingPage";
 import MyPledgesPage from "./pages/MyPledgesPage";
-import SponsorPage from "./pages/SponsorPage";
+
 import SponsorLandingPage from "./pages/SponsorLandingPage";
 import { 
   SponsorGatewayPage,
