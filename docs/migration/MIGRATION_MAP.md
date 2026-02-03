@@ -859,7 +859,7 @@ View and manage all enrolled children with reading logs.
 |---|---|---|
 | Square Integration | **NEEDS IMPLEMENTATION** | Currently mock. **REQUIRED:** Real Square API integration for card processing. Form fields: cardholder name, card number (16 digits), expiry (MM/YY), CVC (3-4 digits), ZIP code (5 digits). |
 | Payment form fields | **CONFIRMED** | SponsorPaymentPage and GuestPaymentPage use identical card form: cardName, cardNumber, expiryDate, cvc, zipCode |
-| Check payments | **CONFIRMED** | Uses `event.payment_address` from database for mailing instructions |
+| Check payments | **PARTIAL** | SponsorPaymentPage uses hardcoded address ("Lincoln Elementary PTA..."). GuestPaymentPage correctly uses `activeEvent?.payment_address` with fallback. **ACTION:** Update SponsorPaymentPage to use dynamic `payment_address` from events table. |
 
 ### SponsorPaymentPage (CONFIRMED)
 
@@ -924,8 +924,9 @@ View and manage all enrolled children with reading logs.
 4. **Actions per row:** Approve (green checkmark), Reject (red X)
 5. **Bulk actions:** Select via checkboxes → "Approve (N)" / "Reject" buttons
 6. **Confirmation dialog:** AlertDialog confirms action with log details
-7. **Filter options:** All Logs, Flagged Only, By Student, By Parent
+7. **Filter options:** "all" (All Logs), "flagged" (Flagged Only), "student" (By Student), "parent" (By Parent)
 8. **Success:** Logs removed from list, toast notification
+9. **Note:** Currently uses mock data (`initialMockPendingLogs`). **ACTION:** Connect to actual `log_verification_requests` table via hook.
 
 **Flag criteria:** Logs with unusually high minutes (threshold configured in event settings)
 
@@ -950,6 +951,8 @@ View and manage all enrolled children with reading logs.
 - grace_period: "Reading Period Ended" - teachers blocked, parents can still log
 - closed: "Read-a-thon Complete"
 
+**Note:** Currently uses mock data (`mockStudents`). **ACTION:** Connect student list to actual `useTeacherStudents()` hook data instead of mocks.
+
 ### BottomTabBar (CONFIRMED)
 
 | Role | Tab 1 | Tab 2 | Tab 3 | Tab 4 |
@@ -972,6 +975,8 @@ View and manage all enrolled children with reading logs.
 7. **After enrollment:** Dialog offers to re-invite previous sponsors
 8. Sponsor list: checkboxes with name, relationship, email, previous pledge amount
 9. "Send Invitations" or "Skip for now" → navigates to /dashboard
+
+**Note:** Currently uses mock data (`MOCK_PARENT`, `MOCK_PREVIOUS_CHILDREN`, `MOCK_PREVIOUS_SPONSORS`). **ACTION:** Connect to actual database to fetch returning parent's children from previous events and their past sponsors.
 
 ### ForgotPasswordPage (NEEDS IMPLEMENTATION)
 
