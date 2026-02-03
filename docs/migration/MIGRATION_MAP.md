@@ -2,6 +2,8 @@
 
 Generated: 2026-02-03
 
+**Related Documentation:** [Edge Functions API Reference](./EDGE_FUNCTIONS_API.md)
+
 ---
 
 ## Table of Contents
