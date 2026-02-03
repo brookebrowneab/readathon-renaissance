@@ -1,14 +1,12 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { User, Users, School } from "lucide-react";
+import { User, School } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-export type SponsorType = "my-children" | "another-child" | "support-classroom";
+export type SponsorType = "my-children" | "support-classroom";
 
 interface SponsorTypeSelectorProps {
   selectedType: SponsorType | null;
   onSelect: (type: SponsorType) => void;
   hasChildren: boolean;
-  isSponsorOnly?: boolean;
 }
 
 const sponsorTypes = [
@@ -17,12 +15,6 @@ const sponsorTypes = [
     icon: User,
     title: "My Children",
     description: "Sponsor your own child's reading journey",
-  },
-  {
-    type: "another-child" as SponsorType,
-    icon: Users,
-    title: "Another Child",
-    description: "Support a child in the program",
   },
   {
     type: "support-classroom" as SponsorType,
@@ -36,22 +28,7 @@ export function SponsorTypeSelector({
   selectedType,
   onSelect,
   hasChildren,
-  isSponsorOnly = false,
 }: SponsorTypeSelectorProps) {
-  // Override labels for sponsor-only users
-  const getLabel = (type: SponsorType, defaultTitle: string) => {
-    if (isSponsorOnly && type === "another-child") {
-      return "Sponsor a Student";
-    }
-    return defaultTitle;
-  };
-
-  const getDescription = (type: SponsorType, defaultDesc: string) => {
-    if (isSponsorOnly && type === "another-child") {
-      return "Support a student's reading journey";
-    }
-    return defaultDesc;
-  };
   return (
     <div className="space-y-6">
       <div className="text-center mb-6">
@@ -83,8 +60,8 @@ export function SponsorTypeSelector({
                   <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
                     <Icon className="h-7 w-7 text-primary" />
                   </div>
-                  <h3 className="font-semibold text-lg mb-2">{getLabel(type, title)}</h3>
-                  <p className="text-sm text-muted-foreground">{getDescription(type, description)}</p>
+                  <h3 className="font-semibold text-lg mb-2">{title}</h3>
+                  <p className="text-sm text-muted-foreground">{description}</p>
                 </CardContent>
               </Card>
             );

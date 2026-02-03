@@ -101,11 +101,9 @@ const SponsorMyChildPage = () => {
   const selectedChild = useMemo(() => {
     if (sponsorType === "my-children") {
       return myChildren.find(c => c.id === selectedChildId);
-    } else if (sponsorType === "another-child") {
-      return sponsorableChildren?.find(c => c.id === selectedChildId);
     }
     return null;
-  }, [sponsorType, selectedChildId, myChildren, sponsorableChildren]);
+  }, [sponsorType, selectedChildId, myChildren]);
 
   const selectedClass = useMemo(() => {
     return availableClasses?.find(c => c.className === selectedClassName);
@@ -245,15 +243,12 @@ const SponsorMyChildPage = () => {
 
   // Render Step 0: Type Selection
   const renderStep0 = () => {
-    const isSponsorOnly = myChildren.length === 0;
-    
     return (
       <div className="space-y-6 animate-fade-in">
         <SponsorTypeSelector
           selectedType={sponsorType}
           onSelect={handleTypeSelect}
           hasChildren={myChildren.length > 0}
-          isSponsorOnly={isSponsorOnly}
         />
 
         <div className="flex gap-3">
@@ -295,36 +290,6 @@ const SponsorMyChildPage = () => {
             onSelect={handleChildSelect}
             title="Select Your Child"
             subtitle="Choose which of your children to sponsor"
-          />
-
-          <div className="flex gap-3">
-            <Button variant="outline" onClick={handleBack} className="flex-1">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back
-            </Button>
-            <Button
-              className="flex-1"
-              disabled={!selectedChildId}
-              onClick={handleSelectionNext}
-            >
-              Continue
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      );
-    }
-
-    if (sponsorType === "another-child") {
-      return (
-        <div className="space-y-6 animate-fade-in">
-          <ChildSelector
-            children={sponsorableChildren || []}
-            selectedChildId={selectedChildId}
-            onSelect={handleChildSelect}
-            title="Select a Child to Sponsor"
-            subtitle="Support a child in the program"
-            showSource
           />
 
           <div className="flex gap-3">
