@@ -8,6 +8,7 @@ Generated: 2026-02-03
 
 ## Table of Contents
 
+- [Edge Functions API Reference](./EDGE_FUNCTIONS_API.md)
 - [0) App Overview](#0-app-overview-factual)
 - [1) Route / Page Inventory](#1-route--page-inventory)
 - [2) Shared Components Inventory](#2-shared-components-inventory)
