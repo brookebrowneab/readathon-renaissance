@@ -253,12 +253,12 @@ Marketing landing page showcasing the read-a-thon with countdown, stats, and CTA
 #### 4.7 Permissions & Role Gating
 - Public access, no restrictions
 
-#### 4.8 API ACTIONS
+#### 4.8 API ACTIONS (conceptual)
 
-| ID | Action Name | Method | Endpoint | Request | Response | Errors |
-|---|---|---|---|---|---|---|
-| HP-1 | getActiveEvent | GET | /events?is_active=true | - | `{id, name, start_date, end_date}` | 404 if none |
-| HP-2 | getSiteContent | GET | /site_content | - | `{key, value}[]` | - |
+| Interaction ID | Action Name | HTTP Method (suggested) | Endpoint (suggested) | Auth Required (Y/N) | Role(s) | Request Payload (example JSON) | Response Payload (example JSON) | Error Codes / Cases |
+|---|---|---|---|---|---|---|---|---|
+| HP-LOAD-001 | getActiveEvent | GET | /events?is_active=true | N | - | - | `{"id":"uuid","name":"Spring Read-a-thon","start_date":"2024-01-15","end_date":"2024-02-28","goal_minutes":500}` | NOT_FOUND |
+| HP-LOAD-002 | getSiteContent | GET | /site_content | N | - | - | `[{"key":"hero_headline","value":"Read-a-thon Time!"},{"key":"stats_minutes","value":"45000"}]` | - |
 
 #### 4.9 Edge / Empty / Error States
 - No event: Shows "0 days 0 hours until reading starts"
@@ -303,11 +303,11 @@ Authenticate parents and sponsors to access their dashboards.
 #### 4.7 Permissions & Role Gating
 - Public access
 
-#### 4.8 API ACTIONS
+#### 4.8 API ACTIONS (conceptual)
 
-| ID | Action Name | Method | Endpoint | Request | Response | Errors |
-|---|---|---|---|---|---|---|
-| LG-1 | signIn | POST | Supabase Auth | `{email, password}` | Session | "Invalid login credentials" |
+| Interaction ID | Action Name | HTTP Method (suggested) | Endpoint (suggested) | Auth Required (Y/N) | Role(s) | Request Payload (example JSON) | Response Payload (example JSON) | Error Codes / Cases |
+|---|---|---|---|---|---|---|---|---|
+| LG-4 | signIn | POST | /auth/token | N | - | `{"email":"user@example.com","password":"secret123"}` | `{"access_token":"jwt","refresh_token":"jwt","user":{"id":"uuid","email":"user@example.com"}}` | UNAUTHORIZED ("Invalid login credentials") |
 
 #### 4.9 Edge / Empty / Error States
 - Invalid credentials: Toast error message
@@ -353,11 +353,11 @@ Create new parent/sponsor accounts.
 #### 4.7 Permissions & Role Gating
 - Public access
 
-#### 4.8 API ACTIONS
+#### 4.8 API ACTIONS (conceptual)
 
-| ID | Action Name | Method | Endpoint | Request | Response | Errors |
-|---|---|---|---|---|---|---|
-| RG-1 | signUp | POST | Supabase Auth | `{email, password, displayName}` | Session | "User already registered" |
+| Interaction ID | Action Name | HTTP Method (suggested) | Endpoint (suggested) | Auth Required (Y/N) | Role(s) | Request Payload (example JSON) | Response Payload (example JSON) | Error Codes / Cases |
+|---|---|---|---|---|---|---|---|---|
+| RG-8 | signUp | POST | /auth/signup | N | - | `{"email":"user@example.com","password":"Secret123!","data":{"display_name":"Jane Doe","phone":"555-1234"}}` | `{"access_token":"jwt","user":{"id":"uuid","email":"user@example.com"}}` | CONFLICT ("User already registered"), VALIDATION_ERROR |
 
 ---
 
