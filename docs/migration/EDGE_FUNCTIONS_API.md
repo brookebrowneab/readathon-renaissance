@@ -14,16 +14,17 @@ This document provides complete API signatures for all Supabase Edge Functions i
 4. [notify-check-payment](#notify-check-payment)
 5. [send-guest-payment-email](#send-guest-payment-email)
 6. [send-parent-welcome](#send-parent-welcome)
-7. [send-payment-reminder](#send-payment-reminder)
-8. [send-pledge-notification](#send-pledge-notification)
-9. [send-sponsor-thank-you](#send-sponsor-thank-you)
-10. [send-teacher-invite](#send-teacher-invite)
-11. [send-teacher-welcome](#send-teacher-welcome)
-12. [send-template-email](#send-template-email)
-13. [student-forgot-password](#student-forgot-password)
-14. [student-login](#student-login)
-15. [student-set-password](#student-set-password)
-16. [process-square-payment](#process-square-payment)
+7. [send-payment-receipt](#send-payment-receipt)
+8. [send-payment-reminder](#send-payment-reminder)
+9. [send-pledge-notification](#send-pledge-notification)
+10. [send-sponsor-thank-you](#send-sponsor-thank-you)
+11. [send-teacher-invite](#send-teacher-invite)
+12. [send-teacher-welcome](#send-teacher-welcome)
+13. [send-template-email](#send-template-email)
+14. [student-forgot-password](#student-forgot-password)
+15. [student-login](#student-login)
+16. [student-set-password](#student-set-password)
+17. [process-square-payment](#process-square-payment)
 
 ---
 
@@ -310,6 +311,69 @@ None required (uses authenticated user's email)
 ### Database Side Effects
 
 - Logs email to `email_logs` with `recipient_type: "parent"`
+
+---
+
+## send-payment-receipt
+
+**Purpose:** Sends payment confirmation/receipt emails to sponsors after successful Square payment processing.
+
+**Authentication:** None required (called internally by process-square-payment)
+
+**Method:** POST
+
+### Request Payload
+
+```json
+{
+  "payerEmail": "string",
+  "payerName": "string",
+  "amount": 100.00,
+  "receiptUrl": "string",
+  "studentNames": ["Emma", "Jack"],
+  "className": "Mrs. Smith's Class",
+  "isClassPledge": false
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| payerEmail | string | Yes | Payer's email address |
+| payerName | string | Yes | Payer's display name |
+| amount | number | Yes | Payment amount in dollars |
+| receiptUrl | string | Yes | Square receipt URL |
+| studentNames | string[] | Yes | Array of student names supported |
+| className | string | No | Class name (for class pledges) |
+| isClassPledge | boolean | No | Whether this is a class pledge payment |
+
+### Success Response (200)
+
+```json
+{
+  "success": true,
+  "data": { /* Resend API response */ }
+}
+```
+
+**Note:** If `payerEmail` is empty/null, returns `{ success: true, skipped: true }` without sending.
+
+### Error Responses
+
+| Status | Error | Cause |
+|--------|-------|-------|
+| 500 | "RESEND_API_KEY is not configured" | Missing secret |
+| 500 | `{error message}` | Resend API or other error |
+
+### Database Side Effects
+
+- Logs email to `email_logs` with `recipient_type: "sponsor"`
+
+### Email Content
+
+- Green-themed HTML receipt with payment amount prominently displayed
+- "View Square Receipt" button linking to Square's receipt page
+- List of students supported
+- Styled confirmation message
 
 ---
 
