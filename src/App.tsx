@@ -68,7 +68,7 @@ const App = () => (
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/debug/progress-ring" element={<DebugRingPage />} />
           <Route path="/sponsor" element={<SponsorGatewayPage />} />
-          <Route path="/sponsor/:childId" element={<SponsorPage />} />
+          <Route path="/sponsor/:childId" element={<SponsorLandingPage />} />
           {/* Family sponsor page - new primary sponsor route */}
           <Route path="/f/:userId" element={<FamilySponsorPage />} />
           {/* Legacy child-specific routes - redirect to family page */}

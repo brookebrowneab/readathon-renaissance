@@ -41,10 +41,10 @@ const AMOUNT_OPTIONS = [25, 50, 100];
 type PaymentMethod = "card" | "later" | "check" | null;
 
 const SponsorLandingPage = () => {
-  const { token, code } = useParams<{ token?: string; code?: string }>();
+  const { token, code, childId: routeChildId } = useParams<{ token?: string; code?: string; childId?: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const childId = token || code;
+  const childId = routeChildId || token || code;
   
   const { isAuthenticated, loading: authLoading, sponsor, signOut } = useSponsorAuth();
   
