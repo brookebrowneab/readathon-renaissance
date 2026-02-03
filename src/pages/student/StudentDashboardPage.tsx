@@ -102,7 +102,7 @@ const StudentDashboardPage = () => {
         </div>
 
         {/* Hero Progress */}
-        <BookContainer variant="default" className="p-8">
+        <BookContainer variant="default" className="p-8 md:mt-[15px] lg:mt-0">
           <div className="flex flex-col items-center space-y-4">
             <ReadingGoalRing
               progress={studentData.minutesRead}
