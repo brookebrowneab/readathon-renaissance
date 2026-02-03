@@ -498,7 +498,7 @@ const StudentPinDashboardPage = () => {
               </div>
 
               {/* Progress Card */}
-              <section className="md:mt-[15px] lg:mt-0">
+              <section className="md:pt-[15px] lg:pt-0">
                 <div className="bg-background p-6 shadow-md" style={handDrawnBorder}>
                   <div className="flex flex-col md:flex-row items-center gap-6">
                     {/* Reading Goal Ring */}
