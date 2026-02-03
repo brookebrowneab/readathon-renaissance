@@ -813,7 +813,7 @@ View and manage all enrolled children with reading logs.
 
 | Item | Status | Details |
 |---|---|---|
-| Square Integration | **MOCK** | Card form collects: cardholder name, card number (16 digits), expiry (MM/YY), CVC (3-4 digits), ZIP code (5 digits). No actual Square API calls - form submission just simulates delay and marks pledge as paid. |
+| Square Integration | **NEEDS IMPLEMENTATION** | Currently mock. **REQUIRED:** Real Square API integration for card processing. Form fields: cardholder name, card number (16 digits), expiry (MM/YY), CVC (3-4 digits), ZIP code (5 digits). |
 | Payment form fields | **CONFIRMED** | SponsorPaymentPage and GuestPaymentPage use identical card form: cardName, cardNumber, expiryDate, cvc, zipCode |
 | Check payments | **CONFIRMED** | Uses `event.payment_address` from database for mailing instructions |
 
@@ -929,32 +929,38 @@ View and manage all enrolled children with reading logs.
 8. Sponsor list: checkboxes with name, relationship, email, previous pledge amount
 9. "Send Invitations" or "Skip for now" → navigates to /dashboard
 
-### ForgotPasswordPage (CONFIRMED)
+### ForgotPasswordPage (NEEDS IMPLEMENTATION)
 
-**Flow:**
+**Current Flow (incomplete):**
 1. Email input form with validation
 2. Submit triggers: sets `isSubmitted = true` (currently no actual API call)
 3. Success state: Shows "Check Your Email" with submitted email, "try again" button
 4. Links: "Back to Sign In" (/login)
-5. **Note:** Form does not actually call Supabase password reset - just UI mock
 
-### Demo Mode (CONFIRMED - PRESENT IN PRODUCTION)
+**ACTION REQUIRED:** Implement Supabase Auth password reset using `supabase.auth.resetPasswordForEmail()`. Should send reset link via email.
 
-LoginPage contains visible demo buttons in production:
+### Demo Mode (TO BE REMOVED)
+
+LoginPage currently contains demo buttons:
 - "Demo Parent", "Demo Student", "Demo Teacher", "Demo Sponsor", "Demo Admin"
 - Each navigates directly to respective dashboard without auth
 
-**Recommendation:** These should be conditionally hidden in production via environment variable.
+**ACTION REQUIRED:** Remove demo login functionality entirely from codebase (not just hide).
 
-### Event End Behavior (CONFIRMED)
+### Event End Behavior (NEEDS ENHANCEMENT)
 
-When admin clicks "End Event" in AdminSettingsPage:
+**Current behavior:**
 1. Confirmation dialog appears
 2. `endEvent(id)` sets `is_active = false` on events table
 3. Toast: "Event has been ended. Payment collection emails will be sent."
 4. Teachers see "Read-a-thon Complete" blocking UI
 5. Parents see grace_period or closed state depending on dates
-6. No automatic email sending (manual via AdminEmailPage)
+6. Currently no automatic email sending
+
+**ACTION REQUIRED:** Admin should configure auto-send setting with template selection. When event ends:
+- If auto-send enabled: Send selected template to configured recipients
+- If auto-send disabled: Admin manually sends via AdminEmailPage
+- Add event setting: `auto_send_on_end` (boolean) + `end_event_template_id` (FK to email_templates)
 
 ### Outstanding Admin Pages (CONFIRMED)
 
