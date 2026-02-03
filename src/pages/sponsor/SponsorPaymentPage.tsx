@@ -2,20 +2,21 @@ import { useState, useMemo, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { PublicLayout } from "@/components/layout";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { FormField } from "@/components/ui/form-field";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   ArrowLeft,
   CreditCard,
   Mail,
   CheckCircle,
-  Lock,
+  AlertCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useSponsorPledges } from "@/hooks/useSponsorPledges";
+import { useActiveEvent } from "@/hooks/useActiveEvent";
+import { useSquarePayment } from "@/hooks/useSquarePayment";
+import { SquareCardForm } from "@/components/payment/SquareCardForm";
 import { Skeleton } from "@/components/ui/skeleton";
 
 
@@ -42,6 +43,7 @@ const SponsorPaymentPage = () => {
   
   // Fetch real pledges from database
   const { pledges, isLoading, sponsor } = useSponsorPledges();
+  const { data: activeEvent } = useActiveEvent();
   
   // Filter to only unpaid pledges and transform for display
   const unpaidPledges: DisplayPledge[] = useMemo(() => {
@@ -81,13 +83,23 @@ const SponsorPaymentPage = () => {
   const [paymentMethod, setPaymentMethod] = useState<"card" | "check">("card");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
 
-  // Card form state
-  const [cardNumber, setCardNumber] = useState("");
-  const [expiryDate, setExpiryDate] = useState("");
-  const [cvc, setCvc] = useState("");
-  const [cardName, setCardName] = useState("");
+  // Card form state (for Square)
+  const [cardholderName, setCardholderName] = useState("");
   const [zipCode, setZipCode] = useState("");
+  
+  // Square payment integration
+  const {
+    isLoading: squareLoading,
+    isReady: squareReady,
+    error: squareError,
+    isProcessing,
+    processPayment,
+  } = useSquarePayment({
+    onError: (err) => setPaymentError(err),
+  });
   
   // Initialize selected pledges when data loads
   useEffect(() => {
@@ -115,26 +127,10 @@ const SponsorPaymentPage = () => {
     );
   };
 
-  const formatCardNumber = (value: string) => {
-    const cleaned = value.replace(/\D/g, "");
-    const groups = cleaned.match(/.{1,4}/g);
-    return groups ? groups.join(" ").substr(0, 19) : "";
-  };
-
-  const formatExpiry = (value: string) => {
-    const cleaned = value.replace(/\D/g, "");
-    if (cleaned.length >= 2) {
-      return cleaned.substr(0, 2) + "/" + cleaned.substr(2, 2);
-    }
-    return cleaned;
-  };
-
   const isCardFormValid =
-    cardNumber.replace(/\s/g, "").length === 16 &&
-    expiryDate.length === 5 &&
-    cvc.length >= 3 &&
-    cardName.trim().length > 0 &&
-    zipCode.length >= 5;
+    cardholderName.trim().length > 0 &&
+    zipCode.length >= 5 &&
+    squareReady;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -142,10 +138,32 @@ const SponsorPaymentPage = () => {
     if (selectedPledges.length === 0) return;
 
     setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    setIsSubmitting(false);
-    setIsSuccess(true);
-    toast.success("Payment successful!");
+    setPaymentError(null);
+
+    try {
+      const result = await processPayment({
+        amount: selectedTotal,
+        pledgeIds: selectedPledges,
+        payerName: cardholderName || sponsor?.name || "Sponsor",
+        payerEmail: sponsor?.email || "",
+      });
+
+      if (!result.success) {
+        setPaymentError(result.error || "Payment failed");
+        toast.error(result.error || "Payment failed");
+        return;
+      }
+
+      setReceiptUrl(result.receiptUrl || null);
+      setIsSuccess(true);
+      toast.success("Payment successful!");
+    } catch (err: any) {
+      console.error("Payment error:", err);
+      setPaymentError(err.message || "An unexpected error occurred");
+      toast.error("Payment failed. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (isSuccess) {
@@ -196,9 +214,20 @@ const SponsorPaymentPage = () => {
                 <p className="text-xl text-foreground font-medium mb-2">
                   ${selectedTotal.toFixed(2)} received
                 </p>
-                <p className="text-muted-foreground mb-8">
+                <p className="text-muted-foreground mb-6">
                   You're helping kids discover the joy of reading!
                 </p>
+
+                {receiptUrl && (
+                  <a
+                    href={receiptUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-block text-sm text-primary hover:underline mb-6"
+                  >
+                    View Receipt →
+                  </a>
+                )}
 
                 <Button asChild className="w-full" size="lg">
                   <Link to={dashboardUrl}>Back to Dashboard</Link>
@@ -359,67 +388,30 @@ const SponsorPaymentPage = () => {
 
               {paymentMethod === "card" ? (
                 <form onSubmit={handleSubmit} className="space-y-4">
-                  <FormField label="Cardholder Name" htmlFor="cardName" required>
-                    <Input
-                      id="cardName"
-                      placeholder="Name on card"
-                      value={cardName}
-                      onChange={(e) => setCardName(e.target.value)}
-                    />
-                  </FormField>
+                  <SquareCardForm
+                    isLoading={squareLoading}
+                    isReady={squareReady}
+                    error={squareError}
+                    cardholderName={cardholderName}
+                    onCardholderNameChange={setCardholderName}
+                    zipCode={zipCode}
+                    onZipCodeChange={setZipCode}
+                  />
 
-                  <FormField label="Card Number" htmlFor="cardNumber" required>
-                    <Input
-                      id="cardNumber"
-                      placeholder="1234 5678 9012 3456"
-                      value={cardNumber}
-                      onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
-                      maxLength={19}
-                    />
-                  </FormField>
-
-                  <div className="grid grid-cols-3 gap-4">
-                    <FormField label="Expiry" htmlFor="expiry" required>
-                      <Input
-                        id="expiry"
-                        placeholder="MM/YY"
-                        value={expiryDate}
-                        onChange={(e) => setExpiryDate(formatExpiry(e.target.value))}
-                        maxLength={5}
-                      />
-                    </FormField>
-                    <FormField label="CVC" htmlFor="cvc" required>
-                      <Input
-                        id="cvc"
-                        placeholder="123"
-                        value={cvc}
-                        onChange={(e) => setCvc(e.target.value.replace(/\D/g, "").substr(0, 4))}
-                        maxLength={4}
-                      />
-                    </FormField>
-                    <FormField label="ZIP Code" htmlFor="zip" required>
-                      <Input
-                        id="zip"
-                        placeholder="12345"
-                        value={zipCode}
-                        onChange={(e) => setZipCode(e.target.value.replace(/\D/g, "").substr(0, 5))}
-                        maxLength={5}
-                      />
-                    </FormField>
-                  </div>
-
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Lock className="h-4 w-4" />
-                    <span>Your payment info is secure and encrypted</span>
-                  </div>
+                  {paymentError && (
+                    <div className="p-3 bg-destructive/10 border border-destructive/30 rounded-lg flex items-start gap-2">
+                      <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+                      <p className="text-sm text-destructive">{paymentError}</p>
+                    </div>
+                  )}
 
                   <Button
                     type="submit"
-                    disabled={!isCardFormValid || selectedPledges.length === 0 || isSubmitting}
+                    disabled={!isCardFormValid || selectedPledges.length === 0 || isSubmitting || isProcessing}
                     className="w-full"
                     size="lg"
                   >
-                    {isSubmitting ? "Processing..." : `Pay $${selectedTotal.toFixed(2)}`}
+                    {isSubmitting || isProcessing ? "Processing..." : `Pay $${selectedTotal.toFixed(2)}`}
                   </Button>
                 </form>
               ) : (
@@ -431,11 +423,8 @@ const SponsorPaymentPage = () => {
                     <h3 className="font-serif text-lg text-foreground mb-2">
                       Mail your check to:
                     </h3>
-                    <address className="text-muted-foreground not-italic">
-                      Lincoln Elementary PTA<br />
-                      Read-a-thon Fund<br />
-                      123 School Street<br />
-                      Anytown, ST 12345
+                    <address className="text-muted-foreground not-italic whitespace-pre-line">
+                      {activeEvent?.payment_address || "Lincoln Elementary PTA\nRead-a-thon Fund\n123 School Street\nAnytown, ST 12345"}
                     </address>
                   </div>
 
@@ -447,7 +436,7 @@ const SponsorPaymentPage = () => {
                       Please include:
                     </h3>
                     <ul className="text-sm text-muted-foreground space-y-1">
-                      <li>• Make check payable to: "Lincoln Elementary PTA"</li>
+                      <li>• Make check payable to: "{activeEvent?.school_name || "Lincoln Elementary"} PTA"</li>
                       <li>• Write "Read-a-thon" in the memo line</li>
                       <li>• Include student name(s) you're sponsoring</li>
                     </ul>
