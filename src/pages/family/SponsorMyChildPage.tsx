@@ -274,7 +274,7 @@ const SponsorMyChildPage = () => {
     if (sponsorType === "my-children") {
       const formattedChildren = myChildren.map(c => ({
         id: c.id,
-        name: c.name,
+        display_name: c.name, // Parents see full name but we pass it as display_name for component compatibility
         grade_info: c.grade_info,
         class_name: c.class_name,
         total_minutes: c.total_minutes,

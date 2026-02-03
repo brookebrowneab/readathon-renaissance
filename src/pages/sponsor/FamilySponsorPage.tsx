@@ -183,7 +183,7 @@ const FamilySponsorPage = () => {
 
         await addPledge.mutateAsync({
           child_id: child.id,
-          student_name: child.name,
+          student_name: child.display_name,
           pledge_type: usePerMinute ? "per_minute" : "flat",
           amount: pledgeAmount,
           event_id: activeEvent?.id || null,
@@ -209,7 +209,7 @@ const FamilySponsorPage = () => {
               recipientEmail: parentEmail,
               recipientName: parentProfile?.display_name || "Parent",
               sponsorName: sponsorName || sponsor?.name || "A sponsor",
-              studentName: child.name,
+              studentName: child.display_name,
               amount: pledgeAmount,
               pledgeType: usePerMinute ? "per_minute" : "flat",
             });
@@ -307,8 +307,8 @@ const FamilySponsorPage = () => {
     );
   }
 
-  // Get family name from first child (First Name's Family)
-  const familyName = children[0]?.name?.split(' ')[0] || 'This';
+  // Get family name from first child's display_name (First Name's Family)
+  const familyName = children[0]?.display_name?.split(' ')[0] || 'This';
 
   // Profile completion screen for returning sponsors via magic link
   if (needsProfileCompletion) {
@@ -569,8 +569,7 @@ const FamilySponsorPage = () => {
                   
                   <div className="space-y-2">
                     {children.map((child) => {
-                      const firstName = child.name?.split(' ')[0] || 'Reader';
-                      const lastInitial = child.name?.split(' ')[1]?.[0] || '';
+                      const displayName = child.display_name;
                       const isSelected = selectedChildIds.has(child.id);
                       
                       return (
@@ -589,7 +588,7 @@ const FamilySponsorPage = () => {
                           />
                           <div className="flex-1 min-w-0">
                             <p className="font-medium text-foreground">
-                              {firstName} {lastInitial}.
+                              {displayName}
                             </p>
                             <p className="text-xs text-muted-foreground">
                               {child.grade_info || 'Student'} • {child.total_minutes || 0}/{child.goal_minutes || 300} min

@@ -7,8 +7,7 @@ import { cn } from "@/lib/utils";
 interface ChildSelectorProps {
   children: Array<{
     id: string;
-    name: string;
-    displayName?: string;
+    display_name: string;
     grade_info: string | null;
     class_name: string | null;
     total_minutes: number;
@@ -52,7 +51,7 @@ export function ChildSelector({
 
       <div className="grid gap-4 md:grid-cols-2">
         {children.map((child) => {
-          const displayName = child.displayName || child.name;
+          const displayName = child.display_name;
           const progress = Math.round((child.total_minutes / child.goal_minutes) * 100);
 
           return (

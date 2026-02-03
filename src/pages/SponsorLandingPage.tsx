@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormField } from "@/components/ui/form-field";
 import { useSponsorAuth } from "@/hooks/useSponsorAuth";
-import { useChildById } from "@/hooks/useChildren";
+import { usePublicChildById } from "@/hooks/usePublicChildren";
 import { usePledges } from "@/hooks/usePledges";
 import { useReadingLogs } from "@/hooks/useReadingLogs";
 import { useActiveEvent, formatEventDates } from "@/hooks/useActiveEvent";
@@ -48,8 +48,8 @@ const SponsorLandingPage = () => {
   
   const { isAuthenticated, loading: authLoading, sponsor, signOut } = useSponsorAuth();
   
-  // Fetch real data from database
-  const { data: child, isLoading: childLoading, error: childError } = useChildById(childId);
+  // Fetch real data from database using privacy-safe hook
+  const { data: child, isLoading: childLoading, error: childError } = usePublicChildById(childId);
   const { pledges, isLoading: pledgesLoading, addPledge } = usePledges(childId);
   const { logs, isLoading: logsLoading } = useReadingLogs(childId);
   const { data: activeEvent } = useActiveEvent();
@@ -66,9 +66,10 @@ const SponsorLandingPage = () => {
   // Recent reading logs (last 3 for sponsors)
   const recentLogs = logs.slice(0, 3);
   
-  // Derived data from child
+  // Derived data from child - use display_name for COPPA compliance
   const childData = useMemo(() => ({
-    childFirstName: child?.name?.split(' ')[0] || 'Reader',
+    displayName: child?.display_name || 'Reader',
+    childFirstName: child?.display_name?.split(' ')[0] || 'Reader',
     grade: child?.grade_info || '',
     className: child?.class_name || '',
     readingGoal: child?.goal_minutes || 300,
@@ -137,7 +138,7 @@ const SponsorLandingPage = () => {
     try {
       const newPledge = await addPledge.mutateAsync({
         child_id: childId,
-        student_name: child.name,
+        student_name: childData.displayName,
         pledge_type: usePerMinute ? "per_minute" : "flat",
         amount: effectiveAmount || 0,
         event_id: activeEvent?.id || null,
@@ -165,7 +166,7 @@ const SponsorLandingPage = () => {
             recipientEmail: parentEmail,
             recipientName: parentProfile?.display_name || "Parent",
             sponsorName: sponsorName || sponsor?.name || "A sponsor",
-            studentName: child.name,
+            studentName: childData.displayName,
             amount: effectiveAmount || 0,
             pledgeType: usePerMinute ? "per_minute" : "flat",
           });

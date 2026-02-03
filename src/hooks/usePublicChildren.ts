@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-export interface FamilyChild {
+export interface PublicChild {
   id: string;
   user_id: string;
   display_name: string;
@@ -14,13 +14,13 @@ export interface FamilyChild {
 }
 
 /**
- * Hook to fetch all children belonging to a specific parent user ID.
- * Uses the children_public_safe view to return privacy-safe display names.
- * Used by sponsors to see all children in a family they can sponsor.
+ * Hook to fetch privacy-safe child data from the children_public_safe view.
+ * Returns display_name (First Name + Last Initial) instead of full name.
+ * Used for all sponsor-facing pages to ensure COPPA compliance.
  */
-export const useFamilyChildren = (parentUserId: string | undefined) => {
+export const usePublicFamilyChildren = (parentUserId: string | undefined) => {
   return useQuery({
-    queryKey: ["family-children", parentUserId],
+    queryKey: ["public-family-children", parentUserId],
     queryFn: async () => {
       if (!parentUserId) throw new Error("No parent user ID provided");
 
@@ -33,30 +33,31 @@ export const useFamilyChildren = (parentUserId: string | undefined) => {
 
       if (error) throw error;
       
-      return (data || []) as FamilyChild[];
+      return (data || []) as PublicChild[];
     },
     enabled: !!parentUserId,
   });
 };
 
 /**
- * Hook to get the parent user_id from a child ID.
- * Used to redirect from old child-specific links to family links.
+ * Hook to fetch a single child's privacy-safe data.
+ * Returns display_name (First Name + Last Initial) instead of full name.
+ * Used for single-child sponsor pages.
  */
-export const useParentFromChild = (childId: string | undefined) => {
+export const usePublicChildById = (childId: string | undefined) => {
   return useQuery({
-    queryKey: ["parent-from-child", childId],
+    queryKey: ["public-child", childId],
     queryFn: async () => {
       if (!childId) throw new Error("No child ID provided");
 
       const { data, error } = await supabase
-        .from("children")
-        .select("user_id")
+        .from("children_public_safe")
+        .select("*")
         .eq("id", childId)
         .single();
 
       if (error) throw error;
-      return data.user_id;
+      return data as PublicChild;
     },
     enabled: !!childId,
   });
