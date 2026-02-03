@@ -1,4 +1,4 @@
-
+<!-- STATUS: IMPLEMENTED -->
 
 # COPPA-Compliant Sponsor Experience: Privacy-First Display
 
