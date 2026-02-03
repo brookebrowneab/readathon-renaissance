@@ -1,0 +1,880 @@
+# Edge Functions API Reference
+
+Generated: 2026-02-03
+
+This document provides complete API signatures for all Supabase Edge Functions in the project.
+
+---
+
+## Table of Contents
+
+1. [admin-reset-password](#admin-reset-password)
+2. [bootstrap-admin](#bootstrap-admin)
+3. [link-teacher-account](#link-teacher-account)
+4. [notify-check-payment](#notify-check-payment)
+5. [send-guest-payment-email](#send-guest-payment-email)
+6. [send-parent-welcome](#send-parent-welcome)
+7. [send-payment-reminder](#send-payment-reminder)
+8. [send-pledge-notification](#send-pledge-notification)
+9. [send-sponsor-thank-you](#send-sponsor-thank-you)
+10. [send-teacher-invite](#send-teacher-invite)
+11. [send-teacher-welcome](#send-teacher-welcome)
+12. [send-template-email](#send-template-email)
+13. [student-forgot-password](#student-forgot-password)
+14. [student-login](#student-login)
+15. [student-set-password](#student-set-password)
+
+---
+
+## admin-reset-password
+
+**Purpose:** Admin utility to reset a user's password directly using the Supabase Admin API.
+
+**Authentication:** None required (internal admin use only)
+
+**Method:** POST
+
+### Request Payload
+
+```json
+{
+  "userId": "uuid",
+  "newPassword": "string"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| userId | string (UUID) | Yes | The auth.users ID of the user |
+| newPassword | string | Yes | New password to set |
+
+### Success Response (200)
+
+```json
+{
+  "success": true,
+  "message": "Password updated successfully"
+}
+```
+
+### Error Responses
+
+| Status | Error | Cause |
+|--------|-------|-------|
+| 400 | "Missing userId or newPassword" | Required fields not provided |
+| 400 | `{supabase error}` | Password update failed |
+| 500 | "An unexpected error occurred" | Server error |
+
+---
+
+## bootstrap-admin
+
+**Purpose:** First-time admin setup. Allows the first authenticated user to become admin, or existing admins to re-confirm their role.
+
+**Authentication:** Required (Bearer token)
+
+**Method:** POST
+
+### Request Payload
+
+None required (empty body or `{}`)
+
+### Request Headers
+
+| Header | Value | Required |
+|--------|-------|----------|
+| Authorization | Bearer {jwt} | Yes |
+
+### Success Response (200)
+
+```json
+{
+  "ok": true
+}
+```
+
+### Error Responses
+
+| Status | Error | Cause |
+|--------|-------|-------|
+| 401 | "Missing Authorization header" | No auth token |
+| 401 | "Invalid session" | Invalid JWT |
+| 403 | "Admin already exists" | Non-admin user tried to bootstrap when admin exists |
+| 405 | "Method not allowed" | Non-POST request |
+| 500 | "Server misconfiguration" | Missing env vars |
+| 500 | "Failed checking existing admins" | DB error |
+| 500 | "Failed assigning admin role" | Insert failed |
+
+---
+
+## link-teacher-account
+
+**Purpose:** Links an authenticated user to their pre-created teacher profile by matching email addresses.
+
+**Authentication:** Required (Bearer token)
+
+**Method:** POST
+
+### Request Payload
+
+None required (uses authenticated user's email)
+
+### Request Headers
+
+| Header | Value | Required |
+|--------|-------|----------|
+| Authorization | Bearer {jwt} | Yes |
+
+### Success Response (200)
+
+```json
+{
+  "success": true,
+  "linked": true,
+  "teacher": {
+    "id": "uuid",
+    "name": "string",
+    "email": "string",
+    "user_id": "uuid",
+    "is_active": true
+  }
+}
+```
+
+**Note:** If already linked, `linked: false` is returned with existing teacher data.
+
+### Error Responses
+
+| Status | Error | Cause |
+|--------|-------|-------|
+| 400 | "Email is required" | User has no email |
+| 401 | "Unauthorized" | Missing auth header |
+| 401 | "Invalid session" | Invalid JWT |
+| 404 | "No teacher profile available for this email" | Email not in teachers table |
+| 500 | "Failed to verify teacher access" | DB error |
+| 500 | "Failed to link teacher profile" | Update error |
+
+---
+
+## notify-check-payment
+
+**Purpose:** Notifies organizers when a sponsor commits to paying by check. Updates pledge status and sends admin notification email.
+
+**Authentication:** None explicitly required
+
+**Method:** POST
+
+### Request Payload
+
+```json
+{
+  "pledgeIds": ["uuid", "uuid"],
+  "sponsorName": "string",
+  "sponsorEmail": "string",
+  "totalAmount": 100.00,
+  "childNames": ["Emma", "Jack"]
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| pledgeIds | string[] | Yes | Array of pledge UUIDs to update |
+| sponsorName | string | Yes | Sponsor's full name |
+| sponsorEmail | string | Yes | Sponsor's email |
+| totalAmount | number | Yes | Total check amount |
+| childNames | string[] | Yes | Names of children being sponsored |
+
+### Success Response (200)
+
+```json
+{
+  "success": true,
+  "message": "Pledges updated and organizers notified",
+  "emailResult": { /* Resend API response */ }
+}
+```
+
+### Database Side Effects
+
+- Updates `pledges` table: `payment_status = "pending_check"`, `expected_payment_method = "check"`
+
+### Error Responses
+
+| Status | Error | Cause |
+|--------|-------|-------|
+| 500 | "Failed to update pledges: ..." | DB update failed |
+| 500 | `{error message}` | Email or other error |
+
+---
+
+## send-guest-payment-email
+
+**Purpose:** Sends payment collection emails to guest sponsors (those who pledged without an account) with magic payment links.
+
+**Authentication:** None required
+
+**Method:** POST
+
+### Request Payload
+
+```json
+{
+  "pledges": [
+    {
+      "pledgeId": "uuid",
+      "recipientEmail": "string",
+      "recipientName": "string",
+      "className": "string",
+      "teacherName": "string (optional)",
+      "amount": 50.00,
+      "paymentToken": "uuid",
+      "baseUrl": "https://example.com"
+    }
+  ]
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| pledges | GuestPledge[] | Yes | Array of pledges to process |
+| pledges[].pledgeId | string | Yes | Pledge ID for tracking |
+| pledges[].recipientEmail | string | Yes | Guest's email |
+| pledges[].recipientName | string | No | Guest's name (used in greeting) |
+| pledges[].className | string | Yes | Class name for email content |
+| pledges[].teacherName | string | No | Optional teacher name |
+| pledges[].amount | number | Yes | Pledge amount |
+| pledges[].paymentToken | string | Yes | Magic link token |
+| pledges[].baseUrl | string | Yes | Base URL for payment link |
+
+### Success Response (200)
+
+```json
+{
+  "success": true,
+  "results": [
+    { "pledgeId": "uuid", "success": true },
+    { "pledgeId": "uuid", "success": false, "error": "message" }
+  ],
+  "summary": { "sent": 5, "failed": 1 }
+}
+```
+
+### Database Side Effects
+
+- Logs each email to `email_logs` table with `recipient_type: "guest_sponsor"`
+
+### Rate Limiting
+
+600ms delay between emails (Resend free tier: 2 req/sec)
+
+---
+
+## send-parent-welcome
+
+**Purpose:** Sends welcome email to parents after they complete onboarding and enroll their first child.
+
+**Authentication:** None required
+
+**Method:** POST
+
+### Request Payload
+
+```json
+{
+  "parentEmail": "string",
+  "parentName": "string",
+  "childName": "string",
+  "familyPledgeUrl": "string",
+  "dashboardUrl": "string"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| parentEmail | string | Yes | Parent's email |
+| parentName | string | Yes | Parent's name |
+| childName | string | Yes | Enrolled child's name |
+| familyPledgeUrl | string | Yes | URL to invite sponsors |
+| dashboardUrl | string | Yes | URL to parent dashboard |
+
+### Success Response (200)
+
+```json
+{
+  "success": true,
+  "data": { /* Resend API response */ }
+}
+```
+
+### Database Side Effects
+
+- Logs email to `email_logs` with `recipient_type: "parent"`
+
+---
+
+## send-payment-reminder
+
+**Purpose:** Sends payment reminder emails to sponsors with outstanding pledges. Supports bulk sending.
+
+**Authentication:** None required
+
+**Method:** POST
+
+### Request Payload
+
+```json
+{
+  "pledges": [
+    {
+      "pledgeId": "uuid",
+      "recipientEmail": "string",
+      "recipientName": "string",
+      "studentName": "string",
+      "amount": 0.05,
+      "pledgeType": "per_minute",
+      "totalMinutes": 500,
+      "daysSincePledge": 14
+    }
+  ]
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| pledges | object[] | Yes | Array of pledges |
+| pledges[].pledgeId | string | Yes | Pledge ID |
+| pledges[].recipientEmail | string | Yes | Sponsor email |
+| pledges[].recipientName | string | Yes | Sponsor name |
+| pledges[].studentName | string | Yes | Student name |
+| pledges[].amount | number | Yes | Pledge amount |
+| pledges[].pledgeType | "flat" \| "per_minute" | Yes | Type of pledge |
+| pledges[].totalMinutes | number | No | For per_minute: reading minutes |
+| pledges[].daysSincePledge | number | Yes | Days since pledge created |
+
+### Success Response (200)
+
+```json
+{
+  "success": true,
+  "results": [
+    { "pledgeId": "uuid", "success": true }
+  ],
+  "summary": { "sent": 3, "failed": 0 }
+}
+```
+
+### Email Content Features
+
+- Calculates final amount for per_minute pledges
+- Urgency messaging based on days outstanding (>10: red warning, >5: amber)
+
+### Database Side Effects
+
+- Logs each email to `email_logs` with `recipient_type: "sponsor"`
+
+---
+
+## send-pledge-notification
+
+**Purpose:** Sends notifications for pledge events: new pledge creation or payment completion.
+
+**Authentication:** None required
+
+**Method:** POST
+
+### Request Payload
+
+```json
+{
+  "type": "pledge_created",
+  "pledgeId": "uuid",
+  "recipientEmail": "string",
+  "recipientName": "string",
+  "sponsorName": "string (optional)",
+  "studentName": "string",
+  "amount": 50.00,
+  "pledgeType": "flat",
+  "totalMinutes": 500
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| type | "pledge_created" \| "payment_complete" | Yes | Notification type |
+| pledgeId | string | Yes | Pledge ID |
+| recipientEmail | string | Yes | Recipient email |
+| recipientName | string | Yes | Recipient name |
+| sponsorName | string | No | Sponsor name (for pledge_created) |
+| studentName | string | Yes | Student name |
+| amount | number | Yes | Pledge amount |
+| pledgeType | "flat" \| "per_minute" | Yes | Type of pledge |
+| totalMinutes | number | No | Reading minutes (for per_minute) |
+
+### Success Response (200)
+
+```json
+{
+  "success": true,
+  "data": { /* Resend API response */ }
+}
+```
+
+### Database Side Effects
+
+- Logs to `email_logs` with `recipient_type: "parent"` (pledge_created) or `"sponsor"` (payment_complete)
+
+---
+
+## send-sponsor-thank-you
+
+**Purpose:** Sends thank you email to sponsors immediately after they make a pledge.
+
+**Authentication:** None required
+
+**Method:** POST
+
+### Request Payload
+
+```json
+{
+  "sponsorEmail": "string",
+  "sponsorName": "string",
+  "studentName": "string",
+  "pledgeType": "flat",
+  "amount": 50.00,
+  "className": "Mrs. Smith's Class",
+  "isClassPledge": false
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| sponsorEmail | string | Yes | Sponsor's email |
+| sponsorName | string | Yes | Sponsor's name |
+| studentName | string | Yes | Student name (or class name if isClassPledge) |
+| pledgeType | "flat" \| "per_minute" \| "milestone" | Yes | Type of pledge |
+| amount | number | Yes | Pledge amount |
+| className | string | No | Class name (for class pledges) |
+| isClassPledge | boolean | No | Whether this is a class pledge |
+
+### Success Response (200)
+
+```json
+{
+  "success": true,
+  "data": { /* Resend API response */ }
+}
+```
+
+### Database Side Effects
+
+- Logs to `email_logs` with `recipient_type: "sponsor"`
+
+---
+
+## send-teacher-invite
+
+**Purpose:** Sends magic link invitation to teachers for account setup. Admin-only endpoint.
+
+**Authentication:** Required (Bearer token, must be admin)
+
+**Method:** POST
+
+### Request Payload
+
+```json
+{
+  "teacherId": "uuid",
+  "teacherEmail": "string",
+  "teacherName": "string",
+  "redirectUrl": "string"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| teacherId | string | Yes | Teacher record ID |
+| teacherEmail | string | Yes | Teacher's email |
+| teacherName | string | Yes | Teacher's name |
+| redirectUrl | string | Yes | Where to redirect after auth |
+
+### Success Response (200)
+
+```json
+{
+  "success": true,
+  "message": "Invite sent successfully"
+}
+```
+
+### Error Responses
+
+| Status | Error | Cause |
+|--------|-------|-------|
+| 400 | "Missing required fields" | Required fields not provided |
+| 400 | "Teacher already has a linked account" | Already linked |
+| 401 | "Unauthorized" | Missing auth |
+| 401 | "Invalid token" | Bad JWT |
+| 403 | "Admin access required" | Non-admin user |
+| 404 | "Teacher not found" | No matching teacher |
+| 500 | "Failed to generate invite link" | Link generation failed |
+| 500 | "Failed to send email" | Resend error |
+
+### Notes
+
+- Generates Supabase magic link using admin API
+- Link expires in 1 hour
+- Teacher must not already have `user_id` set
+
+---
+
+## send-teacher-welcome
+
+**Purpose:** Sends welcome email after teacher successfully links their account.
+
+**Authentication:** None required
+
+**Method:** POST
+
+### Request Payload
+
+```json
+{
+  "teacherName": "string",
+  "teacherEmail": "string",
+  "dashboardUrl": "string"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| teacherName | string | Yes | Teacher's name |
+| teacherEmail | string | Yes | Teacher's email |
+| dashboardUrl | string | Yes | URL to teacher dashboard |
+
+### Success Response (200)
+
+```json
+{
+  "success": true,
+  "data": { /* Resend API response */ }
+}
+```
+
+### Error Responses
+
+| Status | Error | Cause |
+|--------|-------|-------|
+| 400 | "Missing required fields" | Missing teacherEmail or teacherName |
+| 500 | "Failed to send email" | Resend error |
+
+---
+
+## send-template-email
+
+**Purpose:** Sends bulk emails using admin-created templates with variable substitution. Primary email tool for admin campaigns.
+
+**Authentication:** None required
+
+**Method:** POST
+
+### Request Payload
+
+```json
+{
+  "templateId": "uuid (optional)",
+  "subject": "Hello {{sponsor_name}}!",
+  "body": "Thank you for supporting {{student_name}}...",
+  "recipients": [
+    {
+      "email": "string",
+      "name": "string",
+      "type": "sponsor",
+      "variables": {
+        "sponsor_name": "Uncle Bob",
+        "student_name": "Emma",
+        "total_owed": "$50.00"
+      }
+    }
+  ]
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| templateId | string | No | Template ID for logging |
+| subject | string | Yes | Email subject (supports variables) |
+| body | string | Yes | Email body (supports variables) |
+| recipients | Recipient[] | Yes | Array of recipients |
+| recipients[].email | string | Yes | Recipient email |
+| recipients[].name | string | Yes | Recipient name |
+| recipients[].type | string | Yes | Recipient type for logging |
+| recipients[].variables | object | No | Key-value variable substitutions |
+
+### Variable Substitution
+
+Variables in `{{variable_name}}` format are replaced with values from `recipients[].variables`.
+
+**Available variables (by context):**
+- `{{sponsor_name}}`, `{{sponsor_first_name}}`
+- `{{student_name}}`, `{{student_first_name}}`
+- `{{pledge_amount}}`, `{{total_owed}}`
+- `{{minutes_read}}`, `{{goal_minutes}}`, `{{progress_percent}}`
+- `{{payment_link}}`
+- `{{event_name}}`, `{{school_name}}`, `{{days_remaining}}`
+
+### Success Response (200)
+
+```json
+{
+  "success": true,
+  "results": [
+    { "email": "a@example.com", "success": true },
+    { "email": "b@example.com", "success": false, "error": "message" }
+  ],
+  "summary": { "sent": 10, "failed": 2 }
+}
+```
+
+### Database Side Effects
+
+- Logs each email (success or failure) to `email_logs` with template_id if provided
+
+### Rate Limiting
+
+600ms delay between emails
+
+---
+
+## student-forgot-password
+
+**Purpose:** Handles student password reset by notifying the parent. Does NOT reveal whether username exists (anti-enumeration).
+
+**Authentication:** None required (public endpoint)
+
+**Method:** POST
+
+### Request Payload
+
+```json
+{
+  "username": "string"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| username | string | Yes | Student's username (min 3 chars) |
+
+### Success Response (200)
+
+Always returns success to prevent username enumeration:
+
+```json
+{
+  "success": true,
+  "message": "If this username exists, we've notified the parent."
+}
+```
+
+### Behind the Scenes
+
+If username exists:
+1. Looks up child by `student_username`
+2. Fetches parent email from `auth.users` via `child.user_id`
+3. Sends email to parent with reset instructions
+
+### Error Responses
+
+| Status | Error | Cause |
+|--------|-------|-------|
+| 400 | "Please enter a valid username" | Username < 3 chars |
+| 500 | "An unexpected error occurred" | Server error |
+
+---
+
+## student-login
+
+**Purpose:** Authenticates students using username/password and returns session data. Uses SHA-256 password hashing.
+
+**Authentication:** None required (public endpoint)
+
+**Method:** POST
+
+### Request Payload
+
+```json
+{
+  "username": "string",
+  "password": "string"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| username | string | Yes | Student's username |
+| password | string | Yes | Student's password |
+
+### Success Response (200)
+
+```json
+{
+  "success": true,
+  "child": {
+    "id": "uuid",
+    "name": "Emma Johnson",
+    "totalMinutes": 250,
+    "goalMinutes": 500,
+    "className": "Mrs. Smith - Room 12",
+    "gradeInfo": "3rd Grade"
+  }
+}
+```
+
+### Error Responses
+
+| Status | Error | Cause |
+|--------|-------|-------|
+| 400 | "Username and password are required" | Missing fields |
+| 401 | "Invalid username or password" | Wrong credentials |
+| 403 | "Student login is not enabled. Ask your parent to enable it." | `student_login_enabled = false` |
+| 403 | "No password set. Ask your parent to set up your login." | No password hash |
+| 500 | "An error occurred. Please try again." | DB error |
+
+### Security Features
+
+- Normalized username (lowercase, trimmed)
+- SHA-256 password hashing
+- Timing attack prevention (random delay on invalid username)
+- Generic error messages to prevent enumeration
+
+---
+
+## student-set-password
+
+**Purpose:** Allows parents to set or update their child's student login password.
+
+**Authentication:** Required (Bearer token, must be child's parent)
+
+**Method:** POST
+
+### Request Payload
+
+```json
+{
+  "childId": "uuid",
+  "password": "string"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| childId | string | Yes | Child's ID |
+| password | string | Yes | New password (min 4 chars) |
+
+### Request Headers
+
+| Header | Value | Required |
+|--------|-------|----------|
+| Authorization | Bearer {jwt} | Yes |
+
+### Success Response (200)
+
+```json
+{
+  "success": true
+}
+```
+
+### Error Responses
+
+| Status | Error | Cause |
+|--------|-------|-------|
+| 400 | "Child ID and password are required" | Missing fields |
+| 400 | "Password must be at least 4 characters" | Password too short |
+| 401 | "Unauthorized" | Missing/invalid auth |
+| 403 | "You can only set passwords for your own children" | Not parent |
+| 404 | "Child not found" | Invalid childId |
+| 500 | "Failed to update password" | DB error |
+
+### Database Side Effects
+
+- Updates `children.student_password_hash` with SHA-256 hash
+
+---
+
+## Environment Variables
+
+All edge functions use these environment variables:
+
+| Variable | Used By | Description |
+|----------|---------|-------------|
+| SUPABASE_URL | All | Supabase project URL |
+| SUPABASE_ANON_KEY | Auth functions | Public anon key |
+| SUPABASE_SERVICE_ROLE_KEY | All DB operations | Service role key |
+| RESEND_API_KEY | Email functions | Resend.com API key |
+
+---
+
+## Common Patterns
+
+### CORS Headers
+
+All functions include:
+```javascript
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, ..."
+};
+```
+
+### Email Logging
+
+All email functions log to `email_logs` table:
+```javascript
+await supabase.from("email_logs").insert({
+  recipient_email: string,
+  recipient_name: string,
+  recipient_type: "parent" | "sponsor" | "teacher" | "guest_sponsor",
+  subject: string,
+  body: string,
+  status: "sent" | "failed",
+  sent_at: string | null,
+  error_message: string | null,
+  template_id: string | null
+});
+```
+
+### Rate Limiting
+
+Bulk email functions use 600ms delay between sends:
+```javascript
+if (i > 0) {
+  await new Promise(resolve => setTimeout(resolve, 600));
+}
+```
+
+---
+
+## Invocation Examples
+
+### From Frontend (with auth)
+
+```typescript
+import { supabase } from "@/integrations/supabase/client";
+
+const { data, error } = await supabase.functions.invoke("link-teacher-account");
+```
+
+### From Frontend (no auth)
+
+```typescript
+const response = await fetch(
+  `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/student-login`,
+  {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, password }),
+  }
+);
+```
