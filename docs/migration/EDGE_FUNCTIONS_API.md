@@ -23,6 +23,7 @@ This document provides complete API signatures for all Supabase Edge Functions i
 13. [student-forgot-password](#student-forgot-password)
 14. [student-login](#student-login)
 15. [student-set-password](#student-set-password)
+16. [process-square-payment](#process-square-payment)
 
 ---
 
@@ -803,6 +804,70 @@ If username exists:
 
 ---
 
+## process-square-payment
+
+**Purpose:** Processes credit card payments via Square Payments API. Creates payment records and updates pledge status upon successful payment.
+
+**Authentication:** None required (public endpoint, validates payment via Square token)
+
+**Method:** POST
+
+### Request Payload
+
+```json
+{
+  "sourceId": "cnon:card-nonce-ok",
+  "amount": 50.00,
+  "pledgeIds": ["uuid", "uuid"],
+  "classPledgeId": "uuid (alternative to pledgeIds)",
+  "payerName": "John Doe",
+  "payerEmail": "john@example.com",
+  "idempotencyKey": "uuid"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| sourceId | string | Yes | Card token from Square Web Payments SDK |
+| amount | number | Yes | Payment amount in dollars |
+| pledgeIds | string[] | Conditional | Array of individual pledge IDs (required if no classPledgeId) |
+| classPledgeId | string | Conditional | Class pledge ID for guest payments (required if no pledgeIds) |
+| payerName | string | Yes | Payer's name for receipt |
+| payerEmail | string | Yes | Payer's email for receipt |
+| idempotencyKey | string | Yes | UUID to prevent duplicate charges |
+
+### Success Response (200)
+
+```json
+{
+  "success": true,
+  "paymentId": "square_payment_id",
+  "receiptUrl": "https://squareup.com/receipt/..."
+}
+```
+
+### Error Responses
+
+| Status | Error | Cause |
+|--------|-------|-------|
+| 400 | "Missing required fields" | sourceId, amount, or idempotencyKey missing |
+| 400 | "Must provide either pledgeIds or classPledgeId" | No pledges specified |
+| 400 | `{Square error detail}` | Card declined or invalid |
+| 500 | "SQUARE_ACCESS_TOKEN is not configured" | Missing secret |
+| 500 | "Internal server error" | Server error |
+
+### Database Side Effects
+
+- Creates `payments` record with Square payment ID and receipt URL
+- Updates `pledges.is_paid = true`, `payment_status = "paid"`, `final_amount`, `finalized_at`
+- For class pledges: Updates `class_pledges.is_paid = true`, `payment_status = "paid"`
+
+### Environment Detection
+
+Automatically detects sandbox vs production based on access token format.
+
+---
+
 ## Environment Variables
 
 All edge functions use these environment variables:
@@ -813,6 +878,8 @@ All edge functions use these environment variables:
 | SUPABASE_ANON_KEY | Auth functions | Public anon key |
 | SUPABASE_SERVICE_ROLE_KEY | All DB operations | Service role key |
 | RESEND_API_KEY | Email functions | Resend.com API key |
+| SQUARE_ACCESS_TOKEN | process-square-payment | Square API access token |
+| SQUARE_APPLICATION_ID | process-square-payment | Square application ID |
 
 ---
 

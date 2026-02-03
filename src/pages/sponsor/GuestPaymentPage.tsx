@@ -1,17 +1,16 @@
-import { useState, useMemo, useEffect } from "react";
-import { useSearchParams, useNavigate, Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useSearchParams, Link } from "react-router-dom";
 import { PublicLayout } from "@/components/layout";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { FormField } from "@/components/ui/form-field";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useActiveEvent } from "@/hooks/useActiveEvent";
+import { useSquarePayment } from "@/hooks/useSquarePayment";
+import { SquareCardForm } from "@/components/payment/SquareCardForm";
 import {
   CreditCard,
   Mail,
   CheckCircle,
-  Lock,
   AlertCircle,
   Users,
   DollarSign,
@@ -46,7 +45,6 @@ interface GuestPledge {
 
 const GuestPaymentPage = () => {
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
   const token = searchParams.get("token");
   const { data: activeEvent } = useActiveEvent();
 
@@ -57,13 +55,23 @@ const GuestPaymentPage = () => {
   const [paymentMethod, setPaymentMethod] = useState<"card" | "check">("card");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
 
-  // Card form state
-  const [cardNumber, setCardNumber] = useState("");
-  const [expiryDate, setExpiryDate] = useState("");
-  const [cvc, setCvc] = useState("");
-  const [cardName, setCardName] = useState("");
+  // Card form state (for Square)
+  const [cardholderName, setCardholderName] = useState("");
   const [zipCode, setZipCode] = useState("");
+
+  // Square payment integration
+  const {
+    isLoading: squareLoading,
+    isReady: squareReady,
+    error: squareError,
+    isProcessing,
+    processPayment,
+  } = useSquarePayment({
+    onError: (err) => setPaymentError(err),
+  });
 
   // Fetch pledge by token
   useEffect(() => {
@@ -126,26 +134,10 @@ const GuestPaymentPage = () => {
     fetchPledge();
   }, [token]);
 
-  const formatCardNumber = (value: string) => {
-    const cleaned = value.replace(/\D/g, "");
-    const groups = cleaned.match(/.{1,4}/g);
-    return groups ? groups.join(" ").substr(0, 19) : "";
-  };
-
-  const formatExpiry = (value: string) => {
-    const cleaned = value.replace(/\D/g, "");
-    if (cleaned.length >= 2) {
-      return cleaned.substr(0, 2) + "/" + cleaned.substr(2, 2);
-    }
-    return cleaned;
-  };
-
   const isCardFormValid =
-    cardNumber.replace(/\s/g, "").length === 16 &&
-    expiryDate.length === 5 &&
-    cvc.length >= 3 &&
-    cardName.trim().length > 0 &&
-    zipCode.length >= 5;
+    cardholderName.trim().length > 0 &&
+    zipCode.length >= 5 &&
+    squareReady;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -153,39 +145,44 @@ const GuestPaymentPage = () => {
     if (paymentMethod === "card" && !isCardFormValid) return;
 
     setIsSubmitting(true);
+    setPaymentError(null);
 
     try {
-      // Update the payment record with payment details
-      const { error: updateError } = await supabase
-        .from("payments")
-        .update({
-          amount: pledge.amount,
-          payment_method: paymentMethod,
-          notes: paymentMethod === "check" 
-            ? "Guest payment - Check pending" 
-            : "Guest payment - Card processed",
-        })
-        .eq("class_pledge_id", pledge.id);
-
-      if (updateError) throw updateError;
-
-      // Mark the pledge as paid (for card payments)
       if (paymentMethod === "card") {
-        const { error: pledgeError } = await supabase
-          .from("class_pledges")
-          .update({ 
-            is_paid: true,
-            payment_status: "paid"
-          })
-          .eq("id", pledge.id);
+        // Process real payment with Square
+        const result = await processPayment({
+          amount: pledge.amount,
+          classPledgeId: pledge.id,
+          payerName: cardholderName || pledge.payment?.payer_name || "Guest",
+          payerEmail: pledge.payment?.payer_email || "",
+        });
 
-        if (pledgeError) throw pledgeError;
+        if (!result.success) {
+          setPaymentError(result.error || "Payment failed");
+          toast.error(result.error || "Payment failed");
+          return;
+        }
+
+        setReceiptUrl(result.receiptUrl || null);
+      } else {
+        // Check payment - just update status
+        const { error: updateError } = await supabase
+          .from("payments")
+          .update({
+            amount: pledge.amount,
+            payment_method: "check",
+            notes: "Guest payment - Check pending",
+          })
+          .eq("class_pledge_id", pledge.id);
+
+        if (updateError) throw updateError;
       }
 
       setIsSuccess(true);
       toast.success("Payment successful!");
-    } catch (err) {
+    } catch (err: any) {
       console.error("Payment error:", err);
+      setPaymentError(err.message || "Failed to process payment");
       toast.error("Failed to process payment. Please try again.");
     } finally {
       setIsSubmitting(false);
@@ -213,9 +210,20 @@ const GuestPaymentPage = () => {
                 <p className="text-xl text-foreground font-medium mb-2">
                   ${pledge?.amount.toFixed(2)} received
                 </p>
-                <p className="text-muted-foreground mb-8">
+                <p className="text-muted-foreground mb-6">
                   Your support helps motivate young readers!
                 </p>
+
+                {receiptUrl && (
+                  <a
+                    href={receiptUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-block text-sm text-primary hover:underline mb-6"
+                  >
+                    View Receipt →
+                  </a>
+                )}
 
                 <Button asChild className="w-full" size="lg">
                   <Link to="/">Return to Home</Link>
@@ -377,67 +385,30 @@ const GuestPaymentPage = () => {
 
               {paymentMethod === "card" ? (
                 <form onSubmit={handleSubmit} className="space-y-4">
-                  <FormField label="Cardholder Name" htmlFor="cardName" required>
-                    <Input
-                      id="cardName"
-                      placeholder="Name on card"
-                      value={cardName}
-                      onChange={(e) => setCardName(e.target.value)}
-                    />
-                  </FormField>
+                  <SquareCardForm
+                    isLoading={squareLoading}
+                    isReady={squareReady}
+                    error={squareError}
+                    cardholderName={cardholderName}
+                    onCardholderNameChange={setCardholderName}
+                    zipCode={zipCode}
+                    onZipCodeChange={setZipCode}
+                  />
 
-                  <FormField label="Card Number" htmlFor="cardNumber" required>
-                    <Input
-                      id="cardNumber"
-                      placeholder="1234 5678 9012 3456"
-                      value={cardNumber}
-                      onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
-                      maxLength={19}
-                    />
-                  </FormField>
-
-                  <div className="grid grid-cols-3 gap-4">
-                    <FormField label="Expiry" htmlFor="expiry" required>
-                      <Input
-                        id="expiry"
-                        placeholder="MM/YY"
-                        value={expiryDate}
-                        onChange={(e) => setExpiryDate(formatExpiry(e.target.value))}
-                        maxLength={5}
-                      />
-                    </FormField>
-                    <FormField label="CVC" htmlFor="cvc" required>
-                      <Input
-                        id="cvc"
-                        placeholder="123"
-                        value={cvc}
-                        onChange={(e) => setCvc(e.target.value.replace(/\D/g, "").substr(0, 4))}
-                        maxLength={4}
-                      />
-                    </FormField>
-                    <FormField label="ZIP Code" htmlFor="zip" required>
-                      <Input
-                        id="zip"
-                        placeholder="12345"
-                        value={zipCode}
-                        onChange={(e) => setZipCode(e.target.value.replace(/\D/g, "").substr(0, 5))}
-                        maxLength={5}
-                      />
-                    </FormField>
-                  </div>
-
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Lock className="h-4 w-4" />
-                    <span>Your payment info is secure and encrypted</span>
-                  </div>
+                  {paymentError && (
+                    <div className="p-3 bg-destructive/10 border border-destructive/30 rounded-lg flex items-start gap-2">
+                      <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+                      <p className="text-sm text-destructive">{paymentError}</p>
+                    </div>
+                  )}
 
                   <Button
                     type="submit"
-                    disabled={!isCardFormValid || isSubmitting}
+                    disabled={!isCardFormValid || isSubmitting || isProcessing}
                     className="w-full"
                     size="lg"
                   >
-                    {isSubmitting ? "Processing..." : `Pay $${pledge?.amount.toFixed(2)}`}
+                    {isSubmitting || isProcessing ? "Processing..." : `Pay $${pledge?.amount.toFixed(2)}`}
                   </Button>
                 </form>
               ) : (
