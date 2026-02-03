@@ -379,6 +379,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "event_winners_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children_public_safe"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "event_winners_event_id_fkey"
             columns: ["event_id"]
             isOneToOne: false
@@ -508,6 +515,13 @@ export type Database = {
             columns: ["child_id"]
             isOneToOne: false
             referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "log_verification_requests_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children_public_safe"
             referencedColumns: ["id"]
           },
           {
@@ -643,6 +657,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "pledges_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children_public_safe"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "pledges_event_id_fkey"
             columns: ["event_id"]
             isOneToOne: false
@@ -738,6 +759,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "reading_logs_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children_public_safe"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "reading_logs_event_id_fkey"
             columns: ["event_id"]
             isOneToOne: false
@@ -819,6 +847,13 @@ export type Database = {
             columns: ["child_id"]
             isOneToOne: false
             referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sponsor_invitations_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children_public_safe"
             referencedColumns: ["id"]
           },
         ]
@@ -951,7 +986,50 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      children_public_safe: {
+        Row: {
+          class_name: string | null
+          display_name: string | null
+          goal_minutes: number | null
+          grade_info: string | null
+          homeroom_teacher_id: string | null
+          id: string | null
+          share_public_link: boolean | null
+          total_minutes: number | null
+          user_id: string | null
+        }
+        Insert: {
+          class_name?: string | null
+          display_name?: never
+          goal_minutes?: number | null
+          grade_info?: string | null
+          homeroom_teacher_id?: string | null
+          id?: string | null
+          share_public_link?: boolean | null
+          total_minutes?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          class_name?: string | null
+          display_name?: never
+          goal_minutes?: number | null
+          grade_info?: string | null
+          homeroom_teacher_id?: string | null
+          id?: string | null
+          share_public_link?: boolean | null
+          total_minutes?: number | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "children_homeroom_teacher_id_fkey"
+            columns: ["homeroom_teacher_id"]
+            isOneToOne: false
+            referencedRelation: "teachers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       can_teacher_view_child: {
@@ -1012,6 +1090,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      safe_display_name: { Args: { full_name: string }; Returns: string }
     }
     Enums: {
       app_role: "admin" | "user" | "teacher"
