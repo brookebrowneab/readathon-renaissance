@@ -36,10 +36,7 @@ export function SponsorTypeSelector({
         <p className="text-muted-foreground">Choose how you'd like to support reading</p>
       </div>
 
-      <div className={cn(
-        "grid gap-4",
-        hasChildren ? "md:grid-cols-3" : "md:grid-cols-2"
-      )}>
+      <div className="grid gap-4 md:grid-cols-2 max-w-2xl mx-auto">
         {sponsorTypes
           .filter(({ type }) => {
             // Hide "My Children" option entirely if user has no children
@@ -56,12 +53,12 @@ export function SponsorTypeSelector({
                 )}
                 onClick={() => onSelect(type)}
               >
-                <CardContent className="p-6 text-center">
-                  <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                    <Icon className="h-7 w-7 text-primary" />
+                <CardContent className="p-8 text-center">
+                  <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-5">
+                    <Icon className="h-8 w-8 text-primary" />
                   </div>
-                  <h3 className="font-semibold text-lg mb-2">{title}</h3>
-                  <p className="text-sm text-muted-foreground">{description}</p>
+                  <h3 className="font-semibold text-xl mb-2">{title}</h3>
+                  <p className="text-muted-foreground">{description}</p>
                 </CardContent>
               </Card>
             );
