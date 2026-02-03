@@ -25,6 +25,7 @@ import { useClassGradeTotals } from "@/hooks/useClassGradeTotals";
 import { useMultipleClassFundraisingTotals } from "@/hooks/useClassFundraising";
 import { useActiveEvent } from "@/hooks/useActiveEvent";
 import { PledgesSection } from "@/components/dashboard/PledgesSection";
+import { ChildBooksSection } from "@/components/dashboard/ChildBooksSection";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState, useMemo } from "react";
 import { toast } from "sonner";
@@ -1120,6 +1121,9 @@ const ChildProgressCard = ({ child, milestoneGoal, milestoneReward }: ChildProgr
             />
           </div>
         )}
+
+        {/* My Books Section */}
+        <ChildBooksSection childId={child.id} />
 
         {/* Actions */}
         <div className="flex gap-2 w-full">
