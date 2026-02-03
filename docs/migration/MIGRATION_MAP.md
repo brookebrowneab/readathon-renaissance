@@ -807,22 +807,170 @@ View and manage all enrolled children with reading logs.
 
 ---
 
-## 6) Open Questions / Unknowns
+## 6) Open Questions / Unknowns (RESOLVED)
 
-| Location | What is Missing | How to Verify |
+### Payment Processing (CONFIRMED)
+
+| Item | Status | Details |
 |---|---|---|
-| FamilySponsorPage | Actual Square payment processing integration | Check edge functions for Square API calls |
-| SponsorPaymentPage | Payment form details | Review component file |
-| AdminEmailPage | Email template variables available | Review email edge functions |
-| AdminSettingsPage | Full list of configurable event fields | Read AdminSettingsPage.tsx |
-| VerifyLogsPage | Exact approval workflow | Read VerifyLogsPage.tsx |
-| TeacherLogReading | Bulk logging UI specifics | Read TeacherLogReading.tsx |
-| GuestPaymentPage | Token-based auth mechanism | Review page and class_pledges.payment_token |
-| All pages | Exact error messages for all scenarios | Test each flow |
-| Mobile | BottomTabBar exact items per role | Review BottomTabBar.tsx |
-| Notifications | Email trigger points | Review edge functions and notification calls |
-| NEEDS CONFIRMATION | Are demo modes removed in production? | Check if demo buttons are conditionally rendered |
-| NEEDS CONFIRMATION | Is Square integration live or mock? | Check environment configuration |
-| NEEDS CONFIRMATION | What happens when event ends? | Test with closed event |
-| UNKNOWN | Password reset flow for parents | Test /forgot-password flow |
-| UNKNOWN | Re-enrollment flow details | Read ReEnrollmentPage.tsx |
+| Square Integration | **MOCK** | Card form collects: cardholder name, card number (16 digits), expiry (MM/YY), CVC (3-4 digits), ZIP code (5 digits). No actual Square API calls - form submission just simulates delay and marks pledge as paid. |
+| Payment form fields | **CONFIRMED** | SponsorPaymentPage and GuestPaymentPage use identical card form: cardName, cardNumber, expiryDate, cvc, zipCode |
+| Check payments | **CONFIRMED** | Uses `event.payment_address` from database for mailing instructions |
+
+### SponsorPaymentPage (CONFIRMED)
+
+- **Card form fields:** Cardholder Name, Card Number (formatted 4-4-4-4), Expiry (MM/YY), CVC (3-4 digits), ZIP Code (5 digits)
+- **Validation:** 16 digit card, 5 char expiry, 3+ char CVC, non-empty name, 5+ char ZIP
+- **Payment method toggle:** Card vs Check (2 buttons)
+- **Pledge selection:** Checkbox list of unpaid pledges, shows child name + amount, calculates total
+- **Loading state:** "Processing..." on submit button
+- **Success state:** Shows "Thank You!" with amount received, "Back to Dashboard" button
+
+### GuestPaymentPage (CONFIRMED)
+
+- **Token-based auth:** Uses `payment_token` UUID from `class_pledges` table (auto-generated on pledge creation)
+- **URL format:** `/sponsor/guest-pay?token=<uuid>`
+- **Error states:** Invalid token, pledge not found, already paid
+- **No authentication required** - public access via token
+- **Updates both:** `payments` table and `class_pledges.is_paid` status
+
+### AdminEmailPage (CONFIRMED)
+
+**Available email template variables:**
+| Variable | Description |
+|---|---|
+| `{{sponsor_name}}` | Sponsor's full name |
+| `{{sponsor_first_name}}` | Sponsor's first name |
+| `{{student_name}}` | Student's name |
+| `{{student_first_name}}` | Student's first name |
+| `{{pledge_amount}}` | Pledge amount (e.g., $50 or $0.05/min) |
+| `{{total_owed}}` | Total amount owed |
+| `{{minutes_read}}` | Total minutes read |
+| `{{goal_minutes}}` | Reading goal in minutes |
+| `{{progress_percent}}` | Progress percentage |
+| `{{payment_link}}` | Link to payment page |
+| `{{event_name}}` | Event name |
+| `{{school_name}}` | School name |
+| `{{days_remaining}}` | Days until event ends |
+
+**Recipient filter options:**
+- all_sponsors, unpaid_sponsors, overdue_sponsors (7+ days), check_sponsors, all_parents, all_teachers, inactive_students
+
+### AdminSettingsPage (CONFIRMED)
+
+**Configurable event fields:**
+| Section | Fields |
+|---|---|
+| Event Details | name, school_name, start_date, end_date, last_log_date, goal_minutes, timezone |
+| Payment Settings | payment_address (textarea), accept_cards (switch), accept_checks (switch) |
+| Email Settings | send_reminders (switch), reminder_days (number) |
+| Class Milestone | class_milestone_enabled (switch), class_milestone_goal (number), class_milestone_reward (text) |
+| Teacher Logging | teacher_logging_grades (multi-select checkboxes from available grades) |
+| Log Verification | log_verification_enabled, log_verification_thresholds (via LogVerificationSettings component) |
+| Logo Generator | LogoGenerator component for generating event logo with date overlay |
+
+**Timezone options:** Eastern, Central, Mountain, Pacific, Alaska, Hawaii (US only)
+
+### VerifyLogsPage (CONFIRMED)
+
+**Approval workflow:**
+1. Parent navigates to `/reading-logs/approve`
+2. Table shows pending logs with columns: Student, Book, Minutes, Date, Source (Student/Parent/Teacher)
+3. Flagged entries (high minutes) highlighted in amber with AlertTriangle icon
+4. **Actions per row:** Approve (green checkmark), Reject (red X)
+5. **Bulk actions:** Select via checkboxes → "Approve (N)" / "Reject" buttons
+6. **Confirmation dialog:** AlertDialog confirms action with log details
+7. **Filter options:** All Logs, Flagged Only, By Student, By Parent
+8. **Success:** Logs removed from list, toast notification
+
+**Flag criteria:** Logs with unusually high minutes (threshold configured in event settings)
+
+### TeacherLogReading (CONFIRMED)
+
+**UI modes:**
+1. **Single Student Mode:** Select dropdown → shows student progress ring → set minutes
+2. **Bulk Mode:** Toggle switch → checkbox grid (2 columns) of all students → Select All/None buttons
+
+**Form fields:**
+- Student selection (single or multi-select)
+- Date: Today / Yesterday toggle buttons
+- Minutes: +/- buttons (5 min increments), direct input, quick buttons (15, 20, 30, 45 min)
+- Activity Note (optional textarea): e.g., "Classroom read-aloud, Silent reading time"
+
+**Permission checks:**
+- Phase-based: Only during active reading period (`canTeachersLog`)
+- Grade-based: Only if teacher's grade is in `event.teacher_logging_grades[]`
+
+**Blocking UI states:**
+- pre_event: "Reading Starts Soon" with start date
+- grace_period: "Reading Period Ended" - teachers blocked, parents can still log
+- closed: "Read-a-thon Complete"
+
+### BottomTabBar (CONFIRMED)
+
+| Role | Tab 1 | Tab 2 | Tab 3 | Tab 4 |
+|---|---|---|---|---|
+| Parent | Home (/dashboard) | Children (/family/manage) | Pledges (/my-pledges) | Profile (/account) |
+| Student | Home (/student) | Log Reading (/student/log) | Sponsors (/student) | Profile (/student) |
+| Teacher | Home (/teacher) | Students (/teacher) | Log (/teacher/log) | Profile (/teacher) |
+| Sponsor | Home (/sponsor/dashboard) | Pledges (/my-pledges) | Payments (/sponsor/pay) | Account (/account) |
+| Admin | Dashboard (/admin) | Users (/admin-users) | Finance (/admin-finance) | Settings (/admin/settings) |
+
+### ReEnrollmentPage (CONFIRMED)
+
+**Flow:**
+1. Shows returning parent's name, event name
+2. Lists previous children with: name, previous grade/teacher, checkbox to enroll
+3. For each selected child: grade dropdown (auto-advances one grade), teacher dropdown (filtered by grade)
+4. Reading goal input: quick buttons (300, 500, 750, 1000) + custom input
+5. "Add a new child" link to /onboarding/add-child
+6. Enroll button validates: at least one child selected, all have grade + teacher set
+7. **After enrollment:** Dialog offers to re-invite previous sponsors
+8. Sponsor list: checkboxes with name, relationship, email, previous pledge amount
+9. "Send Invitations" or "Skip for now" → navigates to /dashboard
+
+### ForgotPasswordPage (CONFIRMED)
+
+**Flow:**
+1. Email input form with validation
+2. Submit triggers: sets `isSubmitted = true` (currently no actual API call)
+3. Success state: Shows "Check Your Email" with submitted email, "try again" button
+4. Links: "Back to Sign In" (/login)
+5. **Note:** Form does not actually call Supabase password reset - just UI mock
+
+### Demo Mode (CONFIRMED - PRESENT IN PRODUCTION)
+
+LoginPage contains visible demo buttons in production:
+- "Demo Parent", "Demo Student", "Demo Teacher", "Demo Sponsor", "Demo Admin"
+- Each navigates directly to respective dashboard without auth
+
+**Recommendation:** These should be conditionally hidden in production via environment variable.
+
+### Event End Behavior (CONFIRMED)
+
+When admin clicks "End Event" in AdminSettingsPage:
+1. Confirmation dialog appears
+2. `endEvent(id)` sets `is_active = false` on events table
+3. Toast: "Event has been ended. Payment collection emails will be sent."
+4. Teachers see "Read-a-thon Complete" blocking UI
+5. Parents see grace_period or closed state depending on dates
+6. No automatic email sending (manual via AdminEmailPage)
+
+### Outstanding Admin Pages (CONFIRMED)
+
+**AdminOutstandingPage:**
+- Fetches unpaid pledges with sponsor/child info
+- Table columns: Sponsor (name + email), Student (name + grade), Type (badge), Amount, Days Outstanding, Last Reminder, Actions
+- Filter options: All Outstanding, Overdue (7+ days), No Reminder Sent, Large Pledges (>$1,500)
+- Bulk select → "Send Reminders" calls `sendPaymentReminders()`
+- Individual row "Send Reminder" button
+- Export button (mock - just toast)
+
+**AdminChecksPage:**
+- Uses mock data (not connected to database)
+- Summary cards: Pending, Received, Bounced counts
+- Table columns: Sponsor, Student, Amount, Pledge Date, Status, Notes, Actions
+- Actions for pending: Mark Received (green check), Mark Bounced (red X)
+- Actions for bounced: Send Reminder (mail icon)
+- Dialog for confirm action with optional notes
+- Shows hardcoded mailing address (not from event settings)
