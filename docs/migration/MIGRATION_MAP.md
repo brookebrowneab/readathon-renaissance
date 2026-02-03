@@ -2,6 +2,50 @@
 
 Generated: 2026-02-03
 
+---
+
+## Table of Contents
+
+- [0) App Overview](#0-app-overview-factual)
+- [1) Route / Page Inventory](#1-route--page-inventory)
+- [2) Shared Components Inventory](#2-shared-components-inventory)
+- [3) Data Entities Observed (UI-level)](#3-data-entities-observed-ui-level)
+- [4) Page-by-Page Specs](#4-page-by-page-specs)
+  - [HomePage](#homepage-route-)
+  - [LoginPage](#loginpage-route-login)
+  - [RegisterPage](#registerpage-route-register)
+  - [DashboardPage](#dashboardpage-route-dashboard)
+  - [StudentPinLoginPage](#studentpinloginpage-route-studentlogin)
+  - [StudentPinDashboardPage](#studentpindashboardpage-route-studentdashboard)
+  - [TeacherDashboard](#teacherdashboard-route-teacher)
+  - [AdminDashboard](#admindashboard-route-admin)
+  - [OnboardingAddChild](#onboardingaddchild-route-onboardingadd-child)
+  - [LogReadingPage](#logreadingpage-route-log-reading)
+  - [FamilySponsorPage](#familysponsorpage-route-fuserid)
+  - [ManageChildrenPage](#managechildrenpage-route-children-or-familymanage)
+- [5) Cross-Page Flows](#5-cross-page-flows-end-to-end)
+  - [Flow 1: Parent Registration & Onboarding](#flow-1-parent-registration--onboarding)
+  - [Flow 2: Sponsor Pledge Flow](#flow-2-sponsor-pledge-flow)
+  - [Flow 3: Student Reading Log](#flow-3-student-reading-log)
+  - [Flow 4: Parent Reading Log](#flow-4-parent-reading-log)
+  - [Flow 5: Admin Payment Collection](#flow-5-admin-payment-collection)
+- [6) Open Questions / Unknowns (RESOLVED)](#6-open-questions--unknowns-resolved)
+  - [Payment Processing](#payment-processing-confirmed)
+  - [SponsorPaymentPage](#sponsorpaymentpage-confirmed)
+  - [GuestPaymentPage](#guestpaymentpage-confirmed)
+  - [AdminEmailPage](#adminemailpage-confirmed)
+  - [AdminSettingsPage](#adminsettingspage-confirmed)
+  - [VerifyLogsPage](#verifylogspage-confirmed)
+  - [TeacherLogReading](#teacherlogreading-confirmed)
+  - [BottomTabBar](#bottomtabbar-confirmed)
+  - [ReEnrollmentPage](#reenrollmentpage-confirmed)
+  - [ForgotPasswordPage](#forgotpasswordpage-needs-implementation)
+  - [Demo Mode](#demo-mode-to-be-removed)
+  - [Event End Behavior](#event-end-behavior-needs-enhancement)
+  - [Outstanding Admin Pages](#outstanding-admin-pages-confirmed)
+
+---
+
 ## 0) App Overview (factual)
 
 - **App name:** Read-a-thon / Readathon Renaissance
