@@ -103,6 +103,11 @@ Deno.serve(async (req) => {
     // Create Supabase client with service role
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
+    // Collect student names for receipt email
+    const studentNames: string[] = [];
+    let className: string | undefined;
+    let isClassPledge = false;
+
     // Record payment and update pledge status
     if (pledgeIds?.length) {
       // Individual pledge payments
@@ -119,6 +124,11 @@ Deno.serve(async (req) => {
         const pledgeAmount = pledge?.pledge_type === "per_minute" && childData
           ? pledge.amount * (childData.total_minutes || 0)
           : pledge?.amount || 0;
+
+        // Collect student name for receipt
+        if (pledge?.student_name) {
+          studentNames.push(pledge.student_name);
+        }
 
         // Create payment record
         await supabase.from("payments").insert({
@@ -145,12 +155,16 @@ Deno.serve(async (req) => {
           .eq("id", pledgeId);
       }
     } else if (classPledgeId) {
+      isClassPledge = true;
+      
       // Class pledge (guest) payment
       const { data: classPledge } = await supabase
         .from("class_pledges")
         .select("class_name, amount")
         .eq("id", classPledgeId)
         .single();
+
+      className = classPledge?.class_name;
 
       // Create payment record
       await supabase.from("payments").insert({
@@ -169,6 +183,29 @@ Deno.serve(async (req) => {
         .from("class_pledges")
         .update({ is_paid: true, payment_status: "paid" })
         .eq("id", classPledgeId);
+    }
+
+    // Send payment receipt email (fire and forget - don't block the response)
+    try {
+      await fetch(`${SUPABASE_URL}/functions/v1/send-payment-receipt`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+        },
+        body: JSON.stringify({
+          payerEmail,
+          payerName,
+          amount,
+          receiptUrl: squareReceiptUrl,
+          studentNames,
+          className,
+          isClassPledge,
+        }),
+      });
+    } catch (emailError) {
+      // Log but don't fail the payment if email fails
+      console.error("Failed to send receipt email:", emailError);
     }
 
     return new Response(
