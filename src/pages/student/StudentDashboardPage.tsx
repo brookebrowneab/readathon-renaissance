@@ -93,7 +93,7 @@ const StudentDashboardPage = () => {
         }
       />
 
-      <main className="px-4 pb-8 space-y-6 max-w-lg mx-auto">
+      <main className="px-4 pb-8 space-y-6 max-w-lg mx-auto md:mt-[15px] lg:mt-0">
         {/* Welcome */}
         <div className="text-center">
           <h1 className="font-handwritten text-4xl text-brand-blue">
