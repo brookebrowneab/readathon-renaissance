@@ -81,7 +81,12 @@ Visual specification for all reusable UI components in the application.
     - [BookSelector](#bookselector)
     - [BarcodeScanner](#barcodescanner)
 13. [Skeleton Components](#skeleton-components)
-    - CardSkeleton, TableSkeleton, ProgressCircleSkeleton, TextSkeleton, StudentCardSkeleton, DashboardSkeleton
+    - [CardSkeleton](#cardskeleton)
+    - [TableSkeleton](#tableskeleton)
+    - [ProgressCircleSkeleton](#progresscircleskeleton)
+    - [TextSkeleton](#textskeleton)
+    - [StudentCardSkeleton](#studentcardskeleton)
+    - [DashboardSkeleton](#dashboardskeleton)
 14. [Pledge Components](#pledge-components)
     - [EditPledgeDialog](#editpledgedialog)
     - [ChildSelector](#childselector)
@@ -2064,27 +2069,198 @@ Default colors:
 
 **File Path:** `src/components/ui/skeletons.tsx`
 
-**Purpose:** Pre-built skeleton layouts for common patterns.
+**Purpose:** Pre-built skeleton layouts for common loading state patterns.
 
-**Variants:**
-- `CardSkeleton` - Card with avatar and text
-- `TableSkeleton` - Table rows
-- `ProgressCircleSkeleton` - Circular progress
-- `TextSkeleton` - Text paragraphs (heading/paragraph/label variants)
-- `StudentCardSkeleton` - Student card layout
-- `DashboardSkeleton` - Full dashboard layout
+---
 
-**Props (CardSkeleton):**
+### CardSkeleton
+
+**Purpose:** Loading placeholder for card-based content with avatar and text.
+
+**Props:**
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `hasAvatar` | `boolean` | `true` | Show avatar placeholder |
-| `hasActions` | `boolean` | `true` | Show action buttons |
-| `lines` | `number` | `2` | Number of text lines |
+| `className` | `string` | — | Additional CSS classes |
+| `hasAvatar` | `boolean` | `true` | Show circular avatar placeholder |
+| `hasActions` | `boolean` | `true` | Show action button placeholders |
+| `lines` | `number` | `2` | Number of text line placeholders |
+
+**Visual Structure:**
+```
+<div (card container)>
+  <div (header row)>
+    {hasAvatar && <Skeleton (circle) />}
+    <div (text lines)>
+      <Skeleton (title) />
+      <Skeleton (lines...) />
+    </div>
+  </div>
+  {hasActions && <div (action buttons) />}
+</div>
+```
 
 **Color Usage:**
-- Skeleton: `bg-muted animate-pulse`
+- Background: `bg-card`
+- Skeleton elements: `bg-muted animate-pulse`
 
-**Used On:** All data loading states
+**Used On:** PledgesSection, ManageChildrenPage, any card loading state
+
+---
+
+### TableSkeleton
+
+**Purpose:** Loading placeholder for tabular data.
+
+**Props:**
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `rows` | `number` | `5` | Number of row placeholders |
+| `columns` | `number` | `4` | Number of column placeholders |
+| `className` | `string` | — | Additional CSS classes |
+
+**Visual Structure:**
+```
+<div>
+  <div (header row)>
+    <Skeleton />...
+  </div>
+  {rows.map(() => (
+    <div (data row)>
+      <Skeleton />...
+    </div>
+  ))}
+</div>
+```
+
+**Color Usage:**
+- Row borders: `border-b`
+- Skeleton elements: `bg-muted animate-pulse`
+
+**Used On:** AdminReadingLogsPage, AdminOutstandingPage, any table loading state
+
+---
+
+### ProgressCircleSkeleton
+
+**Purpose:** Loading placeholder for circular progress indicators.
+
+**Props:**
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `size` | `number` | `160` | Diameter in pixels |
+| `className` | `string` | — | Additional CSS classes |
+
+**Visual Structure:**
+```
+<div (container)>
+  <div (circle placeholder)>
+    <svg (ring outline) />
+  </div>
+  <div (text placeholders)>
+    <Skeleton (value) />
+    <Skeleton (label) />
+  </div>
+</div>
+```
+
+**Color Usage:**
+- Circle: `bg-muted animate-pulse`
+- Ring: `text-muted-foreground/20`
+
+**Used On:** DashboardPage, StudentDashboardPage, any progress ring loading state
+
+---
+
+### TextSkeleton
+
+**Purpose:** Loading placeholder for text content with realistic varying widths.
+
+**Props:**
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `lines` | `number` | `3` | Number of text line placeholders |
+| `className` | `string` | — | Additional CSS classes |
+| `variant` | `"heading" \| "paragraph" \| "label"` | `"paragraph"` | Text style variant |
+
+**Width Patterns by Variant:**
+- `heading`: [80%, 60%]
+- `paragraph`: [100%, 95%, 70%, 85%, 60%]
+- `label`: [40%, 30%, 50%]
+
+**Height by Variant:**
+- `heading`: `h-8`
+- `paragraph`: `h-4`
+- `label`: `h-3`
+
+**Used On:** Content loading states, article placeholders
+
+---
+
+### StudentCardSkeleton
+
+**Purpose:** Loading placeholder matching StudentCard layout.
+
+**Visual Structure:**
+```
+<div (card)>
+  <div (header)>
+    <Skeleton (avatar circle) />
+    <div>
+      <Skeleton (name) />
+      <Skeleton (grade) />
+    </div>
+    <Skeleton (progress ring) />
+  </div>
+  <div (actions)>
+    <Skeleton (button) />
+    <Skeleton (button) />
+  </div>
+</div>
+```
+
+**Spacing:**
+- Avatar: `h-12 w-12 rounded-full`
+- Name: `h-5 w-32`
+- Grade: `h-4 w-20`
+- Progress: `h-12 w-12 rounded-full`
+
+**Used On:** DashboardPage, TeacherDashboard student lists
+
+---
+
+### DashboardSkeleton
+
+**Purpose:** Full-page loading placeholder for dashboard layouts.
+
+**Visual Structure:**
+```
+<div>
+  {/* Header */}
+  <Skeleton (title) />
+  <Skeleton (subtitle) />
+  
+  {/* Stats Grid */}
+  <div (4-column grid)>
+    {4x stat cards}
+  </div>
+  
+  {/* Main Content */}
+  <div (3-column grid)>
+    <div (2-col span)>
+      {4x StudentCardSkeleton}
+    </div>
+    <div (sidebar)>
+      <ProgressCircleSkeleton />
+    </div>
+  </div>
+</div>
+```
+
+**Animation:**
+- Container: `animate-fade-in`
+- All skeletons: `animate-pulse`
+
+**Used On:** DashboardPage, AdminDashboard initial load
 
 ---
 
