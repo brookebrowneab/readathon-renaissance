@@ -5,6 +5,8 @@ import { ReadingGoalRing } from "@/components/legacy";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ClassFundraisingShelf } from "@/components/ui/class-fundraising-shelf";
+import { MobileProgressDisplay } from "@/components/mobile/MobileProgressDisplay";
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   BookOpen,
   Plus,
@@ -66,6 +68,7 @@ const calculateMinutesToday = (logs: { logged_at: string; minutes: number }[]): 
 };
 
 const DashboardPage = () => {
+  const isMobile = useIsMobile();
   const navigate = useNavigate();
   const [userName, setUserName] = useState<string>("");
   const { children, isLoading: childrenLoading } = useChildren();
@@ -272,16 +275,45 @@ const DashboardPage = () => {
                       ))}
                     </div>
                   ) : transformedChildren.length > 0 ? (
-                    <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-                      {transformedChildren.map((child) => (
-                        <ChildProgressCard 
-                          key={child.id} 
-                          child={child} 
-                          milestoneGoal={milestoneGoal}
-                          milestoneReward={milestoneEnabled ? milestoneReward : null}
-                        />
-                      ))}
-                    </div>
+                    <>
+                      {/* Mobile: Swipeable Progress Display */}
+                      {isMobile && transformedChildren.length >= 1 && (
+                        <div className="mb-6 md:hidden">
+                          <MobileProgressDisplay
+                            children={transformedChildren.map(child => ({
+                              id: child.id,
+                              name: child.name,
+                              currentMinutes: child.minutesRead,
+                              goalMinutes: child.goalMinutes,
+                            }))}
+                          />
+                        </div>
+                      )}
+                      
+                      {/* Desktop/Tablet: Card Grid */}
+                      <div className="hidden md:grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+                        {transformedChildren.map((child) => (
+                          <ChildProgressCard 
+                            key={child.id} 
+                            child={child} 
+                            milestoneGoal={milestoneGoal}
+                            milestoneReward={milestoneEnabled ? milestoneReward : null}
+                          />
+                        ))}
+                      </div>
+                      
+                      {/* Mobile: Compact cards below progress display */}
+                      <div className="grid gap-4 md:hidden">
+                        {transformedChildren.map((child) => (
+                          <ChildProgressCard 
+                            key={child.id} 
+                            child={child} 
+                            milestoneGoal={milestoneGoal}
+                            milestoneReward={milestoneEnabled ? milestoneReward : null}
+                          />
+                        ))}
+                      </div>
+                    </>
                   ) : (
                     <div className="bg-background p-6 shadow-md text-center" style={handDrawnBorder}>
                       <BookOpen className="h-10 w-10 text-muted-foreground/40 mx-auto mb-3" />

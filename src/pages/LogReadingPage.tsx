@@ -7,6 +7,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { FormField } from "@/components/ui/form-field";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Calendar } from "@/components/ui/calendar";
+import { Confetti, ParticleBurst } from "@/components/ui/celebrations";
+import { MobileMinutesStepper } from "@/components/mobile/MobileMinutesStepper";
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   Popover,
   PopoverContent,
@@ -83,6 +86,7 @@ const bookSuggestions = [
 const minutePresets = [15, 30, 45, 60];
 
 const LogReadingPage = () => {
+  const isMobile = useIsMobile();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const initialChildId = searchParams.get("child");
@@ -400,9 +404,13 @@ const LogReadingPage = () => {
             </div>
           )}
 
-          {/* Success State */}
+          {/* Success State with Celebration Effects */}
           {isSuccess && selectedChild && (
             <div className="mb-6 animate-scale-in">
+              {/* Celebration effects */}
+              <Confetti isActive={isSuccess} />
+              {willReachGoal && <ParticleBurst isActive={isSuccess} />}
+              
               <div 
                 className="bg-background p-6 text-center relative overflow-hidden shadow-md"
                 style={handDrawnBorder}
@@ -474,77 +482,89 @@ const LogReadingPage = () => {
                   </Popover>
                 </FormField>
 
-                {/* Minutes Input */}
+                {/* Minutes Input - Mobile uses MobileMinutesStepper */}
                 <FormField 
                   label="Minutes Read" 
                   htmlFor="minutes"
                   error={validationErrors.minutes}
                 >
-                  <div className="space-y-3">
-                    {/* Stepper */}
-                    <div className="flex items-center justify-center gap-4">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        className="h-12 w-12"
-                        onClick={() => handleMinutesChange(-5)}
-                        disabled={minutes <= 0}
-                      >
-                        <Minus className="h-5 w-5" />
-                      </Button>
-                      <div className="relative">
-                        <Input
-                          id="minutes"
-                          type="number"
-                          value={minutes}
-                          onChange={(e) => {
-                            const val = Math.max(0, Math.min(480, parseInt(e.target.value) || 0));
-                            setMinutes(val);
-                            setValidationErrors((prev) => ({ ...prev, minutes: "" }));
-                          }}
-                          className={cn(
-                            "w-24 h-14 text-center text-2xl font-serif",
-                            validationErrors.minutes && "border-destructive"
-                          )}
-                          min={0}
-                          max={480}
-                        />
-                        <span className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-xs text-muted-foreground">
-                          minutes
-                        </span>
-                      </div>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        className="h-12 w-12"
-                        onClick={() => handleMinutesChange(5)}
-                        disabled={minutes >= 480}
-                      >
-                        <Plus className="h-5 w-5" />
-                      </Button>
-                    </div>
-
-                    {/* Preset Buttons */}
-                    <div className="flex justify-center gap-2 pt-4">
-                      {minutePresets.map((preset) => (
+                  {isMobile ? (
+                    <MobileMinutesStepper
+                      value={minutes}
+                      onChange={(val) => {
+                        setMinutes(val);
+                        setValidationErrors((prev) => ({ ...prev, minutes: "" }));
+                      }}
+                      min={1}
+                      max={480}
+                    />
+                  ) : (
+                    <div className="space-y-3">
+                      {/* Desktop Stepper */}
+                      <div className="flex items-center justify-center gap-4">
                         <Button
-                          key={preset}
                           type="button"
-                          variant={minutes === preset ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => {
-                            setMinutes(preset);
-                            setValidationErrors((prev) => ({ ...prev, minutes: "" }));
-                          }}
-                          className="font-serif"
+                          variant="outline"
+                          size="icon"
+                          className="h-12 w-12"
+                          onClick={() => handleMinutesChange(-5)}
+                          disabled={minutes <= 0}
                         >
-                          {preset} min
+                          <Minus className="h-5 w-5" />
                         </Button>
-                      ))}
+                        <div className="relative">
+                          <Input
+                            id="minutes"
+                            type="number"
+                            value={minutes}
+                            onChange={(e) => {
+                              const val = Math.max(0, Math.min(480, parseInt(e.target.value) || 0));
+                              setMinutes(val);
+                              setValidationErrors((prev) => ({ ...prev, minutes: "" }));
+                            }}
+                            className={cn(
+                              "w-24 h-14 text-center text-2xl font-serif",
+                              validationErrors.minutes && "border-destructive"
+                            )}
+                            min={0}
+                            max={480}
+                          />
+                          <span className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-xs text-muted-foreground">
+                            minutes
+                          </span>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          className="h-12 w-12"
+                          onClick={() => handleMinutesChange(5)}
+                          disabled={minutes >= 480}
+                        >
+                          <Plus className="h-5 w-5" />
+                        </Button>
+                      </div>
+
+                      {/* Preset Buttons */}
+                      <div className="flex justify-center gap-2 pt-4">
+                        {minutePresets.map((preset) => (
+                          <Button
+                            key={preset}
+                            type="button"
+                            variant={minutes === preset ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => {
+                              setMinutes(preset);
+                              setValidationErrors((prev) => ({ ...prev, minutes: "" }));
+                            }}
+                            className="font-serif"
+                          >
+                            {preset} min
+                          </Button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </FormField>
 
                 {/* Book Selector with Barcode Scanning */}
