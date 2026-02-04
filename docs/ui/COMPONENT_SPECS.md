@@ -71,6 +71,7 @@ Visual specification for all reusable UI components in the application.
 12. [Book Components](#book-components)
     - [BookSelector](#bookselector)
     - [BarcodeScanner](#barcodescanner)
+13. [Skeleton Components](#skeleton-components)
 
 ---
 
