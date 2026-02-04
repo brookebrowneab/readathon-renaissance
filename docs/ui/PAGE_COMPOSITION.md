@@ -528,7 +528,7 @@ Mapping of pages to layout shells and component usage. This document describes *
 
 | Property | Value |
 |----------|-------|
-| Route | `/log` |
+| Route | `/log-reading` |
 | Layout Shell | Custom (MainNav + Footer, no BottomTabBar) |
 | File | `src/pages/LogReadingPage.tsx` |
 
