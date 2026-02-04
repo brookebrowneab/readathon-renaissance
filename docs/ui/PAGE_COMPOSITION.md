@@ -14,6 +14,7 @@ Mapping of pages to layout shells and component usage. This document describes *
 6. [Teacher Pages](#teacher-pages)
 7. [Sponsor Pages](#sponsor-pages)
 8. [Student Pages](#student-pages)
+9. [Debug Pages](#debug-pages)
 
 ---
 
@@ -367,6 +368,43 @@ Mapping of pages to layout shells and component usage. This document describes *
 
 ---
 
+### ReEnrollmentPage
+
+| Property | Value |
+|----------|-------|
+| Route | `/onboarding/re-enroll` |
+| Layout Shell | `PublicLayout` (centered card) |
+| File | `src/pages/onboarding/ReEnrollmentPage.tsx` |
+
+**Components Used (top to bottom):**
+1. MainNav
+2. Centered Section
+   - BookContainer
+     - Logo
+     - Welcome Message (personalized)
+     - **Children List:**
+       - Card (per child)
+         - Checkbox
+         - Child name/previous info
+         - Badge (Ready status)
+         - Select (grade)
+         - Select (teacher)
+     - **Reading Goal Selection:**
+       - Button group (preset goals)
+       - Input (custom goal)
+     - Link (Add New Child)
+     - Button (Enroll)
+3. Dialog (Re-invite Sponsors)
+   - Previous sponsor list with Checkbox
+   - Button (Send Invitations, Skip)
+4. Footer
+
+**Conditional States:**
+- Loading: None (mock data)
+- Enrollment Complete: Shows sponsor re-invite dialog
+
+---
+
 ## Parent/Family Pages
 
 ### DashboardPage
@@ -573,6 +611,176 @@ Mapping of pages to layout shells and component usage. This document describes *
 
 ---
 
+### SponsorRequestsPage
+
+| Property | Value |
+|----------|-------|
+| Route | `/family/sponsor-requests` |
+| Layout Shell | Custom (MainNav + Footer) |
+| File | `src/pages/family/SponsorRequestsPage.tsx` |
+
+**Components Used (top to bottom):**
+1. MainNav
+2. Main Content (max-w-3xl)
+   - Header
+   - **Privacy Notice Card (hand-drawn border):**
+     - Shield icon
+     - Privacy explanation text
+   - **Pending Requests Section:**
+     - Cards per request (hand-drawn border)
+       - User icon + name/email
+       - Badge (Returning)
+       - Stats grid (Last sponsored, Times sponsored, Total given)
+       - Button (Approve, Decline)
+   - **Recently Processed Section (conditional):**
+     - Cards with Badge (Approved/Declined)
+   - Help text footer
+3. Footer
+4. AlertDialog (approve/deny confirmation with sharing permission checkbox)
+
+**Conditional States:**
+- Empty pending: "No pending requests right now" message
+
+---
+
+### SponsorMyChildPage
+
+| Property | Value |
+|----------|-------|
+| Route | `/family/sponsor-my-child` |
+| Layout Shell | Custom (MainNav + Footer) |
+| File | `src/pages/family/SponsorMyChildPage.tsx` |
+
+**Components Used (top to bottom):**
+1. MainNav
+2. Main Content (max-w-2xl)
+   - Step Navigation (4 steps: Type, Select, Amount, Confirmation)
+   - **Step 0 - Type Selection:**
+     - SponsorTypeSelector
+     - Buttons (Back, Continue)
+   - **Step 1 - Selection:**
+     - ChildSelector (my-children) or ClassSelector (classroom)
+     - Buttons (Back, Continue)
+   - **Step 2 - Amount:**
+     - PledgeAmountForm or ClassroomPledgeForm
+     - Buttons (Back, Create Pledge)
+   - **Step 3 - Confirmation:**
+     - CheckCircle success icon
+     - Pledge summary card
+     - Buttons (Dashboard, Another Pledge)
+3. Footer
+
+---
+
+### VerifyLogsPage
+
+| Property | Value |
+|----------|-------|
+| Route | `/reading-logs/approve` |
+| Layout Shell | Custom (MainNav + Footer) |
+| File | `src/pages/reading-logs/VerifyLogsPage.tsx` |
+
+**Components Used (top to bottom):**
+1. MainNav
+2. Main Content (max-w-5xl)
+   - Back Link (to Dashboard)
+   - Header with Badge (flagged count)
+   - **Stats Summary (hand-drawn border):**
+     - Pending Logs, Total Minutes, Needs Review
+   - **Filters Row:**
+     - Select (filter by: all, flagged, student, parent)
+     - Buttons (Approve, Reject) - conditional on selection
+   - **Table (hand-drawn border):**
+     - Checkbox (select all)
+     - TableHeader
+     - TableBody
+       - Checkbox per row
+       - Student with AlertTriangle (if flagged)
+       - Book title
+       - Minutes
+       - Date
+       - Badge (source)
+       - Action buttons (CheckCircle, XCircle)
+   - Help text (flagged explanation)
+3. Footer
+4. AlertDialog (approve/reject confirmation)
+
+**Conditional States:**
+- Empty: "All caught up!" message with CheckCircle
+
+---
+
+### InviteSponsorsPage
+
+| Property | Value |
+|----------|-------|
+| Route | `/invite`, `/children/:id/invite` |
+| Layout Shell | Custom (MainNav + Footer + BottomTabBar) |
+| File | `src/pages/InviteSponsorsPage.tsx` |
+
+**Components Used (top to bottom):**
+1. MainNav
+2. Main Content (max-w-3xl)
+   - Back Link (to Dashboard)
+   - Header
+   - **Previous Sponsors Section (conditional, hand-drawn border):**
+     - Card per previous sponsor
+       - UserCheck icon
+       - Name/email
+       - Last pledge info (DollarSign, Calendar)
+       - Button (Invite) or Badge (Invited)
+     - Button (Invite All)
+   - **Email Invitation Form (hand-drawn border):**
+     - FormField (email, name, relationship, message)
+     - Button (Send Invitation)
+   - **Share Link Section (hand-drawn border):**
+     - Copy Link (Input + Button)
+     - Share Buttons (SMS, WhatsApp, Print)
+   - **Sent Invitations List:**
+     - Cards per invitation
+       - Badge (status: Sent, Opened, Pledged)
+       - Buttons (Resend, Cancel)
+3. Footer
+4. BottomTabBar
+
+---
+
+### AddSponsorPage
+
+| Property | Value |
+|----------|-------|
+| Route | `/children/:id/add-sponsor` |
+| Layout Shell | Custom (MainNav + Footer + BottomTabBar) |
+| File | `src/pages/AddSponsorPage.tsx` |
+
+**Components Used (top to bottom):**
+1. MainNav
+2. Main Content (max-w-2xl)
+   - Back Link (to Invite Sponsors)
+   - Header
+   - **Form Card (hand-drawn border):**
+     - **Step 1 - Sponsor Information:**
+       - FormField (name, email, phone)
+       - Returning sponsor detection card (conditional)
+         - Switch (use last year amount)
+     - **Step 2 - Pledge Details:**
+       - RadioGroup (fixed, per-minute)
+       - Input (amount or rate)
+       - Projected amount display
+     - **Step 3 - Payment Method:**
+       - Radio buttons (Email, Text, Check, Cash, Direct)
+       - FormField (notes)
+     - **Summary Card:**
+       - Pledge breakdown
+     - Button (Record Pledge)
+3. Footer
+4. BottomTabBar
+
+**Conditional States:**
+- Success: Confirmation card with next steps based on payment method
+
+---
+
 ## Admin Pages
 
 ### AdminDashboard
@@ -644,6 +852,82 @@ Mapping of pages to layout shells and component usage. This document describes *
 **Conditional States:**
 - Loading: LoadingSpinner centered
 - Empty: "No reading logs found" message
+
+---
+
+### AdminOutstandingPage
+
+| Property | Value |
+|----------|-------|
+| Route | `/admin/outstanding` |
+| Layout Shell | `AdminLayout` |
+| File | `src/pages/admin/AdminOutstandingPage.tsx` |
+
+**Components Used (top to bottom):**
+1. MainNav
+2. Admin Nav Bar
+3. Main Content
+   - Header with highlighter effect
+   - **Actions:**
+     - Button (Export)
+     - Button (Send Reminders)
+   - **Filters (hand-drawn border):**
+     - Input (search)
+     - Select (filter: all, overdue, no-reminder, large)
+   - **Table (hand-drawn border):**
+     - Select All/None buttons
+     - TableHeader
+     - TableBody
+       - Checkbox (selection)
+       - Sponsor/Student info
+       - Badge (pledge type)
+       - Days outstanding with AlertTriangle
+       - Button (send reminder per row)
+     - TablePagination
+4. Footer
+
+**Conditional States:**
+- Loading: Skeleton rows
+- Empty: "No outstanding payments" message
+
+---
+
+### AdminChecksPage
+
+| Property | Value |
+|----------|-------|
+| Route | `/admin/checks` |
+| Layout Shell | `AdminLayout` |
+| File | `src/pages/admin/AdminChecksPage.tsx` |
+
+**Components Used (top to bottom):**
+1. MainNav
+2. Admin Nav Bar
+3. Main Content
+   - Header with highlighter effect
+   - Button (Export Report)
+   - **Summary Cards Grid (3 cols):**
+     - Pending (FileText icon)
+     - Received (CheckCircle icon)
+     - Bounced (XCircle icon)
+   - **Search:**
+     - Input (search sponsors/students)
+   - **Table (hand-drawn border):**
+     - TableHeader
+     - TableBody
+       - Sponsor/Student info
+       - Amount
+       - Pledge date
+       - Badge (status: pending/received/bounced)
+       - Notes
+       - Action buttons (CheckCircle, XCircle, Mail)
+   - **Mailing Instructions Card:**
+     - Address information
+4. Footer
+5. Dialog (mark received/bounced with notes)
+
+**Conditional States:**
+- Empty: "No checks match your search"
 
 ---
 
@@ -821,6 +1105,13 @@ Mapping of pages to layout shells and component usage. This document describes *
    - Student Selector
    - Log Form
 
+**Conditional States:**
+- Blocked (pre-event): "Reading Starts Soon" message with Calendar icon
+- Blocked (grace period): "Reading Period Ended" message
+- Blocked (closed): "Read-a-thon Complete" message
+- Blocked (no grade permission): Redirects to `/teacher` with error toast
+- Success: Celebration card with stats
+
 ---
 
 ### TeacherLoginPage
@@ -837,6 +1128,59 @@ Mapping of pages to layout shells and component usage. This document describes *
    - FormField (email, password)
    - Button (Sign In)
 3. Footer
+
+---
+
+### TeacherRegisterPage
+
+| Property | Value |
+|----------|-------|
+| Route | `/teacher/register` |
+| Layout Shell | `PublicLayout` (centered card) |
+| File | `src/pages/teacher/TeacherRegisterPage.tsx` |
+
+**Components Used (top to bottom):**
+1. MainNav
+2. Centered Section
+   - Card (hand-drawn border)
+     - Badge (Teacher Registration)
+     - FormField (email)
+     - Button (Send Magic Link)
+     - Info Box (how it works)
+     - Link (Sign in with password)
+     - Link (Parent/Sponsor login)
+3. Footer
+
+**Conditional States:**
+- Email sent: Shows "Check Your Email" confirmation card
+- Error: Toast for no teacher record found
+
+---
+
+### TeacherSetPasswordPage
+
+| Property | Value |
+|----------|-------|
+| Route | `/teacher/set-password` |
+| Layout Shell | `PublicLayout` (centered card) |
+| File | `src/pages/teacher/TeacherSetPasswordPage.tsx` |
+
+**Components Used (top to bottom):**
+1. MainNav
+2. Centered Section
+   - Card (hand-drawn border)
+     - CheckCircle icon
+     - Badge (Almost Done!)
+     - Welcome message (personalized)
+     - FormField (password, confirmPassword)
+     - Button (Set Password & Continue)
+     - Link (Skip for now)
+3. Footer
+
+**Conditional States:**
+- Checking auth: Shows loading spinner
+- No auth: Redirects to `/teacher/register`
+- Error: Redirects with error toast
 
 ---
 
@@ -947,6 +1291,287 @@ Mapping of pages to layout shells and component usage. This document describes *
 1. Celebration Card
    - Confetti
    - Thank you message
+
+---
+
+### SponsorGatewayPage
+
+| Property | Value |
+|----------|-------|
+| Route | `/sponsor` |
+| Layout Shell | Custom (MainNav + Footer) |
+| File | `src/pages/sponsor/SponsorGatewayPage.tsx` |
+
+**Components Used (top to bottom):**
+1. MainNav
+2. Centered Content (max-w-2xl)
+   - Header with Heart icon
+   - **BookContainer (variant="warm"):**
+     - **Support a Classroom Card (primary):**
+       - Users icon
+       - Description
+       - Button (Get Started)
+     - **Returning Sponsor Card:**
+       - Sparkles icon
+       - Button (Sign In)
+     - **Have a Link Section:**
+       - Link icon
+       - Input (sponsor code)
+       - Button (Continue)
+   - Help text footer
+3. Footer
+
+**Conditional States:**
+- Checking auth: Loading spinner
+- Authenticated: Redirects to `/sponsor/dashboard`
+
+---
+
+### SponsorLoginPage
+
+| Property | Value |
+|----------|-------|
+| Route | `/sponsor/login` |
+| Layout Shell | Custom (MainNav + Footer) |
+| File | `src/pages/sponsor/SponsorLoginPage.tsx` |
+
+**Components Used (top to bottom):**
+1. MainNav
+2. Centered Content (max-w-md)
+   - **Email View (viewMode="email"):**
+     - BookContainer
+       - Mail icon
+       - FormField (email)
+       - Button (Send login link)
+       - Link (Find my account)
+   - **Find Account View (viewMode="find-account"):**
+     - BookContainer
+       - Search icon
+       - FormField (childName, school)
+       - Button (Find Account)
+   - **Account Found View:**
+     - BookContainer
+       - CheckCircle icon
+       - Masked email display
+       - Button (Send login link)
+   - **Not Found View:**
+     - BookContainer
+       - AlertCircle icon
+       - Button (Try Again)
+3. Footer
+
+---
+
+### SponsorAuthPage
+
+| Property | Value |
+|----------|-------|
+| Route | `/sponsor/auth` |
+| Layout Shell | `PublicLayout` |
+| File | `src/pages/sponsor/SponsorAuthPage.tsx` |
+
+**Components Used (top to bottom):**
+1. MainNav
+2. Centered Section (max-w-md)
+   - Header with BookOpen icon
+   - **Auth Form Card (hand-drawn border):**
+     - FormField (name, phone) — signup only
+     - FormField (email, password)
+     - Button (Sign In / Create Account)
+     - Toggle mode link
+   - Back link
+3. Footer
+
+**Conditional States:**
+- Loading: "Loading..." text
+- Authenticated: Redirects to `from` location
+
+---
+
+### SponsorLandingPage
+
+| Property | Value |
+|----------|-------|
+| Route | `/sponsor/:childId` |
+| Layout Shell | `PublicLayout` |
+| File | `src/pages/SponsorLandingPage.tsx` |
+
+**Components Used (top to bottom):**
+1. MainNav (via PublicLayout)
+2. User Header Bar (signed in status + Sign Out)
+3. **Hero Section:**
+   - Bookshelf background
+   - Headline with highlighter
+   - Stats Row (hand-drawn border)
+4. Section Divider
+5. **Progress & Pledge Section:**
+   - Two-column layout
+   - **Left Column:**
+     - ReadingGoalRing
+     - Recent Reading Card (hand-drawn border)
+   - **Right Column:**
+     - Pledge Form Card (hand-drawn border)
+       - FormField (sponsorName)
+       - Pledge type selector (per-minute, flat)
+       - Amount inputs
+       - Payment method selector
+       - SquareCardForm (conditional: card selected)
+       - Button (Submit Pledge)
+6. Footer
+
+**Conditional States:**
+- Loading: "Loading..." text
+- Not authenticated: Redirects to `/sponsor/auth`
+- Child not found: Error message with Button (Return to Gateway)
+
+---
+
+### FamilySponsorPage
+
+| Property | Value |
+|----------|-------|
+| Route | `/f/:userId` |
+| Layout Shell | `PublicLayout` |
+| File | `src/pages/sponsor/FamilySponsorPage.tsx` |
+
+**Components Used (top to bottom):**
+1. MainNav (via PublicLayout)
+2. User Header Bar
+3. **Profile Completion Screen (conditional: needsProfileCompletion):**
+   - FormField (name, phone, password)
+   - Button (Continue)
+4. **Hero Section:**
+   - Bookshelf background
+   - Family headline
+   - Stats Row
+5. **Main Content:**
+   - **Children Selection Card:**
+     - Checkbox per child
+     - Select All/Deselect buttons
+   - **Pledge Form:**
+     - Pledge type selector
+     - Amount inputs
+     - Payment method
+   - Button (Create Pledges)
+6. Footer
+
+**Conditional States:**
+- Loading: "Loading..." text
+- Not authenticated: Redirects to `/sponsor/auth`
+- No children: Error message
+
+---
+
+### SponsorClassPage
+
+| Property | Value |
+|----------|-------|
+| Route | `/sponsor/class` |
+| Layout Shell | `PublicLayout` |
+| File | `src/pages/sponsor/SponsorClassPage.tsx` |
+
+**Components Used (top to bottom):**
+1. MainNav (via PublicLayout)
+2. **Hero Section:**
+   - Bookshelf background
+   - Users icon
+   - Headline
+3. **Form Card (hand-drawn border):**
+   - **Step 1 - Choose Classroom:**
+     - Select (teacher's class)
+   - **Step 2 - Your Information:**
+     - FormField (name, email, phone)
+   - **Step 3 - Your Pledge:**
+     - Amount buttons
+     - Input (custom amount)
+   - Summary Card (conditional)
+   - Button (Complete Pledge)
+4. Back link
+5. Footer
+
+---
+
+### ReturningSponsorPage
+
+| Property | Value |
+|----------|-------|
+| Route | `/returning/:code` |
+| Layout Shell | Minimal (PageHeader) |
+| File | `src/pages/sponsor/ReturningSponsorPage.tsx` |
+
+**Components Used (top to bottom):**
+1. PageHeader with Badge (Returning Sponsor)
+2. Main Content (max-w-2xl)
+   - **Hero Section:**
+     - Welcome message (personalized)
+     - ReadingGoalRing
+   - **Last Year Stats Card (BookContainer variant="warm"):**
+     - TrendingUp icon
+     - Stats grid (pledged, minutes read)
+   - **One-Click Pledge Card (BookContainer):**
+     - Big Button (Pledge $X Again)
+     - Link (Choose different amount)
+   - **Full Form (conditional: showFullForm):**
+     - Amount buttons with "Last year" badge
+     - Custom amount input
+     - Per-minute option (Collapsible)
+     - Payment method
+     - Card form
+     - Button (Complete Pledge)
+
+---
+
+### ChildToFamilyRedirect
+
+| Property | Value |
+|----------|-------|
+| Route | `/invite/:token`, `/s/:code` |
+| Layout Shell | `PublicLayout` |
+| File | `src/pages/sponsor/ChildToFamilyRedirect.tsx` |
+
+**Components Used:**
+1. PublicLayout (during loading)
+   - Loading text
+
+**Conditional States:**
+- Loading: Shows "Loading..." text
+- Success: Redirects to `/f/:parentUserId?child=:childId`
+- Error: Redirects to `/sponsor`
+
+---
+
+### GuestPaymentPage
+
+| Property | Value |
+|----------|-------|
+| Route | `/sponsor/guest-pay` |
+| Layout Shell | `PublicLayout` |
+| File | `src/pages/sponsor/GuestPaymentPage.tsx` |
+
+**Components Used (top to bottom):**
+1. MainNav (via PublicLayout)
+2. **Hero Section:**
+   - DollarSign icon
+   - Headline
+3. **Pledge Summary Card (hand-drawn border):**
+   - Class/teacher info
+   - Amount
+4. **Payment Form Card (hand-drawn border):**
+   - Payment method selector (Card, Check)
+   - **Card View:**
+     - SquareCardForm
+     - Error display (conditional)
+     - Button (Pay $X)
+   - **Check View:**
+     - Mailing instructions
+     - Button (I'll Send a Check)
+5. Footer
+
+**Conditional States:**
+- Loading: Skeleton
+- Error (invalid token): Error message with Button (Return to Home)
+- Already paid: "Already paid" message
+- Success: Thank you card with CheckCircle
 
 ---
 
@@ -1162,3 +1787,40 @@ Quick reference of components used across pages:
 | MobileMinutesStepper | LogReadingPage, StudentLogReadingPage, StudentPinDashboard |
 | MobileProgressDisplay | DashboardPage (mobile) |
 | MobileStudentCard | Mobile dashboard views |
+
+### Payment Components
+| Component | Used In |
+|-----------|---------|
+| SquareCardForm | SponsorPaymentPage, SponsorLandingPage, FamilySponsorPage, GuestPaymentPage |
+
+### Pledge Components
+| Component | Used In |
+|-----------|---------|
+| SponsorTypeSelector | SponsorMyChildPage |
+| ChildSelector | SponsorMyChildPage |
+| ClassSelector | SponsorMyChildPage |
+| ClassroomPledgeForm | SponsorMyChildPage |
+
+---
+
+## Debug Pages
+
+### DebugRingPage
+
+| Property | Value |
+|----------|-------|
+| Route | `/debug/progress-ring` |
+| Layout Shell | None (bare page) |
+| File | `src/pages/DebugRingPage.tsx` |
+
+**Components Used:**
+1. Multiple test sections (inline)
+   - RotationTest
+   - FullCircleTest
+   - PatternUnitsTest
+   - LargePatternTest
+   - ResponsiveSizeTest
+   - ReadingGoalRing (actual component)
+2. Interactive controls (sliders, toggles)
+
+**Purpose:** Development-only page for debugging SVG pattern rendering issues with the ReadingGoalRing component.
