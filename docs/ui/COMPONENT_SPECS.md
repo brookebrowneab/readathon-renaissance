@@ -32,6 +32,8 @@ Visual specification for all reusable UI components in the application.
    - [BottomTabBar](#bottomtabbar)
    - [AdminPageLayout](#adminpagelayout)
    - [PageHeader](#pageheader)
+   - [MobileNavDrawer](#mobilenavdrawer)
+   - [LogoBanner](#logobanner)
 5. [Legacy Components](#legacy-components)
    - [BookContainer](#bookcontainer)
    - [ReadingGoalRing](#readinggoalring)
@@ -53,6 +55,19 @@ Visual specification for all reusable UI components in the application.
    - [ParticleBurst](#particleburst)
 10. [Modal Components](#modal-components)
     - [Dialog](#dialog)
+11. [Additional Core Components](#additional-core-components)
+    - [Avatar](#avatar)
+    - [Accordion](#accordion)
+    - [Switch](#switch)
+    - [DropdownMenu](#dropdownmenu)
+    - [AlertDialog](#alertdialog)
+    - [Tabs](#tabs)
+    - [Tooltip](#tooltip)
+    - [Collapsible](#collapsible)
+    - [RadioGroup](#radiogroup)
+12. [Book Components](#book-components)
+    - [BookSelector](#bookselector)
+    - [BarcodeScanner](#barcodescanner)
 
 ---
 
@@ -1767,3 +1782,447 @@ Default colors:
 - Skeleton: `bg-muted animate-pulse`
 
 **Used On:** All data loading states
+
+---
+
+## Additional Core Components
+
+### Avatar
+
+**File Path:** `src/components/ui/avatar.tsx`
+
+**Purpose:** User or entity profile image with fallback.
+
+**Sub-components:**
+- `Avatar` - Container
+- `AvatarImage` - Image element
+- `AvatarFallback` - Fallback content (initials)
+
+**Visual Structure:**
+```
+<Avatar>
+  <AvatarImage src={url} alt={name} />
+  <AvatarFallback>{initials}</AvatarFallback>
+</Avatar>
+```
+
+**Spacing:**
+- Default: `h-10 w-10`
+- Custom sizes via className
+
+**Color Usage:**
+- Fallback background: `bg-muted`
+- Fallback text: `text-muted-foreground`
+
+**Used On:** MainNav, StudentCard, ManageChildrenPage, ChildDetailsPage
+
+---
+
+### Accordion
+
+**File Path:** `src/components/ui/accordion.tsx`
+
+**Purpose:** Collapsible content sections.
+
+**Sub-components:**
+- `Accordion` - Root container
+- `AccordionItem` - Individual item
+- `AccordionTrigger` - Clickable header
+- `AccordionContent` - Collapsible content
+
+**Visual Structure:**
+```
+<Accordion type="single" collapsible>
+  <AccordionItem value="item-1">
+    <AccordionTrigger>Title</AccordionTrigger>
+    <AccordionContent>Content</AccordionContent>
+  </AccordionItem>
+</Accordion>
+```
+
+**Typography:**
+- Trigger: `font-medium`
+
+**Spacing:**
+- Item: `border-b`
+- Content: `pb-4 pt-0`
+
+**Visual States:**
+- **Closed:** Chevron pointing right
+- **Open:** Chevron rotates 180°, content animated in
+
+**Used On:** FAQPage
+
+---
+
+### Switch
+
+**File Path:** `src/components/ui/switch.tsx`
+
+**Purpose:** Toggle switch for boolean settings.
+
+**Props:**
+| Prop | Type | Description |
+|------|------|-------------|
+| `checked` | `boolean` | Current state |
+| `onCheckedChange` | `function` | Change handler |
+| `disabled` | `boolean` | Disable interaction |
+
+**Visual Structure:**
+```
+<Switch checked={value} onCheckedChange={onChange} />
+```
+
+**Spacing:**
+- Track: `h-6 w-11`
+- Thumb: `h-5 w-5`
+
+**Color Usage:**
+- Track unchecked: `bg-input`
+- Track checked: `bg-primary`
+- Thumb: `bg-background`
+
+**Visual States:**
+- **Unchecked:** Thumb left, gray track
+- **Checked:** Thumb right, primary track
+- **Disabled:** `opacity-50 cursor-not-allowed`
+
+**Used On:** OnboardingAddChild (allowPublicLink), AdminSettingsPage
+
+---
+
+### DropdownMenu
+
+**File Path:** `src/components/ui/dropdown-menu.tsx`
+
+**Purpose:** Contextual menu with actions.
+
+**Sub-components:**
+- `DropdownMenu` - Root
+- `DropdownMenuTrigger` - Trigger element
+- `DropdownMenuContent` - Menu container
+- `DropdownMenuItem` - Menu item
+- `DropdownMenuSeparator` - Divider
+- `DropdownMenuLabel` - Section label
+
+**Visual Structure:**
+```
+<DropdownMenu>
+  <DropdownMenuTrigger asChild>
+    <Button variant="ghost" size="icon">
+      <MoreVertical />
+    </Button>
+  </DropdownMenuTrigger>
+  <DropdownMenuContent align="end">
+    <DropdownMenuItem>Action</DropdownMenuItem>
+  </DropdownMenuContent>
+</DropdownMenu>
+```
+
+**Spacing:**
+- Content: `min-w-[8rem] p-1`
+- Item: `px-2 py-1.5`
+
+**Color Usage:**
+- Content: `bg-popover text-popover-foreground`
+- Item hover: `bg-accent text-accent-foreground`
+- Destructive item: `text-destructive`
+
+**Used On:** ManageChildrenPage, AdminDashboard, account menus
+
+---
+
+### AlertDialog
+
+**File Path:** `src/components/ui/alert-dialog.tsx`
+
+**Purpose:** Confirmation dialog for destructive actions.
+
+**Sub-components:**
+- `AlertDialog` - Root
+- `AlertDialogTrigger` - Trigger
+- `AlertDialogContent` - Content container
+- `AlertDialogHeader` - Header
+- `AlertDialogTitle` - Title
+- `AlertDialogDescription` - Description
+- `AlertDialogFooter` - Actions
+- `AlertDialogCancel` - Cancel button
+- `AlertDialogAction` - Confirm button
+
+**Visual Structure:**
+```
+<AlertDialog open={open} onOpenChange={setOpen}>
+  <AlertDialogContent>
+    <AlertDialogHeader>
+      <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+      <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
+    </AlertDialogHeader>
+    <AlertDialogFooter>
+      <AlertDialogCancel>Cancel</AlertDialogCancel>
+      <AlertDialogAction>Continue</AlertDialogAction>
+    </AlertDialogFooter>
+  </AlertDialogContent>
+</AlertDialog>
+```
+
+**Color Usage:**
+- Overlay: `bg-black/80`
+- Cancel: `bg-secondary`
+- Action (destructive): `bg-destructive text-destructive-foreground`
+
+**Used On:** ManageChildrenPage (delete), AdminSettingsPage (end/delete event)
+
+---
+
+### Tabs
+
+**File Path:** `src/components/ui/tabs.tsx`
+
+**Purpose:** Tabbed content navigation.
+
+**Sub-components:**
+- `Tabs` - Root container
+- `TabsList` - Tab buttons container
+- `TabsTrigger` - Tab button
+- `TabsContent` - Tab panel
+
+**Visual Structure:**
+```
+<Tabs defaultValue="tab1">
+  <TabsList>
+    <TabsTrigger value="tab1">Tab 1</TabsTrigger>
+    <TabsTrigger value="tab2">Tab 2</TabsTrigger>
+  </TabsList>
+  <TabsContent value="tab1">Content 1</TabsContent>
+  <TabsContent value="tab2">Content 2</TabsContent>
+</Tabs>
+```
+
+**Typography:**
+- Trigger: `text-sm font-medium`
+
+**Spacing:**
+- List: `h-10 p-1`
+- Trigger: `px-3 py-1.5`
+
+**Color Usage:**
+- List: `bg-muted`
+- Active trigger: `bg-background text-foreground shadow-sm`
+- Inactive trigger: `text-muted-foreground`
+
+**Used On:** AdminFinancePage, AdminEmailPage
+
+---
+
+### Tooltip
+
+**File Path:** `src/components/ui/tooltip.tsx`
+
+**Purpose:** Contextual information on hover.
+
+**Sub-components:**
+- `TooltipProvider` - Context provider (wrap app)
+- `Tooltip` - Root
+- `TooltipTrigger` - Trigger element
+- `TooltipContent` - Tooltip content
+
+**Visual Structure:**
+```
+<TooltipProvider>
+  <Tooltip>
+    <TooltipTrigger asChild>
+      <Button disabled>Action</Button>
+    </TooltipTrigger>
+    <TooltipContent>
+      <p>Explanation text</p>
+    </TooltipContent>
+  </Tooltip>
+</TooltipProvider>
+```
+
+**Typography:**
+- Content: `text-sm`
+
+**Spacing:**
+- Content: `px-3 py-1.5`
+- Side offset: `4px`
+
+**Color Usage:**
+- Background: `bg-popover`
+- Text: `text-popover-foreground`
+- Border: `border`
+
+**Animation:**
+- `animate-in fade-in-0 zoom-in-95`
+
+**Used On:** TeacherDashboard (disabled buttons), StudentBooksPage
+
+---
+
+### Collapsible
+
+**File Path:** `src/components/ui/collapsible.tsx`
+
+**Purpose:** Expandable/collapsible section.
+
+**Sub-components:**
+- `Collapsible` - Root
+- `CollapsibleTrigger` - Toggle trigger
+- `CollapsibleContent` - Hidden content
+
+**Visual Structure:**
+```
+<Collapsible open={open} onOpenChange={setOpen}>
+  <CollapsibleTrigger asChild>
+    <Button variant="ghost">
+      Toggle <ChevronDown />
+    </Button>
+  </CollapsibleTrigger>
+  <CollapsibleContent>
+    Hidden content
+  </CollapsibleContent>
+</Collapsible>
+```
+
+**Animation:**
+- Content animates in/out with height transition
+
+**Used On:** ManageChildrenPage (child details), LogReadingPage (history)
+
+---
+
+### RadioGroup
+
+**File Path:** `src/components/ui/radio-group.tsx`
+
+**Purpose:** Single selection from options.
+
+**Sub-components:**
+- `RadioGroup` - Container
+- `RadioGroupItem` - Radio button
+
+**Visual Structure:**
+```
+<RadioGroup value={value} onValueChange={onChange}>
+  <div className="flex items-center space-x-2">
+    <RadioGroupItem value="option1" id="r1" />
+    <Label htmlFor="r1">Option 1</Label>
+  </div>
+</RadioGroup>
+```
+
+**Spacing:**
+- Item: `h-4 w-4`
+
+**Color Usage:**
+- Border: `border-primary`
+- Checked indicator: `bg-primary`
+
+**Used On:** PledgeAmountForm (pledge type selection)
+
+---
+
+## Book Components
+
+### BookSelector
+
+**File Path:** `src/components/books/BookSelector.tsx`
+
+**Purpose:** Select or create a book for reading log.
+
+**Props:**
+| Prop | Type | Description |
+|------|------|-------------|
+| `value` | `string` | Selected book ID or title |
+| `onChange` | `function` | Change handler |
+| `books` | `Book[]` | Available books |
+
+**Visual Structure:**
+```
+<div>
+  <Input (search) />
+  <div (book list)>
+    {books.map(book => (
+      <button>{book.title}</button>
+    ))}
+  </div>
+  <Button>Add New Book</Button>
+</div>
+```
+
+**Used On:** LogReadingPage, StudentLogReadingPage, StudentPinDashboardPage
+
+---
+
+### BarcodeScanner
+
+**File Path:** `src/components/books/BarcodeScanner.tsx`
+
+**Purpose:** Scan book ISBN via camera.
+
+**Props:**
+| Prop | Type | Description |
+|------|------|-------------|
+| `onScan` | `function` | ISBN scan handler |
+| `onError` | `function` | Error handler |
+
+**Visual Structure:**
+```
+<div>
+  <video (camera preview) />
+  <div (scan overlay) />
+</div>
+```
+
+**Used On:** StudentBooksPage
+
+---
+
+## Layout Additions
+
+### MobileNavDrawer
+
+**File Path:** `src/components/layout/MobileNavDrawer.tsx`
+
+**Purpose:** Slide-out navigation menu for mobile.
+
+**Props:**
+| Prop | Type | Description |
+|------|------|-------------|
+| `open` | `boolean` | Open state |
+| `onOpenChange` | `function` | State handler |
+
+**Visual Structure:**
+```
+<Sheet open={open} onOpenChange={onOpenChange}>
+  <SheetContent side="right">
+    <nav>
+      {links.map(link => <NavLink />)}
+    </nav>
+    {authenticated && (
+      <div>
+        <Button>Dashboard</Button>
+        <Button>Log Out</Button>
+      </div>
+    )}
+  </SheetContent>
+</Sheet>
+```
+
+**Used On:** MainNav (mobile view)
+
+---
+
+### LogoBanner
+
+**File Path:** `src/components/layout/LogoBanner.tsx`
+
+**Purpose:** Large logo banner for public pages. Currently returns null (disabled).
+
+**Visual Structure:**
+```
+// Currently returns null
+// Previously displayed large centered logo below MainNav
+```
+
+**Used On:** PublicLayout (but renders nothing)
