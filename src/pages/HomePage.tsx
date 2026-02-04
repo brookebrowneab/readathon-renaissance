@@ -117,7 +117,7 @@ const HomePage = () => {
       {/* Hero Section - Large left-aligned headline with decorative background */}
       <DecorativeBackground 
         blobs={["top-right", "bottom-left"]} 
-        opacity={8} 
+        opacity={0} 
         size={500}
         className="pt-4 md:pt-6 pb-4 md:pb-6 mt-[30px]"
       >
