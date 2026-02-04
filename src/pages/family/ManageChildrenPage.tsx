@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { MainNav, Footer, BottomTabBar } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { ReadingGoalRing } from "@/components/legacy";
+import { MobileStudentCard } from "@/components/mobile/MobileStudentCard";
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   BookOpen,
   Plus,
@@ -53,6 +55,8 @@ const handDrawnBorder = {
 };
 
 const ManageChildrenPage = () => {
+  const isMobile = useIsMobile();
+  const navigate = useNavigate();
   const { children, isLoading, updateChild, deleteChild } = useChildren();
   const { data: allLogs = {}, isLoading: logsLoading } = useAllChildrenReadingLogs();
   const [expandedChild, setExpandedChild] = useState<string | null>(null);
@@ -156,7 +160,28 @@ const ManageChildrenPage = () => {
               {children.map((child) => {
                 const totalMinutes = getChildMinutes(child.id);
                 
-                return (
+                return isMobile ? (
+                  /* Mobile: Use MobileStudentCard with swipe actions */
+                  <MobileStudentCard
+                    key={child.id}
+                    name={child.name}
+                    gradeInfo={`${child.grade_info || "No grade"} • ${child.class_name || "No class"}`}
+                    avatarInitials={getAvatarInitials(child.name)}
+                    progress={{ current: totalMinutes, goal: child.goal_minutes }}
+                    status={
+                      totalMinutes >= child.goal_minutes 
+                        ? "exceeding" 
+                        : totalMinutes >= child.goal_minutes * 0.5 
+                          ? "on-track" 
+                          : "needs-attention"
+                    }
+                    onViewDetails={() => navigate(`/children/${child.id}`)}
+                    onLogReading={() => navigate(`/log?child=${child.id}`)}
+                    onEdit={() => handleEditChild(child)}
+                    onDelete={() => handleDeleteChild(child)}
+                  />
+                ) : (
+                  /* Desktop: Original Collapsible layout */
                   <Collapsible
                     key={child.id}
                     open={expandedChild === child.id}
@@ -181,7 +206,7 @@ const ManageChildrenPage = () => {
                                 {child.grade_info || "No grade set"} • {child.class_name || "No class set"}
                               </p>
                             </div>
-                            <div className="hidden md:flex items-center gap-6 ml-8">
+                            <div className="flex items-center gap-6 ml-8">
                               <div className="text-center">
                                 <p className="text-2xl font-serif text-primary">{totalMinutes}</p>
                                 <p className="text-xs text-muted-foreground">mins read</p>
@@ -194,7 +219,6 @@ const ManageChildrenPage = () => {
                             <Button 
                               variant="default" 
                               size="sm" 
-                              className="hidden md:inline-flex"
                               asChild
                             >
                               <Link to={`/children/${child.id}/invite`}>
@@ -205,7 +229,6 @@ const ManageChildrenPage = () => {
                             <Button 
                               variant="outline" 
                               size="sm" 
-                              className="hidden md:inline-flex"
                               onClick={() => handleEditChild(child)}
                             >
                               <Pencil className="h-4 w-4 mr-1" />
@@ -219,20 +242,6 @@ const ManageChildrenPage = () => {
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end" className="bg-background">
-                                <DropdownMenuItem className="md:hidden" asChild>
-                                  <Link to={`/children/${child.id}/invite`}>
-                                    <UserPlus className="h-4 w-4 mr-2" />
-                                    Invite Sponsors
-                                  </Link>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem 
-                                  className="md:hidden"
-                                  onClick={() => handleEditChild(child)}
-                                >
-                                  <Pencil className="h-4 w-4 mr-2" />
-                                  Edit Profile
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator className="md:hidden" />
                                 <DropdownMenuItem 
                                   className="text-destructive focus:text-destructive"
                                   onClick={() => handleDeleteChild(child)}
@@ -259,15 +268,6 @@ const ManageChildrenPage = () => {
                               </Button>
                             </CollapsibleTrigger>
                           </div>
-                        </div>
-
-                        {/* Mobile Stats */}
-                        <div className="flex items-center justify-around mt-4 md:hidden">
-                          <div className="text-center">
-                            <p className="text-xl font-serif text-primary">{totalMinutes}</p>
-                            <p className="text-xs text-muted-foreground">mins read</p>
-                          </div>
-                          <ReadingGoalRing progress={totalMinutes} goal={child.goal_minutes} size={50} />
                         </div>
                       </div>
 
