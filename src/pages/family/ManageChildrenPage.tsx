@@ -176,7 +176,7 @@ const ManageChildrenPage = () => {
                           : "needs-attention"
                     }
                     onViewDetails={() => navigate(`/children/${child.id}`)}
-                    onLogReading={() => navigate(`/log?child=${child.id}`)}
+                    onLogReading={() => navigate(`/log-reading?child=${child.id}`)}
                     onEdit={() => handleEditChild(child)}
                     onDelete={() => handleDeleteChild(child)}
                   />
