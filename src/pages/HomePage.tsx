@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { PublicLayout } from "@/components/layout";
 import { Button } from "@/components/ui/button";
-import { DecorativeBackground } from "@/components/ui/decorative-blobs";
+
 import { ArrowRight, GraduationCap } from "lucide-react";
 import { useMemo, useRef } from "react";
 import { differenceInDays, differenceInHours } from "date-fns";
@@ -115,12 +115,8 @@ const HomePage = () => {
       </div>
 
       {/* Hero Section - Large left-aligned headline with decorative background */}
-      <DecorativeBackground 
-        blobs={["top-right", "bottom-left"]} 
-        opacity={0} 
-        size={500}
-        className="pt-4 md:pt-6 pb-4 md:pb-6 mt-[30px]"
-      >
+      {/* Hero Section - Large left-aligned headline */}
+      <div className="pt-4 md:pt-6 pb-4 md:pb-6 mt-[30px]">
         <div className="container">
           {/* Constrain hero content - equal padding on mobile, left-aligned indent on desktop */}
           <div className="max-w-4xl px-4 md:px-0 md:pl-14 lg:pl-20 md:ml-[30px] text-left">
@@ -191,7 +187,7 @@ const HomePage = () => {
             </div>
           </div>
         </div>
-      </DecorativeBackground>
+      </div>
 
       {/* Stats Section */}
       <section className="py-10 md:py-14 relative overflow-hidden">
