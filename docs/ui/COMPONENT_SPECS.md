@@ -383,6 +383,49 @@ Visual specification for all reusable UI components in the application.
 
 ---
 
+### Checkbox
+
+**File Path:** `src/components/ui/checkbox.tsx`
+
+**Purpose:** Binary selection input.
+
+**Props:**
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `checked` | `boolean` | `false` | Checked state |
+| `onCheckedChange` | `function` | — | Change handler |
+| `disabled` | `boolean` | `false` | Disable interactions |
+
+**Visual Structure:**
+```
+<CheckboxPrimitive.Root>
+  <CheckboxPrimitive.Indicator>
+    <Check (icon) />
+  </CheckboxPrimitive.Indicator>
+</CheckboxPrimitive.Root>
+```
+
+**Spacing:**
+- Size: `h-5 w-5`
+- Icon: `h-3.5 w-3.5` with `stroke-[3]`
+
+**Color Usage:**
+- Background (unchecked): `bg-background`
+- Border (unchecked): `border-text-tertiary`
+- Background (checked): `bg-primary`
+- Border (checked): `border-primary`
+- Icon: `text-primary-foreground`
+
+**Visual States:**
+- **Default:** Rounded-[4px], border 1px
+- **Checked:** Primary background, Check icon visible
+- **Focus:** `ring-2 ring-primary ring-offset-2`
+- **Disabled:** `opacity-50`, `cursor-not-allowed`
+
+**Used On:** VerifyLogsPage, AdminOutstandingPage, SponsorRequestsPage, FamilySponsorPage
+
+---
+
 ## Form Components
 
 ### FormField
