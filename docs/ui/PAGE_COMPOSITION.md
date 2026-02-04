@@ -18,6 +18,82 @@ Mapping of pages to layout shells and component usage. This document describes *
 
 ---
 
+## Route Validation Cross-Reference
+
+This section validates all routes in `src/App.tsx` against documented pages.
+
+| Route | Documented | Page Component | Notes |
+|-------|------------|----------------|-------|
+| `/` | ✅ | HomePage | Public |
+| `/about` | ✅ | AboutPage | Public |
+| `/how-it-works` | ✅ | HowItWorksPage | Public |
+| `/faq` | ✅ | FAQPage | Public |
+| `/privacy` | ✅ | PrivacyPage | Public |
+| `/debug/progress-ring` | ✅ | DebugRingPage | Debug |
+| `/sponsor` | ✅ | SponsorGatewayPage | Sponsor |
+| `/sponsor/:childId` | ✅ | SponsorLandingPage | Sponsor |
+| `/f/:userId` | ✅ | FamilySponsorPage | Sponsor |
+| `/invite/:token` | ✅ | ChildToFamilyRedirect | Redirect |
+| `/s/:code` | ✅ | ChildToFamilyRedirect | Redirect |
+| `/returning/:code` | ✅ | ReturningSponsorPage | Sponsor |
+| `/sponsor/thank-you` | ✅ | SponsorThankYouPage | Sponsor |
+| `/sponsor/pledged` | ✅ | SponsorPledgedPage | Sponsor |
+| `/sponsor/check-instructions` | ✅ | SponsorCheckInstructionsPage | Sponsor |
+| `/login` | ✅ | LoginPage | Auth |
+| `/register` | ✅ | RegisterPage | Auth |
+| `/student-login` | ✅ | OldStudentLoginPage | Auth (legacy) |
+| `/forgot-password` | ✅ | ForgotPasswordPage | Auth |
+| `/sponsor/auth` | ✅ | SponsorAuthPage | Auth |
+| `/admin/login` | ✅ | AdminLoginPage | Auth |
+| `/onboarding/add-child` | ✅ | OnboardingAddChild | Onboarding |
+| `/onboarding/pledge` | ✅ | OnboardingPledge | Onboarding |
+| `/onboarding/complete` | ✅ | OnboardingComplete | Onboarding |
+| `/onboarding/re-enroll` | ✅ | ReEnrollmentPage | Onboarding |
+| `/dashboard` | ✅ | DashboardPage | Parent/Family |
+| `/children` | ✅ | ManageChildrenPage | Parent/Family |
+| `/children/:id` | ✅ | ChildDetailsPage | Parent/Family |
+| `/family/manage` | ✅ | ManageChildrenPage | Alias |
+| `/family/sponsor-requests` | ✅ | SponsorRequestsPage | Parent/Family |
+| `/family/children/:id/settings` | ✅ | ChildDetailsPage | Alias |
+| `/family/sponsor-my-child` | ✅ | SponsorMyChildPage | Parent/Family |
+| `/reading-logs/approve` | ✅ | VerifyLogsPage | Parent/Family |
+| `/children/:id/invite` | ✅ | InviteSponsorsPage | Parent/Family |
+| `/invite` | ✅ | InviteSponsorsPage | Parent/Family |
+| `/children/:id/add-sponsor` | ✅ | AddSponsorPage | Parent/Family |
+| `/log-reading` | ✅ | LogReadingPage | Parent/Family |
+| `/my-pledges` | ✅ | MyPledgesPage | Parent/Family |
+| `/account` | ✅ | AccountSettingsPage | Parent/Family |
+| `/sponsor/login` | ✅ | SponsorLoginPage | Sponsor |
+| `/sponsor/check-email` | ✅ | SponsorCheckEmailPage | Sponsor |
+| `/sponsor/dashboard` | ✅ | SponsorDashboardPage | Sponsor |
+| `/sponsor/pay` | ✅ | SponsorPaymentPage | Sponsor |
+| `/sponsor/class` | ✅ | SponsorClassPage | Sponsor |
+| `/sponsor/guest-pay` | ✅ | GuestPaymentPage | Sponsor |
+| `/student/login` | ✅ | StudentPinLoginPage | Student |
+| `/student/dashboard` | ✅ | StudentPinDashboardPage | Student |
+| `/student/books` | ✅ | StudentBooksPage | Student |
+| `/student` | ✅ | StudentDashboardPage | Student (legacy) |
+| `/student/log` | ✅ | StudentLogReadingPage | Student |
+| `/teacher/login` | ✅ | TeacherLoginPage | Teacher |
+| `/teacher/register` | ✅ | TeacherRegisterPage | Teacher |
+| `/teacher/set-password` | ✅ | TeacherSetPasswordPage | Teacher |
+| `/teacher` | ✅ | TeacherDashboard | Teacher |
+| `/teacher/log` | ✅ | TeacherLogReading | Teacher |
+| `/admin` | ✅ | AdminDashboard | Admin |
+| `/admin/reading` | ✅ | AdminReadingLogsPage | Admin |
+| `/admin/outstanding` | ✅ | AdminOutstandingPage | Admin |
+| `/admin/checks` | ✅ | AdminChecksPage | Admin |
+| `/admin/emails` | ✅ | AdminEmailPage | Admin |
+| `/admin/content` | ✅ | AdminSiteContentPage | Admin |
+| `/admin/settings` | ✅ | AdminSettingsPage | Admin |
+| `/admin-users` | ✅ | AdminUsersPage | Admin |
+| `/admin-finance` | ✅ | AdminFinancePage | Admin |
+| `*` | ✅ | NotFound | 404 |
+
+**Last validated:** 2026-02-04 against `src/App.tsx`
+
+---
+
 ## Route Aliases
 
 Some pages are accessible via multiple routes for backward compatibility or semantic clarity. The canonical route is listed first.
@@ -1306,6 +1382,36 @@ Some pages are accessible via multiple routes for backward compatibility or sema
 1. Celebration Card
    - Confetti
    - Thank you message
+
+---
+
+### SponsorCheckInstructionsPage
+
+| Property | Value |
+|----------|-------|
+| Route | `/sponsor/check-instructions` |
+| Layout Shell | Custom (PageHeader, no footer) |
+| File | `src/pages/sponsor/SponsorCheckInstructionsPage.tsx` |
+
+**Components Used (top to bottom):**
+1. PageHeader (with X close button)
+2. Centered Content (max-w-lg, `bg-background-warm`)
+   - BookContainer (variant="default")
+     - CheckCircle icon (success circle)
+     - Confirmation headline
+     - **Check Instructions Card (dashed border):**
+       - Make check payable to (school PTA)
+       - Memo line format
+       - Mailing address
+       - Amount display
+     - Notification info (parent notified when check arrives)
+     - **Action Buttons (print:hidden):**
+       - Button (Print Instructions) with Printer icon
+       - Button (Email Me These Instructions) with Mail icon
+       - Button (Sponsor Another Student) with Users icon
+
+**Conditional States:**
+- Print: Action buttons hidden via `print:hidden`
 
 ---
 
