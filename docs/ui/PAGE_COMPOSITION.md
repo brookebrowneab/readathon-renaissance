@@ -18,6 +18,19 @@ Mapping of pages to layout shells and component usage. This document describes *
 
 ---
 
+## Route Aliases
+
+Some pages are accessible via multiple routes for backward compatibility or semantic clarity. The canonical route is listed first.
+
+| Canonical Route | Alias Route(s) | Page Component | Notes |
+|-----------------|----------------|----------------|-------|
+| `/children` | `/family/manage` | ManageChildrenPage | Legacy family management path |
+| `/children/:id` | `/family/children/:id/settings` | ChildDetailsPage | Settings-focused alias for child details |
+
+**Behavior:** All aliases render the same component with identical functionality. No redirects occur—both routes are valid entry points.
+
+---
+
 ## Public Pages
 
 ### HomePage
@@ -451,6 +464,7 @@ Mapping of pages to layout shells and component usage. This document describes *
 | Property | Value |
 |----------|-------|
 | Route | `/children` |
+| Route Alias | `/family/manage` |
 | Layout Shell | Custom (MainNav + Footer + BottomTabBar) |
 | File | `src/pages/family/ManageChildrenPage.tsx` |
 
@@ -485,6 +499,7 @@ Mapping of pages to layout shells and component usage. This document describes *
 | Property | Value |
 |----------|-------|
 | Route | `/children/:id` |
+| Route Alias | `/family/children/:id/settings` |
 | Layout Shell | Custom (MainNav + Footer + BottomTabBar) |
 | File | `src/pages/family/ChildDetailsPage.tsx` |
 
