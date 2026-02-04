@@ -1121,6 +1121,55 @@ Visual specification for all reusable UI components in the application.
 
 ---
 
+### MobileNavDrawer
+
+**File Path:** `src/components/layout/MobileNavDrawer.tsx`
+
+**Purpose:** Slide-out navigation menu for mobile.
+
+**Props:**
+| Prop | Type | Description |
+|------|------|-------------|
+| `open` | `boolean` | Open state |
+| `onOpenChange` | `function` | State handler |
+
+**Visual Structure:**
+```
+<Sheet open={open} onOpenChange={onOpenChange}>
+  <SheetContent side="right">
+    <nav>
+      {links.map(link => <NavLink />)}
+    </nav>
+    {authenticated && (
+      <div>
+        <Button>Dashboard</Button>
+        <Button>Log Out</Button>
+      </div>
+    )}
+  </SheetContent>
+</Sheet>
+```
+
+**Used On:** MainNav (mobile view)
+
+---
+
+### LogoBanner
+
+**File Path:** `src/components/layout/LogoBanner.tsx`
+
+**Purpose:** Large logo banner for public pages. Currently returns null (disabled).
+
+**Visual Structure:**
+```
+// Currently returns null
+// Previously displayed large centered logo below MainNav
+```
+
+**Used On:** PublicLayout (but renders nothing)
+
+---
+
 ## Legacy Components
 
 ### BookContainer
@@ -1803,34 +1852,6 @@ Default colors:
 
 ---
 
-## Skeleton Components
-
-**File Path:** `src/components/ui/skeletons.tsx`
-
-**Purpose:** Pre-built skeleton layouts for common patterns.
-
-**Variants:**
-- `CardSkeleton` - Card with avatar and text
-- `TableSkeleton` - Table rows
-- `ProgressCircleSkeleton` - Circular progress
-- `TextSkeleton` - Text paragraphs (heading/paragraph/label variants)
-- `StudentCardSkeleton` - Student card layout
-- `DashboardSkeleton` - Full dashboard layout
-
-**Props (CardSkeleton):**
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `hasAvatar` | `boolean` | `true` | Show avatar placeholder |
-| `hasActions` | `boolean` | `true` | Show action buttons |
-| `lines` | `number` | `2` | Number of text lines |
-
-**Color Usage:**
-- Skeleton: `bg-muted animate-pulse`
-
-**Used On:** All data loading states
-
----
-
 ### Sheet
 
 **File Path:** `src/components/ui/sheet.tsx`
@@ -1896,7 +1917,7 @@ Default colors:
 - Close: `animate-out slide-out-to-[side] duration-300`
 - Overlay: `fade-in-0 / fade-out-0`
 
-**Used On:** TopHeader (mobile nav), AdminUsersPage, AdminFinancePage, Sidebar (mobile)
+**Used On:** TopHeader (mobile nav), AdminUsersPage, AdminFinancePage, Sidebar (mobile), MobileNavDrawer
 
 ---
 
@@ -2010,6 +2031,34 @@ Default colors:
 - Directional slide: `slide-in-from-[side]-2`
 
 **Used On:** Available for user previews, link previews, contextual help
+
+---
+
+## Skeleton Components
+
+**File Path:** `src/components/ui/skeletons.tsx`
+
+**Purpose:** Pre-built skeleton layouts for common patterns.
+
+**Variants:**
+- `CardSkeleton` - Card with avatar and text
+- `TableSkeleton` - Table rows
+- `ProgressCircleSkeleton` - Circular progress
+- `TextSkeleton` - Text paragraphs (heading/paragraph/label variants)
+- `StudentCardSkeleton` - Student card layout
+- `DashboardSkeleton` - Full dashboard layout
+
+**Props (CardSkeleton):**
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `hasAvatar` | `boolean` | `true` | Show avatar placeholder |
+| `hasActions` | `boolean` | `true` | Show action buttons |
+| `lines` | `number` | `2` | Number of text lines |
+
+**Color Usage:**
+- Skeleton: `bg-muted animate-pulse`
+
+**Used On:** All data loading states
 
 ---
 
@@ -2404,53 +2453,3 @@ Default colors:
 
 **Used On:** StudentBooksPage
 
----
-
-## Layout Additions
-
-### MobileNavDrawer
-
-**File Path:** `src/components/layout/MobileNavDrawer.tsx`
-
-**Purpose:** Slide-out navigation menu for mobile.
-
-**Props:**
-| Prop | Type | Description |
-|------|------|-------------|
-| `open` | `boolean` | Open state |
-| `onOpenChange` | `function` | State handler |
-
-**Visual Structure:**
-```
-<Sheet open={open} onOpenChange={onOpenChange}>
-  <SheetContent side="right">
-    <nav>
-      {links.map(link => <NavLink />)}
-    </nav>
-    {authenticated && (
-      <div>
-        <Button>Dashboard</Button>
-        <Button>Log Out</Button>
-      </div>
-    )}
-  </SheetContent>
-</Sheet>
-```
-
-**Used On:** MainNav (mobile view)
-
----
-
-### LogoBanner
-
-**File Path:** `src/components/layout/LogoBanner.tsx`
-
-**Purpose:** Large logo banner for public pages. Currently returns null (disabled).
-
-**Visual Structure:**
-```
-// Currently returns null
-// Previously displayed large centered logo below MainNav
-```
-
-**Used On:** PublicLayout (but renders nothing)
