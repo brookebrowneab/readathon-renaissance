@@ -1064,6 +1064,7 @@ Mapping of pages to layout shells and component usage. This document describes *
 
 Quick reference of components used across pages:
 
+### Layout Components
 | Component | Used In |
 |-----------|---------|
 | MainNav | All public/authenticated pages (except StudentDashboardPage legacy) |
@@ -1073,18 +1074,91 @@ Quick reference of components used across pages:
 | AdminLayout | Admin Dashboard, Admin Reading Logs |
 | AdminPageLayout | Admin Settings, Admin Email, Admin Content, Admin Users, Admin Finance |
 | PageHeader | StudentDashboardPage (legacy), StudentLogReadingPage, StudentBooksPage |
+| MobileNavDrawer | MainNav (mobile slide-out menu) |
+| LogoBanner | PublicLayout (currently disabled/returns null) |
+
+### Legacy/Brand Components
+| Component | Used In |
+|-----------|---------|
 | BookContainer | Student pages, OnboardingComplete, Sponsor confirmation pages |
-| ReadingGoalRing | Dashboard, ChildDetails, Teacher, Student, OnboardingComplete |
+| ReadingGoalRing | Dashboard, ChildDetails, Teacher, Student, OnboardingComplete, SponsorPledged |
 | ClassFundraisingShelf | Dashboard, StudentPinDashboard, Sponsor Dashboard |
-| PledgeCard | Dashboard, ChildDetails, MyPledges |
+| Logo | MainNav, PageHeader, Footer, auth pages |
+| handDrawnBorder | Cards across all authenticated pages (defined as inline style constant) |
+
+### Card Components
+| Component | Used In |
+|-----------|---------|
+| Card | DashboardPage, admin pages, settings |
+| DataCard | DashboardPage, data displays |
+| StatCard | AdminDashboard, TeacherDashboard, finance pages |
+| StudentCard | DashboardPage, TeacherDashboard, ManageChildrenPage |
+| PledgeCard | Dashboard, ChildDetails, MyPledges, SponsorDashboard |
+| MobileStudentCard | Mobile dashboard views, ManageChildrenPage (mobile) |
+
+### Form Components
+| Component | Used In |
+|-----------|---------|
 | FormField | All forms |
-| Button | All pages |
 | Input | All forms |
 | Select | Filters, forms, onboarding |
-| Table | Admin pages, outstanding payments |
-| Dialog | Confirmations, modals, log editing |
-| Skeleton | Loading states |
+| Checkbox | RegisterPage, AdminSettingsPage (teacher grades) |
+| Switch | OnboardingAddChild, AdminSettingsPage |
+| RadioGroup | PledgeAmountForm |
+| Textarea | AdminEmailPage, feedback forms |
+| Label | All forms |
+| PledgeAmountForm | SponsorPledgePage, FamilySponsorPage, OnboardingPledge |
+
+### Interactive Components
+| Component | Used In |
+|-----------|---------|
+| Button | All pages |
+| Avatar | MainNav, StudentCard, ManageChildrenPage, ChildDetailsPage |
 | Badge | Status indicators (payment, verification, student status) |
-| Collapsible | Expandable sections (ManageChildren, LogReading history) |
-| Tooltip | Teacher dashboard (disabled buttons), student books |
-| handDrawnBorder | Cards across all authenticated pages (defined inline) |
+| Accordion | FAQPage |
+| Tabs | AdminFinancePage, AdminEmailPage |
+| Collapsible | ManageChildren (child details), LogReading (history) |
+| Tooltip | TeacherDashboard (disabled buttons), StudentBooksPage |
+| DropdownMenu | ManageChildrenPage, AdminDashboard, account menus |
+
+### Modal Components
+| Component | Used In |
+|-----------|---------|
+| Dialog | EditChildDialog, EditPledgeDialog, log reading modals |
+| AlertDialog | ManageChildrenPage (delete), AdminSettingsPage (end/delete event) |
+| ConfirmDialog | Delete actions, logout, form cancellation |
+
+### Data Display Components
+| Component | Used In |
+|-----------|---------|
+| Table | Admin pages, outstanding payments |
+| TablePagination | AdminReadingLogsPage, AdminOutstandingPage |
+| Progress | StudentCard, MobileStudentCard, ClassFundraisingShelf |
+| Skeleton | All loading states |
+
+### Book Components
+| Component | Used In |
+|-----------|---------|
+| BookSelector | LogReadingPage, StudentLogReadingPage, StudentPinDashboardPage |
+| BarcodeScanner | StudentBooksPage |
+
+### Feedback Components
+| Component | Used In |
+|-----------|---------|
+| EmptyState | All data listing pages when empty |
+| ErrorState | Error boundaries, failed API calls, 404 page |
+| LoadingSpinner | All pages during loading |
+
+### Celebration Components
+| Component | Used In |
+|-----------|---------|
+| Confetti | Goal completion, milestone achievement |
+| StarBurst | Milestone achievements |
+| ParticleBurst | Goal reached celebrations |
+
+### Mobile Components
+| Component | Used In |
+|-----------|---------|
+| MobileMinutesStepper | LogReadingPage, StudentLogReadingPage, StudentPinDashboard |
+| MobileProgressDisplay | DashboardPage (mobile) |
+| MobileStudentCard | Mobile dashboard views |
