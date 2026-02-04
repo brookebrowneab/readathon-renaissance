@@ -632,7 +632,7 @@ Visual specification for all reusable UI components in the application.
 **Visual States:**
 - **Hover:** `shadow-md`
 
-**Used On:** DashboardPage, data displays
+**Used On:** ⚠️ *Component defined but not currently imported anywhere* (available for future use)
 
 ---
 
@@ -686,7 +686,7 @@ Visual specification for all reusable UI components in the application.
 **Visual States:**
 - **Hover:** `shadow-sm`
 
-**Used On:** AdminDashboard, TeacherDashboard, finance pages
+**Used On:** ⚠️ *Component defined but not currently imported anywhere* (available for future use)
 
 ---
 
@@ -749,7 +749,7 @@ Visual specification for all reusable UI components in the application.
 **Visual States:**
 - **Hover:** `shadow-md`
 
-**Used On:** DashboardPage, TeacherDashboard, ManageChildrenPage
+**Used On:** ⚠️ *Component defined but not currently imported anywhere* (available for future use)
 
 ---
 
@@ -811,7 +811,7 @@ Visual specification for all reusable UI components in the application.
 - **Hover:** `shadow-md`
 - **Pending:** Payment button visible
 
-**Used On:** MyPledgesPage, SponsorDashboardPage, ChildDetailsPage
+**Used On:** ⚠️ *Component defined but not currently imported anywhere* (available for future use)
 
 ---
 
@@ -886,7 +886,7 @@ Visual specification for all reusable UI components in the application.
 - **Swiping:** Card translates horizontally
 - **Swiped:** Shows edit/delete buttons
 
-**Used On:** Mobile dashboard views, ManageChildrenPage (mobile)
+**Used On:** ⚠️ *Component defined but not currently imported anywhere* (available for future use)
 
 ---
 
@@ -1343,7 +1343,7 @@ Visual specification for all reusable UI components in the application.
 - **Preset selected:** Blue border, light blue background
 - **Custom input mode:** Shows input field with Set/Cancel buttons
 
-**Used On:** LogReadingPage, StudentLogReadingPage, TeacherLogReading
+**Used On:** ⚠️ *Component defined but not currently imported anywhere* (available for LogReadingPage, StudentLogReadingPage, TeacherLogReading)
 
 ---
 
@@ -1403,7 +1403,7 @@ Visual specification for all reusable UI components in the application.
 - **Multiple children:** Swipeable with dots
 - **Selected stat:** Blue background tint
 
-**Used On:** DashboardPage (mobile)
+**Used On:** ⚠️ *Component defined but not currently imported anywhere* (available for DashboardPage mobile view)
 
 ---
 
@@ -1769,7 +1769,7 @@ Default colors:
 **Color Usage:**
 - Star fill: `hsl(var(--brand-yellow))`
 
-**Used On:** Milestone achievements
+**Used On:** ⚠️ *Component defined but not currently imported anywhere* (available for milestone achievements)
 
 ---
 
@@ -1790,7 +1790,7 @@ Default colors:
 - `animate-particle-burst`
 - 800ms duration
 
-**Used On:** Goal reached celebrations
+**Used On:** ⚠️ *Component defined but not currently imported anywhere* (available for goal celebrations)
 
 ---
 
