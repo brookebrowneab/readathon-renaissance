@@ -1698,9 +1698,14 @@ Quick reference of components used across pages:
 | PublicLayout | Home, About, FAQ, Auth, Privacy pages |
 | AdminLayout | Admin Dashboard, Admin Reading Logs |
 | AdminPageLayout | Admin Settings, Admin Email, Admin Content, Admin Users, Admin Finance |
+| AdminLayout | Admin pages wrapper with sidebar |
+| AdminSidebar | AdminLayout (navigation menu) |
 | PageHeader | StudentDashboardPage (legacy), StudentLogReadingPage, StudentBooksPage |
 | MobileNavDrawer | MainNav (mobile slide-out menu) |
+| MobileHeader | Mobile page headers |
+| TopHeader | Public pages top banner |
 | LogoBanner | PublicLayout (currently disabled/returns null) |
+| AppBreadcrumbs | Admin pages, nested routes |
 
 ### Legacy/Brand Components
 | Component | Used In |
@@ -1787,6 +1792,8 @@ Quick reference of components used across pages:
 | MobileMinutesStepper | LogReadingPage, StudentLogReadingPage, StudentPinDashboard |
 | MobileProgressDisplay | DashboardPage (mobile) |
 | MobileStudentCard | Mobile dashboard views |
+| MobileDataCard | Mobile data displays |
+| MobileFormStepper | Multi-step mobile forms |
 
 ### Payment Components
 | Component | Used In |
@@ -1800,6 +1807,30 @@ Quick reference of components used across pages:
 | ChildSelector | SponsorMyChildPage |
 | ClassSelector | SponsorMyChildPage |
 | ClassroomPledgeForm | SponsorMyChildPage |
+| EditPledgeDialog | MyPledgesPage, SponsorDashboard |
+
+### Family Components
+| Component | Used In |
+|-----------|---------|
+| ChildReadingLogsSection | ChildDetailsPage |
+| EditChildDialog | ManageChildrenPage, ChildDetailsPage |
+| ReadingLogsTable | ChildDetailsPage, VerifyLogsPage |
+
+### Dashboard Section Components
+| Component | Used In |
+|-----------|---------|
+| ChildBooksSection | DashboardPage, ChildDetailsPage |
+| PledgesSection | DashboardPage |
+| ClassFundraisingStack | TeacherDashboard (alternative to shelf) |
+
+### Admin Components
+| Component | Used In |
+|-----------|---------|
+| EditEventDialog | AdminSettingsPage |
+| LogVerificationSettings | AdminSettingsPage |
+| LogoGenerator | AdminSettingsPage |
+| SiteContentEditor | AdminSiteContentPage |
+| TeacherManagement | AdminUsersPage |
 
 ---
 
