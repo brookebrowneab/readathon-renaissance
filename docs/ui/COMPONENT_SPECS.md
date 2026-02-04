@@ -917,7 +917,7 @@ Visual specification for all reusable UI components in the application.
 - **Swiping:** Card translates horizontally
 - **Swiped:** Shows edit/delete buttons
 
-**Used On:** ⚠️ *Component defined but not currently imported anywhere* (available for future use)
+**Used On:** ManageChildrenPage (mobile view)
 
 ---
 
@@ -1374,7 +1374,7 @@ Visual specification for all reusable UI components in the application.
 - **Preset selected:** Blue border, light blue background
 - **Custom input mode:** Shows input field with Set/Cancel buttons
 
-**Used On:** ⚠️ *Component defined but not currently imported anywhere* (available for LogReadingPage, StudentLogReadingPage, TeacherLogReading)
+**Used On:** LogReadingPage (mobile view)
 
 ---
 
@@ -1434,7 +1434,7 @@ Visual specification for all reusable UI components in the application.
 - **Multiple children:** Swipeable with dots
 - **Selected stat:** Blue background tint
 
-**Used On:** ⚠️ *Component defined but not currently imported anywhere* (available for DashboardPage mobile view)
+**Used On:** DashboardPage (mobile view)
 
 ---
 
@@ -1774,7 +1774,7 @@ Default colors:
 - `animate-confetti` (falls from top)
 - Respects `prefers-reduced-motion`
 
-**Used On:** Goal completion, milestone achievement
+**Used On:** LogReadingPage (goal completion, success state)
 
 ---
 
@@ -1821,7 +1821,7 @@ Default colors:
 - `animate-particle-burst`
 - 800ms duration
 
-**Used On:** ⚠️ *Component defined but not currently imported anywhere* (available for goal celebrations)
+**Used On:** LogReadingPage (goal reached celebration)
 
 ---
 
@@ -3522,7 +3522,7 @@ Default colors:
 </div>
 ```
 
-**Used On:** ⚠️ *Component defined but not currently imported anywhere (available for future use)*
+**Used On:** HomePage (hero section)
 
 ---
 
