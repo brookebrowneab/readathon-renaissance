@@ -215,13 +215,13 @@ Mapping of pages to layout shells and component usage. This document describes *
 
 ---
 
-### StudentLoginPage
+### StudentLoginPage (PIN-based)
 
 | Property | Value |
 |----------|-------|
 | Route | `/student/login` |
 | Layout Shell | Custom (gradient background, no footer) |
-| File | `src/pages/student/StudentLoginPage.tsx` |
+| File | `src/pages/student/StudentPinLoginPage.tsx` |
 
 **Components Used (top to bottom):**
 1. Header with Logo
@@ -232,6 +232,32 @@ Mapping of pages to layout shells and component usage. This document describes *
    - Button (Let's Read!)
    - Help text
    - Link (Parent/Teacher login)
+
+**Conditional States:**
+- Loading: Button loading state
+
+---
+
+### OldStudentLoginPage (Legacy)
+
+| Property | Value |
+|----------|-------|
+| Route | `/student-login` |
+| Layout Shell | `PublicLayout` |
+| File | `src/pages/auth/StudentLoginPage.tsx` |
+
+**Components Used (top to bottom):**
+1. MainNav
+2. Decorative Stars (absolute positioned)
+3. BookContainer (variant="warm")
+   - BookIcon (in gradient circle)
+   - Toggle Buttons (Student Code / Email)
+   - FormField (studentCode OR email)
+   - Button (Let's Read!)
+   - Button (Try Demo Mode)
+   - BookIcon decorations
+   - Link (Parent/Teacher login)
+4. Footer
 
 **Conditional States:**
 - Loading: Button loading state
@@ -319,13 +345,25 @@ Mapping of pages to layout shells and component usage. This document describes *
 
 **Components Used (top to bottom):**
 1. MainNav
-2. Centered Section
-   - Progress Indicator (step 3/3)
-   - Success Card
-     - Confetti (animation)
-     - PartyPopper icon
-     - Button (Go to Dashboard, Add Another Child)
+2. Centered Section (`bg-background-warm`, max-w-lg)
+   - Progress Indicator (3 steps, all complete with Check icons)
+   - Success Card (hand-drawn border)
+     - CheckCircle icon (success circle)
+     - ReadingGoalRing (showing 0 progress)
+     - Child summary (name, goal, pledge amount)
+     - **Share Section:**
+       - Copy Link (Input + Button)
+       - Share Buttons (Email, SMS, Facebook, Print)
+     - **Action Buttons:**
+       - Button (Add Another Child) — conditional: hasMultipleChildren
+       - Button (Add Another Pledge)
+       - Button (Go to Dashboard)
 3. Footer
+
+**Conditional States:**
+- Loading: Shows "Loading..." text
+- No child data: Redirects to `/onboarding/add-child`
+- Not authenticated: Redirects to `/login`
 
 ---
 
@@ -728,35 +766,43 @@ Mapping of pages to layout shells and component usage. This document describes *
 | Property | Value |
 |----------|-------|
 | Route | `/teacher` |
-| Layout Shell | Custom (MainNav, no Footer) |
+| Layout Shell | Custom (MainNav + Footer, no BottomTabBar) |
 | File | `src/pages/teacher/TeacherDashboard.tsx` |
 
 **Components Used (top to bottom):**
 1. MainNav
-2. Main Content
-   - Header (teacher name, type)
+2. Main Content (`bg-background-warm`)
+   - Header (teacher name, teacher type label)
    - Button (Sign Out)
-   - **Event Status Banner (conditional):**
+   - **Event Status Banner (conditional: activeEvent):**
      - Calendar icon
+     - Event name, days remaining, participation stats
      - Badge (Active)
    - **Stats Row:**
-     - Stat Cards (Students, Participating, Total Minutes, Avg)
+     - Stat Cards (Students, Participating, Total Minutes, Avg per Student)
+       - Each with icon in colored circle
    - **Filters Row:**
-     - Input (search)
-     - Select (sort, filter, grade, class)
-     - Button (Log Reading) — Tooltip if disabled
+     - Input (search with Search icon)
+     - Select (sortBy: name/progress/last-active)
+     - Select (filterBy: all/needs-attention/goal-reached)
+     - Select (grade) — conditional: staff/full access
+     - Select (class) — conditional: staff or partner with multiple classes
+     - Button (Log Reading) with Tooltip if disabled
      - Button (Export)
    - **Student Grid:**
-     - Student Cards
-       - Avatar
-       - ReadingGoalRing
-       - Badge (status)
-       - Book List (Tooltip)
+     - Student Cards (handDrawnBorder)
+       - ReadingGoalRing (size=50)
+       - Name, grade/class info
+       - Badge (status: Goal Reached/On Track/Needs Encouragement/Not Started)
+       - "Last active" text
+       - Books Tooltip (conditional: has books)
+3. Footer
 
 **Conditional States:**
-- Loading: LoadingSpinner or Skeleton grid
-- Redirect: To `/login` if not authenticated
-- Empty (students): No students message
+- Auth Loading: Centered Loader2 spinner
+- Loading: Skeleton grid (8 cards)
+- Redirect: To `/login` if not authenticated or not a teacher
+- Empty (filtered): No results message
 
 ---
 
@@ -906,7 +952,7 @@ Mapping of pages to layout shells and component usage. This document describes *
 
 ## Student Pages
 
-### StudentDashboardPage
+### StudentDashboardPage (Demo/Legacy)
 
 | Property | Value |
 |----------|-------|
@@ -915,19 +961,69 @@ Mapping of pages to layout shells and component usage. This document describes *
 | File | `src/pages/student/StudentDashboardPage.tsx` |
 
 **Components Used (top to bottom):**
-1. PageHeader (logo + logout button)
-2. Main Content (max-w-lg, centered)
-   - Welcome Card
-     - Avatar
-     - ReadingGoalRing
-     - Stats (minutes, days)
-   - CTA Button (Log Reading) — large touch target
-   - Recent Books List
-   - Achievements Section
+1. PageHeader (with Exit button)
+2. Main Content (max-w-lg, centered, `bg-gradient-to-b from-brand-yellow/20 to-background-warm`)
+   - Welcome Header (`font-handwritten`, "Hi, {name}! 📚")
+   - **Hero Progress BookContainer:**
+     - ReadingGoalRing (size=200, mobileSize=180)
+     - Minutes count (font-serif text-5xl)
+     - Milestone message (dynamic color based on progress)
+   - **Class Progress BookContainer (conditional: has class + milestoneStatus):**
+     - Target icon + heading
+     - Class earnings display
+     - Class total minutes
+     - Next milestone card OR "All milestones reached" card
+   - **Sponsors Cheering Section:**
+     - Heart icons (animated pulse)
+   - **Big CTA Button:**
+     - "I Read Today!" (h-[72px], bg-brand-yellow)
+   - **Recent Reading BookContainer (variant="warm"):**
+     - Log entries with BookOpen icons
 
 **Conditional States:**
-- Loading: LoadingSpinner
-- Redirect: To `/student/login` if no session
+- No student data: Returns null (guards render)
+
+---
+
+### StudentPinDashboardPage (Authenticated)
+
+| Property | Value |
+|----------|-------|
+| Route | `/student/dashboard` |
+| Layout Shell | Custom (MainNav + Footer) |
+| File | `src/pages/student/StudentPinDashboardPage.tsx` |
+
+**Components Used (top to bottom):**
+1. MainNav
+2. **Hero Section:**
+   - Editorial headline ("Janney students have read X minutes")
+   - Highlighter effect on number
+3. Blue Divider Line
+4. Main Content (`bg-background-warm`, two-column on lg+)
+   - **Left Column:**
+     - Header (Welcome, {name}!)
+     - Button (Log Out)
+     - **Progress Card (handDrawnBorder):**
+       - ReadingGoalRing (size=120, mobileSize=100)
+       - Stats Grid (Goal, Today, This Week, Sessions)
+       - Class Fundraising Shelf (conditional)
+       - Button (Log Reading) — opens dialog
+     - **Reading History Card:**
+       - Recent logs with edit/delete buttons
+       - Badge (verification status)
+       - Edit Dialog
+   - **Right Column (lg+ only):**
+     - **Class Summary Card**
+     - **Grade Summary Card**
+     - **Favorite Books Card** (class + grade favorites)
+5. Footer
+6. Dialog (Log Reading modal with MobileMinutesStepper, BookSelector)
+
+**Conditional States:**
+- Session Loading: Skeleton placeholders
+- Not authenticated: Redirects via requireAuth()
+- Goal reached: Celebratory message
+- Logs verified: Edit/delete buttons hidden
 
 ---
 
@@ -970,20 +1066,25 @@ Quick reference of components used across pages:
 
 | Component | Used In |
 |-----------|---------|
-| MainNav | All public/authenticated pages |
-| Footer | Most pages (except student) |
-| BottomTabBar | Dashboard, Children, Sponsor pages (mobile) |
-| PublicLayout | Home, About, FAQ, Auth pages |
-| AdminPageLayout | Admin pages |
-| PageHeader | Student pages |
-| BookContainer | Student login, Sponsor confirmation |
-| ReadingGoalRing | Dashboard, ChildDetails, Teacher, Student |
+| MainNav | All public/authenticated pages (except StudentDashboardPage legacy) |
+| Footer | Most pages (except legacy student pages using PageHeader) |
+| BottomTabBar | Dashboard, Children, Sponsor, Admin pages (mobile) |
+| PublicLayout | Home, About, FAQ, Auth, Privacy pages |
+| AdminLayout | Admin Dashboard, Admin Reading Logs |
+| AdminPageLayout | Admin Settings, Admin Email, Admin Content, Admin Users, Admin Finance |
+| PageHeader | StudentDashboardPage (legacy), StudentLogReadingPage, StudentBooksPage |
+| BookContainer | Student pages, OnboardingComplete, Sponsor confirmation pages |
+| ReadingGoalRing | Dashboard, ChildDetails, Teacher, Student, OnboardingComplete |
+| ClassFundraisingShelf | Dashboard, StudentPinDashboard, Sponsor Dashboard |
 | PledgeCard | Dashboard, ChildDetails, MyPledges |
+| FormField | All forms |
 | Button | All pages |
 | Input | All forms |
-| Select | Filters, forms |
-| Table | Admin pages |
-| Dialog | Confirmations, modals |
+| Select | Filters, forms, onboarding |
+| Table | Admin pages, outstanding payments |
+| Dialog | Confirmations, modals, log editing |
 | Skeleton | Loading states |
-| Badge | Status indicators |
-| Collapsible | Expandable sections |
+| Badge | Status indicators (payment, verification, student status) |
+| Collapsible | Expandable sections (ManageChildren, LogReading history) |
+| Tooltip | Teacher dashboard (disabled buttons), student books |
+| handDrawnBorder | Cards across all authenticated pages (defined inline) |
