@@ -81,6 +81,7 @@ Visual specification for all reusable UI components in the application.
     - [BookSelector](#bookselector)
     - [BarcodeScanner](#barcodescanner)
 13. [Skeleton Components](#skeleton-components)
+    - CardSkeleton, TableSkeleton, ProgressCircleSkeleton, TextSkeleton, StudentCardSkeleton, DashboardSkeleton
 14. [Pledge Components](#pledge-components)
     - [EditPledgeDialog](#editpledgedialog)
     - [ChildSelector](#childselector)
