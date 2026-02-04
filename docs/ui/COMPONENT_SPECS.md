@@ -3240,3 +3240,337 @@ Default colors:
 
 **Used On:** AdminUsersPage
 
+---
+
+## Additional Layout Components
+
+### PublicLayout
+
+**File Path:** `src/components/layout/PublicLayout.tsx`
+
+**Purpose:** Wrapper layout for public-facing pages with consistent navigation and footer.
+
+**Props:**
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `children` | `ReactNode` | - | Page content |
+
+**Visual Structure:**
+```
+<div className="flex min-h-screen flex-col">
+  <MainNav />
+  <LogoBanner />
+  <main className="flex-1">{children}</main>
+  <Footer />
+</div>
+```
+
+**Used On:** HomePage, AboutPage, HowItWorksPage, FAQPage, PrivacyPage, LoginPage, RegisterPage, SponsorAuthPage, NotFound, and all public pages
+
+---
+
+## Decorative Components
+
+### DecorativeBlob
+
+**File Path:** `src/components/ui/decorative-blobs.tsx`
+
+**Purpose:** Decorative blob shape for subtle background accents at section edges.
+
+**Props:**
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `position` | `"top-left" \| "top-right" \| "bottom-left" \| "bottom-right"` | - | Corner position |
+| `className` | `string` | - | Additional classes |
+| `opacity` | `number` | `5` | Opacity from 0-100 |
+| `size` | `number \| string` | `400` | Size in pixels or tailwind class |
+| `colorClass` | `string` | `"text-primary"` | Color class for the blob |
+
+**Visual Structure:**
+```
+<div className="absolute pointer-events-none select-none {positionClasses}">
+  <img src={decorativeShape} style={{ filter: "blur(1px)" }} />
+</div>
+```
+
+**Used On:** ⚠️ *Component defined but not currently imported anywhere (available for future use)*
+
+---
+
+### DecorativeBackground
+
+**File Path:** `src/components/ui/decorative-blobs.tsx`
+
+**Purpose:** Wrapper that adds decorative blob shapes to section backgrounds.
+
+**Props:**
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `children` | `ReactNode` | - | Section content |
+| `className` | `string` | - | Additional classes |
+| `blobs` | `Array<position>` | `["top-right", "bottom-left"]` | Which corners to show blobs |
+| `opacity` | `number` | `5` | Opacity for all blobs |
+| `size` | `number` | `400` | Size for all blobs |
+| `colorClass` | `string` | - | Color class for blobs |
+
+**Visual Structure:**
+```
+<div className="relative overflow-hidden">
+  {blobs.map(position => <DecorativeBlob key={position} ... />)}
+  <div className="relative z-10">{children}</div>
+</div>
+```
+
+**Used On:** ⚠️ *Component defined but not currently imported anywhere (available for future use)*
+
+---
+
+## Pledge Selection Components
+
+### ChildSelector
+
+**File Path:** `src/components/pledge/ChildSelector.tsx`
+
+**Purpose:** Grid selector for choosing which child to sponsor with progress indicators.
+
+**Props:**
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `children` | `Array<ChildData>` | - | Array of sponsorable children |
+| `selectedChildId` | `string \| null` | - | Currently selected child ID |
+| `onSelect` | `(childId: string) => void` | - | Selection callback |
+| `title` | `string` | `"Select a Child"` | Section title |
+| `subtitle` | `string` | - | Optional subtitle |
+| `showSource` | `boolean` | `false` | Show invited badge |
+
+**Visual Structure:**
+```
+<div className="space-y-6">
+  <div (header)>
+    <h2>{title}</h2>
+    <p>{subtitle}</p>
+  </div>
+  <div className="grid gap-4 md:grid-cols-2">
+    {children.map(child => (
+      <Card className={cn(selectedChildId === child.id && "ring-2 ring-primary")}>
+        <ReadingGoalRing size={64} />
+        <h3>{displayName}</h3>
+        <Badge (Invited - conditional) />
+        <p>{grade_info}</p>
+        <p>{progress}% of goal</p>
+      </Card>
+    ))}
+  </div>
+</div>
+```
+
+**Empty State:** Displays User icon with "No children available" message
+
+**Used On:** SponsorMyChildPage, FamilySponsorPage
+
+---
+
+### ClassSelector
+
+**File Path:** `src/components/pledge/ClassSelector.tsx`
+
+**Purpose:** Grid selector for choosing which class to sponsor with fundraising progress.
+
+**Props:**
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `classes` | `Array<ClassInfo>` | - | Array of classes |
+| `selectedClassName` | `string \| null` | - | Currently selected class |
+| `onSelect` | `(className: string, teacherId: string \| null) => void` | - | Selection callback |
+| `fundraisingTotals` | `Record<string, number>` | - | Fundraising by class name |
+| `milestoneGoal` | `number` | - | Class milestone target |
+| `milestoneReward` | `string \| null` | - | Reward description |
+| `isLoading` | `boolean` | `false` | Loading state |
+
+**Visual Structure:**
+```
+<div className="space-y-6">
+  <div (header)>
+    <h2>Select a Class</h2>
+    <p>Classes reaching ${goal} earn: {reward}</p>
+  </div>
+  <div className="grid gap-4 md:grid-cols-2">
+    {classes.map(classInfo => (
+      <Card className={cn(selectedClassName === className && "ring-2 ring-primary")}>
+        <ClassFundraisingStack size="sm" showLabel={false} />
+        <h3>{teacherName}'s Class</h3>
+        <p>{gradeInfo}</p>
+        <span><Users /> {studentCount} students</span>
+        <span>${funded} / ${goal}</span>
+      </Card>
+    ))}
+  </div>
+</div>
+```
+
+**Loading State:** 4 skeleton cards
+**Empty State:** School icon with "No classes available" message
+
+**Used On:** SponsorMyChildPage, SponsorClassPage
+
+---
+
+### SponsorTypeSelector
+
+**File Path:** `src/components/pledge/SponsorTypeSelector.tsx`
+
+**Purpose:** Card selector for choosing between sponsoring own children vs supporting a classroom.
+
+**Props:**
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `selectedType` | `SponsorType \| null` | - | Selected type |
+| `onSelect` | `(type: SponsorType) => void` | - | Selection callback |
+| `hasChildren` | `boolean` | - | Whether user has children registered |
+
+**Types:** `SponsorType = "my-children" | "support-classroom"`
+
+**Visual Structure:**
+```
+<div className="space-y-6">
+  <div (header)>
+    <h2>Who would you like to sponsor?</h2>
+    <p>Choose how you'd like to support reading</p>
+  </div>
+  <div className="grid gap-4 md:grid-cols-2 max-w-2xl mx-auto">
+    {/* My Children - hidden if !hasChildren */}
+    <Card className={cn(selectedType === "my-children" && "ring-2 ring-primary")}>
+      <User className="h-8 w-8" />
+      <h3>My Children</h3>
+      <p>Sponsor your own child's reading journey</p>
+    </Card>
+    
+    {/* Support a Classroom */}
+    <Card className={cn(selectedType === "support-classroom" && "ring-2 ring-primary")}>
+      <School className="h-8 w-8" />
+      <h3>Support a Classroom</h3>
+      <p>Make a general donation to support a class</p>
+    </Card>
+  </div>
+</div>
+```
+
+**Used On:** SponsorMyChildPage
+
+---
+
+### ClassroomPledgeForm
+
+**File Path:** `src/components/pledge/ClassroomPledgeForm.tsx`
+
+**Purpose:** Multi-step form for creating classroom pledges with flat or milestone-based options.
+
+**Props:**
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `pledgeType` | `ClassroomPledgeType` | - | "flat" or "milestone" |
+| `onPledgeTypeChange` | `(type) => void` | - | Type change callback |
+| `flatAmount` | `string` | - | Flat donation amount |
+| `onFlatAmountChange` | `(amount) => void` | - | Amount change callback |
+| `milestoneTiers` | `MilestoneTier[]` | - | Array of milestone tiers |
+| `onMilestoneTiersChange` | `(tiers) => void` | - | Tiers change callback |
+| `className` | `string` | - | Class name |
+| `teacherName` | `string \| null` | - | Teacher name |
+
+**Types:**
+- `ClassroomPledgeType = "flat" | "milestone"`
+- `MilestoneTier = { id: string; amount: string; minutesTarget: string }`
+
+**Visual Structure:**
+```
+<div style={handDrawnBorder}>
+  <h2>Support {className}</h2>
+  
+  {/* Step 1: Pledge Type */}
+  <RadioGroup>
+    <Label (Fixed Donation with DollarSign icon) />
+    <Label (Reading Milestone with Target icon) />
+  </RadioGroup>
+  
+  {/* Step 2: Amount */}
+  {pledgeType === "flat" ? (
+    <div>
+      {[25, 50, 100, 250].map(amount => <button />)}
+      <FormField (custom amount) />
+    </div>
+  ) : (
+    <div>
+      {milestoneTiers.map(tier => (
+        <div>
+          <Input (minutes target) />
+          <Input (amount) />
+          {/* Quick set buttons */}
+        </div>
+      ))}
+      <Button>Add Another Milestone</Button>
+    </div>
+  )}
+  
+  {/* Summary */}
+  <div className="bg-primary/5">
+    <CheckCircle />
+    <p>You're pledging ${amount}...</p>
+  </div>
+</div>
+```
+
+**Used On:** SponsorMyChildPage, SponsorClassPage
+
+---
+
+## Classroom Components
+
+### ClassProgressCard
+
+**File Path:** `src/components/classroom/ClassProgressCard.tsx`
+
+**Purpose:** Summary card showing class reading stats and fundraising progress.
+
+**Props:**
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `className` | `string` | - | Class identifier |
+| `teacherName` | `string \| null` | - | Teacher name |
+| `eventId` | `string \| null` | - | Event ID for milestone data |
+| `showFundraising` | `boolean` | `true` | Show fundraising progress |
+| `milestoneGoal` | `number` | `1000` | Class party target |
+| `compact` | `boolean` | `false` | Compact display mode |
+
+**Visual Structure:**
+```
+<Card>
+  <CardHeader>
+    <CardTitle>{className} • {teacherName}</CardTitle>
+  </CardHeader>
+  <CardContent>
+    {/* Stats Grid */}
+    <div className="grid grid-cols-2 sm:grid-cols-4">
+      <Clock /> {totalMinutes} Minutes Read
+      <BookOpen /> {totalBooks} Books Read
+      <Users /> {studentCount} Readers
+      <DollarSign /> ${totalUnlocked} Earned
+    </div>
+    
+    {/* Fundraising Progress */}
+    <Progress value={fundraisingProgress} />
+    <p>${remaining} more to unlock class party</p>
+    
+    {/* Next Reading Milestone */}
+    <div className="bg-muted/50">
+      <Target /> Next Milestone
+      <Progress />
+      <p>{minutesToNext} more minutes to unlock ${nextAmount}</p>
+    </div>
+  </CardContent>
+</Card>
+```
+
+**Loading State:** Skeleton with card structure
+**Uses Hooks:** `useClassReadingStats`, `useClassMilestoneStatus`
+
+**Used On:** TeacherDashboard, StudentPinDashboardPage (compact mode)
