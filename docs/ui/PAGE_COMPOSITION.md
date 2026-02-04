@@ -102,8 +102,12 @@ Some pages are accessible via multiple routes for backward compatibility or sema
 |-----------------|----------------|----------------|-------|
 | `/children` | `/family/manage` | ManageChildrenPage | Legacy family management path |
 | `/children/:id` | `/family/children/:id/settings` | ChildDetailsPage | Settings-focused alias for child details |
+| `/invite` | `/children/:id/invite` | InviteSponsorsPage | Child-specific invite path; both valid entry points |
+| `/s/:code` | `/invite/:token` | ChildToFamilyRedirect | Legacy child-specific links; both redirect to `/f/:userId` |
 
-**Behavior:** All aliases render the same component with identical functionality. No redirects occur—both routes are valid entry points.
+**Behavior:** 
+- **Static aliases** (ManageChildrenPage, ChildDetailsPage, InviteSponsorsPage): Both routes render the same component with identical functionality. No redirects occur—both routes are valid entry points.
+- **Redirect aliases** (ChildToFamilyRedirect): Legacy child-specific sponsor links that redirect to the family-based sponsor page (`/f/:userId`) with the child pre-selected via query param.
 
 ---
 
