@@ -1447,22 +1447,14 @@ Visual specification for all reusable UI components in the application.
 **Purpose:** Display when no data is available.
 
 **Props:**
-| Prop | Type | Description |
-|------|------|-------------|
-| `icon` | `ReactNode` | Optional icon |
-| `title` | `string` | Title text |
-| `description` | `string` | Description text |
-| `action` | `{ label, onClick?, href? }` | Primary action |
-| `secondaryAction` | `{ label, onClick?, href? }` | Secondary action |
-
-**Pre-built variants:**
-- `EmptyChildren` - No children added
-- `EmptyReadingLogs` - No reading sessions
-- `EmptyPledges` - No sponsors yet
-- `EmptySearchResults` - No search results
-- `EmptyStudents` - No students in class
-- `EmptyData` - Generic no data
-- `EmptyFolder` - Empty folder
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `icon` | `ReactNode` | — | Optional icon |
+| `title` | `string` | — | Title text |
+| `description` | `string` | — | Description text |
+| `action` | `{ label, onClick?, href? }` | — | Primary action |
+| `secondaryAction` | `{ label, onClick?, href? }` | — | Secondary action |
+| `className` | `string` | — | Additional CSS classes |
 
 **Visual Structure:**
 ```
@@ -1496,21 +1488,167 @@ Visual specification for all reusable UI components in the application.
 
 ---
 
+### EmptyChildren
+
+**File Path:** `src/components/ui/empty-states.tsx`
+
+**Purpose:** Empty state when no children have been added to a family account.
+
+**Props:**
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `onAddChild` | `() => void` | — | Handler for "Add Child" action |
+
+**Visual Configuration:**
+- Icon: `Users` (lucide-react)
+- Title: "No children added yet"
+- Description: "Add your children to start tracking their reading progress and collecting pledges."
+- Primary action: "Add Your First Child"
+
+**Used On:** ManageChildrenPage, DashboardPage
+
+---
+
+### EmptyReadingLogs
+
+**File Path:** `src/components/ui/empty-states.tsx`
+
+**Purpose:** Empty state when a child has no reading logs.
+
+**Props:**
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `childName` | `string` | — | Name of the child for personalized message |
+| `onLogReading` | `() => void` | — | Handler for "Log Reading" action |
+
+**Visual Configuration:**
+- Icon: `BookOpen` (lucide-react)
+- Title: "No reading sessions yet"
+- Description: "Start logging reading time for {childName} to track their progress."
+- Primary action: "Log First Reading Session"
+
+**Used On:** ChildDetailsPage, ChildReadingLogsSection
+
+---
+
+### EmptyPledges
+
+**File Path:** `src/components/ui/empty-states.tsx`
+
+**Purpose:** Empty state when no sponsors have pledged yet.
+
+**Props:**
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `onInviteSponsors` | `() => void` | — | Handler for invite action |
+
+**Visual Configuration:**
+- Icon: `Heart` (lucide-react)
+- Title: "No sponsors yet"
+- Description: "Invite family and friends to sponsor your child's reading journey."
+- Primary action: "Invite Sponsors"
+
+**Used On:** PledgesSection, SponsorRequestsPage
+
+---
+
+### EmptySearchResults
+
+**File Path:** `src/components/ui/empty-states.tsx`
+
+**Purpose:** Empty state when search returns no results.
+
+**Props:**
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `searchQuery` | `string` | — | The search term that returned no results |
+| `onClearSearch` | `() => void` | — | Handler to clear search |
+
+**Visual Configuration:**
+- Icon: `Search` (lucide-react)
+- Title: "No results found"
+- Description: "No results match '{searchQuery}'. Try a different search term."
+- Primary action: "Clear Search"
+
+**Used On:** Admin tables, search interfaces
+
+---
+
+### EmptyStudents
+
+**File Path:** `src/components/ui/empty-states.tsx`
+
+**Purpose:** Empty state for teacher dashboards with no students.
+
+**Props:**
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `className` | `string` | — | Additional CSS classes |
+
+**Visual Configuration:**
+- Icon: `Users` (lucide-react)
+- Title: "No students in your class"
+- Description: "Students will appear here once parents register their children and assign them to your class."
+
+**Used On:** TeacherDashboard
+
+---
+
+### EmptyData
+
+**File Path:** `src/components/ui/empty-states.tsx`
+
+**Purpose:** Generic empty state for any data listing.
+
+**Props:**
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `title` | `string` | `"No data available"` | Custom title |
+| `description` | `string` | `"There's nothing to show here yet."` | Custom description |
+
+**Visual Configuration:**
+- Icon: `Inbox` (lucide-react)
+- Customizable title and description
+
+**Used On:** Generic data tables, admin pages
+
+---
+
+### EmptyFolder
+
+**File Path:** `src/components/ui/empty-states.tsx`
+
+**Purpose:** Empty state for empty folders or collections.
+
+**Props:**
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `folderName` | `string` | — | Name of the empty folder |
+
+**Visual Configuration:**
+- Icon: `FolderOpen` (lucide-react)
+- Title: "This folder is empty"
+- Description: "No items in {folderName} yet."
+
+**Used On:** File/folder interfaces
+
+---
+
 ### ErrorState
 
 **File Path:** `src/components/ui/error-states.tsx`
 
-**Purpose:** Display error conditions.
+**Purpose:** Display error conditions with recovery actions.
 
-**Props:** Same as EmptyState
-
-**Pre-built variants:**
-- `ConnectionError` - Network issues
-- `NotFoundError` - 404 page
-- `PermissionDenied` - Access denied
-- `GenericError` - Unexpected error
-- `FormError` - Form submission error (inline)
-- `ErrorBoundaryFallback` - React error boundary
+**Props:**
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `icon` | `ReactNode` | — | Error icon |
+| `title` | `string` | — | Error title |
+| `description` | `string` | — | Error description |
+| `action` | `{ label, onClick?, href? }` | — | Primary recovery action |
+| `secondaryAction` | `{ label, onClick?, href? }` | — | Secondary action |
+| `className` | `string` | — | Additional CSS classes |
 
 **Visual Structure:**
 ```
@@ -1523,14 +1661,151 @@ Visual specification for all reusable UI components in the application.
 ```
 
 **Typography:**
-- Same as EmptyState
+- Title: `font-serif text-xl font-medium`
+- Description: `text-muted-foreground`
 
 **Color Usage:**
 - Icon circle: `bg-destructive/10`
 - Icon: `text-destructive` (h-10 w-10)
-- FormError container: `bg-destructive/10 border-destructive/30`
 
-**Used On:** Error boundaries, failed API calls, 404 page
+**Used On:** Error boundaries, failed API calls
+
+---
+
+### ConnectionError
+
+**File Path:** `src/components/ui/error-states.tsx`
+
+**Purpose:** Error state for network connectivity issues.
+
+**Props:**
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `onRetry` | `() => void` | — | Handler for retry action |
+
+**Visual Configuration:**
+- Icon: `WifiOff` (lucide-react)
+- Title: "Connection lost"
+- Description: "Unable to connect to the server. Please check your internet connection and try again."
+- Primary action: "Retry"
+
+**Used On:** API failure states, offline detection
+
+---
+
+### NotFoundError
+
+**File Path:** `src/components/ui/error-states.tsx`
+
+**Purpose:** 404 error state for missing pages or resources.
+
+**Props:**
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `resourceType` | `string` | `"page"` | Type of resource not found |
+
+**Visual Configuration:**
+- Icon: `FileQuestion` (lucide-react)
+- Title: "{resourceType} not found"
+- Description: "The {resourceType} you're looking for doesn't exist or has been removed."
+- Primary action: "Go Home" (links to `/`)
+
+**Used On:** NotFound page, missing resource states
+
+---
+
+### PermissionDenied
+
+**File Path:** `src/components/ui/error-states.tsx`
+
+**Purpose:** Error state for access denied situations.
+
+**Props:**
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `onGoBack` | `() => void` | — | Handler for navigation back |
+
+**Visual Configuration:**
+- Icon: `ShieldAlert` (lucide-react)
+- Title: "Access denied"
+- Description: "You don't have permission to view this content."
+- Primary action: "Go Back"
+
+**Used On:** RequireAdmin, RequireTeacher wrappers
+
+---
+
+### GenericError
+
+**File Path:** `src/components/ui/error-states.tsx`
+
+**Purpose:** Generic error state for unexpected errors.
+
+**Props:**
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `onRetry` | `() => void` | — | Handler for retry action |
+| `errorMessage` | `string` | — | Optional detailed error message |
+
+**Visual Configuration:**
+- Icon: `AlertTriangle` (lucide-react)
+- Title: "Something went wrong"
+- Description: "An unexpected error occurred. Please try again."
+- Primary action: "Try Again"
+
+**Used On:** Generic error handling, unexpected failures
+
+---
+
+### FormError
+
+**File Path:** `src/components/ui/error-states.tsx`
+
+**Purpose:** Inline error display for form submission failures.
+
+**Props:**
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `message` | `string` | — | Error message to display |
+| `onDismiss` | `() => void` | — | Optional dismiss handler |
+
+**Visual Structure:**
+```
+<div (inline alert)>
+  <AlertCircle (icon) />
+  <span>{message}</span>
+  {onDismiss && <Button (X icon) />}
+</div>
+```
+
+**Color Usage:**
+- Container: `bg-destructive/10 border-destructive/30`
+- Icon & text: `text-destructive`
+
+**Used On:** Form pages, inline validation
+
+---
+
+### ErrorBoundaryFallback
+
+**File Path:** `src/components/ui/error-states.tsx`
+
+**Purpose:** React Error Boundary fallback UI.
+
+**Props:**
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `error` | `Error` | — | The caught error object |
+| `resetErrorBoundary` | `() => void` | — | Handler to reset the boundary |
+
+**Visual Configuration:**
+- Icon: `AlertOctagon` (lucide-react)
+- Title: "Application Error"
+- Description: "An error occurred in this part of the application."
+- Primary action: "Try Again"
+- Secondary action: "Reload Page"
+
+**Used On:** App-level error boundary, component error boundaries
 
 ---
 
@@ -1538,34 +1813,163 @@ Visual specification for all reusable UI components in the application.
 
 **File Path:** `src/components/ui/loading-spinner.tsx`
 
-**Purpose:** Loading indicators in various sizes and contexts.
+**Purpose:** Standalone loading spinner in various sizes.
 
 **Props:**
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
 | `size` | `"sm" \| "md" \| "lg" \| "xl"` | `"md"` | Spinner size |
-| `label` | `string` | `"Loading..."` | Accessible label |
-| `fullScreen` | `boolean` | `false` | Full screen mode |
-
-**Variants:**
-- `LoadingSpinner` - Standalone spinner
-- `InlineLoading` - Inline with text
-- `PageLoading` - Full page overlay
-- `SectionLoading` - Wrapper with fallback
-- `DotsLoader` - Pulsing dots
+| `label` | `string` | `"Loading..."` | Accessible label (sr-only for sm/md) |
+| `fullScreen` | `boolean` | `false` | Center in full viewport |
+| `className` | `string` | — | Additional CSS classes |
 
 **Size Classes:**
-- sm: `h-4 w-4`
-- md: `h-6 w-6`
-- lg: `h-10 w-10`
-- xl: `h-12 w-12`
+| Size | Dimensions | Text Size |
+|------|------------|-----------|
+| sm | `h-4 w-4` | `text-xs` |
+| md | `h-6 w-6` | `text-sm` |
+| lg | `h-10 w-10` | `text-base` |
+| xl | `h-12 w-12` | `text-lg` |
+
+**Visual Structure:**
+```
+<div role="status" aria-live="polite">
+  <Loader2 (spinning icon) />
+  <span (sr-only for sm/md, visible for lg/xl)>{label}</span>
+</div>
+```
 
 **Color Usage:**
 - Spinner: `text-brand-blue`
 - Label: `text-muted-foreground`
-- PageLoading overlay: `bg-background/80 backdrop-blur-sm`
 
-**Used On:** All pages during loading
+**Animation:**
+- Icon: `animate-spin`
+
+**Used On:** Buttons (size sm), sections (size lg), initial page loads (size xl)
+
+---
+
+### InlineLoading
+
+**File Path:** `src/components/ui/loading-spinner.tsx`
+
+**Purpose:** Inline loading indicator for text contexts.
+
+**Props:**
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `label` | `string` | `"Loading"` | Text shown next to spinner |
+| `className` | `string` | — | Additional CSS classes |
+
+**Visual Structure:**
+```
+<span role="status" aria-live="polite">
+  <Loader2 (h-4 w-4 spinning) />
+  <span>{label}</span>
+</span>
+```
+
+**Color Usage:**
+- Spinner: `text-brand-blue`
+- Label: `text-muted-foreground`
+
+**Used On:** Button loading states, inline status updates
+
+---
+
+### PageLoading
+
+**File Path:** `src/components/ui/loading-spinner.tsx`
+
+**Purpose:** Full-page loading overlay with backdrop.
+
+**Props:**
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `message` | `string` | `"Loading..."` | Loading message |
+| `className` | `string` | — | Additional CSS classes |
+
+**Visual Structure:**
+```
+<div (fixed overlay with backdrop)>
+  <div (centered card)>
+    <div (animated ring spinner, h-16 w-16) />
+    <p>{message}</p>
+  </div>
+</div>
+```
+
+**Color Usage:**
+- Overlay: `bg-background/80 backdrop-blur-sm`
+- Card: `bg-card shadow-lg`
+- Ring: `border-4 border-muted` (track), `border-brand-blue border-t-transparent` (spinner)
+- Message: `text-lg font-medium text-foreground`
+
+**Animation:**
+- Inner ring: `animate-spin`
+
+**Used On:** Route transitions, heavy data loading
+
+---
+
+### SectionLoading
+
+**File Path:** `src/components/ui/loading-spinner.tsx`
+
+**Purpose:** Wrapper component that shows loading state or content.
+
+**Props:**
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `isLoading` | `boolean` | — | Whether to show loading state |
+| `children` | `ReactNode` | — | Content to show when not loading |
+| `skeleton` | `ReactNode` | — | Custom skeleton (defaults to LoadingSpinner lg) |
+| `minHeight` | `string` | `"200px"` | Minimum height for loading container |
+
+**Visual Structure:**
+```
+{isLoading ? (
+  <div style={{ minHeight }}>
+    {skeleton || <LoadingSpinner size="lg" />}
+  </div>
+) : (
+  children
+)}
+```
+
+**Used On:** Data sections, lazy-loaded components
+
+---
+
+### DotsLoader
+
+**File Path:** `src/components/ui/loading-spinner.tsx`
+
+**Purpose:** Pulsing dots animation for subtle loading indication.
+
+**Props:**
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `className` | `string` | — | Additional CSS classes |
+
+**Visual Structure:**
+```
+<div role="status">
+  <span (dot 1, delayed 0s) />
+  <span (dot 2, delayed 0.15s) />
+  <span (dot 3, delayed 0.3s) />
+  <span (sr-only)>Loading...</span>
+</div>
+```
+
+**Dot Styling:**
+- Size: `h-2 w-2`
+- Shape: `rounded-full`
+- Color: `bg-brand-blue`
+- Animation: `animate-pulse` with staggered delays
+
+**Used On:** Chat interfaces, typing indicators, subtle loading states
 
 ---
 
@@ -1579,31 +1983,22 @@ Visual specification for all reusable UI components in the application.
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
 | `open` | `boolean` | — | Open state |
-| `onOpenChange` | `function` | — | State handler |
+| `onOpenChange` | `(open: boolean) => void` | — | State change handler |
 | `title` | `string` | — | Dialog title |
 | `description` | `string` | — | Dialog description |
 | `confirmLabel` | `string` | `"Confirm"` | Confirm button text |
 | `cancelLabel` | `string` | `"Cancel"` | Cancel button text |
 | `variant` | `"default" \| "destructive"` | `"default"` | Visual variant |
-| `onConfirm` | `function` | — | Confirm handler |
+| `onConfirm` | `() => void \| Promise<void>` | — | Confirm handler (supports async) |
 | `icon` | `ReactNode` | — | Optional icon |
-| `loading` | `boolean` | `false` | Loading state |
-
-**Pre-built variants:**
-- `DeleteConfirm` - Delete item confirmation
-- `LogoutConfirm` - Logout confirmation
-- `DiscardChangesConfirm` - Unsaved changes warning
-- `CancelPledgeConfirm` - Cancel pledge confirmation
-
-**Hook:**
-- `useConfirmDialog()` - Returns `{ isOpen, setIsOpen, confirm, handleConfirm, handleCancel }`
+| `loading` | `boolean` | `false` | External loading state |
 
 **Visual Structure:**
 ```
 <AlertDialog>
   <AlertDialogContent>
     <AlertDialogHeader>
-      {icon && <IconCircle />}
+      {icon && <div (icon circle)>{icon}</div>}
       <AlertDialogTitle (centered)>{title}</AlertDialogTitle>
       <AlertDialogDescription (centered)>{description}</AlertDialogDescription>
     </AlertDialogHeader>
@@ -1616,15 +2011,154 @@ Visual specification for all reusable UI components in the application.
 ```
 
 **Typography:**
-- Title: `text-lg font-semibold`
-- Description: `text-sm text-muted-foreground`
+- Title: `text-lg font-semibold text-center`
+- Description: `text-sm text-muted-foreground text-center`
+
+**Spacing:**
+- Icon circle: `h-12 w-12 mb-4`
+- Footer gap: `gap-2`
 
 **Color Usage:**
 - Default icon circle: `bg-muted`
 - Destructive icon circle: `bg-destructive/10`
-- Destructive action: `bg-destructive text-destructive-foreground`
+- Destructive action button: `bg-destructive text-destructive-foreground hover:bg-destructive/90`
 
 **Used On:** Delete actions, logout, form cancellation
+
+---
+
+### DeleteConfirm
+
+**File Path:** `src/components/ui/confirm-dialog.tsx`
+
+**Purpose:** Pre-configured confirmation dialog for delete operations.
+
+**Props:**
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `open` | `boolean` | — | Open state |
+| `onOpenChange` | `(open: boolean) => void` | — | State change handler |
+| `itemName` | `string` | — | Name of item being deleted |
+| `itemType` | `string` | `"item"` | Type label (e.g., "child", "pledge") |
+| `onConfirm` | `() => void \| Promise<void>` | — | Confirm handler |
+
+**Visual Configuration:**
+- Icon: `Trash2` (lucide-react, `text-destructive`)
+- Title: "Delete {itemType}?"
+- Description: 'Are you sure you want to delete "{itemName}"? This action cannot be undone.'
+- Confirm label: "Delete {itemType}"
+- Variant: `destructive`
+
+**Used On:** ManageChildrenPage, AdminUsersPage, pledge management
+
+---
+
+### LogoutConfirm
+
+**File Path:** `src/components/ui/confirm-dialog.tsx`
+
+**Purpose:** Pre-configured confirmation dialog for logout.
+
+**Props:**
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `open` | `boolean` | — | Open state |
+| `onOpenChange` | `(open: boolean) => void` | — | State change handler |
+| `onConfirm` | `() => void` | — | Confirm handler |
+
+**Visual Configuration:**
+- Icon: `LogOut` (lucide-react, `text-muted-foreground`)
+- Title: "Log out?"
+- Description: "You'll need to sign in again to access your account."
+- Confirm label: "Log Out"
+- Variant: `default`
+
+**Used On:** Header menus, account settings
+
+---
+
+### DiscardChangesConfirm
+
+**File Path:** `src/components/ui/confirm-dialog.tsx`
+
+**Purpose:** Pre-configured confirmation dialog for unsaved changes.
+
+**Props:**
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `open` | `boolean` | — | Open state |
+| `onOpenChange` | `(open: boolean) => void` | — | State change handler |
+| `onConfirm` | `() => void` | — | Confirm handler |
+
+**Visual Configuration:**
+- Icon: `AlertTriangle` (lucide-react, `text-amber-500`)
+- Title: "Discard changes?"
+- Description: "You have unsaved changes. Are you sure you want to leave? Your changes will be lost."
+- Confirm label: "Discard Changes"
+- Variant: `destructive`
+
+**Used On:** Form pages with unsaved changes detection
+
+---
+
+### CancelPledgeConfirm
+
+**File Path:** `src/components/ui/confirm-dialog.tsx`
+
+**Purpose:** Pre-configured confirmation dialog for canceling pledges.
+
+**Props:**
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `open` | `boolean` | — | Open state |
+| `onOpenChange` | `(open: boolean) => void` | — | State change handler |
+| `pledgeAmount` | `string` | — | Formatted pledge amount (e.g., "$25") |
+| `childName` | `string` | — | Name of child the pledge is for |
+| `onConfirm` | `() => void` | — | Confirm handler |
+
+**Visual Configuration:**
+- Icon: `X` (lucide-react, `text-destructive`)
+- Title: "Cancel pledge?"
+- Description: "Are you sure you want to cancel your {pledgeAmount} pledge for {childName}? This action cannot be undone."
+- Confirm label: "Cancel Pledge"
+- Variant: `destructive`
+
+**Used On:** MyPledgesPage, SponsorDashboardPage
+
+---
+
+### useConfirmDialog (Hook)
+
+**File Path:** `src/components/ui/confirm-dialog.tsx`
+
+**Purpose:** Hook for managing confirm dialog state.
+
+**Returns:**
+| Property | Type | Description |
+|----------|------|-------------|
+| `isOpen` | `boolean` | Current open state |
+| `setIsOpen` | `(open: boolean) => void` | Direct state setter |
+| `confirm` | `(action: () => void) => void` | Queue action and open dialog |
+| `handleConfirm` | `() => void` | Execute pending action and close |
+| `handleCancel` | `() => void` | Clear pending action and close |
+
+**Usage Example:**
+```tsx
+const { isOpen, setIsOpen, confirm, handleConfirm, handleCancel } = useConfirmDialog();
+
+// Trigger confirmation
+<Button onClick={() => confirm(() => deleteItem(id))}>Delete</Button>
+
+// Dialog
+<ConfirmDialog
+  open={isOpen}
+  onOpenChange={setIsOpen}
+  onConfirm={handleConfirm}
+  // ...
+/>
+```
+
+**Used On:** Pages with multiple confirmable actions
 
 ---
 
