@@ -55,6 +55,9 @@ Visual specification for all reusable UI components in the application.
    - [ParticleBurst](#particleburst)
 10. [Modal Components](#modal-components)
     - [Dialog](#dialog)
+    - [Sheet](#sheet)
+    - [Popover](#popover)
+    - [HoverCard](#hovercard)
 11. [Additional Core Components](#additional-core-components)
     - [Avatar](#avatar)
     - [Accordion](#accordion)
@@ -1825,6 +1828,188 @@ Default colors:
 - Skeleton: `bg-muted animate-pulse`
 
 **Used On:** All data loading states
+
+---
+
+### Sheet
+
+**File Path:** `src/components/ui/sheet.tsx`
+
+**Purpose:** Slide-out panel from screen edge for navigation, forms, or detailed content.
+
+**Sub-components:**
+- `Sheet` - Root (uses @radix-ui/react-dialog)
+- `SheetTrigger` - Element that opens sheet
+- `SheetContent` - The sliding panel
+- `SheetHeader` - Header container
+- `SheetTitle` - Title text
+- `SheetDescription` - Description text
+- `SheetFooter` - Footer with actions
+- `SheetClose` - Close button
+- `SheetOverlay` - Background overlay
+- `SheetPortal` - Portal wrapper
+
+**Props (SheetContent):**
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `side` | `"top" \| "bottom" \| "left" \| "right"` | `"right"` | Edge from which sheet slides |
+| `className` | `string` | - | Additional classes |
+
+**Visual Structure:**
+```
+<Sheet open={open} onOpenChange={setOpen}>
+  <SheetTrigger asChild>
+    <Button>Open Menu</Button>
+  </SheetTrigger>
+  <SheetContent side="right">
+    <SheetHeader>
+      <SheetTitle>Navigation</SheetTitle>
+      <SheetDescription>Browse sections</SheetDescription>
+    </SheetHeader>
+    <nav className="flex flex-col gap-2">
+      {links.map(link => <NavLink />)}
+    </nav>
+    <SheetFooter>
+      <Button>Close</Button>
+    </SheetFooter>
+  </SheetContent>
+</Sheet>
+```
+
+**Typography:**
+- Title: `text-lg font-semibold`
+- Description: `text-sm text-muted-foreground`
+
+**Spacing:**
+- Content: `p-6 gap-4`
+- Header: `flex flex-col space-y-2`
+- Close button: `absolute right-4 top-4`
+- Side widths: `w-3/4 sm:max-w-sm` (left/right), `inset-x-0` (top/bottom)
+
+**Color Usage:**
+- Background: `bg-background`
+- Overlay: `bg-black/80`
+- Border: `border-l` (right), `border-r` (left), `border-t` (bottom), `border-b` (top)
+
+**Animation:**
+- Open: `animate-in slide-in-from-[side] duration-500`
+- Close: `animate-out slide-out-to-[side] duration-300`
+- Overlay: `fade-in-0 / fade-out-0`
+
+**Used On:** TopHeader (mobile nav), AdminUsersPage, AdminFinancePage, Sidebar (mobile)
+
+---
+
+### Popover
+
+**File Path:** `src/components/ui/popover.tsx`
+
+**Purpose:** Floating content panel triggered by click, for date pickers, dropdowns, or contextual info.
+
+**Sub-components:**
+- `Popover` - Root (uses @radix-ui/react-popover)
+- `PopoverTrigger` - Element that opens popover
+- `PopoverContent` - The floating panel
+
+**Props (PopoverContent):**
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `align` | `"start" \| "center" \| "end"` | `"center"` | Horizontal alignment |
+| `sideOffset` | `number` | `4` | Distance from trigger |
+| `className` | `string` | - | Additional classes |
+
+**Visual Structure:**
+```
+<Popover>
+  <PopoverTrigger asChild>
+    <Button variant="outline">
+      <CalendarIcon />
+      Pick a date
+    </Button>
+  </PopoverTrigger>
+  <PopoverContent className="w-auto p-0" align="start">
+    <Calendar mode="single" selected={date} onSelect={setDate} />
+  </PopoverContent>
+</Popover>
+```
+
+**Typography:**
+- Content inherits from popover foreground
+
+**Spacing:**
+- Content: `w-72 p-4 rounded-md`
+- Side offset: `4px` default
+
+**Color Usage:**
+- Background: `bg-popover`
+- Text: `text-popover-foreground`
+- Border: `border`
+- Shadow: `shadow-md`
+
+**Animation:**
+- Open: `animate-in fade-in-0 zoom-in-95`
+- Close: `animate-out fade-out-0 zoom-out-95`
+- Directional slide: `slide-in-from-[side]-2`
+
+**Used On:** AdminSettingsPage (date picker), AdminEmailPage, MainNav (user menu), LogReadingPage (date picker)
+
+---
+
+### HoverCard
+
+**File Path:** `src/components/ui/hover-card.tsx`
+
+**Purpose:** Content panel that appears on hover for previews or additional info.
+
+**Sub-components:**
+- `HoverCard` - Root (uses @radix-ui/react-hover-card)
+- `HoverCardTrigger` - Element that triggers on hover
+- `HoverCardContent` - The floating content
+
+**Props (HoverCardContent):**
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `align` | `"start" \| "center" \| "end"` | `"center"` | Horizontal alignment |
+| `sideOffset` | `number` | `4` | Distance from trigger |
+| `className` | `string` | - | Additional classes |
+
+**Visual Structure:**
+```
+<HoverCard>
+  <HoverCardTrigger asChild>
+    <Button variant="link">@username</Button>
+  </HoverCardTrigger>
+  <HoverCardContent className="w-80">
+    <div className="flex gap-4">
+      <Avatar />
+      <div>
+        <h4 className="text-sm font-semibold">User Name</h4>
+        <p className="text-sm text-muted-foreground">Bio text...</p>
+      </div>
+    </div>
+  </HoverCardContent>
+</HoverCard>
+```
+
+**Typography:**
+- Content inherits from popover foreground
+
+**Spacing:**
+- Content: `w-64 p-4 rounded-md`
+- Side offset: `4px` default
+
+**Color Usage:**
+- Background: `bg-popover`
+- Text: `text-popover-foreground`
+- Border: `border`
+- Shadow: `shadow-md`
+
+**Animation:**
+- Open: `animate-in fade-in-0 zoom-in-95`
+- Close: `animate-out fade-out-0 zoom-out-95`
+- Directional slide: `slide-in-from-[side]-2`
+
+**Used On:** Available for user previews, link previews, contextual help
 
 ---
 
