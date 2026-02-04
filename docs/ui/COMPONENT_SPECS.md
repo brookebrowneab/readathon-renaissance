@@ -2453,3 +2453,789 @@ Default colors:
 
 **Used On:** StudentBooksPage
 
+---
+
+## Layout Components (Extended)
+
+### AdminLayout
+
+**File Path:** `src/components/layout/AdminLayout.tsx`
+
+**Purpose:** Full-page layout wrapper for admin section with horizontal tab navigation.
+
+**Props:**
+| Prop | Type | Description |
+|------|------|-------------|
+| `children` | `ReactNode` | Page content |
+
+**Visual Structure:**
+```
+<div className="flex min-h-screen flex-col">
+  <MainNav />
+  <div (Admin Navigation Bar)>
+    {navItems.map(item => (
+      <Link className={cn(..., isActive && handDrawnBorder)}>
+        <Icon />
+        {label}
+      </Link>
+    ))}
+  </div>
+  <div (Books Shelf Divider - decorative) />
+  <main className="flex-1 bg-background-warm">{children}</main>
+  <Footer />
+</div>
+```
+
+**Typography:**
+- Nav items: `text-sm font-medium`
+
+**Spacing:**
+- Nav container: `py-2 gap-1`
+- Nav items: `px-4 py-2`
+
+**Color Usage:**
+- Active: `bg-primary text-primary-foreground`
+- Inactive: `text-muted-foreground hover:text-foreground hover:bg-muted`
+
+**Used On:** All admin pages (wrapper)
+
+---
+
+### AdminSidebar
+
+**File Path:** `src/components/layout/AdminSidebar.tsx`
+
+**Purpose:** Collapsible vertical sidebar navigation (alternative to AdminLayout).
+
+**Props:**
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `navItems` | `SidebarNavItem[]` | default items | Navigation items |
+| `className` | `string` | - | Additional classes |
+
+**Visual Structure:**
+```
+<aside className={cn("w-60", collapsed && "w-16")}>
+  <div (Header with Logo - bg-primary) />
+  <nav>
+    <ul>
+      {navItems.map(item => (
+        <NavLink className={cn(isActive && "border-l-4 border-primary")} />
+      ))}
+    </ul>
+  </nav>
+  <div (Collapse Toggle) />
+</aside>
+```
+
+**States:**
+- Collapsed: `w-16` with icons only
+- Expanded: `w-60` with icons + labels
+
+**Color Usage:**
+- Header: `bg-primary`
+- Active item: `bg-secondary text-primary border-l-4 border-primary`
+
+**Used On:** Alternative admin layout (not currently active)
+
+---
+
+### AppBreadcrumbs
+
+**File Path:** `src/components/layout/AppBreadcrumbs.tsx`
+
+**Purpose:** Breadcrumb navigation for hierarchical page structure.
+
+**Props:**
+| Prop | Type | Description |
+|------|------|-------------|
+| `items` | `BreadcrumbItem[]` | `{ label, href? }` array |
+| `className` | `string` | Additional classes |
+
+**Visual Structure:**
+```
+<nav aria-label="Breadcrumb">
+  <ol className="flex items-center gap-2 text-sm">
+    {items.map((item, index) => (
+      <li>
+        {index > 0 && <span>/</span>}
+        {isLast ? <span>{label}</span> : <Link>{label}</Link>}
+      </li>
+    ))}
+  </ol>
+</nav>
+```
+
+**Typography:**
+- Items: `text-sm`
+- Current (last): `font-medium text-foreground`
+- Links: `text-primary hover:underline`
+
+**Used On:** ChildDetailsPage, nested admin pages
+
+---
+
+### MobileHeader
+
+**File Path:** `src/components/layout/MobileHeader.tsx`
+
+**Purpose:** Sticky mobile header with logo and hamburger menu trigger.
+
+**Props:**
+| Prop | Type | Description |
+|------|------|-------------|
+| `onMenuClick` | `function` | Menu open handler |
+
+**Visual Structure:**
+```
+<header className="sticky top-0 z-40 h-14 bg-primary md:hidden">
+  <Link to="/">
+    <Logo />
+    <span>Read-a-thon</span>
+  </Link>
+  <button onClick={onMenuClick}>
+    <Menu />
+  </button>
+</header>
+```
+
+**Color Usage:**
+- Background: `bg-primary`
+- Text: `text-primary-foreground`
+- Button hover: `hover:bg-white/10`
+
+**Used On:** Mobile dashboard views (alternative header)
+
+---
+
+### TopHeader
+
+**File Path:** `src/components/layout/TopHeader.tsx`
+
+**Purpose:** Fixed top header with centered nav, user menu, and mobile sheet.
+
+**Props:**
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `navItems` | `NavItem[]` | Home/About/How It Works | Navigation links |
+| `user` | `object` | - | User data for avatar |
+| `onLogout` | `function` | - | Logout handler |
+
+**Visual Structure:**
+```
+<header className="fixed top-0 z-50 bg-card">
+  <Logo />
+  <nav (Desktop - centered) />
+  <div (Right section)>
+    {user ? <DropdownMenu (avatar + menu) /> : <Button (Login/Signup) />}
+    <Sheet (Mobile menu) />
+  </div>
+</header>
+```
+
+**States:**
+- Scrolled: `shadow-sm` added
+
+**Used On:** Alternative to MainNav (not currently active)
+
+---
+
+## Mobile Components (Extended)
+
+### MobileDataCard
+
+**File Path:** `src/components/mobile/MobileDataCard.tsx`
+
+**Purpose:** Expandable card for displaying tabular data on mobile.
+
+**Props:**
+| Prop | Type | Description |
+|------|------|-------------|
+| `fields` | `DataField[]` | `{ label, value, isPrimary? }` |
+| `status` | `object` | Badge `{ label, variant }` |
+| `actions` | `ActionItem[]` | Menu actions |
+| `expandedContent` | `ReactNode` | Extra content when expanded |
+
+**Visual Structure:**
+```
+<div className="rounded-xl bg-card shadow-sm border">
+  <div (Main - clickable)>
+    <div (Primary fields - max 3)>
+      <h3>{first field}</h3>
+      <p>{additional fields}</p>
+    </div>
+    <Badge />
+    <DropdownMenu (actions) />
+    <ChevronDown/Up />
+  </div>
+  {isExpanded && (
+    <div className="border-t bg-muted/30">
+      <dl (Secondary fields grid) />
+      {expandedContent}
+      <div (Action buttons) />
+    </div>
+  )}
+</div>
+```
+
+**Animation:**
+- Expanded content: `animate-fade-in`
+
+**Used On:** Mobile admin tables, mobile pledge lists
+
+---
+
+### MobileFormStepper
+
+**File Path:** `src/components/mobile/MobileFormStepper.tsx`
+
+**Purpose:** Multi-step form progress indicator for mobile.
+
+**Props:**
+| Prop | Type | Description |
+|------|------|-------------|
+| `steps` | `Step[]` | `{ id, label }` array |
+| `currentStep` | `number` | Active step index |
+
+**Visual Structure:**
+```
+<div>
+  <div (Progress bar - fills based on completion %) />
+  <div className="flex justify-between">
+    {steps.map((step, index) => (
+      <div>
+        <div className={cn("h-8 w-8 rounded-full", 
+          isCompleted && "bg-brand-blue",
+          isCurrent && "ring-4 ring-brand-blue/20"
+        )}>
+          {isCompleted ? <Check /> : index + 1}
+        </div>
+        <span>{label}</span>
+      </div>
+    ))}
+  </div>
+</div>
+```
+
+**Color Usage:**
+- Progress bar: `bg-brand-blue`
+- Completed step: `bg-brand-blue text-white`
+- Current step: `ring-4 ring-brand-blue/20`
+- Future step: `bg-muted text-muted-foreground`
+
+**Used On:** Multi-step mobile forms (onboarding, pledge creation)
+
+---
+
+## Pledge Components (Extended)
+
+### EditPledgeDialog
+
+**File Path:** `src/components/pledge/EditPledgeDialog.tsx`
+
+**Purpose:** Dialog for editing existing pledge type and amount.
+
+**Props:**
+| Prop | Type | Description |
+|------|------|-------------|
+| `open` | `boolean` | Dialog visibility |
+| `onOpenChange` | `function` | Open state handler |
+| `pledge` | `EditablePledge` | Pledge to edit |
+| `onSave` | `function` | Save handler `(id, type, amount)` |
+| `isLoading` | `boolean` | Loading state |
+
+**Visual Structure:**
+```
+<Dialog>
+  <DialogContent className="sm:max-w-md">
+    <DialogHeader>
+      <DialogTitle><Pencil /> Edit Pledge</DialogTitle>
+    </DialogHeader>
+    <div>
+      <RadioGroup (Fixed Amount vs Per Minute)>
+        <Label (card style with icon)>
+          <DollarSign /> Fixed Amount
+        </Label>
+        <Label>
+          <Clock /> Per Minute
+        </Label>
+      </RadioGroup>
+      <Input (amount with $ prefix) />
+    </div>
+    <DialogFooter>
+      <Button>Cancel</Button>
+      <Button>Save Changes</Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
+```
+
+**Used On:** MyPledgesPage, SponsorDashboard
+
+---
+
+## Family Components (Extended)
+
+### ChildReadingLogsSection
+
+**File Path:** `src/components/family/ChildReadingLogsSection.tsx`
+
+**Purpose:** Container that fetches and displays reading logs for a specific child.
+
+**Props:**
+| Prop | Type | Description |
+|------|------|-------------|
+| `childId` | `string` | Child ID for fetching logs |
+| `childName` | `string` | Display name for empty state |
+
+**Visual Structure:**
+```
+<div className="border-t border-border p-6 bg-muted/20">
+  {isLoading ? (
+    <Loader2 />
+  ) : (
+    <>
+      <h4 className="font-serif text-lg">Reading Logs</h4>
+      <ReadingLogsTable logs={logs} />
+    </>
+  )}
+</div>
+```
+
+**Used On:** ManageChildrenPage (collapsible section), ChildDetailsPage
+
+---
+
+### EditChildDialog
+
+**File Path:** `src/components/family/EditChildDialog.tsx`
+
+**Purpose:** Comprehensive dialog for editing child profile, student login, and sharing settings.
+
+**Props:**
+| Prop | Type | Description |
+|------|------|-------------|
+| `child` | `Child` | Child data to edit |
+| `open` | `boolean` | Dialog visibility |
+| `onOpenChange` | `function` | Open state handler |
+| `onSave` | `function` | Save handler |
+| `isSaving` | `boolean` | Loading state |
+
+**Visual Structure:**
+```
+<Dialog>
+  <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+    <DialogHeader>
+      <DialogTitle><User /> Edit Child Profile</DialogTitle>
+    </DialogHeader>
+    <div>
+      {/* Profile Section */}
+      <div>
+        <Input (name) />
+        <Select (grade) />
+        <Input (goal minutes) />
+        <Select (homeroom teacher) />
+      </div>
+      <Separator />
+      {/* Student Login Section */}
+      <div>
+        <Switch (enable login) />
+        {enabled && (
+          <div className="p-4 bg-muted/30 rounded-lg">
+            <Input (username) />
+            <Input (password) />
+          </div>
+        )}
+      </div>
+      <Separator />
+      {/* Sharing Section */}
+      <div>
+        <Switch (public signups) />
+        {enabled && <Input (copy link) />}
+      </div>
+    </div>
+    <DialogFooter />
+  </DialogContent>
+</Dialog>
+```
+
+**Used On:** ManageChildrenPage, ChildDetailsPage, AccountSettingsPage
+
+---
+
+### ReadingLogsTable
+
+**File Path:** `src/components/family/ReadingLogsTable.tsx`
+
+**Purpose:** Editable table of reading log entries with inline editing.
+
+**Props:**
+| Prop | Type | Description |
+|------|------|-------------|
+| `logs` | `ReadingLog[]` | Log entries |
+| `childName` | `string` | For empty state message |
+| `onEdit` | `function` | Edit handler `(id, minutes, title)` |
+| `onDelete` | `function` | Delete handler `(id)` |
+
+**Visual Structure:**
+```
+<div className="rounded-lg border bg-background">
+  <Table>
+    <TableHeader>
+      <TableRow className="bg-muted/50">
+        <TableHead>Date</TableHead>
+        <TableHead>Minutes</TableHead>
+        <TableHead>Book Title</TableHead>
+        <TableHead>Actions</TableHead>
+      </TableRow>
+    </TableHeader>
+    <TableBody>
+      {logs.map(log => (
+        <TableRow>
+          {editingId === log.id ? (
+            <>
+              <Input (minutes) />
+              <Input (book title) />
+              <Button><Save /></Button>
+            </>
+          ) : (
+            <>
+              <Badge>{minutes} min</Badge>
+              <span>{book_title}</span>
+              <Button><Pencil /></Button>
+              <Button><Trash2 /></Button>
+            </>
+          )}
+        </TableRow>
+      ))}
+    </TableBody>
+  </Table>
+</div>
+<AlertDialog (delete confirmation) />
+```
+
+**Empty State:**
+- BookOpen icon, centered message
+
+**Used On:** ChildDetailsPage, VerifyLogsPage, ChildReadingLogsSection
+
+---
+
+## Dashboard Section Components
+
+### ChildBooksSection
+
+**File Path:** `src/components/dashboard/ChildBooksSection.tsx`
+
+**Purpose:** Horizontal scrolling book cover gallery for a child's logged books.
+
+**Props:**
+| Prop | Type | Description |
+|------|------|-------------|
+| `childId` | `string` | Child ID for fetching books |
+
+**Visual Structure:**
+```
+<div className="w-full pt-2 border-t border-border">
+  <p className="text-xs text-muted-foreground">
+    <BookOpen /> My Books ({count})
+  </p>
+  <ScrollArea className="w-full whitespace-nowrap">
+    <div className="flex gap-2 pb-2">
+      {books.map(book => (
+        <div className="h-16 w-12">
+          {book.cover_url ? (
+            <img />
+          ) : (
+            <div className="bg-gradient-to-b from-primary/20">
+              <BookOpen />
+              <span>{title}</span>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+    <ScrollBar orientation="horizontal" />
+  </ScrollArea>
+</div>
+```
+
+**Loading State:** 3 skeleton book placeholders
+
+**Empty State:** "No books logged yet" message
+
+**Used On:** DashboardPage, ChildDetailsPage
+
+---
+
+### PledgesSection
+
+**File Path:** `src/components/dashboard/PledgesSection.tsx`
+
+**Purpose:** Dashboard section showing pledge summary and recent pledges.
+
+**Props:**
+| Prop | Type | Description |
+|------|------|-------------|
+| `pledgesByChild` | `PledgesByChild[]` | Grouped pledges |
+| `totalPledges` | `number` | Total pledged amount |
+| `isLoading` | `boolean` | Loading state |
+| `onDeletePledge` | `function` | Delete handler |
+
+**Visual Structure:**
+```
+<section>
+  <div (Header with View All link)>
+    <h2 className="font-serif">Pledges & Sponsors</h2>
+    <Button>View all pledges →</Button>
+  </div>
+  
+  {/* Summary Stats Card */}
+  <div className="bg-background" style={handDrawnBorder}>
+    <div className="grid grid-cols-3">
+      <div>Total: ${total}</div>
+      <div>Child1: ${amount}</div>
+      <div>Child2: ${amount}</div>
+    </div>
+  </div>
+  
+  {/* Recent Pledges List */}
+  <div className="bg-background" style={handDrawnBorder}>
+    {pledges.map(pledge => <PledgeItem />)}
+  </div>
+  
+  <Button>Invite More Sponsors</Button>
+</section>
+```
+
+**Empty State:** DollarSign icon with "No pledges yet" + Invite button
+
+**Used On:** DashboardPage
+
+---
+
+### ClassFundraisingStack
+
+**File Path:** `src/components/ui/class-fundraising-stack.tsx`
+
+**Purpose:** Vertical book stack progress indicator for class fundraising milestones.
+
+**Props:**
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `fundedAmount` | `number` | - | Current funded $ |
+| `goalAmount` | `number` | - | Target $ |
+| `classLabel` | `string` | - | Class name label |
+| `rewardLabel` | `string` | - | Milestone reward |
+| `size` | `"sm" \| "md" \| "lg"` | `"md"` | Stack size |
+| `showLabel` | `boolean` | `true` | Show amount label |
+
+**Visual Structure:**
+```
+<div className="flex flex-col items-center gap-2">
+  {classLabel && <span>{classLabel}</span>}
+  <div (Book Stack Container)>
+    <img (grayscale - unfunded) />
+    <div style={{ clipPath: `inset(${100-percent}% 0 0 0)` }}>
+      <img (colored - funded portion) />
+    </div>
+    {isComplete && <span>🎉</span>}
+  </div>
+  {showLabel && <span>${funded} / ${goal}</span>}
+  {rewardLabel && <span>{rewardLabel}</span>}
+</div>
+```
+
+**Sizes:**
+- sm: `h-16 w-12`
+- md: `h-24 w-16`
+- lg: `h-32 w-24`
+
+**Used On:** TeacherDashboard
+
+---
+
+## Admin Components
+
+### EditEventDialog
+
+**File Path:** `src/components/admin/EditEventDialog.tsx`
+
+**Purpose:** Dialog for creating/editing read-a-thon events with date pickers.
+
+**Props:**
+| Prop | Type | Description |
+|------|------|-------------|
+| `open` | `boolean` | Dialog visibility |
+| `onOpenChange` | `function` | Open state handler |
+| `event` | `EventData` | Event to edit (null for new) |
+| `onSave` | `function` | Save callback |
+
+**Visual Structure:**
+```
+<Dialog>
+  <DialogContent>
+    <DialogHeader>
+      <DialogTitle>{isNew ? "Create Event" : "Edit Event"}</DialogTitle>
+    </DialogHeader>
+    <div>
+      <Input (event name) />
+      <Popover><Calendar (start date) /></Popover>
+      <Popover><Calendar (end date) /></Popover>
+      <Popover><Calendar (last log date) /></Popover>
+    </div>
+    <DialogFooter>
+      <Button (Archive - conditional)>Archive</Button>
+      <Button>Save</Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
+<AlertDialog (archive confirmation) />
+```
+
+**Used On:** AdminSettingsPage
+
+---
+
+### LogVerificationSettings
+
+**File Path:** `src/components/admin/LogVerificationSettings.tsx`
+
+**Purpose:** Settings panel for configuring log verification thresholds by grade.
+
+**Props:**
+| Prop | Type | Description |
+|------|------|-------------|
+| `onUnsavedChange` | `function` | Dirty state callback |
+
+**Visual Structure:**
+```
+<div className="bg-background" style={handDrawnBorder}>
+  <h3><ClipboardCheck /> Log Verification</h3>
+  <Switch (enable verification) />
+  {enabled && (
+    <div>
+      <Input (default threshold) />
+      {grades.map(grade => (
+        <Input (grade-specific threshold) />
+      ))}
+    </div>
+  )}
+  <Button><Save /> Save Settings</Button>
+</div>
+```
+
+**Used On:** AdminSettingsPage
+
+---
+
+### LogoGenerator
+
+**File Path:** `src/components/admin/LogoGenerator.tsx`
+
+**Purpose:** Canvas-based logo generator with date overlay for event branding.
+
+**Key Features:**
+- Renders event logo with dynamic date text
+- Adjustable date position via slider
+- Download as PNG
+- Upload to Supabase storage
+
+**Visual Structure:**
+```
+<div className="bg-background" style={handDrawnBorder}>
+  <h3><Image /> Event Logo</h3>
+  <canvas (logo preview) />
+  <Slider (date X offset) />
+  <div>
+    <Button><Download /> Download PNG</Button>
+    <Button><Upload /> Upload as Official Logo</Button>
+  </div>
+</div>
+```
+
+**Used On:** AdminSettingsPage
+
+---
+
+### SiteContentEditor
+
+**File Path:** `src/components/admin/SiteContentEditor.tsx`
+
+**Purpose:** Collapsible content management for all site copy organized by page.
+
+**Visual Structure:**
+```
+<div className="bg-background" style={handDrawnBorder}>
+  <h2><FileText /> Site Content</h2>
+  {CONTENT_GROUPS.map(group => (
+    <Collapsible>
+      <CollapsibleTrigger>
+        <ChevronRight/Down /> {group.title}
+      </CollapsibleTrigger>
+      <CollapsibleContent>
+        {group.keys.map(key => (
+          <FormField>
+            <Label>{key}</Label>
+            {isJSON ? <Textarea /> : <Input />}
+          </FormField>
+        ))}
+      </CollapsibleContent>
+    </Collapsible>
+  ))}
+  <Button><Save /> Save All Changes</Button>
+</div>
+```
+
+**Content Groups:** Home, About, How It Works, FAQ
+
+**Used On:** AdminSiteContentPage
+
+---
+
+### TeacherManagement
+
+**File Path:** `src/components/admin/TeacherManagement.tsx`
+
+**Purpose:** Complete teacher CRUD with CSV import, email invites, and class assignments.
+
+**Key Features:**
+- Add/Edit/Delete teachers
+- Bulk CSV import
+- Send email invitations
+- Link/unlink Supabase auth accounts
+- Assign partner teachers to homerooms
+
+**Visual Structure:**
+```
+<div className="space-y-6">
+  {/* Header with actions */}
+  <div>
+    <h2>Teacher Management</h2>
+    <Button><Plus /> Add Teacher</Button>
+    <Button><Upload /> Import CSV</Button>
+  </div>
+  
+  {/* Teacher list by type */}
+  {TEACHER_TYPES.map(type => (
+    <Collapsible>
+      <CollapsibleTrigger>{type.label} ({count})</CollapsibleTrigger>
+      <CollapsibleContent>
+        {teachers.filter(t => t.type === type.value).map(teacher => (
+          <TeacherCard>
+            <Badge (linked status) />
+            <DropdownMenu (edit, delete, send invite) />
+          </TeacherCard>
+        ))}
+      </CollapsibleContent>
+    </Collapsible>
+  ))}
+</div>
+
+<Dialog (Add/Edit Teacher) />
+<Dialog (Assign Classes) />
+<AlertDialog (Delete Confirmation) />
+```
+
+**Used On:** AdminUsersPage
+
