@@ -1,5 +1,5 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
+ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+ import bcrypt from "https://esm.sh/bcryptjs@2.4.3";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -8,8 +8,8 @@ const corsHeaders = {
 
 // Secure password hashing using bcrypt with automatic salting
 async function hashPassword(password: string): Promise<string> {
-  const salt = await bcrypt.genSalt(12); // Cost factor of 12 (recommended)
-  return await bcrypt.hash(password, salt);
+   const salt = bcrypt.genSaltSync(12); // Cost factor of 12 (recommended)
+   return bcrypt.hashSync(password, salt);
 }
 
 Deno.serve(async (req) => {
