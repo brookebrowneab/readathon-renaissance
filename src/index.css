@@ -178,6 +178,11 @@
     @apply font-serif font-normal tracking-tight;
   }
 
+  /* Enable oldstyle figures for serif text (numbers with varying heights) */
+  .font-serif {
+    font-feature-settings: "onum" 1, "pnum" 1;
+  }
+
   /* Mobile touch target minimum */
   button, a, [role="button"] {
     min-height: 44px;
