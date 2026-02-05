@@ -282,8 +282,9 @@ Teacher can now access dashboard
 - Edge function handles password setup
 
 ### Student Auth
-- Parent enables `student_login_enabled`
-- Sets username and password
+- Credentials stored in dedicated `student_auth` table (not on `children`)
+- Parent enables `login_enabled`, sets `username` and password
+- Password hashed with bcrypt (cost 12); legacy SHA-256 hashes auto-upgrade
 - Optional PIN-based login
 - Edge function validates credentials, returns session token
 
