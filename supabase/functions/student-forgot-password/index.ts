@@ -33,11 +33,11 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Look up child by username
-    const { data: child, error: childError } = await supabase
-      .from("children")
-      .select("id, name, user_id, student_username")
-      .eq("student_username", normalizedUsername)
+    // Look up student auth by username (from separate secure table)  
+    const { data: authRecord, error: authLookupError } = await supabase
+      .from("student_auth")
+      .select("child_id, username")
+      .eq("username", normalizedUsername)
       .maybeSingle();
 
     // Always return success to prevent username enumeration
@@ -49,17 +49,29 @@ Deno.serve(async (req) => {
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
 
-    if (childError || !child) {
+    if (authLookupError || !authRecord) {
       // Don't reveal that username doesn't exist
       console.log("Username not found:", normalizedUsername);
       return successResponse;
     }
 
-    // Get parent's email from auth.users
-    const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(child.user_id);
+    // Get child data
+    const { data: child, error: childError } = await supabase
+      .from("children")
+      .select("id, name, user_id")
+      .eq("id", authRecord.child_id)
+      .single();
 
-    if (authError || !authUser?.user?.email) {
-      console.error("Could not find parent email:", authError);
+    if (childError || !child) {
+      console.error("Could not find child:", childError);
+      return successResponse;
+    }
+
+    // Get parent's email from auth.users
+    const { data: authUser, error: userLookupError } = await supabase.auth.admin.getUserById(child.user_id);
+
+    if (userLookupError || !authUser?.user?.email) {
+      console.error("Could not find parent email:", userLookupError);
       return successResponse;
     }
 
@@ -85,7 +97,7 @@ Deno.serve(async (req) => {
             </p>
             
             <p style="color: #4a4a4a; font-size: 16px; line-height: 1.6;">
-              Their username is: <code style="background: #f4f4f4; padding: 2px 6px; border-radius: 4px;">${child.student_username}</code>
+              Their username is: <code style="background: #f4f4f4; padding: 2px 6px; border-radius: 4px;">${authRecord.username}</code>
             </p>
             
             <p style="color: #4a4a4a; font-size: 16px; line-height: 1.6;">
@@ -107,7 +119,7 @@ Deno.serve(async (req) => {
             <hr style="border: none; border-top: 1px solid #eaeaea; margin: 30px 0;" />
             
             <p style="color: #8a8a8a; font-size: 14px;">
-              This email was sent because someone requested a password reset for the student account "${child.student_username}". 
+              This email was sent because someone requested a password reset for the student account "${authRecord.username}". 
               If this wasn't you or your child, you can safely ignore this email.
             </p>
           </div>

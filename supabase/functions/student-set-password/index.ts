@@ -29,7 +29,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    const { childId, password } = await req.json();
+    const { childId, password, username } = await req.json();
 
     // Input validation
     if (!childId || !password) {
@@ -87,17 +87,35 @@ Deno.serve(async (req) => {
     // Hash the password
     const passwordHash = await hashPassword(password);
 
-    // Update the child's password using service role
+    // Update the student_auth table using service role
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const adminClient = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { error: updateError } = await adminClient
-      .from("children")
-      .update({ student_password_hash: passwordHash })
-      .eq("id", childId);
+    // Upsert into student_auth table (insert or update)
+    const authData: { child_id: string; password_hash: string; username?: string; login_enabled?: boolean } = {
+      child_id: childId,
+      password_hash: passwordHash,
+    };
+    
+    // If username is provided, include it
+    if (username) {
+      authData.username = username.toLowerCase().trim();
+      authData.login_enabled = true;
+    }
 
-    if (updateError) {
-      console.error("Update error:", updateError);
+    const { error: upsertError } = await adminClient
+      .from("student_auth")
+      .upsert(authData, { onConflict: "child_id" });
+
+    if (upsertError) {
+      console.error("Upsert error:", upsertError);
+      // Check for unique constraint violation on username
+      if (upsertError.code === "23505" && upsertError.message?.includes("username")) {
+        return new Response(
+          JSON.stringify({ error: "Username is already taken. Please choose a different one." }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
       return new Response(
         JSON.stringify({ error: "Failed to update password" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }

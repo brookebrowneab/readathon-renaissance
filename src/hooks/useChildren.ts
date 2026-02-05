@@ -11,9 +11,6 @@ export interface Child {
   goal_minutes: number;
   share_public_link: boolean;
   total_minutes: number;
-  student_username: string | null;
-  student_password_hash: string | null;
-  student_login_enabled: boolean;
   homeroom_teacher_id: string | null;
   created_at: string;
   updated_at: string;
@@ -25,8 +22,6 @@ export interface ChildInsert {
   class_name?: string | null;
   goal_minutes?: number;
   share_public_link?: boolean;
-  student_username?: string | null;
-  student_login_enabled?: boolean;
   homeroom_teacher_id?: string | null;
 }
 
@@ -38,8 +33,6 @@ export interface ChildUpdate {
   goal_minutes?: number;
   share_public_link?: boolean;
   total_minutes?: number;
-  student_username?: string | null;
-  student_login_enabled?: boolean;
   homeroom_teacher_id?: string | null;
 }
 
@@ -54,7 +47,7 @@ export const useChildren = () => {
 
       const { data, error } = await supabase
         .from("children")
-        .select("*")
+        .select("id, user_id, name, grade_info, class_name, goal_minutes, share_public_link, total_minutes, homeroom_teacher_id, created_at, updated_at")
         .eq("user_id", user.id)
         .order("created_at", { ascending: true });
 
@@ -147,7 +140,7 @@ export const useChildById = (childId: string | undefined) => {
 
       const { data, error } = await supabase
         .from("children")
-        .select("*")
+        .select("id, user_id, name, grade_info, class_name, goal_minutes, share_public_link, total_minutes, homeroom_teacher_id, created_at, updated_at")
         .eq("id", childId)
         .single();
 
