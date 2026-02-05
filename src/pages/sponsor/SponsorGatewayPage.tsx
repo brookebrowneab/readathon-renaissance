@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { handDrawnBorder, handDrawnBorderSubtle } from "@/lib/admin-styles";
 import {
-  Heart,
   ArrowRight,
   Sparkles,
   Link as LinkIcon,
@@ -61,11 +60,8 @@ const SponsorGatewayPage = () => {
       <main className="flex-1 bg-background-warm flex items-center justify-center py-12 px-4">
         <div className="w-full max-w-2xl">
           {/* Header */}
-          <div className="text-center mb-10">
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-accent/30 mb-6">
-              <Heart className="h-10 w-10 text-primary" />
-            </div>
-            <h1 className="font-serif text-4xl md:text-5xl font-normal tracking-tight text-foreground mb-4 relative inline-block">
+          <div className="mb-10">
+            <h1 className="font-serif text-4xl md:text-5xl font-normal tracking-tight text-foreground mb-2">
               Welcome, Sponsor!
             </h1>
             <p className="text-lg text-muted-foreground">
