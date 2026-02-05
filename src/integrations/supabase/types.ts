@@ -689,28 +689,49 @@ export type Database = {
           avatar_url: string | null
           created_at: string
           display_name: string | null
+          email: string | null
+          first_name: string | null
           id: string
+          is_active: boolean
+          last_name: string | null
+          legacy_user_id: number | null
           phone: string | null
           updated_at: string
           user_id: string
+          user_type: string | null
+          username: string | null
         }
         Insert: {
           avatar_url?: string | null
           created_at?: string
           display_name?: string | null
+          email?: string | null
+          first_name?: string | null
           id?: string
+          is_active?: boolean
+          last_name?: string | null
+          legacy_user_id?: number | null
           phone?: string | null
           updated_at?: string
           user_id: string
+          user_type?: string | null
+          username?: string | null
         }
         Update: {
           avatar_url?: string | null
           created_at?: string
           display_name?: string | null
+          email?: string | null
+          first_name?: string | null
           id?: string
+          is_active?: boolean
+          last_name?: string | null
+          legacy_user_id?: number | null
           phone?: string | null
           updated_at?: string
           user_id?: string
+          user_type?: string | null
+          username?: string | null
         }
         Relationships: []
       }

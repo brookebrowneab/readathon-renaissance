@@ -15,6 +15,16 @@ All Postgres enums have been replaced with plain `text` columns:
 - `has_role()` function updated to accept `text` parameter
 - `get_verification_threshold()` updated to parse text as JSON
 
+## ✅ Phase 2: Profiles Table Expansion (COMPLETED)
+
+Added columns to `profiles` for legacy import and richer user data:
+- `username` (text, unique partial index) — login identifier
+- `email` (text, indexed) — denormalized email for lookups
+- `first_name`, `last_name` (text) — split name fields
+- `user_type` (text) — 'parent', 'sponsor', 'teacher', 'admin'
+- `is_active` (boolean, default true) — soft delete flag
+- `legacy_user_id` (integer, indexed) — old system PK
+
 ## Updated Schema Plan: Legacy Teacher Data Compatibility
 
 ## What Changed
