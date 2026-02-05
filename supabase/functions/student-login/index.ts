@@ -44,15 +44,15 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Look up child by username
-    const { data: child, error: lookupError } = await supabase
-      .from("children")
-      .select("id, name, total_minutes, goal_minutes, student_password_hash, student_login_enabled, class_name, grade_info")
-      .eq("student_username", normalizedUsername)
+    // Look up student auth by username (from separate secure table)
+    const { data: authRecord, error: authLookupError } = await supabase
+      .from("student_auth")
+      .select("child_id, password_hash, login_enabled")
+      .eq("username", normalizedUsername)
       .maybeSingle();
 
-    if (lookupError) {
-      console.error("Lookup error:", lookupError);
+    if (authLookupError) {
+      console.error("Auth lookup error:", authLookupError);
       return new Response(
         JSON.stringify({ error: "An error occurred. Please try again." }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -65,15 +65,15 @@ Deno.serve(async (req) => {
       { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
 
-    // Check if child exists
-    if (!child) {
+    // Check if auth record exists
+    if (!authRecord) {
       // Add small delay to prevent timing attacks
       await new Promise(resolve => setTimeout(resolve, 100 + Math.random() * 100));
       return invalidCredentialsResponse;
     }
 
     // Check if login is enabled
-    if (!child.student_login_enabled) {
+    if (!authRecord.login_enabled) {
       return new Response(
         JSON.stringify({ error: "Student login is not enabled. Ask your parent to enable it." }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -81,7 +81,7 @@ Deno.serve(async (req) => {
     }
 
     // Check if password hash exists
-    if (!child.student_password_hash) {
+    if (!authRecord.password_hash) {
       return new Response(
         JSON.stringify({ error: "No password set. Ask your parent to set up your login." }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -89,9 +89,24 @@ Deno.serve(async (req) => {
     }
 
     // Verify password
-    const isValid = await verifyPassword(password, child.student_password_hash);
+    const isValid = await verifyPassword(password, authRecord.password_hash);
     if (!isValid) {
       return invalidCredentialsResponse;
+    }
+
+    // Fetch child data (non-sensitive fields only)
+    const { data: child, error: childError } = await supabase
+      .from("children")
+      .select("id, name, total_minutes, goal_minutes, class_name, grade_info")
+      .eq("id", authRecord.child_id)
+      .single();
+
+    if (childError || !child) {
+      console.error("Child lookup error:", childError);
+      return new Response(
+        JSON.stringify({ error: "An error occurred. Please try again." }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     // Success - return child data (excluding sensitive fields)

@@ -31,6 +31,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { useTeacherAuth } from "@/hooks/useTeacherAuth";
 import { useChildren, Child } from "@/hooks/useChildren";
+import { useChildrenStudentAuth, StudentAuth } from "@/hooks/useStudentAuth";
 import { useParentInvitations, useDeleteInvitation, SponsorInvitation } from "@/hooks/useSponsorInvitations";
 import { EditChildDialog } from "@/components/family/EditChildDialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -58,8 +59,13 @@ const AccountSettingsPage = () => {
   
   // Children management
   const { children, isLoading: childrenLoading, updateChild, deleteChild } = useChildren();
+  const childIds = children.map(c => c.id);
+  const { data: studentAuthRecords = [] } = useChildrenStudentAuth(childIds);
   const { data: invitations = [], isLoading: invitationsLoading } = useParentInvitations();
   const deleteInvitation = useDeleteInvitation();
+
+  // Helper to get student auth for a child
+  const getStudentAuth = (childId: string) => studentAuthRecords.find(sa => sa.child_id === childId);
   
   const [displayName, setDisplayName] = useState(
     user?.user_metadata?.display_name || ""
@@ -320,9 +326,9 @@ const AccountSettingsPage = () => {
 
                           {/* Quick Info Badges */}
                           <div className="flex flex-wrap gap-2 mb-3">
-                            <Badge variant={child.student_login_enabled ? "default" : "outline"} className="text-xs">
+                            <Badge variant={getStudentAuth(child.id)?.login_enabled ? "default" : "outline"} className="text-xs">
                               <KeyRound className="h-3 w-3 mr-1" />
-                              {child.student_login_enabled ? "Login enabled" : "Login disabled"}
+                              {getStudentAuth(child.id)?.login_enabled ? "Login enabled" : "Login disabled"}
                             </Badge>
                             <Badge variant={child.share_public_link ? "default" : "outline"} className="text-xs">
                               <LinkIcon className="h-3 w-3 mr-1" />
@@ -368,11 +374,11 @@ const AccountSettingsPage = () => {
                               <div className="grid grid-cols-2 gap-2 text-sm">
                                 <div>
                                   <span className="text-muted-foreground">Username:</span>{" "}
-                                  <span className="font-mono">{child.student_username || "Not set"}</span>
+                                  <span className="font-mono">{getStudentAuth(child.id)?.username || "Not set"}</span>
                                 </div>
                                 <div>
                                   <span className="text-muted-foreground">Status:</span>{" "}
-                                  {child.student_login_enabled ? (
+                                  {getStudentAuth(child.id)?.login_enabled ? (
                                     <span className="text-success">Enabled</span>
                                   ) : (
                                     <span className="text-muted-foreground">Disabled</span>

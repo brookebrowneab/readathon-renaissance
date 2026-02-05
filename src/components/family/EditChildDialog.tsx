@@ -23,6 +23,7 @@ import { Separator } from "@/components/ui/separator";
 import { User, Link as LinkIcon, Loader2, KeyRound, Eye, EyeOff, GraduationCap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Child, ChildUpdate } from "@/hooks/useChildren";
+import { useStudentAuth, useUpdateStudentAuth } from "@/hooks/useStudentAuth";
 import { useHomeroomTeachers } from "@/hooks/useTeachers";
 
 export interface ChildProfile {
@@ -64,6 +65,8 @@ export const EditChildDialog = ({
   isSaving = false,
 }: EditChildDialogProps) => {
   const { data: homeroomTeachers = [], isLoading: teachersLoading } = useHomeroomTeachers();
+  const { data: studentAuth, isLoading: authLoading } = useStudentAuth(child?.id);
+  const updateStudentAuth = useUpdateStudentAuth();
   const [formData, setFormData] = useState({
     name: "",
     gradeInfo: "",
@@ -76,28 +79,32 @@ export const EditChildDialog = ({
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isSettingPassword, setIsSettingPassword] = useState(false);
+  const [hasExistingPassword, setHasExistingPassword] = useState(false);
 
   // Sync form data when child changes or dialog opens
   useEffect(() => {
-    if (open && child) {
+    if (open && child && !authLoading) {
       setFormData({
         name: child.name,
         gradeInfo: child.grade_info || "",
         homeroomTeacherId: child.homeroom_teacher_id || "",
         goalMinutes: child.goal_minutes,
         sharePublicLink: child.share_public_link,
-        studentUsername: child.student_username || "",
-        studentLoginEnabled: child.student_login_enabled || false,
+        studentUsername: studentAuth?.username || "",
+        studentLoginEnabled: studentAuth?.login_enabled || false,
       });
       setPassword("");
       setShowPassword(false);
+      // We can't directly check password_hash from client (security), 
+      // so we infer from whether login is enabled and username exists
+      setHasExistingPassword(!!studentAuth?.login_enabled && !!studentAuth?.username);
     }
-  }, [open, child]);
+  }, [open, child, studentAuth, authLoading]);
 
   const handleSave = async () => {
     if (!child) return;
 
-    // If password is set, call edge function first
+    // If password is set, call edge function first (also sends username)
     if (password && password.length >= 4) {
       setIsSettingPassword(true);
       try {
@@ -109,7 +116,11 @@ export const EditChildDialog = ({
         }
 
         const response = await supabase.functions.invoke("student-set-password", {
-          body: { childId: child.id, password },
+          body: { 
+            childId: child.id, 
+            password,
+            username: formData.studentUsername || undefined,
+          },
         });
 
         if (response.error) {
@@ -119,6 +130,7 @@ export const EditChildDialog = ({
         }
 
         toast.success("Password updated!");
+        setHasExistingPassword(true);
       } catch (err) {
         console.error("Password set error:", err);
         toast.error("Failed to set password");
@@ -126,6 +138,18 @@ export const EditChildDialog = ({
         return;
       }
       setIsSettingPassword(false);
+    } else {
+      // Update student auth (username and login_enabled) without password
+      try {
+        await updateStudentAuth.mutateAsync({
+          child_id: child.id,
+          username: formData.studentUsername || null,
+          login_enabled: formData.studentLoginEnabled,
+        });
+      } catch (err) {
+        // Error handled in hook
+        return;
+      }
     }
 
     // Get teacher name for class_name field
@@ -139,8 +163,6 @@ export const EditChildDialog = ({
       class_name: selectedTeacher?.name || null,
       goal_minutes: formData.goalMinutes,
       share_public_link: formData.sharePublicLink,
-      student_username: formData.studentUsername || null,
-      student_login_enabled: formData.studentLoginEnabled,
       homeroom_teacher_id: formData.homeroomTeacherId || null,
     });
   };
@@ -161,8 +183,8 @@ export const EditChildDialog = ({
   if (!child) return null;
 
   const availableTeachers = homeroomTeachers.filter(t => t.is_active);
-  const hasValidCredentials = formData.studentUsername.length >= 3 && child.student_password_hash;
-  const needsPassword = formData.studentUsername.length >= 3 && !child.student_password_hash && !password;
+  const hasValidCredentials = formData.studentUsername.length >= 3 && hasExistingPassword;
+  const needsPassword = formData.studentUsername.length >= 3 && !hasExistingPassword && !password;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -303,7 +325,7 @@ export const EditChildDialog = ({
 
                 <div className="grid gap-2">
                   <Label htmlFor="password">
-                    {child.student_password_hash ? "New Password (leave blank to keep current)" : "Password"}
+                    {hasExistingPassword ? "New Password (leave blank to keep current)" : "Password"}
                   </Label>
                   <div className="relative">
                     <Input
@@ -311,7 +333,7 @@ export const EditChildDialog = ({
                       type={showPassword ? "text" : "password"}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      placeholder={child.student_password_hash ? "••••••••" : "Set a password"}
+                      placeholder={hasExistingPassword ? "••••••••" : "Set a password"}
                       className="pr-10"
                       minLength={4}
                     />

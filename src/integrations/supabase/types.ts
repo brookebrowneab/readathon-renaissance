@@ -888,6 +888,51 @@ export type Database = {
         }
         Relationships: []
       }
+      student_auth: {
+        Row: {
+          child_id: string
+          created_at: string
+          id: string
+          login_enabled: boolean
+          password_hash: string | null
+          updated_at: string
+          username: string | null
+        }
+        Insert: {
+          child_id: string
+          created_at?: string
+          id?: string
+          login_enabled?: boolean
+          password_hash?: string | null
+          updated_at?: string
+          username?: string | null
+        }
+        Update: {
+          child_id?: string
+          created_at?: string
+          id?: string
+          login_enabled?: boolean
+          password_hash?: string | null
+          updated_at?: string
+          username?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_auth_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: true
+            referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_auth_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: true
+            referencedRelation: "children_public_safe"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       teacher_class_assignments: {
         Row: {
           created_at: string
