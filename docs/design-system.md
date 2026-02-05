@@ -499,3 +499,7 @@ theme: {
 - Mix serif/sans-serif inconsistently
 - Ignore dark mode compatibility
 - Skip mobile-first responsive design
+
+---
+
+*Last updated: 2026-02-05*

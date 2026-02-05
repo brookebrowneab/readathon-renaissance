@@ -2,6 +2,8 @@
 
 This document lists all pages/routes in the application based on `src/App.tsx`.
 
+*Last updated: 2026-02-05*
+
 ---
 
 ## Public Pages (7)

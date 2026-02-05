@@ -90,7 +90,7 @@ This section validates all routes in `src/App.tsx` against documented pages.
 | `/admin-finance` | ✅ | AdminFinancePage | Admin |
 | `*` | ✅ | NotFound | 404 |
 
-**Last validated:** 2026-02-04 against `src/App.tsx`
+**Last validated:** 2026-02-05 against `src/App.tsx`
 
 ---
 
