@@ -337,3 +337,7 @@ Teacher can now access dashboard
 - `parents_no_pledges` - Parents without pledges
 - `sponsors_unpaid` - Sponsors with pending payments
 - `teachers` - All active teachers
+
+---
+
+*Last updated: 2026-02-05*

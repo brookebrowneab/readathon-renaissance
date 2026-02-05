@@ -47,9 +47,8 @@ Student records, linked to parent accounts.
 | `verified_at` | timestamp | When verified |
 | `verified_by` | uuid | Who verified |
 | `share_public_link` | boolean | Allow sponsors to view progress |
-| `student_login_enabled` | boolean | Allow student self-login |
-| `student_username` | text | Student login username |
-| `student_password_hash` | text | Hashed password |
+
+**Note:** Student authentication credentials are now stored in the separate `student_auth` table for security (RLS-protected).
 
 #### `reading_logs`
 Individual reading session records.
@@ -181,6 +180,28 @@ Invitation tracking for sponsor access.
 
 ---
 
+### Authentication & Security
+
+#### `student_auth`
+Secure student login credentials (RLS-protected, separate from children table).
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | uuid | Primary key |
+| `child_id` | uuid | FK to children (unique) |
+| `username` | text | Student login username |
+| `password_hash` | text | Bcrypt hashed password (cost 12) |
+| `login_enabled` | boolean | Whether login is active |
+| `created_at` | timestamp | Record creation |
+| `updated_at` | timestamp | Last update |
+
+**Security Notes:**
+- Passwords require 8-character minimum
+- Uses bcrypt with cost factor 12
+- Backward compatible with legacy SHA-256 hashes (auto-upgraded on password change)
+
+---
+
 ### Supporting Entities
 
 #### `books`
@@ -227,6 +248,55 @@ Sent email tracking.
 | `error_message` | text | Error details if failed |
 
 **Enum: `email_log_status`**: `pending`, `sent`, `failed`
+
+#### `payments`
+Payment transaction records (integrates with Square).
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | uuid | Primary key |
+| `pledge_id` | uuid | FK to pledges (optional) |
+| `class_pledge_id` | uuid | FK to class_pledges (optional) |
+| `pledge_type` | text | 'flat' or 'per_minute' |
+| `amount` | numeric | Payment amount |
+| `payment_method` | text | 'card' or 'check' |
+| `payer_user_id` | uuid | Payer's auth user ID |
+| `payer_name` | text | Payer display name |
+| `payer_email` | text | Payer email |
+| `student_name` | text | Student name |
+| `square_payment_id` | text | Square transaction ID |
+| `square_receipt_url` | text | Square receipt URL |
+| `notes` | text | Admin notes |
+| `created_at` | timestamp | Payment timestamp |
+| `updated_at` | timestamp | Last update |
+
+#### `log_verification_requests`
+Flagged reading logs requiring parent verification.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | uuid | Primary key |
+| `reading_log_id` | uuid | FK to reading_logs (unique) |
+| `child_id` | uuid | FK to children |
+| `minutes` | integer | Minutes that triggered flag |
+| `threshold_at_time` | integer | Threshold when flagged |
+| `status` | text | 'pending', 'approved', 'rejected' |
+| `reviewed_by` | uuid | Who reviewed |
+| `reviewed_at` | timestamp | When reviewed |
+| `created_at` | timestamp | When flagged |
+
+#### `site_content`
+Admin-editable site content (FAQ, about text, etc.).
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | uuid | Primary key |
+| `key` | text | Content key (unique) |
+| `value` | text | Content value |
+| `content_type` | text | Type of content |
+| `description` | text | Admin description |
+| `updated_by` | uuid | Last editor |
+| `updated_at` | timestamp | Last update |
 
 #### `event_winners`
 Competition results storage.
@@ -320,6 +390,10 @@ Returns milestone progress including next target and unlock status.
 | sponsor_invitations | Owner/Invitee/Admin | Owner/Approved | Owner/Admin | Owner/Admin |
 | profiles | Owner/Admin | Owner | Owner | - |
 | user_roles | Owner/Admin | Admin | Admin | Admin |
+| student_auth | Parent (owner of child) | Parent | Parent | Parent |
+| payments | Anyone | Auth | Admin | Admin |
+| log_verification_requests | Owner/Admin | Owner | Owner/Admin | Admin |
+| site_content | Anyone | Admin | Admin | Admin |
 
 *Public access requires `share_public_link = true`
 
@@ -366,7 +440,9 @@ children
   ├── homeroom_teacher_id → teachers
   ├── reading_logs (child_id)
   ├── pledges (child_id)
-  └── sponsor_invitations (child_id)
+  ├── sponsor_invitations (child_id)
+  ├── student_auth (child_id) [1:1]
+  └── log_verification_requests (child_id)
 
 teachers
   ├── user_id → auth.users
@@ -378,6 +454,30 @@ sponsors
   ├── user_id → auth.users
   └── pledges (sponsor_id)
 
+pledges
+  └── payments (pledge_id)
+
+class_pledges
+  └── payments (class_pledge_id)
+
+reading_logs
+  ├── book_id → books
+  └── log_verification_requests (reading_log_id) [1:1]
+
 books
   └── reading_logs (book_id)
 ```
+
+---
+
+## Database Views
+
+### `children_public_safe`
+Public-safe view of children for sponsor access. Returns `display_name` (first name + last initial) instead of full name.
+
+### `teachers_public_safe`
+Public-safe view of teachers. Excludes email column for privacy.
+
+---
+
+*Last updated: 2026-02-05*
