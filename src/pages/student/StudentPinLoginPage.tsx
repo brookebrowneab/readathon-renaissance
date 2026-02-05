@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { PublicLayout } from "@/components/layout";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,8 @@ import { BookOpen, User, KeyRound, ArrowLeft, Eye, EyeOff, Mail, CheckCircle } f
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
+
+const STUDENT_EMAIL_DOMAIN = "student.readathon.local";
 import {
   Dialog,
   DialogContent,
@@ -16,7 +18,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-const StudentLoginPage = () => {
+const StudentPinLoginPage = () => {
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -37,6 +39,17 @@ const StudentLoginPage = () => {
     setError(undefined);
   };
 
+  // Redirect if already logged in as student
+  useEffect(() => {
+    const checkExistingSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user?.email?.endsWith(`@${STUDENT_EMAIL_DOMAIN}`)) {
+        navigate("/student/dashboard");
+      }
+    };
+    checkExistingSession();
+  }, [navigate]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -54,39 +67,38 @@ const StudentLoginPage = () => {
     setError(undefined);
 
     try {
-      // Call edge function for secure login
-      const { data, error: loginError } = await supabase.functions.invoke("student-login", {
-        body: { username, password },
+      // Sign in using standard Supabase auth with generated email
+      const studentEmail = `${username}@${STUDENT_EMAIL_DOMAIN}`;
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email: studentEmail,
+        password,
       });
 
-      if (loginError) {
-        console.error("Login error:", loginError);
-        setError("Something went wrong. Please try again.");
+      if (signInError) {
+        // Map Supabase auth errors to user-friendly messages
+        if (signInError.message?.includes("Invalid login credentials")) {
+          setError("Invalid username or password");
+        } else {
+          setError("Something went wrong. Please try again.");
+        }
         setIsLoading(false);
         return;
       }
 
-      if (data.error) {
-        setError(data.error);
-        setIsLoading(false);
-        return;
-      }
-
-      if (!data.success || !data.child) {
+      if (!data.user) {
         setError("Login failed. Please check your credentials.");
         setIsLoading(false);
         return;
       }
 
-      // Store student session in sessionStorage (cleared on browser close)
-      sessionStorage.setItem("studentSession", JSON.stringify({
-        childId: data.child.id,
-        name: data.child.name,
-        totalMinutes: data.child.totalMinutes,
-        goalMinutes: data.child.goalMinutes,
-      }));
+      // Fetch child name for the welcome toast
+      const { data: child } = await supabase
+        .from("children")
+        .select("name")
+        .eq("student_user_id", data.user.id)
+        .maybeSingle();
 
-      toast.success(`Welcome back, ${data.child.name}!`);
+      toast.success(`Welcome back, ${child?.name || "Reader"}!`);
       navigate("/student/dashboard");
     } catch (err) {
       console.error("Login error:", err);
@@ -329,4 +341,4 @@ const StudentLoginPage = () => {
   );
 };
 
-export default StudentLoginPage;
+export default StudentPinLoginPage;
