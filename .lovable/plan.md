@@ -24,7 +24,7 @@ Added columns to `profiles` for legacy import and richer user data:
 - `user_type` (text) — 'parent', 'sponsor', 'teacher', 'admin'
 - `is_active` (boolean, default true) — soft delete flag
 - `legacy_user_id` (integer, indexed) — old system PK
-- `handle_new_user()` trigger updated to populate `email` from `auth.users` on signup
+- `handle_new_user()` trigger updated to populate `email`, `first_name`, `last_name` from `auth.users` metadata on signup
 
 ## ✅ Phase 3: Children Table Expansion (COMPLETED)
 
