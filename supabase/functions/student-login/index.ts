@@ -1,22 +1,29 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Simple password hashing using Web Crypto API
-async function hashPassword(password: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
-}
-
+// Verify password using bcrypt (also supports legacy SHA-256 hashes for migration)
 async function verifyPassword(password: string, hash: string): Promise<boolean> {
-  const passwordHash = await hashPassword(password);
-  return passwordHash === hash;
+  // Check if it's a bcrypt hash (starts with $2a$, $2b$, or $2y$)
+  if (hash.startsWith("$2a$") || hash.startsWith("$2b$") || hash.startsWith("$2y$")) {
+    return await bcrypt.compare(password, hash);
+  }
+  
+  // Legacy SHA-256 hash support (64 hex characters)
+  if (hash.length === 64 && /^[a-f0-9]+$/i.test(hash)) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const sha256Hash = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+    return sha256Hash === hash;
+  }
+  
+  return false;
 }
 
 Deno.serve(async (req) => {

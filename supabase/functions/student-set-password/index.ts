@@ -1,17 +1,15 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Simple password hashing using Web Crypto API
+// Secure password hashing using bcrypt with automatic salting
 async function hashPassword(password: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+  const salt = await bcrypt.genSalt(12); // Cost factor of 12 (recommended)
+  return await bcrypt.hash(password, salt);
 }
 
 Deno.serve(async (req) => {
@@ -40,9 +38,9 @@ Deno.serve(async (req) => {
     }
 
     // Password requirements
-    if (password.length < 4) {
+    if (password.length < 8) {
       return new Response(
-        JSON.stringify({ error: "Password must be at least 4 characters" }),
+        JSON.stringify({ error: "Password must be at least 8 characters" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
