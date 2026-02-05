@@ -18,10 +18,10 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ["Inter", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "system-ui", "sans-serif"],
-        serif: ["source-serif-4", "Source Serif 4", "Georgia", "serif"],
-        display: ["source-serif-4", "Source Serif 4", "Georgia", "serif"],
-        handwritten: ['Shadows Into Light', 'Caveat', 'cursive'],
+        sans: ["Inter", "-apple-system", "BlinkMacSystemFont", '"Segoe UI"', "system-ui", "sans-serif"],
+        serif: ['"source-serif-4"', '"Source Serif 4"', "Georgia", "serif"],
+        display: ['"source-serif-4"', '"Source Serif 4"', "Georgia", "serif"],
+        handwritten: ['"Shadows Into Light"', "Caveat", "cursive"],
       },
       colors: {
         border: "hsl(var(--border))",
