@@ -92,6 +92,7 @@ export function useSponsorAuth() {
           display_name: name,
           first_name: firstName,
           last_name: lastName,
+          phone: phone || undefined,
         },
       },
     });
