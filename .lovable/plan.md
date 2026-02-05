@@ -24,6 +24,7 @@ Added columns to `profiles` for legacy import and richer user data:
 - `user_type` (text) — 'parent', 'sponsor', 'teacher', 'admin'
 - `is_active` (boolean, default true) — soft delete flag
 - `legacy_user_id` (integer, indexed) — old system PK
+- `handle_new_user()` trigger updated to populate `email` from `auth.users` on signup
 
 ## Updated Schema Plan: Legacy Teacher Data Compatibility
 
