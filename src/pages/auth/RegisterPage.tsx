@@ -114,7 +114,10 @@ const RegisterPage = () => {
     setIsSubmitting(true);
     
     const displayName = `${formData.firstName} ${formData.lastName}`;
-    const { error } = await signUp(formData.email, formData.password, displayName);
+    const { error } = await signUp(formData.email, formData.password, displayName, {
+      first_name: formData.firstName,
+      last_name: formData.lastName,
+    });
     
     if (error) {
       toast.error(error.message);
