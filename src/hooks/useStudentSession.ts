@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
+const STUDENT_EMAIL_DOMAIN = "student.readathon.local";
+
 interface StudentSession {
   childId: string;
   name: string;
@@ -16,18 +18,68 @@ export function useStudentSession() {
   const [session, setSession] = useState<StudentSession | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load session from storage
-  useEffect(() => {
-    const stored = sessionStorage.getItem("studentSession");
-    if (stored) {
-      try {
-        setSession(JSON.parse(stored));
-      } catch {
-        sessionStorage.removeItem("studentSession");
-      }
+  // Check if current auth user is a student and load their data
+  const loadStudentData = useCallback(async () => {
+    const { data: { session: authSession } } = await supabase.auth.getSession();
+    
+    if (!authSession?.user) {
+      setSession(null);
+      setIsLoading(false);
+      return;
     }
+
+    // Check if user's email matches student domain
+    const email = authSession.user.email || "";
+    if (!email.endsWith(`@${STUDENT_EMAIL_DOMAIN}`)) {
+      setSession(null);
+      setIsLoading(false);
+      return;
+    }
+
+    // Fetch child data linked to this student auth account
+    const { data: child, error } = await supabase
+      .from("children")
+      .select("id, name, total_minutes, goal_minutes, class_name, grade_info")
+      .eq("student_user_id", authSession.user.id)
+      .maybeSingle();
+
+    if (error || !child) {
+      console.error("Failed to load student data:", error);
+      setSession(null);
+      setIsLoading(false);
+      return;
+    }
+
+    const studentSession: StudentSession = {
+      childId: child.id,
+      name: child.name,
+      totalMinutes: child.total_minutes,
+      goalMinutes: child.goal_minutes,
+      className: child.class_name,
+      gradeInfo: child.grade_info,
+    };
+
+    setSession(studentSession);
     setIsLoading(false);
   }, []);
+
+  useEffect(() => {
+    loadStudentData();
+
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event) => {
+        if (event === "SIGNED_IN") {
+          // Defer to avoid deadlock
+          setTimeout(() => loadStudentData(), 0);
+        } else if (event === "SIGNED_OUT") {
+          setSession(null);
+        }
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, [loadStudentData]);
 
   // Refresh student data from database
   const refreshData = useCallback(async () => {
@@ -44,22 +96,19 @@ export function useStudentSession() {
       return;
     }
 
-    const updated: StudentSession = {
+    setSession({
       childId: data.id,
       name: data.name,
       totalMinutes: data.total_minutes,
       goalMinutes: data.goal_minutes,
       className: data.class_name,
       gradeInfo: data.grade_info,
-    };
-
-    setSession(updated);
-    sessionStorage.setItem("studentSession", JSON.stringify(updated));
+    });
   }, [session?.childId]);
 
   // Logout
-  const logout = useCallback(() => {
-    sessionStorage.removeItem("studentSession");
+  const logout = useCallback(async () => {
+    await supabase.auth.signOut();
     setSession(null);
     navigate("/student/login");
   }, [navigate]);

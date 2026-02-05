@@ -1,19 +1,18 @@
- import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
- import bcrypt from "https://esm.sh/bcryptjs@2.4.3";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import bcrypt from "https://esm.sh/bcryptjs@2.4.3";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// Verify password using bcrypt (also supports legacy SHA-256 hashes for migration)
+const STUDENT_EMAIL_DOMAIN = "student.readathon.local";
+
+// Legacy: Verify password using bcrypt or SHA-256
 async function verifyPassword(password: string, hash: string): Promise<boolean> {
-  // Check if it's a bcrypt hash (starts with $2a$, $2b$, or $2y$)
   if (hash.startsWith("$2a$") || hash.startsWith("$2b$") || hash.startsWith("$2y$")) {
-     return bcrypt.compareSync(password, hash);
+    return bcrypt.compareSync(password, hash);
   }
-  
-  // Legacy SHA-256 hash support (64 hex characters)
   if (hash.length === 64 && /^[a-f0-9]+$/i.test(hash)) {
     const encoder = new TextEncoder();
     const data = encoder.encode(password);
@@ -22,12 +21,10 @@ async function verifyPassword(password: string, hash: string): Promise<boolean> 
     const sha256Hash = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
     return sha256Hash === hash;
   }
-  
   return false;
 }
 
 Deno.serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -35,7 +32,6 @@ Deno.serve(async (req) => {
   try {
     const { username, password } = await req.json();
 
-    // Input validation
     if (!username || !password) {
       return new Response(
         JSON.stringify({ error: "Username and password are required" }),
@@ -43,43 +39,28 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Normalize username (lowercase, trim)
     const normalizedUsername = username.toLowerCase().trim();
-
-    // Create Supabase client with service role for server-side auth
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Look up student auth by username (from separate secure table)
+    // Look up student auth
     const { data: authRecord, error: authLookupError } = await supabase
       .from("student_auth")
       .select("child_id, password_hash, login_enabled")
       .eq("username", normalizedUsername)
       .maybeSingle();
 
-    if (authLookupError) {
-      console.error("Auth lookup error:", authLookupError);
-      return new Response(
-        JSON.stringify({ error: "An error occurred. Please try again." }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Generic error message to prevent username enumeration
     const invalidCredentialsResponse = new Response(
       JSON.stringify({ error: "Invalid username or password" }),
       { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
 
-    // Check if auth record exists
-    if (!authRecord) {
-      // Add small delay to prevent timing attacks
+    if (authLookupError || !authRecord) {
       await new Promise(resolve => setTimeout(resolve, 100 + Math.random() * 100));
       return invalidCredentialsResponse;
     }
 
-    // Check if login is enabled
     if (!authRecord.login_enabled) {
       return new Response(
         JSON.stringify({ error: "Student login is not enabled. Ask your parent to enable it." }),
@@ -87,24 +68,10 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Check if password hash exists
-    if (!authRecord.password_hash) {
-      return new Response(
-        JSON.stringify({ error: "No password set. Ask your parent to set up your login." }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Verify password
-    const isValid = await verifyPassword(password, authRecord.password_hash);
-    if (!isValid) {
-      return invalidCredentialsResponse;
-    }
-
-    // Fetch child data (non-sensitive fields only)
+    // Check if this student has been migrated to real auth (has student_user_id)
     const { data: child, error: childError } = await supabase
       .from("children")
-      .select("id, name, total_minutes, goal_minutes, class_name, grade_info")
+      .select("id, name, total_minutes, goal_minutes, class_name, grade_info, student_user_id")
       .eq("id", authRecord.child_id)
       .single();
 
@@ -116,7 +83,31 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Success - return child data (excluding sensitive fields)
+    // If student has a real auth account, tell the client to use standard auth
+    if (child.student_user_id) {
+      return new Response(
+        JSON.stringify({
+          useStandardAuth: true,
+          email: `${normalizedUsername}@${STUDENT_EMAIL_DOMAIN}`,
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Legacy flow: verify password hash directly
+    if (!authRecord.password_hash) {
+      return new Response(
+        JSON.stringify({ error: "No password set. Ask your parent to set up your login." }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const isValid = await verifyPassword(password, authRecord.password_hash);
+    if (!isValid) {
+      return invalidCredentialsResponse;
+    }
+
+    // Legacy success - return child data
     return new Response(
       JSON.stringify({
         success: true,
