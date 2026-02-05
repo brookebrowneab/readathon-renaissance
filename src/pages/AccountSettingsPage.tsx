@@ -51,6 +51,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { handDrawnBorder, handDrawnBorderSubtle } from "@/lib/admin-styles";
 
 const AccountSettingsPage = () => {
   const { user, signOut } = useAuth();
@@ -248,10 +249,10 @@ const AccountSettingsPage = () => {
         <div className="container py-8 max-w-2xl">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="font-serif text-3xl font-normal tracking-tight text-foreground">
+            <h1 className="font-serif text-3xl md:text-4xl font-normal tracking-tight text-foreground">
               Account Settings
             </h1>
-            <p className="text-muted-foreground mt-2">
+            <p className="text-muted-foreground mt-2 font-serif">
               Manage your profile, children, and security settings
             </p>
           </div>
@@ -259,40 +260,40 @@ const AccountSettingsPage = () => {
           <div className="space-y-6">
             {/* Quick Links - Only show for non-teachers */}
             {!isTeacher && (
-              <Card>
-                <CardHeader>
+              <div className="bg-card p-6" style={handDrawnBorder}>
+                <div className="mb-4">
                   <div className="flex items-center gap-2">
                     <Heart className="h-5 w-5 text-primary" />
-                    <CardTitle className="text-lg">My Pledges</CardTitle>
+                    <h2 className="font-serif text-xl text-foreground">My Pledges</h2>
                   </div>
-                  <CardDescription>
+                  <p className="text-sm text-muted-foreground mt-1">
                     View and manage all your pledges
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
+                  </p>
+                </div>
+                <div>
                   <Button asChild variant="outline">
                     <Link to="/my-pledges">
                       <Heart className="h-4 w-4 mr-2" />
                       View My Pledges
                     </Link>
                   </Button>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             )}
 
             {/* Children's Accounts Section - Only for parents */}
             {!isTeacher && children.length > 0 && (
-              <Card id="children">
-                <CardHeader>
+              <div className="bg-card p-6" style={handDrawnBorder} id="children">
+                <div className="mb-4">
                   <div className="flex items-center gap-2">
                     <Users className="h-5 w-5 text-primary" />
-                    <CardTitle className="text-lg">Children's Accounts</CardTitle>
+                    <h2 className="font-serif text-xl text-foreground">Children's Accounts</h2>
                   </div>
-                  <CardDescription>
+                  <p className="text-sm text-muted-foreground mt-1">
                     Manage your children's profiles, student logins, and sponsor access
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
+                  </p>
+                </div>
+                <div className="space-y-4">
                   {children.map((child) => {
                     const sponsorsForChild = invitationsByChild[child.id] || [];
                     const isExpanded = expandedChildId === child.id;
@@ -303,15 +304,15 @@ const AccountSettingsPage = () => {
                         open={isExpanded}
                         onOpenChange={() => setExpandedChildId(isExpanded ? null : child.id)}
                       >
-                        <div className="border rounded-lg p-4">
+                        <div className="p-4" style={handDrawnBorderSubtle}>
                           {/* Child Header */}
                           <div className="flex items-center justify-between mb-3">
                             <div className="flex items-center gap-3">
-                              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center font-serif text-lg text-primary">
+                              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center font-serif text-xl text-primary">
                                 {child.name.charAt(0).toUpperCase()}
                               </div>
                               <div>
-                                <h4 className="font-medium text-foreground">{child.name}</h4>
+                                <h4 className="font-serif text-lg text-foreground">{child.name}</h4>
                                 <p className="text-xs text-muted-foreground">
                                   {child.grade_info || "No grade"} • {child.class_name || "No teacher"}
                                 </p>
@@ -367,7 +368,7 @@ const AccountSettingsPage = () => {
 
                             {/* Student Login Info */}
                             <div className="space-y-2">
-                              <h5 className="text-sm font-medium flex items-center gap-2">
+                              <h5 className="text-sm font-serif flex items-center gap-2">
                                 <KeyRound className="h-4 w-4" />
                                 Student Login
                               </h5>
@@ -406,7 +407,7 @@ const AccountSettingsPage = () => {
                             {/* Active Sponsors */}
                             {sponsorsForChild.length > 0 && (
                               <div className="space-y-2">
-                                <h5 className="text-sm font-medium flex items-center gap-2">
+                                <h5 className="text-sm font-serif flex items-center gap-2">
                                   <Users className="h-4 w-4" />
                                   Active Sponsors
                                 </h5>
@@ -499,22 +500,22 @@ const AccountSettingsPage = () => {
                       </Collapsible>
                     );
                   })}
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             )}
 
             {/* Profile Section */}
-            <Card>
-              <CardHeader>
+            <div className="bg-card p-6" style={handDrawnBorder}>
+              <div className="mb-4">
                 <div className="flex items-center gap-2">
                   <User className="h-5 w-5 text-primary" />
-                  <CardTitle className="text-lg">Profile Information</CardTitle>
+                  <h2 className="font-serif text-xl text-foreground">Profile Information</h2>
                 </div>
-                <CardDescription>
+                <p className="text-sm text-muted-foreground mt-1">
                   Update your display name and profile details
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
+                </p>
+              </div>
+              <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
                   <div className="flex items-center gap-2">
@@ -543,21 +544,21 @@ const AccountSettingsPage = () => {
                   <Save className="h-4 w-4 mr-2" />
                   {isSavingProfile ? "Saving..." : "Save Profile"}
                 </Button>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
             {/* Password Section */}
-            <Card>
-              <CardHeader>
+            <div className="bg-card p-6" style={handDrawnBorder}>
+              <div className="mb-4">
                 <div className="flex items-center gap-2">
                   <Lock className="h-5 w-5 text-primary" />
-                  <CardTitle className="text-lg">Change Password</CardTitle>
+                  <h2 className="font-serif text-xl text-foreground">Change Password</h2>
                 </div>
-                <CardDescription>
+                <p className="text-sm text-muted-foreground mt-1">
                   Update your password to keep your account secure
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
+                </p>
+              </div>
+              <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="newPassword">New Password</Label>
                   <Input
@@ -589,22 +590,25 @@ const AccountSettingsPage = () => {
                   <Lock className="h-4 w-4 mr-2" />
                   {isSavingPassword ? "Updating..." : "Update Password"}
                 </Button>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
             {/* Danger Zone - Only show for non-teachers */}
             {!isTeacher && (
-              <Card className="border-destructive/50">
-                <CardHeader>
+              <div className="bg-card p-6 border-2 border-destructive/50" style={{
+                ...handDrawnBorder,
+                borderColor: 'hsl(0 55% 50% / 0.5)'
+              }}>
+                <div className="mb-4">
                   <div className="flex items-center gap-2">
                     <AlertTriangle className="h-5 w-5 text-destructive" />
-                    <CardTitle className="text-lg text-destructive">Danger Zone</CardTitle>
+                    <h2 className="font-serif text-xl text-destructive">Danger Zone</h2>
                   </div>
-                  <CardDescription>
+                  <p className="text-sm text-muted-foreground mt-1">
                     Permanently delete your account and all associated data
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
+                  </p>
+                </div>
+                <div>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button variant="destructive">
@@ -654,8 +658,8 @@ const AccountSettingsPage = () => {
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             )}
           </div>
         </div>
