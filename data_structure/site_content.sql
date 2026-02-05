@@ -23,5 +23,5 @@ CREATE POLICY "Anyone can view site content"
 CREATE POLICY "Admins can manage site content"
   ON public.site_content
   FOR ALL
-  USING (has_role(auth.uid(), 'admin'::app_role))
-  WITH CHECK (has_role(auth.uid(), 'admin'::app_role));
+  USING (has_role(auth.uid(), 'admin'))
+  WITH CHECK (has_role(auth.uid(), 'admin'));

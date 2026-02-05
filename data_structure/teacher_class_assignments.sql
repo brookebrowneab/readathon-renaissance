@@ -24,5 +24,5 @@ CREATE POLICY "Teachers can view their assignments"
 CREATE POLICY "Admins can manage class assignments"
   ON public.teacher_class_assignments
   FOR ALL
-  USING (has_role(auth.uid(), 'admin'::app_role))
-  WITH CHECK (has_role(auth.uid(), 'admin'::app_role));
+  USING (has_role(auth.uid(), 'admin'))
+  WITH CHECK (has_role(auth.uid(), 'admin'));

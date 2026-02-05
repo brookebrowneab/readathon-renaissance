@@ -1,14 +1,12 @@
--- Database Enums
--- These should be created before the tables that use them
-
--- App role enum for user authorization
-CREATE TYPE app_role AS ENUM ('admin', 'user', 'teacher');
-
--- Teacher type enum for classification
-CREATE TYPE teacher_type AS ENUM ('homeroom', 'partner', 'specials', 'staff');
-
--- Email log status enum
-CREATE TYPE email_log_status AS ENUM ('pending', 'sent', 'failed');
-
--- Email template status enum
-CREATE TYPE email_template_status AS ENUM ('draft', 'scheduled', 'sent');
+-- Database Enums (REMOVED)
+-- As of the Phase 1 enum-to-text migration, all Postgres enums have been
+-- replaced with plain text columns for MySQL/import compatibility.
+--
+-- Previously defined enums (now dropped):
+--   app_role: 'admin', 'user', 'teacher'
+--   teacher_type: 'homeroom', 'partner', 'specials', 'staff'
+--   email_log_status: 'pending', 'sent', 'failed'
+--   email_template_status: 'draft', 'scheduled', 'sent'
+--
+-- These values are still used as text strings throughout the app and
+-- enforced at the application layer rather than the database layer.

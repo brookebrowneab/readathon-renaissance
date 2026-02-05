@@ -1,6 +1,21 @@
 
 
-# Updated Schema Plan: Legacy Teacher Data Compatibility
+# Schema Plan & Migration Status
+
+## ✅ Phase 1: Enum-to-Text Migration (COMPLETED)
+
+All Postgres enums have been replaced with plain `text` columns:
+- `app_role` → `user_roles.role` is now `text` (values: admin, user, teacher)
+- `teacher_type` → `teachers.teacher_type` is now `text` (values: homeroom, partner, specials, staff)
+- `email_log_status` → `email_logs.status` is now `text` (values: pending, sent, failed)
+- `email_template_status` → `email_templates.status` is now `text` (values: draft, scheduled, sent)
+- `events.teacher_logging_grades` changed from `text[]` to comma-separated `text`
+- `events.log_verification_thresholds` changed from `jsonb` to `text` (JSON string)
+- All RLS policies updated to remove `::app_role` casts
+- `has_role()` function updated to accept `text` parameter
+- `get_verification_threshold()` updated to parse text as JSON
+
+## Updated Schema Plan: Legacy Teacher Data Compatibility
 
 ## What Changed
 

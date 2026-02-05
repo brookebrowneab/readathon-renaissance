@@ -34,5 +34,5 @@ CREATE POLICY "Parents can update verification requests for their children"
 CREATE POLICY "Admins can manage all verification requests"
   ON public.log_verification_requests
   FOR ALL
-  USING (has_role(auth.uid(), 'admin'::app_role))
-  WITH CHECK (has_role(auth.uid(), 'admin'::app_role));
+  USING (has_role(auth.uid(), 'admin'))
+  WITH CHECK (has_role(auth.uid(), 'admin'));

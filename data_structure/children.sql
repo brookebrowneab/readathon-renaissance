@@ -48,7 +48,7 @@ CREATE POLICY "Parents can delete their own children"
 CREATE POLICY "Admins can view all children"
   ON public.children
   FOR SELECT
-  USING (has_role(auth.uid(), 'admin'::app_role));
+  USING (has_role(auth.uid(), 'admin'));
 
 CREATE POLICY "Teachers can view their students"
   ON public.children

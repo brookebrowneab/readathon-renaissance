@@ -1,5 +1,7 @@
 -- Table: teachers
 -- Teacher records with class assignments
+-- Note: teacher_type column is plain text (not enum) since Phase 1 migration
+-- Valid values: 'homeroom', 'partner', 'specials', 'staff'
 
 CREATE TABLE public.teachers (
   id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -7,7 +9,7 @@ CREATE TABLE public.teachers (
   name text NOT NULL,
   email text,
   grade_level text,
-  teacher_type teacher_type NOT NULL DEFAULT 'homeroom',
+  teacher_type text NOT NULL DEFAULT 'homeroom',
   has_full_access boolean NOT NULL DEFAULT false,
   is_active boolean NOT NULL DEFAULT true,
   created_at timestamp with time zone NOT NULL DEFAULT now(),
@@ -17,28 +19,22 @@ CREATE TABLE public.teachers (
   legacy_default_val text
 );
 
--- Enum for teacher type
--- CREATE TYPE teacher_type AS ENUM ('homeroom', 'partner', 'specials', 'staff');
-
 -- Enable Row Level Security
 ALTER TABLE public.teachers ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies
--- Admins can see all teacher data including email
 CREATE POLICY "Admins can view all teacher data"
   ON public.teachers
   FOR SELECT
   TO authenticated
-  USING (has_role(auth.uid(), 'admin'::app_role));
+  USING (has_role(auth.uid(), 'admin'));
 
--- Teachers can view their own record with email  
 CREATE POLICY "Teachers can view their own record"
   ON public.teachers
   FOR SELECT
   TO authenticated
   USING (user_id = auth.uid());
 
--- Authenticated users can view basic teacher info (email still visible but restricted to auth'd users)
 CREATE POLICY "Authenticated users can view active teachers basic info"
   ON public.teachers
   FOR SELECT
@@ -48,8 +44,8 @@ CREATE POLICY "Authenticated users can view active teachers basic info"
 CREATE POLICY "Admins can manage all teachers"
   ON public.teachers
   FOR ALL
-  USING (has_role(auth.uid(), 'admin'::app_role))
-  WITH CHECK (has_role(auth.uid(), 'admin'::app_role));
+  USING (has_role(auth.uid(), 'admin'))
+  WITH CHECK (has_role(auth.uid(), 'admin'));
 
 -- Public-safe view that excludes email
 CREATE OR REPLACE VIEW public.teachers_public_safe

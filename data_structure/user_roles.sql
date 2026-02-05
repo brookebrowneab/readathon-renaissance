@@ -1,15 +1,14 @@
 -- Table: user_roles
 -- Role assignments for authorization
+-- Note: role column is plain text (not enum) since Phase 1 migration
+-- Valid values: 'admin', 'user', 'teacher'
 
 CREATE TABLE public.user_roles (
   id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id uuid NOT NULL,
-  role app_role NOT NULL,
+  role text NOT NULL,
   created_at timestamp with time zone NOT NULL DEFAULT now()
 );
-
--- Enum for app role
--- CREATE TYPE app_role AS ENUM ('admin', 'user', 'teacher');
 
 -- Enable Row Level Security
 ALTER TABLE public.user_roles ENABLE ROW LEVEL SECURITY;
@@ -23,10 +22,10 @@ CREATE POLICY "Users can view their own roles"
 CREATE POLICY "Admins can view all roles"
   ON public.user_roles
   FOR SELECT
-  USING (has_role(auth.uid(), 'admin'::app_role));
+  USING (has_role(auth.uid(), 'admin'));
 
 CREATE POLICY "Admins can manage roles"
   ON public.user_roles
   FOR ALL
-  USING (has_role(auth.uid(), 'admin'::app_role))
-  WITH CHECK (has_role(auth.uid(), 'admin'::app_role));
+  USING (has_role(auth.uid(), 'admin'))
+  WITH CHECK (has_role(auth.uid(), 'admin'));

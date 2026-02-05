@@ -44,5 +44,5 @@ CREATE POLICY "Sponsors can delete their unpaid class pledges"
 CREATE POLICY "Admins can manage all class pledges"
   ON public.class_pledges
   FOR ALL
-  USING (has_role(auth.uid(), 'admin'::app_role))
-  WITH CHECK (has_role(auth.uid(), 'admin'::app_role));
+  USING (has_role(auth.uid(), 'admin'))
+  WITH CHECK (has_role(auth.uid(), 'admin'));
