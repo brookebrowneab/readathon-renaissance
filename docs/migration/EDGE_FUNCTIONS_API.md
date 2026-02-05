@@ -745,8 +745,8 @@ Always returns success to prevent username enumeration:
 ### Behind the Scenes
 
 If username exists:
-1. Looks up child by `student_username`
-2. Fetches parent email from `auth.users` via `child.user_id`
+1. Looks up child via `student_auth.username`
+2. Fetches parent email from `auth.users` via `children.user_id`
 3. Sends email to parent with reset instructions
 
 ### Error Responses
@@ -760,7 +760,7 @@ If username exists:
 
 ## student-login
 
-**Purpose:** Authenticates students using username/password and returns session data. Uses SHA-256 password hashing.
+**Purpose:** Authenticates students using username/password (from `student_auth` table) and returns session data. Uses bcrypt hashing with legacy SHA-256 fallback.
 
 **Authentication:** None required (public endpoint)
 
@@ -802,14 +802,14 @@ If username exists:
 |--------|-------|-------|
 | 400 | "Username and password are required" | Missing fields |
 | 401 | "Invalid username or password" | Wrong credentials |
-| 403 | "Student login is not enabled. Ask your parent to enable it." | `student_login_enabled = false` |
-| 403 | "No password set. Ask your parent to set up your login." | No password hash |
+| 403 | "Student login is not enabled. Ask your parent to enable it." | `student_auth.login_enabled = false` |
+| 403 | "No password set. Ask your parent to set up your login." | No `password_hash` in `student_auth` |
 | 500 | "An error occurred. Please try again." | DB error |
 
 ### Security Features
 
 - Normalized username (lowercase, trimmed)
-- SHA-256 password hashing
+- bcrypt password hashing (cost 12); legacy SHA-256 auto-upgrade on login
 - Timing attack prevention (random delay on invalid username)
 - Generic error messages to prevent enumeration
 
@@ -835,7 +835,7 @@ If username exists:
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | childId | string | Yes | Child's ID |
-| password | string | Yes | New password (min 4 chars) |
+| password | string | Yes | New password (min 8 chars) |
 
 ### Request Headers
 
@@ -856,7 +856,7 @@ If username exists:
 | Status | Error | Cause |
 |--------|-------|-------|
 | 400 | "Child ID and password are required" | Missing fields |
-| 400 | "Password must be at least 4 characters" | Password too short |
+| 400 | "Password must be at least 8 characters" | Password too short |
 | 401 | "Unauthorized" | Missing/invalid auth |
 | 403 | "You can only set passwords for your own children" | Not parent |
 | 404 | "Child not found" | Invalid childId |
@@ -864,7 +864,7 @@ If username exists:
 
 ### Database Side Effects
 
-- Updates `children.student_password_hash` with SHA-256 hash
+- Upserts `student_auth.password_hash` with bcrypt hash (cost 12)
 
 ---
 

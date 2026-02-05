@@ -1,7 +1,7 @@
 -- View: children_public_safe
 -- Privacy-safe view for sponsor access to child data
 -- Returns display_name (First Name + Last Initial) instead of full name
--- Excludes sensitive fields like student_username and student_password_hash
+-- Excludes sensitive fields (student auth is in separate student_auth table)
 
 -- Function to transform full name to safe display name
 CREATE OR REPLACE FUNCTION public.safe_display_name(full_name text)

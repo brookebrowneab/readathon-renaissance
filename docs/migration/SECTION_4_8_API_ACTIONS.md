@@ -242,11 +242,11 @@ No API actions (static page).
 
 | Interaction ID | Action Name | HTTP Method (suggested) | Endpoint (suggested) | Auth Required (Y/N) | Role(s) | Request Payload (example JSON) | Response Payload (example JSON) | Error Codes / Cases |
 |---|---|---|---|---|---|---|---|---|
-| CD-LOAD-001 | getChild | GET | /children/:id | Y | Parent | - | `{"id":"uuid","name":"Emma S","grade_info":"3rd","student_username":"emma_s","student_login_enabled":true}` | NOT_FOUND, FORBIDDEN |
+| CD-LOAD-001 | getChild | GET | /children/:id | Y | Parent | - | `{"id":"uuid","name":"Emma S","grade_info":"3rd","sponsor_id_code":"abc123"}` | NOT_FOUND, FORBIDDEN |
 | CD-LOAD-002 | listTeachers | GET | /teachers?is_active=eq.true | Y | Parent | - | `[{"id":"uuid","name":"Mrs. Smith","grade_level":"3rd"}]` | - |
 | CD-LOAD-003 | getChildReadingLogs | GET | /reading_logs?child_id=eq.{id} | Y | Parent | - | `[{"id":"uuid","minutes":30,"logged_at":"2024-02-01"}]` | - |
 | CD-1 | updateChild | PATCH | /children/:id | Y | Parent | `{"grade_info":"4th","homeroom_teacher_id":"uuid","goal_minutes":600,"share_public_link":false}` | `{"id":"uuid",...}` | NOT_FOUND, VALIDATION_ERROR |
-| CD-2 | updateStudentCredentials | PATCH | /children/:id | Y | Parent | `{"student_username":"emma_smith","student_login_enabled":true}` | `{"id":"uuid",...}` | CONFLICT ("Username taken") |
+| CD-2 | updateStudentCredentials | PATCH | /student_auth?child_id=eq.{id} | Y | Parent | `{"username":"emma_smith","login_enabled":true}` | `{"id":"uuid",...}` | CONFLICT ("Username taken") |
 | CD-3 | setStudentPassword | POST | /functions/student-set-password | Y | Parent | `{"child_id":"uuid","password":"read123"}` | `{"success":true}` | VALIDATION_ERROR |
 
 ---
