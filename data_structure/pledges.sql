@@ -21,9 +21,10 @@ CREATE TABLE public.pledges (
 ALTER TABLE public.pledges ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies
-CREATE POLICY "Anyone can view pledges"
+CREATE POLICY "Authenticated users can view pledges"
   ON public.pledges
   FOR SELECT
+  TO authenticated
   USING (true);
 
 CREATE POLICY "Parents can insert pledges for their children"
