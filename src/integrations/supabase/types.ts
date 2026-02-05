@@ -265,7 +265,7 @@ export type Database = {
           recipient_name: string | null
           recipient_type: string | null
           sent_at: string | null
-          status: Database["public"]["Enums"]["email_log_status"]
+          status: string
           subject: string
           template_id: string | null
         }
@@ -278,7 +278,7 @@ export type Database = {
           recipient_name?: string | null
           recipient_type?: string | null
           sent_at?: string | null
-          status?: Database["public"]["Enums"]["email_log_status"]
+          status?: string
           subject: string
           template_id?: string | null
         }
@@ -291,7 +291,7 @@ export type Database = {
           recipient_name?: string | null
           recipient_type?: string | null
           sent_at?: string | null
-          status?: Database["public"]["Enums"]["email_log_status"]
+          status?: string
           subject?: string
           template_id?: string | null
         }
@@ -314,7 +314,7 @@ export type Database = {
           name: string
           recipient_filter: string
           scheduled_for: string | null
-          status: Database["public"]["Enums"]["email_template_status"]
+          status: string
           subject: string
           updated_at: string
         }
@@ -326,7 +326,7 @@ export type Database = {
           name: string
           recipient_filter: string
           scheduled_for?: string | null
-          status?: Database["public"]["Enums"]["email_template_status"]
+          status?: string
           subject: string
           updated_at?: string
         }
@@ -338,7 +338,7 @@ export type Database = {
           name?: string
           recipient_filter?: string
           scheduled_for?: string | null
-          status?: Database["public"]["Enums"]["email_template_status"]
+          status?: string
           subject?: string
           updated_at?: string
         }
@@ -413,7 +413,7 @@ export type Database = {
           is_active: boolean
           last_log_date: string
           log_verification_enabled: boolean
-          log_verification_thresholds: Json
+          log_verification_thresholds: string
           logo_date_x_offset: number | null
           logo_url: string | null
           name: string
@@ -422,7 +422,7 @@ export type Database = {
           school_name: string
           send_reminders: boolean
           start_date: string
-          teacher_logging_grades: string[]
+          teacher_logging_grades: string
           timezone: string
           updated_at: string
         }
@@ -439,7 +439,7 @@ export type Database = {
           is_active?: boolean
           last_log_date: string
           log_verification_enabled?: boolean
-          log_verification_thresholds?: Json
+          log_verification_thresholds?: string
           logo_date_x_offset?: number | null
           logo_url?: string | null
           name: string
@@ -448,7 +448,7 @@ export type Database = {
           school_name?: string
           send_reminders?: boolean
           start_date: string
-          teacher_logging_grades?: string[]
+          teacher_logging_grades?: string
           timezone?: string
           updated_at?: string
         }
@@ -465,7 +465,7 @@ export type Database = {
           is_active?: boolean
           last_log_date?: string
           log_verification_enabled?: boolean
-          log_verification_thresholds?: Json
+          log_verification_thresholds?: string
           logo_date_x_offset?: number | null
           logo_url?: string | null
           name?: string
@@ -474,7 +474,7 @@ export type Database = {
           school_name?: string
           send_reminders?: boolean
           start_date?: string
-          teacher_logging_grades?: string[]
+          teacher_logging_grades?: string
           timezone?: string
           updated_at?: string
         }
@@ -1000,7 +1000,7 @@ export type Database = {
           legacy_teacher_id: number | null
           legacy_username: string | null
           name: string
-          teacher_type: Database["public"]["Enums"]["teacher_type"]
+          teacher_type: string
           updated_at: string
           user_id: string | null
         }
@@ -1015,7 +1015,7 @@ export type Database = {
           legacy_teacher_id?: number | null
           legacy_username?: string | null
           name: string
-          teacher_type?: Database["public"]["Enums"]["teacher_type"]
+          teacher_type?: string
           updated_at?: string
           user_id?: string | null
         }
@@ -1030,7 +1030,7 @@ export type Database = {
           legacy_teacher_id?: number | null
           legacy_username?: string | null
           name?: string
-          teacher_type?: Database["public"]["Enums"]["teacher_type"]
+          teacher_type?: string
           updated_at?: string
           user_id?: string | null
         }
@@ -1040,19 +1040,19 @@ export type Database = {
         Row: {
           created_at: string
           id: string
-          role: Database["public"]["Enums"]["app_role"]
+          role: string
           user_id: string
         }
         Insert: {
           created_at?: string
           id?: string
-          role: Database["public"]["Enums"]["app_role"]
+          role: string
           user_id: string
         }
         Update: {
           created_at?: string
           id?: string
-          role?: Database["public"]["Enums"]["app_role"]
+          role?: string
           user_id?: string
         }
         Relationships: []
@@ -1118,7 +1118,7 @@ export type Database = {
           id: string | null
           is_active: boolean | null
           name: string | null
-          teacher_type: Database["public"]["Enums"]["teacher_type"] | null
+          teacher_type: string | null
           updated_at: string | null
           user_id: string | null
         }
@@ -1129,7 +1129,7 @@ export type Database = {
           id?: string | null
           is_active?: boolean | null
           name?: string | null
-          teacher_type?: Database["public"]["Enums"]["teacher_type"] | null
+          teacher_type?: string | null
           updated_at?: string | null
           user_id?: string | null
         }
@@ -1140,7 +1140,7 @@ export type Database = {
           id?: string | null
           is_active?: boolean | null
           name?: string | null
-          teacher_type?: Database["public"]["Enums"]["teacher_type"] | null
+          teacher_type?: string | null
           updated_at?: string | null
           user_id?: string | null
         }
@@ -1199,20 +1199,11 @@ export type Database = {
         Args: { p_child_id: string }
         Returns: number
       }
-      has_role: {
-        Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
-        }
-        Returns: boolean
-      }
+      has_role: { Args: { _role: string; _user_id: string }; Returns: boolean }
       safe_display_name: { Args: { full_name: string }; Returns: string }
     }
     Enums: {
-      app_role: "admin" | "user" | "teacher"
-      email_log_status: "pending" | "sent" | "failed"
-      email_template_status: "draft" | "scheduled" | "sent"
-      teacher_type: "homeroom" | "partner" | "specials" | "staff"
+      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1339,11 +1330,6 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {
-      app_role: ["admin", "user", "teacher"],
-      email_log_status: ["pending", "sent", "failed"],
-      email_template_status: ["draft", "scheduled", "sent"],
-      teacher_type: ["homeroom", "partner", "specials", "staff"],
-    },
+    Enums: {},
   },
 } as const

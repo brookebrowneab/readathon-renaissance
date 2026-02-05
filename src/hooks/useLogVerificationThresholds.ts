@@ -20,10 +20,14 @@ export const useVerificationSettings = () => {
 
       if (error) throw error;
       
+      const rawThresholds = data?.log_verification_thresholds;
+      const thresholds: VerificationThresholds = typeof rawThresholds === 'string'
+        ? JSON.parse(rawThresholds || '{}')
+        : (rawThresholds as VerificationThresholds || {});
       return {
         eventId: data?.id || null,
         enabled: data?.log_verification_enabled ?? false,
-        thresholds: (data?.log_verification_thresholds as VerificationThresholds) || {},
+        thresholds,
       };
     },
   });
@@ -47,7 +51,7 @@ export const useUpdateVerificationSettings = () => {
         .from('events')
         .update({
           log_verification_enabled: enabled,
-          log_verification_thresholds: thresholds,
+          log_verification_thresholds: JSON.stringify(thresholds),
         })
         .eq('id', eventId)
         .select()

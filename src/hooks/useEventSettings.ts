@@ -62,7 +62,18 @@ export function useEventSettings() {
         .maybeSingle();
 
       if (error) throw error;
-      return data as EventSettings | null;
+      if (!data) return null;
+      // Parse text columns back to structured types
+      const parsed = {
+        ...data,
+        teacher_logging_grades: typeof data.teacher_logging_grades === 'string'
+          ? (data.teacher_logging_grades as string).split(',').filter(Boolean)
+          : (data.teacher_logging_grades as string[] || []),
+        log_verification_thresholds: typeof data.log_verification_thresholds === 'string'
+          ? JSON.parse(data.log_verification_thresholds as string || '{}')
+          : (data.log_verification_thresholds || {}),
+      };
+      return parsed as EventSettings;
     },
   });
 
@@ -87,7 +98,7 @@ export function useEventSettings() {
       if (updates.class_milestone_goal !== undefined) updateData.class_milestone_goal = updates.class_milestone_goal;
       if (updates.class_milestone_reward !== undefined) updateData.class_milestone_reward = updates.class_milestone_reward;
       if (updates.class_milestone_enabled !== undefined) updateData.class_milestone_enabled = updates.class_milestone_enabled;
-      if (updates.teacher_logging_grades !== undefined) updateData.teacher_logging_grades = updates.teacher_logging_grades;
+      if (updates.teacher_logging_grades !== undefined) updateData.teacher_logging_grades = updates.teacher_logging_grades.join(',');
       if (updates.timezone !== undefined) updateData.timezone = updates.timezone;
       const { data, error } = await supabase
         .from('events')
