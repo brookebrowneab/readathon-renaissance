@@ -72,5 +72,5 @@ CREATE POLICY "Users can view invitations sent to them"
 CREATE POLICY "Admins can manage all invitations"
   ON public.sponsor_invitations
   FOR ALL
-  USING (has_role(auth.uid(), 'admin'::app_role))
-  WITH CHECK (has_role(auth.uid(), 'admin'::app_role));
+  USING (has_role(auth.uid(), 'admin'))
+  WITH CHECK (has_role(auth.uid(), 'admin'));

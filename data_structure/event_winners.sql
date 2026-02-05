@@ -24,5 +24,5 @@ CREATE POLICY "Anyone can view event winners"
 CREATE POLICY "Admins can manage event winners"
   ON public.event_winners
   FOR ALL
-  USING (has_role(auth.uid(), 'admin'::app_role))
-  WITH CHECK (has_role(auth.uid(), 'admin'::app_role));
+  USING (has_role(auth.uid(), 'admin'))
+  WITH CHECK (has_role(auth.uid(), 'admin'));

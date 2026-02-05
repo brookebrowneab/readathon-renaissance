@@ -48,7 +48,7 @@ CREATE POLICY "Parents can delete their children's reading logs"
 CREATE POLICY "Admins can view all reading logs"
   ON public.reading_logs
   FOR SELECT
-  USING (has_role(auth.uid(), 'admin'::app_role));
+  USING (has_role(auth.uid(), 'admin'));
 
 CREATE POLICY "Teachers can view their students reading logs"
   ON public.reading_logs

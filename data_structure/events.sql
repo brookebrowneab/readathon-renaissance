@@ -1,5 +1,7 @@
 -- Table: events
 -- The central configuration for a read-a-thon event
+-- Note: teacher_logging_grades is comma-separated text (not text[]) since Phase 1 migration
+-- Note: log_verification_thresholds is text containing JSON (not jsonb) since Phase 1 migration
 
 CREATE TABLE public.events (
   id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -22,11 +24,11 @@ Anytown, ST 12345',
   class_milestone_enabled boolean NOT NULL DEFAULT true,
   class_milestone_goal numeric NOT NULL DEFAULT 1000,
   class_milestone_reward text NOT NULL DEFAULT 'Pizza party for the whole class!',
-  teacher_logging_grades text[] NOT NULL DEFAULT '{}',
+  teacher_logging_grades text NOT NULL DEFAULT '',
   logo_url text,
   logo_date_x_offset numeric DEFAULT 0,
   log_verification_enabled boolean NOT NULL DEFAULT false,
-  log_verification_thresholds jsonb NOT NULL DEFAULT '{}',
+  log_verification_thresholds text NOT NULL DEFAULT '{}',
   created_at timestamp with time zone NOT NULL DEFAULT now(),
   updated_at timestamp with time zone NOT NULL DEFAULT now()
 );
@@ -43,14 +45,14 @@ CREATE POLICY "Anyone can view events"
 CREATE POLICY "Admins can insert events"
   ON public.events
   FOR INSERT
-  WITH CHECK (has_role(auth.uid(), 'admin'::app_role));
+  WITH CHECK (has_role(auth.uid(), 'admin'));
 
 CREATE POLICY "Admins can update events"
   ON public.events
   FOR UPDATE
-  USING (has_role(auth.uid(), 'admin'::app_role));
+  USING (has_role(auth.uid(), 'admin'));
 
 CREATE POLICY "Admins can delete events"
   ON public.events
   FOR DELETE
-  USING (has_role(auth.uid(), 'admin'::app_role));
+  USING (has_role(auth.uid(), 'admin'));

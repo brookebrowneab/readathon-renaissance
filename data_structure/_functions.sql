@@ -1,7 +1,7 @@
 -- Database Functions
 
--- Check if user has a specific role
-CREATE OR REPLACE FUNCTION public.has_role(_user_id uuid, _role app_role)
+-- Check if user has a specific role (text-based, no enum)
+CREATE OR REPLACE FUNCTION public.has_role(_user_id uuid, _role text)
 RETURNS boolean
 LANGUAGE sql
 STABLE SECURITY DEFINER
@@ -147,7 +147,6 @@ SET search_path TO 'public'
 AS $$
   SELECT COALESCE(
     (
-      -- Individual child pledges
       SELECT SUM(
         CASE 
           WHEN p.pledge_type = 'flat' THEN p.amount
@@ -163,7 +162,6 @@ AS $$
     ), 0
   ) + COALESCE(
     (
-      -- Direct class pledges
       SELECT SUM(
         CASE 
           WHEN cp.pledge_type = 'flat' THEN cp.amount
@@ -198,15 +196,12 @@ AS $$
 DECLARE
   v_class_minutes integer;
 BEGIN
-  -- Get current class reading minutes
   SELECT COALESCE(SUM(total_minutes), 0)::integer INTO v_class_minutes
   FROM children WHERE class_name = p_class_name;
 
   RETURN QUERY
   SELECT 
-    -- Total amount pledged (flat + milestone)
     COALESCE(SUM(cp.amount), 0) as total_pledged,
-    -- Total unlocked (flat donations + unlocked milestones)
     COALESCE(SUM(
       CASE 
         WHEN cp.pledge_type = 'flat' THEN cp.amount
@@ -214,13 +209,11 @@ BEGIN
         ELSE 0
       END
     ), 0) as total_unlocked,
-    -- Next milestone to reach
     MIN(CASE 
       WHEN cp.pledge_type = 'milestone' AND v_class_minutes < COALESCE(cp.milestone_minutes_target, 0) 
       THEN cp.milestone_minutes_target 
       ELSE NULL 
     END) as next_milestone_minutes,
-    -- Amount unlocked at next milestone
     (
       SELECT SUM(cp2.amount) 
       FROM class_pledges cp2 
@@ -243,6 +236,7 @@ END;
 $$;
 
 -- Get verification threshold for a child
+-- Note: log_verification_thresholds is stored as text (JSON string) in the events table
 CREATE OR REPLACE FUNCTION public.get_verification_threshold(p_child_id uuid)
 RETURNS integer
 LANGUAGE plpgsql
@@ -251,40 +245,25 @@ SET search_path TO 'public'
 AS $$
 DECLARE
   v_grade TEXT;
+  v_thresholds_text TEXT;
   v_thresholds JSONB;
   v_threshold INTEGER;
   v_enabled BOOLEAN;
 BEGIN
-  -- Get the child's grade
   SELECT grade_info INTO v_grade FROM public.children WHERE id = p_child_id;
-  
-  -- Get active event's thresholds and enabled status
-  SELECT log_verification_thresholds, log_verification_enabled 
-  INTO v_thresholds, v_enabled
-  FROM public.events 
-  WHERE is_active = true 
-  LIMIT 1;
-  
-  -- If verification is disabled, return NULL (no threshold)
-  IF NOT COALESCE(v_enabled, false) THEN
-    RETURN NULL;
-  END IF;
-  
-  -- If no thresholds configured, return NULL
-  IF v_thresholds IS NULL OR v_thresholds = '{}'::jsonb THEN
-    RETURN NULL;
-  END IF;
-  
-  -- Try to get grade-specific threshold
+  SELECT log_verification_thresholds, log_verification_enabled
+  INTO v_thresholds_text, v_enabled
+  FROM public.events WHERE is_active = true LIMIT 1;
+  IF NOT COALESCE(v_enabled, false) THEN RETURN NULL; END IF;
+  IF v_thresholds_text IS NULL OR v_thresholds_text = '' OR v_thresholds_text = '{}' THEN RETURN NULL; END IF;
+  v_thresholds := v_thresholds_text::jsonb;
   IF v_grade IS NOT NULL AND v_thresholds ? v_grade THEN
     v_threshold := (v_thresholds ->> v_grade)::INTEGER;
-  -- Fall back to default threshold
   ELSIF v_thresholds ? 'default' THEN
     v_threshold := (v_thresholds ->> 'default')::INTEGER;
   ELSE
     v_threshold := NULL;
   END IF;
-  
   RETURN v_threshold;
 END;
 $$;
@@ -309,52 +288,37 @@ SECURITY DEFINER
 SET search_path TO 'public'
 AS $$
 BEGIN
-  -- Handle INSERT
   IF TG_OP = 'INSERT' THEN
     UPDATE public.children
-    SET total_minutes = total_minutes + NEW.minutes,
-        updated_at = now()
+    SET total_minutes = total_minutes + NEW.minutes, updated_at = now()
     WHERE id = NEW.child_id;
     RETURN NEW;
   END IF;
-  
-  -- Handle DELETE
   IF TG_OP = 'DELETE' THEN
     UPDATE public.children
-    SET total_minutes = GREATEST(0, total_minutes - OLD.minutes),
-        updated_at = now()
+    SET total_minutes = GREATEST(0, total_minutes - OLD.minutes), updated_at = now()
     WHERE id = OLD.child_id;
     RETURN OLD;
   END IF;
-  
-  -- Handle UPDATE
   IF TG_OP = 'UPDATE' THEN
-    -- If child_id changed, update both old and new child
     IF OLD.child_id IS DISTINCT FROM NEW.child_id THEN
-      -- Subtract from old child
       IF OLD.child_id IS NOT NULL THEN
         UPDATE public.children
-        SET total_minutes = GREATEST(0, total_minutes - OLD.minutes),
-            updated_at = now()
+        SET total_minutes = GREATEST(0, total_minutes - OLD.minutes), updated_at = now()
         WHERE id = OLD.child_id;
       END IF;
-      -- Add to new child
       IF NEW.child_id IS NOT NULL THEN
         UPDATE public.children
-        SET total_minutes = total_minutes + NEW.minutes,
-            updated_at = now()
+        SET total_minutes = total_minutes + NEW.minutes, updated_at = now()
         WHERE id = NEW.child_id;
       END IF;
     ELSE
-      -- Same child, just update the difference
       UPDATE public.children
-      SET total_minutes = GREATEST(0, total_minutes + (NEW.minutes - OLD.minutes)),
-          updated_at = now()
+      SET total_minutes = GREATEST(0, total_minutes + (NEW.minutes - OLD.minutes)), updated_at = now()
       WHERE id = NEW.child_id;
     END IF;
     RETURN NEW;
   END IF;
-  
   RETURN NULL;
 END;
 $$;
@@ -370,63 +334,41 @@ DECLARE
   v_threshold INTEGER;
   v_needs_verification BOOLEAN;
 BEGIN
-  -- Handle DELETE: remove any verification request
   IF TG_OP = 'DELETE' THEN
     DELETE FROM public.log_verification_requests WHERE reading_log_id = OLD.id;
     RETURN OLD;
   END IF;
-  
-  -- For INSERT or UPDATE, check if verification is needed
-  IF NEW.child_id IS NULL THEN
-    RETURN NEW;
-  END IF;
-  
-  -- Get the threshold for this child's grade
+  IF NEW.child_id IS NULL THEN RETURN NEW; END IF;
   v_threshold := public.get_verification_threshold(NEW.child_id);
-  
-  -- If no threshold (verification disabled or not configured), remove any existing request
   IF v_threshold IS NULL THEN
     IF TG_OP = 'UPDATE' THEN
       DELETE FROM public.log_verification_requests WHERE reading_log_id = NEW.id;
     END IF;
     RETURN NEW;
   END IF;
-  
-  -- Check if minutes exceed threshold
   v_needs_verification := NEW.minutes > v_threshold;
-  
   IF v_needs_verification THEN
-    -- Create or update verification request
     INSERT INTO public.log_verification_requests (reading_log_id, child_id, minutes, threshold_at_time)
     VALUES (NEW.id, NEW.child_id, NEW.minutes, v_threshold)
     ON CONFLICT (reading_log_id) 
     DO UPDATE SET 
       minutes = EXCLUDED.minutes,
       threshold_at_time = EXCLUDED.threshold_at_time,
-      -- Reset status to pending if minutes changed and was approved/dismissed
       status = CASE 
         WHEN log_verification_requests.status != 'pending' 
           AND log_verification_requests.minutes != EXCLUDED.minutes 
-        THEN 'pending' 
-        ELSE log_verification_requests.status 
-      END,
+        THEN 'pending' ELSE log_verification_requests.status END,
       reviewed_at = CASE 
         WHEN log_verification_requests.status != 'pending' 
           AND log_verification_requests.minutes != EXCLUDED.minutes 
-        THEN NULL 
-        ELSE log_verification_requests.reviewed_at 
-      END,
+        THEN NULL ELSE log_verification_requests.reviewed_at END,
       reviewed_by = CASE 
         WHEN log_verification_requests.status != 'pending' 
           AND log_verification_requests.minutes != EXCLUDED.minutes 
-        THEN NULL 
-        ELSE log_verification_requests.reviewed_by 
-      END;
+        THEN NULL ELSE log_verification_requests.reviewed_by END;
   ELSE
-    -- Minutes below threshold, remove any existing request
     DELETE FROM public.log_verification_requests WHERE reading_log_id = NEW.id;
   END IF;
-  
   RETURN NEW;
 END;
 $$;
