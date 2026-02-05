@@ -9,6 +9,7 @@ type FontDebugInfo = {
   fontsApiAvailable: boolean;
   instrumentSerifLoaded: boolean | null;
   sourceSerifLoaded: boolean | null;
+  sourceSerifHyphenLoaded: boolean | null;
   fontFaceSetStatus: string | null;
 };
 
@@ -48,6 +49,10 @@ export function FontDebugOverlay({
       ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (document as any).fonts.check('16px "Source Serif 4"')
       : null;
+    const sourceHyphenLoaded = fontsApiAvailable
+      ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (document as any).fonts.check('16px "source-serif-4"')
+      : null;
     const fontFaceSetStatus = fontsApiAvailable
       ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (document as any).fonts.status
@@ -62,6 +67,7 @@ export function FontDebugOverlay({
       fontsApiAvailable,
       instrumentSerifLoaded: instrumentLoaded,
       sourceSerifLoaded: sourceLoaded,
+      sourceSerifHyphenLoaded: sourceHyphenLoaded,
       fontFaceSetStatus,
     };
 
@@ -104,6 +110,9 @@ export function FontDebugOverlay({
           </div>
           <div>
             <span className="font-medium">Source Serif 4 loaded</span>: {String(info.sourceSerifLoaded)}
+          </div>
+          <div>
+            <span className="font-medium">source-serif-4 loaded</span>: {String(info.sourceSerifHyphenLoaded)}
           </div>
           <div>
             <span className="font-medium">FontFaceSet status</span>: {String(info.fontFaceSetStatus)}
