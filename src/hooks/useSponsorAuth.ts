@@ -79,11 +79,20 @@ export function useSponsorAuth() {
   const signUp = async (email: string, password: string, name: string, phone?: string) => {
     const redirectUrl = `${window.location.origin}/`;
     
+    const nameParts = name.trim().split(/\s+/);
+    const firstName = nameParts[0] || "";
+    const lastName = nameParts.slice(1).join(" ") || "";
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: redirectUrl,
+        data: {
+          display_name: name,
+          first_name: firstName,
+          last_name: lastName,
+        },
       },
     });
 

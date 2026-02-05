@@ -83,7 +83,7 @@ export function useAuth() {
     return { error };
   };
 
-  const signUp = async (email: string, password: string, displayName?: string) => {
+  const signUp = async (email: string, password: string, displayName?: string, metadata?: { first_name?: string; last_name?: string }) => {
     const redirectUrl = `${window.location.origin}/`;
     
     const { error } = await supabase.auth.signUp({
@@ -93,6 +93,8 @@ export function useAuth() {
         emailRedirectTo: redirectUrl,
         data: {
           display_name: displayName,
+          first_name: metadata?.first_name,
+          last_name: metadata?.last_name,
         },
       },
     });
