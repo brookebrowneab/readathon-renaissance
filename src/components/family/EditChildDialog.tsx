@@ -105,7 +105,7 @@ export const EditChildDialog = ({
     if (!child) return;
 
     // If password is set, call edge function first (also sends username)
-    if (password && password.length >= 4) {
+    if (password && password.length >= 8) {
       setIsSettingPassword(true);
       try {
         const { data: { session } } = await supabase.auth.getSession();
@@ -346,13 +346,13 @@ export const EditChildDialog = ({
                     </button>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    At least 4 characters. Use something easy for your child to remember.
+                    At least 8 characters for security. Use something your child can remember.
                   </p>
                 </div>
 
                 {formData.studentUsername.length >= 3 && (
-                  <div className={`text-xs p-2 rounded ${hasValidCredentials || password.length >= 4 ? "bg-success/10 text-success" : needsPassword ? "bg-warning/10 text-warning" : "bg-muted"}`}>
-                    {hasValidCredentials || password.length >= 4 ? (
+                  <div className={`text-xs p-2 rounded ${hasValidCredentials || password.length >= 8 ? "bg-success/10 text-success" : needsPassword ? "bg-warning/10 text-warning" : "bg-muted"}`}>
+                    {hasValidCredentials || password.length >= 8 ? (
                       <>✓ {child.name} can log in at <span className="font-mono">/student/login</span> with username "<span className="font-mono">{formData.studentUsername}</span>"</>
                     ) : needsPassword ? (
                       <>⚠ Set a password to enable login</>
