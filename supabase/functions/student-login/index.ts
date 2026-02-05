@@ -1,5 +1,5 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
+ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+ import bcrypt from "https://esm.sh/bcryptjs@2.4.3";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -10,7 +10,7 @@ const corsHeaders = {
 async function verifyPassword(password: string, hash: string): Promise<boolean> {
   // Check if it's a bcrypt hash (starts with $2a$, $2b$, or $2y$)
   if (hash.startsWith("$2a$") || hash.startsWith("$2b$") || hash.startsWith("$2y$")) {
-    return await bcrypt.compare(password, hash);
+     return bcrypt.compareSync(password, hash);
   }
   
   // Legacy SHA-256 hash support (64 hex characters)
