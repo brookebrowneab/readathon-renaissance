@@ -18,7 +18,7 @@ export interface ActiveEvent {
   class_milestone_enabled: boolean;
   class_milestone_goal: number;
   class_milestone_reward: string;
-  teacher_logging_grades: string[];
+  teacher_logging_grades: string[]; // stored as comma-separated text in DB, parsed here
   logo_url: string | null;
   timezone: string;
   created_at: string;
@@ -36,7 +36,15 @@ export function useActiveEvent() {
         .maybeSingle();
 
       if (error) throw error;
-      return data as ActiveEvent | null;
+      if (!data) return null;
+      // Parse comma-separated text back to array
+      const parsed = {
+        ...data,
+        teacher_logging_grades: typeof data.teacher_logging_grades === 'string'
+          ? (data.teacher_logging_grades as string).split(',').filter(Boolean)
+          : (data.teacher_logging_grades as string[] || []),
+      };
+      return parsed as ActiveEvent;
     },
   });
 }
