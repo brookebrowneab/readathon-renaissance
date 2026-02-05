@@ -11,7 +11,10 @@ CREATE TABLE public.teachers (
   has_full_access boolean NOT NULL DEFAULT false,
   is_active boolean NOT NULL DEFAULT true,
   created_at timestamp with time zone NOT NULL DEFAULT now(),
-  updated_at timestamp with time zone NOT NULL DEFAULT now()
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  legacy_teacher_id integer,
+  legacy_username text,
+  legacy_default_val text
 );
 
 -- Enum for teacher type
