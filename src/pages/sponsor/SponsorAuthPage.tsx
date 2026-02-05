@@ -35,10 +35,11 @@ const SponsorAuthPage = () => {
   const [mode, setMode] = useState<AuthMode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string; name?: string; phone?: string }>({});
+  const [errors, setErrors] = useState<{ email?: string; password?: string; firstName?: string; lastName?: string; phone?: string }>({});
 
   // Get the redirect URL from location state or default to invite page
   const from = (location.state as { from?: string })?.from || "/invite";
@@ -71,10 +72,17 @@ const SponsorAuthPage = () => {
     
     if (mode === "signup") {
       try {
-        nameSchema.parse(name);
+        nameSchema.parse(firstName);
       } catch (e) {
         if (e instanceof z.ZodError) {
-          newErrors.name = e.errors[0]?.message;
+          newErrors.firstName = e.errors[0]?.message;
+        }
+      }
+      try {
+        nameSchema.parse(lastName);
+      } catch (e) {
+        if (e instanceof z.ZodError) {
+          newErrors.lastName = e.errors[0]?.message;
         }
       }
       
@@ -115,7 +123,7 @@ const SponsorAuthPage = () => {
           navigate(from, { replace: true });
         }
       } else {
-        const { error } = await signUp(email, password, name, phone);
+        const { error } = await signUp(email, password, `${firstName} ${lastName}`, phone);
         if (error) {
           if (error.message?.includes("already registered")) {
             toast.error("This email is already registered. Please log in instead.");
@@ -185,24 +193,41 @@ const SponsorAuthPage = () => {
             >
               <form onSubmit={handleSubmit} className="space-y-5">
                 {mode === "signup" && (
-                  <FormField 
-                    label="Your name" 
-                    htmlFor="name"
-                    error={errors.name}
-                  >
-                    <div className="relative">
-                      <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField 
+                      label="First name" 
+                      htmlFor="firstName"
+                      error={errors.firstName}
+                    >
+                      <div className="relative">
+                        <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                        <Input
+                          id="firstName"
+                          type="text"
+                          value={firstName}
+                          onChange={(e) => setFirstName(e.target.value)}
+                          placeholder="First name"
+                          className="h-12 pl-10"
+                          disabled={isSubmitting}
+                        />
+                      </div>
+                    </FormField>
+                    <FormField 
+                      label="Last name" 
+                      htmlFor="lastName"
+                      error={errors.lastName}
+                    >
                       <Input
-                        id="name"
+                        id="lastName"
                         type="text"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        placeholder="Enter your name"
-                        className="h-12 pl-10"
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                        placeholder="Last name"
+                        className="h-12"
                         disabled={isSubmitting}
                       />
-                    </div>
-                  </FormField>
+                    </FormField>
+                  </div>
                 )}
 
                 {mode === "signup" && (
