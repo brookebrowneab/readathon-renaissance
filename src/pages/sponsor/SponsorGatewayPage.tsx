@@ -1,13 +1,12 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { MainNav, Footer } from "@/components/layout";
-import { BookContainer } from "@/components/legacy";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
+import { handDrawnBorder, handDrawnBorderSubtle } from "@/lib/admin-styles";
 import {
   Heart,
-  UserPlus,
   ArrowRight,
   Sparkles,
   Link as LinkIcon,
@@ -63,33 +62,34 @@ const SponsorGatewayPage = () => {
         <div className="w-full max-w-2xl">
           {/* Header */}
           <div className="text-center mb-10">
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 mb-6">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-accent/30 mb-6">
               <Heart className="h-10 w-10 text-primary" />
             </div>
-            <h1 className="font-serif text-4xl md:text-5xl font-normal tracking-tight text-foreground mb-4">
-              Welcome, Sponsor!
+            <h1 className="font-serif text-4xl md:text-5xl font-normal tracking-tight text-foreground mb-4 relative inline-block">
+              <span className="relative z-10">Welcome, Sponsor!</span>
+              <span className="absolute bottom-2 left-0 right-0 h-3 bg-accent/50 -z-0" />
             </h1>
-            <p className="text-xl text-muted-foreground">
+            <p className="text-xl text-muted-foreground mt-4">
               Thank you for supporting young readers
             </p>
           </div>
 
           {/* Main Options */}
-          <BookContainer variant="warm" className="p-8 mb-6">
-            <h2 className="text-2xl font-medium text-foreground text-center mb-8">
+          <div className="bg-card p-8 mb-6" style={handDrawnBorder}>
+            <h2 className="font-serif text-2xl text-foreground text-center mb-8">
               How would you like to help?
             </h2>
 
             <div className="grid gap-6">
               {/* Support a Classroom - Primary Option */}
               <Link to="/sponsor/class" className="block">
-                <div className="p-6 rounded-xl border-2 border-primary bg-primary/5 hover:bg-primary/10 transition-all cursor-pointer group">
+                <div className="p-6 bg-primary/5 hover:bg-primary/10 transition-all cursor-pointer group" style={handDrawnBorder}>
                   <div className="flex flex-col md:flex-row items-center text-center md:text-left gap-4">
                     <div className="p-4 rounded-full bg-primary/20 group-hover:bg-primary/30 transition-colors shrink-0">
                       <Users className="h-8 w-8 text-primary" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-xl font-medium text-foreground mb-2">
+                      <h3 className="font-serif text-xl text-foreground mb-2">
                         Support a Classroom
                       </h3>
                       <p className="text-muted-foreground">
@@ -107,13 +107,13 @@ const SponsorGatewayPage = () => {
 
               {/* Returning Sponsor */}
               <Link to="/sponsor/login" className="block">
-                <div className="p-6 rounded-xl border-2 border-border bg-background hover:border-primary hover:bg-primary/5 transition-all cursor-pointer group">
+                <div className="p-6 bg-background hover:bg-primary/5 transition-all cursor-pointer group" style={handDrawnBorderSubtle}>
                   <div className="flex flex-col md:flex-row items-center text-center md:text-left gap-4">
                     <div className="p-4 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors shrink-0">
                       <Sparkles className="h-8 w-8 text-primary" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-xl font-medium text-foreground mb-2">
+                      <h3 className="font-serif text-xl text-foreground mb-2">
                         I've sponsored before
                       </h3>
                       <p className="text-muted-foreground">
@@ -129,13 +129,13 @@ const SponsorGatewayPage = () => {
               </Link>
 
               {/* Have a Link */}
-              <div className="p-6 rounded-xl border-2 border-border bg-background">
+              <div className="p-6 bg-background" style={handDrawnBorderSubtle}>
                 <div className="flex flex-col items-center text-center gap-4">
                   <div className="p-4 rounded-full bg-muted">
                     <LinkIcon className="h-8 w-8 text-muted-foreground" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-medium text-foreground mb-2">
+                    <h3 className="font-serif text-xl text-foreground mb-2">
                       Have a sponsor link?
                     </h3>
                     <p className="text-muted-foreground">
@@ -166,11 +166,11 @@ const SponsorGatewayPage = () => {
                 </div>
               </div>
             </div>
-          </BookContainer>
+          </div>
 
           {/* Help Text */}
           <div className="text-center space-y-2">
-            <p className="text-lg text-muted-foreground flex items-center justify-center gap-2">
+            <p className="font-serif text-lg text-muted-foreground flex items-center justify-center gap-2">
               <BookOpen className="h-5 w-5" />
               Want to support a specific child?
             </p>
