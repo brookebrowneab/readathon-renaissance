@@ -17,6 +17,10 @@
 /* Muted navy, indigo, slate, soft teal, warm paper neutrals */
 @layer base {
   :root {
+    /* Font stacks (defensive; used to avoid production fallback to sans) */
+    --font-sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    --font-serif: "Source Serif 4", Georgia, serif;
+
     /* Brand Colors - Muted Navy/Indigo Palette */
     --brand-navy: 225 45% 28%;        /* Deep muted navy */
     --brand-indigo: 235 35% 45%;      /* Muted indigo */
@@ -176,6 +180,13 @@
 
   h1, h2, h3, h4, h5, h6 {
     @apply font-serif font-normal tracking-tight;
+    /* Force serif in production even if a conflicting font rule appears later */
+    font-family: var(--font-serif) !important;
+  }
+
+  /* Ensure explicit `font-serif` utility never renders as Inter due to cascade issues */
+  .font-serif {
+    font-family: var(--font-serif) !important;
   }
 
   /* Mobile touch target minimum */
