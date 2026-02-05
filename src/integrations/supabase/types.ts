@@ -996,6 +996,9 @@ export type Database = {
           has_full_access: boolean
           id: string
           is_active: boolean
+          legacy_default_val: string | null
+          legacy_teacher_id: number | null
+          legacy_username: string | null
           name: string
           teacher_type: Database["public"]["Enums"]["teacher_type"]
           updated_at: string
@@ -1008,6 +1011,9 @@ export type Database = {
           has_full_access?: boolean
           id?: string
           is_active?: boolean
+          legacy_default_val?: string | null
+          legacy_teacher_id?: number | null
+          legacy_username?: string | null
           name: string
           teacher_type?: Database["public"]["Enums"]["teacher_type"]
           updated_at?: string
@@ -1020,6 +1026,9 @@ export type Database = {
           has_full_access?: boolean
           id?: string
           is_active?: boolean
+          legacy_default_val?: string | null
+          legacy_teacher_id?: number | null
+          legacy_username?: string | null
           name?: string
           teacher_type?: Database["public"]["Enums"]["teacher_type"]
           updated_at?: string
