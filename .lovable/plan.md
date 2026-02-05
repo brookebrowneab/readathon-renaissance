@@ -26,6 +26,15 @@ Added columns to `profiles` for legacy import and richer user data:
 - `legacy_user_id` (integer, indexed) — old system PK
 - `handle_new_user()` trigger updated to populate `email` from `auth.users` on signup
 
+## ✅ Phase 3: Children Table Expansion (COMPLETED)
+
+Added columns to `children` for legacy import and richer student data:
+- `first_name`, `last_name` (text) — split name fields
+- `student_user_id` (uuid, indexed) — links student to own auth account
+- `sponsor_id_code` (text, unique partial index) — short shareable code for sponsors
+- `legacy_child_id` (integer, indexed) — old system PK
+- `legacy_class_name` (text) — old class name preserved for audit
+
 ## Updated Schema Plan: Legacy Teacher Data Compatibility
 
 ## What Changed
