@@ -66,10 +66,9 @@ const SponsorGatewayPage = () => {
               <Heart className="h-10 w-10 text-primary" />
             </div>
             <h1 className="font-serif text-4xl md:text-5xl font-normal tracking-tight text-foreground mb-4 relative inline-block">
-              <span className="relative z-10">Welcome, Sponsor!</span>
-              <span className="absolute bottom-2 left-0 right-0 h-3 bg-accent/50 -z-0" />
+              Welcome, Sponsor!
             </h1>
-            <p className="text-xl text-muted-foreground mt-4">
+            <p className="text-lg text-muted-foreground">
               Thank you for supporting young readers
             </p>
           </div>
