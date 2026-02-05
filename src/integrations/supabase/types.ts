@@ -173,6 +173,13 @@ export type Database = {
             referencedRelation: "teachers"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "children_homeroom_teacher_id_fkey"
+            columns: ["homeroom_teacher_id"]
+            isOneToOne: false
+            referencedRelation: "teachers_public_safe"
+            referencedColumns: ["id"]
+          },
         ]
       }
       class_pledges: {
@@ -237,6 +244,13 @@ export type Database = {
             columns: ["teacher_id"]
             isOneToOne: false
             referencedRelation: "teachers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "class_pledges_teacher_id_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "teachers_public_safe"
             referencedColumns: ["id"]
           },
         ]
@@ -952,10 +966,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "teacher_class_assignments_homeroom_teacher_id_fkey"
+            columns: ["homeroom_teacher_id"]
+            isOneToOne: false
+            referencedRelation: "teachers_public_safe"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "teacher_class_assignments_teacher_id_fkey"
             columns: ["teacher_id"]
             isOneToOne: false
             referencedRelation: "teachers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teacher_class_assignments_teacher_id_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "teachers_public_safe"
             referencedColumns: ["id"]
           },
         ]
@@ -1064,7 +1092,50 @@ export type Database = {
             referencedRelation: "teachers"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "children_homeroom_teacher_id_fkey"
+            columns: ["homeroom_teacher_id"]
+            isOneToOne: false
+            referencedRelation: "teachers_public_safe"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      teachers_public_safe: {
+        Row: {
+          created_at: string | null
+          grade_level: string | null
+          has_full_access: boolean | null
+          id: string | null
+          is_active: boolean | null
+          name: string | null
+          teacher_type: Database["public"]["Enums"]["teacher_type"] | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          grade_level?: string | null
+          has_full_access?: boolean | null
+          id?: string | null
+          is_active?: boolean | null
+          name?: string | null
+          teacher_type?: Database["public"]["Enums"]["teacher_type"] | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          grade_level?: string | null
+          has_full_access?: boolean | null
+          id?: string | null
+          is_active?: boolean | null
+          name?: string | null
+          teacher_type?: Database["public"]["Enums"]["teacher_type"] | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
       }
     }
     Functions: {
