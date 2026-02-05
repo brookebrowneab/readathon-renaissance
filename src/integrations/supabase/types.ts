@@ -120,12 +120,18 @@ export type Database = {
         Row: {
           class_name: string | null
           created_at: string
+          first_name: string | null
           goal_minutes: number
           grade_info: string | null
           homeroom_teacher_id: string | null
           id: string
+          last_name: string | null
+          legacy_child_id: number | null
+          legacy_class_name: string | null
           name: string
           share_public_link: boolean
+          sponsor_id_code: string | null
+          student_user_id: string | null
           total_minutes: number
           total_verified: boolean | null
           updated_at: string
@@ -136,12 +142,18 @@ export type Database = {
         Insert: {
           class_name?: string | null
           created_at?: string
+          first_name?: string | null
           goal_minutes?: number
           grade_info?: string | null
           homeroom_teacher_id?: string | null
           id?: string
+          last_name?: string | null
+          legacy_child_id?: number | null
+          legacy_class_name?: string | null
           name: string
           share_public_link?: boolean
+          sponsor_id_code?: string | null
+          student_user_id?: string | null
           total_minutes?: number
           total_verified?: boolean | null
           updated_at?: string
@@ -152,12 +164,18 @@ export type Database = {
         Update: {
           class_name?: string | null
           created_at?: string
+          first_name?: string | null
           goal_minutes?: number
           grade_info?: string | null
           homeroom_teacher_id?: string | null
           id?: string
+          last_name?: string | null
+          legacy_child_id?: number | null
+          legacy_class_name?: string | null
           name?: string
           share_public_link?: boolean
+          sponsor_id_code?: string | null
+          student_user_id?: string | null
           total_minutes?: number
           total_verified?: boolean | null
           updated_at?: string
