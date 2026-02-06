@@ -26,7 +26,7 @@ Added columns to `profiles` for legacy import and richer user data:
 - `legacy_user_id` (integer, indexed) — old system PK
 - `handle_new_user()` trigger updated to populate `email`, `first_name`, `last_name` from `auth.users` metadata on signup
 
-## ✅ Phase 3: Children Table Expansion (COMPLETED)
+## ✅ Phase 3: Children Table Expansion & Student Auth Migration (COMPLETED)
 
 Added columns to `children` for legacy import and richer student data:
 - `first_name`, `last_name` (text) — split name fields
@@ -34,6 +34,17 @@ Added columns to `children` for legacy import and richer student data:
 - `sponsor_id_code` (text, unique partial index) — short shareable code for sponsors
 - `legacy_child_id` (integer, indexed) — old system PK
 - `legacy_class_name` (text) — old class name preserved for audit
+
+### Student Auth Migration to auth.users
+- Students now authenticate using real `auth.users` accounts (synthetic email: `{username}@student.readathon.local`)
+- `student-set-password` edge function creates/updates auth accounts via Admin API (`auth.admin.createUser`)
+- `StudentPinLoginPage` uses `supabase.auth.signInWithPassword()` for real sessions
+- `useStudentSession` hook uses real Supabase auth state (no more `sessionStorage`)
+- RLS policies added: students can SELECT their own `children` record and CRUD their own `reading_logs`
+- `student_auth` table retained for metadata (username, login_enabled) — `password_hash` is legacy-only
+- `student-login` edge function updated: detects migrated students and returns `useStandardAuth: true`
+- `handle_new_user` trigger updated to also populate `phone` from auth metadata
+- `student` role assigned via `user_roles` table on account creation
 
 ## Updated Schema Plan: Legacy Teacher Data Compatibility
 

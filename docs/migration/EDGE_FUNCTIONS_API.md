@@ -760,7 +760,7 @@ If username exists:
 
 ## student-login
 
-**Purpose:** Authenticates students using username/password (from `student_auth` table) and returns session data. Uses bcrypt hashing with legacy SHA-256 fallback.
+**Purpose:** Hybrid student authentication endpoint. For migrated students (those with `student_user_id` in `children`), directs the client to use standard `supabase.auth.signInWithPassword()`. For legacy students, verifies password hash directly.
 
 **Authentication:** None required (public endpoint)
 
@@ -780,7 +780,22 @@ If username exists:
 | username | string | Yes | Student's username |
 | password | string | Yes | Student's password |
 
-### Success Response (200)
+### Success Response — Migrated Student (200)
+
+When the student has a real auth account (`student_user_id` set):
+
+```json
+{
+  "useStandardAuth": true,
+  "email": "username@student.readathon.local"
+}
+```
+
+The client should then call `supabase.auth.signInWithPassword({ email, password })` directly.
+
+### Success Response — Legacy Student (200)
+
+When the student has NOT been migrated (no `student_user_id`):
 
 ```json
 {
@@ -817,7 +832,7 @@ If username exists:
 
 ## student-set-password
 
-**Purpose:** Allows parents to set or update their child's student login password.
+**Purpose:** Allows parents to set or update their child's student login password. Creates a real `auth.users` account for the student using the Admin API.
 
 **Authentication:** Required (Bearer token, must be child's parent)
 
@@ -828,7 +843,8 @@ If username exists:
 ```json
 {
   "childId": "uuid",
-  "password": "string"
+  "password": "string",
+  "username": "string (optional)"
 }
 ```
 
@@ -836,6 +852,7 @@ If username exists:
 |-------|------|----------|-------------|
 | childId | string | Yes | Child's ID |
 | password | string | Yes | New password (min 8 chars) |
+| username | string | No | Username (uses existing if not provided) |
 
 ### Request Headers
 
@@ -857,14 +874,19 @@ If username exists:
 |--------|-------|-------|
 | 400 | "Child ID and password are required" | Missing fields |
 | 400 | "Password must be at least 8 characters" | Password too short |
+| 400 | "Username is required" | No username provided and none exists |
+| 400 | "Username is already taken. Please choose a different one." | Duplicate username |
 | 401 | "Unauthorized" | Missing/invalid auth |
 | 403 | "You can only set passwords for your own children" | Not parent |
 | 404 | "Child not found" | Invalid childId |
-| 500 | "Failed to update password" | DB error |
+| 500 | "Failed to create student account" | Auth account creation failed |
+| 500 | "Failed to update password" | Password update failed |
+| 500 | "Failed to link student account" | DB link failed |
 
 ### Database Side Effects
 
-- Upserts `student_auth.password_hash` with bcrypt hash (cost 12)
+- **New student:** Creates `auth.users` account with email `{username}@student.readathon.local`, sets `children.student_user_id`, assigns `student` role in `user_roles`, upserts `student_auth` metadata
+- **Existing student:** Updates password on existing `auth.users` account via Admin API, upserts `student_auth` metadata
 
 ---
 

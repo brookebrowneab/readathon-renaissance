@@ -373,7 +373,8 @@ BEGIN
 END;
 $$;
 
--- Handle new user trigger function (creates profile)
+-- Handle new user trigger function (creates profile on signup)
+-- Phase 3 update: now also populates phone from user metadata
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger
 LANGUAGE plpgsql
@@ -381,14 +382,30 @@ SECURITY DEFINER
 SET search_path TO 'public'
 AS $$
 BEGIN
-  INSERT INTO public.profiles (user_id, display_name, email, first_name, last_name)
+  INSERT INTO public.profiles (user_id, display_name, email, first_name, last_name, phone)
   VALUES (
     NEW.id,
     NEW.raw_user_meta_data->>'display_name',
     NEW.email,
     NEW.raw_user_meta_data->>'first_name',
-    NEW.raw_user_meta_data->>'last_name'
+    NEW.raw_user_meta_data->>'last_name',
+    NEW.raw_user_meta_data->>'phone'
   );
   RETURN NEW;
 END;
+$$;
+
+-- Safe display name function (first name + last initial)
+CREATE OR REPLACE FUNCTION public.safe_display_name(full_name text)
+RETURNS text
+LANGUAGE sql
+IMMUTABLE
+SET search_path TO 'public'
+AS $$
+  SELECT CASE
+    WHEN full_name IS NULL OR full_name = '' THEN 'Reader'
+    WHEN position(' ' in full_name) > 0 THEN
+      split_part(full_name, ' ', 1) || ' ' || left(split_part(full_name, ' ', 2), 1) || '.'
+    ELSE full_name
+  END;
 $$;

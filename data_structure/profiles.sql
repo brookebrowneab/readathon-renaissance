@@ -1,6 +1,7 @@
 -- Table: profiles
 -- Extended user profile information
 -- Phase 2 added: username, email, first_name, last_name, user_type, is_active, legacy_user_id
+-- Phase 3: handle_new_user trigger now also populates phone from auth metadata
 
 CREATE TABLE public.profiles (
   id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
