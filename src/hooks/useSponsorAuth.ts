@@ -8,6 +8,8 @@ interface SponsorProfile {
   name: string;
   email: string;
   phone?: string | null;
+  first_name?: string | null;
+  last_name?: string | null;
 }
 
 // Check if sponsor profile is missing required info
@@ -110,6 +112,8 @@ export function useSponsorAuth() {
           name,
           email,
           phone: phone || null,
+          first_name: firstName,
+          last_name: lastName,
         });
 
       if (profileError) {
@@ -137,7 +141,7 @@ export function useSponsorAuth() {
     return { error };
   };
 
-  const updateSponsorProfile = async (updates: { name?: string; phone?: string }) => {
+  const updateSponsorProfile = async (updates: { name?: string; phone?: string; first_name?: string; last_name?: string }) => {
     if (!user) return { error: new Error("Not authenticated") };
     
     // Check if sponsor profile exists
