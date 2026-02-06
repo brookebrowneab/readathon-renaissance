@@ -26,7 +26,9 @@ The central configuration for a read-a-thon event.
 | `class_milestone_enabled` | boolean | Enable class milestone feature |
 | `class_milestone_goal` | numeric | Default class fundraising goal |
 | `class_milestone_reward` | text | Reward description |
-| `teacher_logging_grades` | text[] | Grades where teachers can log |
+| `teacher_logging_grades` | text | Comma-separated grades where teachers can log |
+| `log_verification_enabled` | boolean | Enable log verification |
+| `log_verification_thresholds` | text | JSON string of grade→minute thresholds |
 | `logo_url` | text | Generated event logo URL |
 | `logo_date_x_offset` | numeric | Logo date text position |
 
@@ -37,7 +39,9 @@ Student records, linked to parent accounts.
 |--------|------|-------------|
 | `id` | uuid | Primary key |
 | `user_id` | uuid | Parent's auth user ID |
-| `name` | text | Student name |
+| `name` | text | Student full name |
+| `first_name` | text | First name (split) |
+| `last_name` | text | Last name (split) |
 | `class_name` | text | Class/section name |
 | `grade_info` | text | Grade level (e.g., "3rd Grade") |
 | `homeroom_teacher_id` | uuid | FK to teachers |
@@ -47,8 +51,12 @@ Student records, linked to parent accounts.
 | `verified_at` | timestamp | When verified |
 | `verified_by` | uuid | Who verified |
 | `share_public_link` | boolean | Allow sponsors to view progress |
+| `student_user_id` | uuid | Links to student's real auth.users account |
+| `sponsor_id_code` | text | Short shareable code for sponsors |
+| `legacy_child_id` | integer | Old system PK |
+| `legacy_class_name` | text | Old class name for audit |
 
-**Note:** Student authentication credentials are now stored in the separate `student_auth` table for security (RLS-protected).
+**Note:** Student authentication uses real `auth.users` accounts linked via `student_user_id`. The `student_auth` table retains metadata (username, login_enabled) and legacy password hashes for unmigrated students.
 
 #### `reading_logs`
 Individual reading session records.
@@ -105,28 +113,34 @@ Class-level pledges with milestone support.
 ### User Management
 
 #### `profiles`
-Extended user profile information.
+Extended user profile information. Auto-populated by `handle_new_user` trigger on signup.
 
 | Column | Type | Description |
 |--------|------|-------------|
 | `id` | uuid | Primary key |
 | `user_id` | uuid | FK to auth.users |
 | `display_name` | text | User's display name |
+| `first_name` | text | First name |
+| `last_name` | text | Last name |
+| `email` | text | Denormalized email for lookups |
+| `phone` | text | Phone number |
 | `avatar_url` | text | Profile image URL |
+| `username` | text | Login identifier (unique) |
+| `user_type` | text | 'parent', 'sponsor', 'teacher', 'admin' |
+| `is_active` | boolean | Soft delete flag |
+| `legacy_user_id` | integer | Old system PK |
 
 #### `user_roles`
-Role assignments for authorization.
+Role assignments for authorization. All role values are plain `text`.
 
 | Column | Type | Description |
 |--------|------|-------------|
 | `id` | uuid | Primary key |
 | `user_id` | uuid | FK to auth.users |
-| `role` | app_role | 'admin', 'user', 'teacher' |
-
-**Enum: `app_role`**: `admin`, `user`, `teacher`
+| `role` | text | 'admin', 'user', 'teacher', 'student' |
 
 #### `teachers`
-Teacher records with class assignments.
+Teacher records with class assignments. All type values are plain `text`.
 
 | Column | Type | Description |
 |--------|------|-------------|
@@ -135,11 +149,12 @@ Teacher records with class assignments.
 | `name` | text | Teacher name |
 | `email` | text | Contact email |
 | `grade_level` | text | Assigned grade |
-| `teacher_type` | teacher_type | Role classification |
+| `teacher_type` | text | 'homeroom', 'partner', 'specials', 'staff' |
 | `has_full_access` | boolean | Access to all classes |
 | `is_active` | boolean | Active status |
-
-**Enum: `teacher_type`**: `homeroom`, `partner`, `specials`, `staff`
+| `legacy_teacher_id` | integer | Old system PK |
+| `legacy_username` | text | Old login username |
+| `legacy_default_val` | text | Old defaultVal for audit |
 
 #### `teacher_class_assignments`
 Links non-homeroom teachers to classes.
@@ -183,22 +198,25 @@ Invitation tracking for sponsor access.
 ### Authentication & Security
 
 #### `student_auth`
-Secure student login credentials (RLS-protected, separate from children table).
+Student login metadata (RLS-protected, separate from children table).
 
 | Column | Type | Description |
 |--------|------|-------------|
 | `id` | uuid | Primary key |
 | `child_id` | uuid | FK to children (unique) |
 | `username` | text | Student login username |
-| `password_hash` | text | Bcrypt hashed password (cost 12) |
+| `password_hash` | text | Legacy: bcrypt hash for unmigrated students |
 | `login_enabled` | boolean | Whether login is active |
 | `created_at` | timestamp | Record creation |
 | `updated_at` | timestamp | Last update |
 
-**Security Notes:**
+**Authentication Architecture (Phase 3):**
+- New students get real `auth.users` accounts via `student-set-password` edge function
+- Student email format: `{username}@student.readathon.local` (synthetic, not real)
+- Login uses standard `supabase.auth.signInWithPassword()` for full RLS-protected sessions
+- `student_auth` table retains metadata (username, login_enabled) for parent management
+- Legacy `password_hash` preserved for backward compatibility with unmigrated students
 - Passwords require 8-character minimum
-- Uses bcrypt with cost factor 12
-- Backward compatible with legacy SHA-256 hashes (auto-upgraded on password change)
 
 ---
 
@@ -225,11 +243,9 @@ Admin-created email campaigns.
 | `subject` | text | Email subject |
 | `body` | text | Email body (supports variables) |
 | `recipient_filter` | text | Target audience filter |
-| `status` | email_template_status | Draft/scheduled/sent |
+| `status` | text | 'draft', 'scheduled', 'sent' |
 | `scheduled_for` | timestamp | When to send |
 | `created_by` | uuid | Admin who created |
-
-**Enum: `email_template_status`**: `draft`, `scheduled`, `sent`
 
 #### `email_logs`
 Sent email tracking.
@@ -243,11 +259,9 @@ Sent email tracking.
 | `recipient_type` | text | User type classification |
 | `subject` | text | Rendered subject |
 | `body` | text | Rendered body |
-| `status` | email_log_status | Delivery status |
+| `status` | text | 'pending', 'sent', 'failed' |
 | `sent_at` | timestamp | When sent |
 | `error_message` | text | Error details if failed |
-
-**Enum: `email_log_status`**: `pending`, `sent`, `failed`
 
 #### `payments`
 Payment transaction records (integrates with Square).
@@ -348,16 +362,36 @@ Historical pledges after event close.
 
 ---
 
+## Database Triggers
+
+### `handle_new_user` (on `auth.users` INSERT)
+Creates a `profiles` row with `display_name`, `email`, `first_name`, `last_name`, and `phone` from user metadata.
+
+### `update_child_total_minutes` (on `reading_logs` INSERT/UPDATE/DELETE)
+Keeps `children.total_minutes` in sync with the sum of their reading logs.
+
+### `manage_log_verification` (on `reading_logs` INSERT/UPDATE/DELETE)
+Creates/updates/deletes `log_verification_requests` when log minutes exceed grade thresholds.
+
+### `update_updated_at_column` (on various tables UPDATE)
+Automatically sets `updated_at` to `now()` on row updates.
+
+---
+
 ## Database Functions
 
 ### `has_role(user_id, role)`
-Checks if user has specified role in `user_roles`.
+Checks if user has specified role in `user_roles`. `SECURITY DEFINER` to avoid RLS recursion.
 
 ### `can_teacher_view_child(teacher_user_id, child_id)`
 Determines if teacher can access child based on:
 - Homeroom assignment
 - Class assignments via `teacher_class_assignments`
+- Grade-level match for partner teachers
 - `has_full_access` flag
+
+### `safe_display_name(full_name)`
+Returns privacy-safe name (first name + last initial).
 
 ### `get_class_total_minutes(class_name)`
 Returns sum of `total_minutes` for all children in class.
@@ -368,11 +402,20 @@ Returns sum of `total_minutes` for all children in grade.
 ### `get_class_reading_stats(class_name)`
 Returns student count, total books, and total minutes for class.
 
+### `get_class_favorite_books(class_name, limit)`
+Returns most-read book titles in a class.
+
+### `get_grade_favorite_books(grade_info, limit)`
+Returns most-read book titles in a grade.
+
 ### `get_class_fundraising_total(class_name, event_id)`
 Calculates total pledge amount for a class.
 
 ### `get_class_milestone_status(class_name, event_id)`
 Returns milestone progress including next target and unlock status.
+
+### `get_verification_threshold(child_id)`
+Returns the grade-appropriate verification threshold for a child.
 
 ---
 
@@ -381,47 +424,23 @@ Returns milestone progress including next target and unlock status.
 | Table | SELECT | INSERT | UPDATE | DELETE |
 |-------|--------|--------|--------|--------|
 | events | Anyone | Admin | Admin | Admin |
-| children | Owner/Teacher/Admin/Public* | Owner | Owner | Owner |
-| reading_logs | Owner/Teacher/Admin/Public* | Owner | Owner | Owner |
-| pledges | Anyone | Owner/Auth | Owner/Sponsor | Owner |
+| children | Owner/Student/Teacher/Admin/Public* | Owner | Owner | Owner |
+| reading_logs | Owner/Student/Teacher/Admin/Public* | Owner/Student | Owner/Student | Owner/Student |
+| pledges | Authenticated | Owner/Auth | Owner/Sponsor | Owner |
 | class_pledges | Anyone | Auth | Sponsor/Admin | Sponsor/Admin |
 | teachers | Anyone (active) | Admin | Admin | Admin |
 | sponsors | Owner | Owner | Owner | - |
 | sponsor_invitations | Owner/Invitee/Admin | Owner/Approved | Owner/Admin | Owner/Admin |
 | profiles | Owner/Admin | Owner | Owner | - |
 | user_roles | Owner/Admin | Admin | Admin | Admin |
-| student_auth | Parent (owner of child) | Parent | Parent | Parent |
-| payments | Anyone | Auth | Admin | Admin |
-| log_verification_requests | Owner/Admin | Owner | Owner/Admin | Admin |
+| student_auth | Parent (owner of child)/Admin | Parent/Admin | Parent/Admin | Parent/Admin |
+| payments | Payer/Parent/Admin | Auth/Guest | Admin | Admin |
+| log_verification_requests | Owner/Admin | - (trigger) | Owner/Admin | Admin |
+| books | Anyone | Authenticated | - | - |
 | site_content | Anyone | Admin | Admin | Admin |
 
 *Public access requires `share_public_link = true`
-
----
-
-## TypeScript Types
-
-Key types are generated in `src/integrations/supabase/types.ts`:
-
-```typescript
-// Table row types
-type Tables<T> = Database['public']['Tables'][T]['Row']
-type Children = Tables<'children'>
-type Pledges = Tables<'pledges'>
-type ReadingLogs = Tables<'reading_logs'>
-
-// Insert types
-type TablesInsert<T> = Database['public']['Tables'][T]['Insert']
-
-// Update types  
-type TablesUpdate<T> = Database['public']['Tables'][T]['Update']
-
-// Enums
-type AppRole = 'admin' | 'user' | 'teacher'
-type TeacherType = 'homeroom' | 'partner' | 'specials' | 'staff'
-type EmailLogStatus = 'pending' | 'sent' | 'failed'
-type EmailTemplateStatus = 'draft' | 'scheduled' | 'sent'
-```
+*Student access uses `student_user_id` match via `auth.uid()`
 
 ---
 
@@ -437,6 +456,7 @@ events
 
 children
   ├── user_id → auth.users (parent)
+  ├── student_user_id → auth.users (student's own account)
   ├── homeroom_teacher_id → teachers
   ├── reading_logs (child_id)
   ├── pledges (child_id)
@@ -477,6 +497,31 @@ Public-safe view of children for sponsor access. Returns `display_name` (first n
 
 ### `teachers_public_safe`
 Public-safe view of teachers. Excludes email column for privacy.
+
+---
+
+## TypeScript Types
+
+Key types are generated in `src/integrations/supabase/types.ts`:
+
+```typescript
+// Table row types
+type Tables<T> = Database['public']['Tables'][T]['Row']
+type Children = Tables<'children'>
+type Pledges = Tables<'pledges'>
+type ReadingLogs = Tables<'reading_logs'>
+
+// Insert types
+type TablesInsert<T> = Database['public']['Tables'][T]['Insert']
+
+// Update types  
+type TablesUpdate<T> = Database['public']['Tables'][T]['Update']
+
+// Note: All enums have been replaced with plain text columns (Phase 1)
+// Role values: 'admin', 'user', 'teacher', 'student'
+// Teacher types: 'homeroom', 'partner', 'specials', 'staff'
+// Status values: 'pending', 'sent', 'failed', 'draft', 'scheduled'
+```
 
 ---
 

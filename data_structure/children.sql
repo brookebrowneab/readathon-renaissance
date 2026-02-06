@@ -1,6 +1,7 @@
 -- Table: children
 -- Student records, linked to parent accounts
 -- Phase 3 added: first_name, last_name, student_user_id, sponsor_id_code, legacy_child_id, legacy_class_name
+-- Phase 3 auth migration: student_user_id now links to real auth.users accounts for RLS-protected sessions
 
 CREATE TABLE public.children (
   id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -70,3 +71,9 @@ CREATE POLICY "Public can view children with public links"
   ON public.children
   FOR SELECT
   USING (share_public_link = true);
+
+-- Phase 3: Students can view their own record via real auth session
+CREATE POLICY "Students can view their own record"
+  ON public.children
+  FOR SELECT
+  USING (auth.uid() = student_user_id);

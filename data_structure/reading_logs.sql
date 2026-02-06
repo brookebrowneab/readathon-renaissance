@@ -1,5 +1,6 @@
 -- Table: reading_logs
 -- Individual reading session records
+-- Phase 3: Added student RLS policies for CRUD via real auth sessions
 
 CREATE TABLE public.reading_logs (
   id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -60,4 +61,33 @@ CREATE POLICY "Public can view reading logs for public children"
   FOR SELECT
   USING (child_id IN (
     SELECT children.id FROM children WHERE children.share_public_link = true
+  ));
+
+-- Phase 3: Students can CRUD their own reading logs via real auth sessions
+CREATE POLICY "Students can view their own reading logs"
+  ON public.reading_logs
+  FOR SELECT
+  USING (child_id IN (
+    SELECT children.id FROM children WHERE children.student_user_id = auth.uid()
+  ));
+
+CREATE POLICY "Students can insert their own reading logs"
+  ON public.reading_logs
+  FOR INSERT
+  WITH CHECK (child_id IN (
+    SELECT children.id FROM children WHERE children.student_user_id = auth.uid()
+  ));
+
+CREATE POLICY "Students can update their own reading logs"
+  ON public.reading_logs
+  FOR UPDATE
+  USING (child_id IN (
+    SELECT children.id FROM children WHERE children.student_user_id = auth.uid()
+  ));
+
+CREATE POLICY "Students can delete their own reading logs"
+  ON public.reading_logs
+  FOR DELETE
+  USING (child_id IN (
+    SELECT children.id FROM children WHERE children.student_user_id = auth.uid()
   ));

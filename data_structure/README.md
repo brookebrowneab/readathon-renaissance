@@ -18,16 +18,19 @@ Each `.sql` file contains:
 
 #### Core Entities
 - `events.sql` - Read-a-thon event configuration
-- `children.sql` - Student records linked to parents
-- `reading_logs.sql` - Individual reading session records
+- `children.sql` - Student records linked to parents (includes `student_user_id` for auth)
+- `reading_logs.sql` - Individual reading session records (student CRUD via RLS)
 - `pledges.sql` - Individual student pledges
 - `class_pledges.sql` - Class-level pledges with milestones
 
 #### User Management
-- `profiles.sql` - Extended user profile information
-- `user_roles.sql` - Role assignments (admin, user, teacher)
+- `profiles.sql` - Extended user profile information (auto-populated by trigger)
+- `user_roles.sql` - Role assignments (admin, user, teacher, student)
 - `teachers.sql` - Teacher records
 - `teacher_class_assignments.sql` - Non-homeroom teacher class links
+
+#### Authentication
+- `student_auth.sql` - Student login metadata (username, login_enabled, legacy password_hash)
 
 #### Sponsor System
 - `sponsors.sql` - Sponsor profile records
