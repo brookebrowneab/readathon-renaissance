@@ -7,6 +7,8 @@ CREATE TABLE public.sponsors (
   name text NOT NULL,
   email text NOT NULL,
   phone text,
+  first_name text,
+  last_name text,
   created_at timestamp with time zone NOT NULL DEFAULT now(),
   updated_at timestamp with time zone NOT NULL DEFAULT now()
 );
