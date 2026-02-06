@@ -37,9 +37,9 @@ import {
   SponsorClassPage,
   GuestPaymentPage,
 } from "./pages/sponsor";
-import { StudentDashboardPage as StudentDashboard, StudentLogReadingPage as StudentLogReading, StudentBooksPage } from "./pages/student";
-import StudentPinLoginPage from "./pages/student/StudentPinLoginPage";
-import StudentPinDashboardPage from "./pages/student/StudentPinDashboardPage";
+import { StudentLogReadingPage as StudentLogReading, StudentBooksPage } from "./pages/student";
+import StudentLoginPage from "./pages/student/StudentPinLoginPage";
+import StudentDashboardPage from "./pages/student/StudentPinDashboardPage";
 import { TeacherDashboard, TeacherLogReading, TeacherLoginPage, TeacherRegisterPage, TeacherSetPasswordPage } from "./pages/teacher";
 import { AdminDashboard, AdminOutstandingPage, AdminChecksPage, AdminSettingsPage, AdminEmailPage, AdminSiteContentPage, AdminReadingLogsPage } from "./pages/admin";
 import { SponsorRequestsPage, SponsorMyChildPage, ManageChildrenPage, ChildDetailsPage } from "./pages/family";
@@ -118,10 +118,10 @@ const App = () => (
           <Route path="/sponsor/guest-pay" element={<GuestPaymentPage />} />
           
           {/* Student Dashboard */}
-          <Route path="/student/login" element={<StudentPinLoginPage />} />
-          <Route path="/student/dashboard" element={<StudentPinDashboardPage />} />
+          <Route path="/student/login" element={<StudentLoginPage />} />
+          <Route path="/student/dashboard" element={<StudentDashboardPage />} />
           <Route path="/student/books" element={<StudentBooksPage />} />
-          <Route path="/student" element={<StudentDashboard />} />
+          <Route path="/student" element={<StudentDashboardPage />} />
           <Route path="/student/log" element={<StudentLogReading />} />
           
           {/* Teacher Dashboard */}
