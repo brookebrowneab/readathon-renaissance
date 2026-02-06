@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { MainNav, Footer } from "@/components/layout";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,7 @@ import {
   KeyRound,
   ChevronDown,
   ChevronUp,
+  Phone,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useTeacherAuth } from "@/hooks/useTeacherAuth";
@@ -68,9 +69,13 @@ const AccountSettingsPage = () => {
   // Helper to get student auth for a child
   const getStudentAuth = (childId: string) => studentAuthRecords.find(sa => sa.child_id === childId);
   
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [phone, setPhone] = useState("");
   const [displayName, setDisplayName] = useState(
     user?.user_metadata?.display_name || ""
   );
+  const [profileLoaded, setProfileLoaded] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
@@ -78,6 +83,26 @@ const AccountSettingsPage = () => {
   const [childDeleteConfirmation, setChildDeleteConfirmation] = useState("");
   const [editingChild, setEditingChild] = useState<Child | null>(null);
   const [expandedChildId, setExpandedChildId] = useState<string | null>(null);
+
+  // Load profile data from profiles table
+  useEffect(() => {
+    if (!user?.id || profileLoaded) return;
+    const loadProfile = async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("first_name, last_name, phone, display_name, email")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (data) {
+        setFirstName(data.first_name || "");
+        setLastName(data.last_name || "");
+        setPhone(data.phone || "");
+        if (data.display_name) setDisplayName(data.display_name);
+      }
+      setProfileLoaded(true);
+    };
+    loadProfile();
+  }, [user?.id, profileLoaded]);
   
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [isSavingPassword, setIsSavingPassword] = useState(false);
@@ -96,11 +121,23 @@ const AccountSettingsPage = () => {
   const handleSaveProfile = async () => {
     setIsSavingProfile(true);
     try {
-      const { error } = await supabase.auth.updateUser({
-        data: { display_name: displayName }
+      // Update auth metadata
+      const { error: authError } = await supabase.auth.updateUser({
+        data: { display_name: displayName, first_name: firstName, last_name: lastName, phone }
       });
-      
-      if (error) throw error;
+      if (authError) throw authError;
+
+      // Update profiles table
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({ 
+          display_name: displayName, 
+          first_name: firstName, 
+          last_name: lastName, 
+          phone 
+        })
+        .eq("user_id", user!.id);
+      if (profileError) throw profileError;
       
       toast.success("Profile updated successfully");
     } catch (error: any) {
@@ -525,6 +562,27 @@ const AccountSettingsPage = () => {
                     </span>
                   </div>
                 </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName">First Name</Label>
+                    <Input
+                      id="firstName"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      placeholder="First name"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName">Last Name</Label>
+                    <Input
+                      id="lastName"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      placeholder="Last name"
+                    />
+                  </div>
+                </div>
                 
                 <div className="space-y-2">
                   <Label htmlFor="displayName">Display Name</Label>
@@ -534,6 +592,21 @@ const AccountSettingsPage = () => {
                     onChange={(e) => setDisplayName(e.target.value)}
                     placeholder="Enter your name"
                   />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone Number</Label>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      id="phone"
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="(555) 123-4567"
+                      className="pl-10"
+                    />
+                  </div>
                 </div>
 
                 <Button 
