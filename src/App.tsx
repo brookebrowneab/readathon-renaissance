@@ -10,7 +10,7 @@ import FAQPage from "./pages/FAQPage";
 import PrivacyPage from "./pages/PrivacyPage";
 import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
-import OldStudentLoginPage from "./pages/auth/StudentLoginPage";
+
 import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
 import AdminLoginPage from "./pages/auth/AdminLoginPage";
 import { OnboardingAddChild, OnboardingPledge, OnboardingComplete, ReEnrollmentPage } from "./pages/onboarding";
@@ -37,7 +37,7 @@ import {
   SponsorClassPage,
   GuestPaymentPage,
 } from "./pages/sponsor";
-import { StudentLoginPage, StudentDashboardPage as StudentDashboard, StudentLogReadingPage as StudentLogReading, StudentBooksPage } from "./pages/student";
+import { StudentDashboardPage as StudentDashboard, StudentLogReadingPage as StudentLogReading, StudentBooksPage } from "./pages/student";
 import StudentPinLoginPage from "./pages/student/StudentPinLoginPage";
 import StudentPinDashboardPage from "./pages/student/StudentPinDashboardPage";
 import { TeacherDashboard, TeacherLogReading, TeacherLoginPage, TeacherRegisterPage, TeacherSetPasswordPage } from "./pages/teacher";
@@ -82,7 +82,7 @@ const App = () => (
           {/* Auth Routes */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
-          <Route path="/student-login" element={<OldStudentLoginPage />} />
+          
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/sponsor/auth" element={<SponsorAuthPage />} />
           <Route path="/admin/login" element={<AdminLoginPage />} />
