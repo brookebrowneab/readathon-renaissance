@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { BookContainer, ReadingGoalRing } from "@/components/legacy";
 import { PageHeader } from "@/components/layout";
@@ -11,22 +11,20 @@ import { cn } from "@/lib/utils";
 import Confetti from "@/components/ui/confetti";
 import { useEventStatus } from "@/hooks/useEventStatus";
 import { useActiveEvent } from "@/hooks/useActiveEvent";
+import { useStudentSession } from "@/hooks/useStudentSession";
+import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 
 const QUICK_MINUTES = [15, 30, 45, 60];
 
-interface StudentData {
-  firstName: string;
-  readingGoal: number;
-  minutesRead: number;
-}
-
 const StudentLogReadingPage = () => {
   const navigate = useNavigate();
+  const { session, isLoading: sessionLoading, refreshData, requireAuth } = useStudentSession();
   const { phase, canStudentsLog, validLogDates, isLoading: statusLoading } = useEventStatus();
   const { data: activeEvent } = useActiveEvent();
-  
-  const [studentData, setStudentData] = useState<StudentData | null>(null);
+
+  requireAuth();
+
   const [selectedDay, setSelectedDay] = useState<"today" | "yesterday">("today");
   const [minutes, setMinutes] = useState(0);
   const [bookTitle, setBookTitle] = useState("");
@@ -35,49 +33,47 @@ const StudentLogReadingPage = () => {
   const [showConfetti, setShowConfetti] = useState(false);
   const [newTotal, setNewTotal] = useState(0);
 
-  useEffect(() => {
-    const stored = sessionStorage.getItem("studentData");
-    if (stored) {
-      setStudentData(JSON.parse(stored));
-    } else {
-      setStudentData({
-        firstName: "Emma",
-        readingGoal: 500,
-        minutesRead: 247,
-      });
-    }
-  }, []);
-
   const handleIncrement = () => setMinutes((prev) => prev + 5);
   const handleDecrement = () => setMinutes((prev) => Math.max(0, prev - 5));
-
-  const handleQuickSelect = (mins: number) => {
-    setMinutes(mins);
-  };
+  const handleQuickSelect = (mins: number) => setMinutes(mins);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (minutes <= 0 || !studentData) return;
+    if (minutes <= 0 || !session) return;
 
     setIsSubmitting(true);
 
-    await new Promise((resolve) => setTimeout(resolve, 800));
+    try {
+      const logDate = selectedDay === "today"
+        ? new Date().toISOString()
+        : new Date(Date.now() - 86400000).toISOString();
 
-    const updatedTotal = studentData.minutesRead + minutes;
-    setNewTotal(updatedTotal);
+      const { error } = await supabase.from("reading_logs").insert({
+        child_id: session.childId,
+        student_name: session.name,
+        minutes,
+        book_title: bookTitle || null,
+        logged_at: logDate,
+        event_id: activeEvent?.id || null,
+      });
 
-    // Update session storage
-    const updatedData = { ...studentData, minutesRead: updatedTotal };
-    sessionStorage.setItem("studentData", JSON.stringify(updatedData));
+      if (error) throw error;
 
-    // Check for 100% milestone
-    if (studentData.minutesRead < studentData.readingGoal && updatedTotal >= studentData.readingGoal) {
-      setShowConfetti(true);
+      const updatedTotal = session.totalMinutes + minutes;
+      setNewTotal(updatedTotal);
+
+      if (session.totalMinutes < session.goalMinutes && updatedTotal >= session.goalMinutes) {
+        setShowConfetti(true);
+      }
+
+      await refreshData();
+      setIsSuccess(true);
+      toast.success("Great job reading!");
+    } catch (error: any) {
+      toast.error("Failed to log reading", { description: error.message });
+    } finally {
+      setIsSubmitting(false);
     }
-
-    setIsSubmitting(false);
-    setIsSuccess(true);
-    toast.success("Great job reading!");
   };
 
   const handleLogMore = () => {
@@ -85,18 +81,15 @@ const StudentLogReadingPage = () => {
     setBookTitle("");
     setIsSuccess(false);
     setShowConfetti(false);
-    if (studentData) {
-      setStudentData({ ...studentData, minutesRead: newTotal });
-    }
   };
 
   const handleDone = () => {
-    navigate("/student");
+    navigate("/student/dashboard");
   };
 
-  if (!studentData || statusLoading) return null;
+  if (sessionLoading || statusLoading || !session) return null;
 
-  // Phase-based access control for students
+  // Phase-based access control
   if (!canStudentsLog) {
     const formatDate = (d: Date) => format(d, "MMMM d");
     
@@ -113,7 +106,7 @@ const StudentLogReadingPage = () => {
       message = "The reading period has ended. Ask your parent or guardian to log any remaining minutes for you.";
     } else if (phase === 'closed') {
       title = "Read-a-thon Complete! 🎉";
-      message = `Great job reading this year! You read ${studentData.minutesRead} minutes total.`;
+      message = `Great job reading this year! You read ${session.totalMinutes} minutes total.`;
       icon = <BookOpen className="h-16 w-16 text-success" />;
     } else {
       title = "Logging Not Available";
@@ -124,10 +117,7 @@ const StudentLogReadingPage = () => {
       <div className="min-h-screen bg-gradient-to-b from-brand-yellow/20 to-background-warm">
         <PageHeader 
           rightContent={
-            <Link
-              to="/student"
-              className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
-            >
+            <Link to="/student/dashboard" className="flex items-center gap-2 text-muted-foreground hover:text-foreground">
               <ArrowLeft className="h-6 w-6" />
               <span className="text-lg">Back</span>
             </Link>
@@ -137,30 +127,18 @@ const StudentLogReadingPage = () => {
         <main className="px-4 pb-8 max-w-lg mx-auto">
           <BookContainer variant="default" className="p-8 text-center">
             <div className="space-y-6">
-              <div className="flex justify-center">
-                {icon}
-              </div>
-              
-              <h1 className="font-handwritten text-4xl text-brand-blue">
-                {title}
-              </h1>
-              
-              <p className="text-xl text-muted-foreground">
-                {message}
-              </p>
+              <div className="flex justify-center">{icon}</div>
+              <h1 className="font-handwritten text-4xl text-brand-blue">{title}</h1>
+              <p className="text-xl text-muted-foreground">{message}</p>
               
               {phase === 'closed' && (
                 <div className="flex justify-center">
-                  <ReadingGoalRing
-                    progress={studentData.minutesRead}
-                    goal={studentData.readingGoal}
-                    size={160}
-                  />
+                  <ReadingGoalRing progress={session.totalMinutes} goal={session.goalMinutes} size={160} />
                 </div>
               )}
               
               <Button
-                onClick={() => navigate("/student")}
+                onClick={() => navigate("/student/dashboard")}
                 className="h-14 text-xl bg-brand-yellow hover:bg-accent-hover text-foreground"
               >
                 <ArrowLeft className="h-5 w-5 mr-2" />
@@ -173,7 +151,6 @@ const StudentLogReadingPage = () => {
     );
   }
 
-  // Get book size class based on minutes
   const getBookSize = (mins: number) => {
     if (mins === 15) return "h-10 w-8";
     if (mins === 30) return "h-12 w-10";
@@ -187,10 +164,7 @@ const StudentLogReadingPage = () => {
 
       <PageHeader 
         rightContent={
-          <Link
-            to="/student"
-            className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
-          >
+          <Link to="/student/dashboard" className="flex items-center gap-2 text-muted-foreground hover:text-foreground">
             <ArrowLeft className="h-6 w-6" />
             <span className="text-lg">Back</span>
           </Link>
@@ -200,84 +174,52 @@ const StudentLogReadingPage = () => {
       <main className="px-4 pb-8 max-w-lg mx-auto">
         {!isSuccess ? (
           <div className="space-y-6">
-            {/* Title */}
             <div className="text-center">
-              <h1 className="font-handwritten text-4xl text-brand-blue">
-                Log Your Reading 📖
-              </h1>
+              <h1 className="font-handwritten text-4xl text-brand-blue">Log Your Reading 📖</h1>
             </div>
 
             <BookContainer variant="default" className="p-6">
               <form onSubmit={handleSubmit} className="space-y-8">
                 {/* Day Selection */}
                 <div className="space-y-3">
-                  <label className="block text-xl font-medium text-foreground text-center">
-                    When did you read?
-                  </label>
+                  <label className="block text-xl font-medium text-foreground text-center">When did you read?</label>
                   <div className="grid grid-cols-2 gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setSelectedDay("today")}
-                      className={cn(
-                        "h-14 rounded-xl text-xl font-medium transition-all border-2",
-                        selectedDay === "today"
-                          ? "bg-primary text-primary-foreground border-primary"
-                          : "bg-card text-foreground border-border hover:border-primary/50"
-                      )}
-                    >
-                      Today
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setSelectedDay("yesterday")}
-                      className={cn(
-                        "h-14 rounded-xl text-xl font-medium transition-all border-2",
-                        selectedDay === "yesterday"
-                          ? "bg-primary text-primary-foreground border-primary"
-                          : "bg-card text-foreground border-border hover:border-primary/50"
-                      )}
-                    >
-                      Yesterday
-                    </button>
+                    {(["today", "yesterday"] as const).map((day) => (
+                      <button
+                        key={day}
+                        type="button"
+                        onClick={() => setSelectedDay(day)}
+                        className={cn(
+                          "h-14 rounded-xl text-xl font-medium transition-all border-2 capitalize",
+                          selectedDay === day
+                            ? "bg-primary text-primary-foreground border-primary"
+                            : "bg-card text-foreground border-border hover:border-primary/50"
+                        )}
+                      >
+                        {day}
+                      </button>
+                    ))}
                   </div>
                 </div>
 
                 {/* Minutes Counter */}
                 <div className="space-y-4">
-                  <label className="block text-xl font-medium text-foreground text-center">
-                    How many minutes did you read?
-                  </label>
-
-                  {/* Giant Counter */}
+                  <label className="block text-xl font-medium text-foreground text-center">How many minutes did you read?</label>
                   <div className="flex items-center justify-center gap-4">
-                    <button
-                      type="button"
-                      onClick={handleDecrement}
-                      disabled={minutes === 0}
-                      className="w-14 h-14 rounded-full bg-muted hover:bg-muted/80 flex items-center justify-center disabled:opacity-50 transition-all"
-                    >
+                    <button type="button" onClick={handleDecrement} disabled={minutes === 0} className="w-14 h-14 rounded-full bg-muted hover:bg-muted/80 flex items-center justify-center disabled:opacity-50 transition-all">
                       <Minus className="h-8 w-8" />
                     </button>
-
                     <div className="w-32 h-32 rounded-2xl bg-card border-2 border-border flex items-center justify-center">
-                      <span className="font-serif text-6xl text-brand-blue">
-                        {minutes}
-                      </span>
+                      <span className="font-serif text-6xl text-brand-blue">{minutes}</span>
                     </div>
-
-                    <button
-                      type="button"
-                      onClick={handleIncrement}
-                      className="w-14 h-14 rounded-full bg-muted hover:bg-muted/80 flex items-center justify-center transition-all"
-                    >
+                    <button type="button" onClick={handleIncrement} className="w-14 h-14 rounded-full bg-muted hover:bg-muted/80 flex items-center justify-center transition-all">
                       <Plus className="h-8 w-8" />
                     </button>
                   </div>
-
                   <p className="text-center text-lg text-muted-foreground">minutes</p>
                 </div>
 
-                {/* Quick Select Buttons */}
+                {/* Quick Select */}
                 <div className="grid grid-cols-4 gap-3">
                   {QUICK_MINUTES.map((mins) => (
                     <button
@@ -286,9 +228,7 @@ const StudentLogReadingPage = () => {
                       onClick={() => handleQuickSelect(mins)}
                       className={cn(
                         "flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all",
-                        minutes === mins
-                          ? "border-primary bg-primary/10"
-                          : "border-border hover:border-primary/50"
+                        minutes === mins ? "border-primary bg-primary/10" : "border-border hover:border-primary/50"
                       )}
                     >
                       <BookOpen className={cn("text-brand-blue", getBookSize(mins))} />
@@ -298,26 +238,12 @@ const StudentLogReadingPage = () => {
                 </div>
 
                 {/* Book Title */}
-                <FormField
-                  label="What did you read? (optional)"
-                  htmlFor="bookTitle"
-                >
-                  <Input
-                    id="bookTitle"
-                    placeholder="Book title..."
-                    value={bookTitle}
-                    onChange={(e) => setBookTitle(e.target.value)}
-                    className="h-14 text-xl"
-                  />
+                <FormField label="What did you read? (optional)" htmlFor="bookTitle">
+                  <Input id="bookTitle" placeholder="Book title..." value={bookTitle} onChange={(e) => setBookTitle(e.target.value)} className="h-14 text-xl" />
                 </FormField>
 
                 {/* Submit */}
-                <Button
-                  type="submit"
-                  disabled={minutes === 0 || isSubmitting}
-                  loading={isSubmitting}
-                  className="w-full h-[72px] text-2xl font-bold bg-brand-yellow hover:bg-accent-hover text-foreground"
-                >
+                <Button type="submit" disabled={minutes === 0 || isSubmitting} loading={isSubmitting} className="w-full h-[72px] text-2xl font-bold bg-brand-yellow hover:bg-accent-hover text-foreground">
                   I Read!
                 </Button>
               </form>
@@ -328,48 +254,25 @@ const StudentLogReadingPage = () => {
           <div className="space-y-6">
             <BookContainer variant="default" className="p-8 text-center">
               <div className="space-y-6">
-                <h1 className="font-handwritten text-5xl text-brand-blue">
-                  Awesome! 🎉
-                </h1>
-
+                <h1 className="font-handwritten text-5xl text-brand-blue">Awesome! 🎉</h1>
                 <div className="flex justify-center">
-                  <ReadingGoalRing
-                    progress={newTotal}
-                    goal={studentData.readingGoal}
-                    size={200}
-                  />
+                  <ReadingGoalRing progress={newTotal} goal={session.goalMinutes} size={200} />
                 </div>
-
                 <p className="text-2xl text-foreground">
                   You have read{" "}
-                  <span className="font-serif text-3xl text-brand-blue">
-                    {newTotal} minutes
-                  </span>{" "}
-                  total!
+                  <span className="font-serif text-3xl text-brand-blue">{newTotal} minutes</span> total!
                 </p>
-
-                {newTotal >= studentData.readingGoal && (
+                {newTotal >= session.goalMinutes && (
                   <div className="p-4 bg-success/20 rounded-xl">
-                    <p className="text-xl font-bold text-success">
-                      🎉 You reached your goal! 🎉
-                    </p>
+                    <p className="text-xl font-bold text-success">🎉 You reached your goal! 🎉</p>
                   </div>
                 )}
-
                 <div className="flex flex-col gap-3 pt-4">
-                  <Button
-                    onClick={handleLogMore}
-                    variant="outline"
-                    className="h-14 text-xl"
-                  >
+                  <Button onClick={handleLogMore} variant="outline" className="h-14 text-xl">
                     <RotateCcw className="h-5 w-5 mr-2" />
                     Log More Reading
                   </Button>
-
-                  <Button
-                    onClick={handleDone}
-                    className="h-14 text-xl bg-brand-yellow hover:bg-accent-hover text-foreground"
-                  >
+                  <Button onClick={handleDone} className="h-14 text-xl bg-brand-yellow hover:bg-accent-hover text-foreground">
                     <Check className="h-5 w-5 mr-2" />
                     Done
                   </Button>

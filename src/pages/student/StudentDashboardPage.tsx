@@ -1,5 +1,4 @@
-import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { BookContainer, ReadingGoalRing } from "@/components/legacy";
 import { PageHeader } from "@/components/layout";
 import { Button } from "@/components/ui/button";
@@ -8,69 +7,31 @@ import { Heart, BookOpen, LogOut, Sparkles, Target } from "lucide-react";
 import { useClassMilestoneStatus } from "@/hooks/useClassMilestoneStatus";
 import { useClassReadingStats } from "@/hooks/useClassReadingStats";
 import { useActiveEvent } from "@/hooks/useActiveEvent";
-
-interface StudentData {
-  firstName: string;
-  readingGoal: number;
-  minutesRead: number;
-  className?: string;
-}
-
-interface ReadingLog {
-  id: string;
-  date: string;
-  minutes: number;
-  bookTitle?: string;
-}
-
-// Mock data
-const getMockRecentLogs = (): ReadingLog[] => [
-  { id: "1", date: "Today", minutes: 25, bookTitle: "Charlotte's Web" },
-  { id: "2", date: "Yesterday", minutes: 30, bookTitle: "Charlotte's Web" },
-  { id: "3", date: "Monday", minutes: 20 },
-  { id: "4", date: "Sunday", minutes: 15, bookTitle: "Diary of a Wimpy Kid" },
-];
+import { useStudentSession } from "@/hooks/useStudentSession";
+import { useReadingLogs } from "@/hooks/useReadingLogs";
+import type { ReadingLog } from "@/hooks/useReadingLogs";
 
 const StudentDashboardPage = () => {
-  const navigate = useNavigate();
-  const [studentData, setStudentData] = useState<StudentData | null>(null);
-  const [recentLogs] = useState(getMockRecentLogs);
-  
-  // Get active event for milestone settings
+  const { session, isLoading, logout, requireAuth } = useStudentSession();
   const { data: activeEvent } = useActiveEvent();
-  
-  useEffect(() => {
-    const stored = sessionStorage.getItem("studentData");
-    if (stored) {
-      const data = JSON.parse(stored);
-      setStudentData(data);
-    } else {
-      // Demo data if not logged in
-      setStudentData({
-        firstName: "Emma",
-        readingGoal: 500,
-        minutesRead: 247,
-        className: "Mrs. Johnson's Class",
-      });
-    }
-  }, []);
-  
+
+  // Redirect if not authenticated
+  requireAuth();
+
   // Get milestone status for the student's class
   const { data: milestoneStatus } = useClassMilestoneStatus(
-    studentData?.className,
+    session?.className,
     activeEvent?.id
   );
-  const { data: classStats } = useClassReadingStats(studentData?.className);
+  const { data: classStats } = useClassReadingStats(session?.className);
 
-  const handleLogout = () => {
-    sessionStorage.removeItem("studentData");
-    navigate("/student/login");
-  };
+  // Fetch recent reading logs for this student
+  const { logs: recentLogs } = useReadingLogs(session?.childId);
 
-  if (!studentData) return null;
+  if (isLoading || !session) return null;
 
-  const percentage = Math.round((studentData.minutesRead / studentData.readingGoal) * 100);
-  const sponsorCount = 5; // Mock
+  const percentage = Math.round((session.totalMinutes / session.goalMinutes) * 100);
+  const sponsorCount = 5; // TODO: fetch real sponsor count
 
   const getMilestoneMessage = () => {
     if (percentage >= 100) return { text: "YOU DID IT! 🎉", color: "text-success" };
@@ -81,12 +42,13 @@ const StudentDashboardPage = () => {
   };
 
   const milestone = getMilestoneMessage();
+  const firstName = session.name.split(" ")[0];
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-brand-yellow/20 to-background-warm">
       <PageHeader
         rightContent={
-          <Button variant="ghost" size="sm" onClick={handleLogout}>
+          <Button variant="ghost" size="sm" onClick={logout}>
             <LogOut className="h-5 w-5 mr-2" />
             Exit
           </Button>
@@ -97,7 +59,7 @@ const StudentDashboardPage = () => {
         {/* Welcome */}
         <div className="text-center">
           <h1 className="font-handwritten text-4xl text-brand-blue">
-            Hi, {studentData.firstName}! 📚
+            Hi, {firstName}! 📚
           </h1>
         </div>
 
@@ -105,15 +67,15 @@ const StudentDashboardPage = () => {
         <BookContainer variant="default" className="p-8 md:mt-[15px] lg:mt-0">
           <div className="flex flex-col items-center space-y-4">
             <ReadingGoalRing
-              progress={studentData.minutesRead}
-              goal={studentData.readingGoal}
+              progress={session.totalMinutes}
+              goal={session.goalMinutes}
               size={200}
               mobileSize={180}
             />
 
             <div className="text-center space-y-2">
               <p className="font-serif text-5xl text-brand-blue">
-                {studentData.minutesRead} minutes!
+                {session.totalMinutes} minutes!
               </p>
               <p className={`text-2xl font-medium ${milestone.color}`}>
                 {milestone.text}
@@ -123,7 +85,7 @@ const StudentDashboardPage = () => {
         </BookContainer>
         
         {/* Class Progress toward Party */}
-        {studentData.className && milestoneStatus && (
+        {session.className && milestoneStatus && (
           <BookContainer variant="warm" className="p-6">
             <div className="flex items-center gap-2 mb-4">
               <Target className="h-5 w-5 text-primary" />
@@ -133,7 +95,6 @@ const StudentDashboardPage = () => {
             </div>
             
             <div className="space-y-4">
-              {/* Current earnings */}
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">Class has earned</span>
                 <span className="text-2xl font-bold text-success">
@@ -141,7 +102,6 @@ const StudentDashboardPage = () => {
                 </span>
               </div>
               
-              {/* Class reading total */}
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">Class total minutes</span>
                 <span className="text-lg font-medium">
@@ -149,7 +109,6 @@ const StudentDashboardPage = () => {
                 </span>
               </div>
               
-              {/* Next milestone */}
               {milestoneStatus.next_milestone_minutes && milestoneStatus.next_milestone_amount && (
                 <div className="mt-4 p-4 bg-primary/10 rounded-lg text-center">
                   <p className="text-sm text-muted-foreground mb-1">Next milestone</p>
@@ -207,7 +166,7 @@ const StudentDashboardPage = () => {
             Your reading this week
           </h2>
           <div className="space-y-3">
-            {recentLogs.map((log) => (
+            {(recentLogs || []).slice(0, 5).map((log) => (
               <div
                 key={log.id}
                 className="flex items-center gap-3 p-3 bg-card rounded-lg"
@@ -220,11 +179,16 @@ const StudentDashboardPage = () => {
                     {log.minutes} minutes
                   </p>
                   <p className="text-muted-foreground">
-                    {log.date} {log.bookTitle && `• ${log.bookTitle}`}
+                    {new Date(log.logged_at).toLocaleDateString()} {log.book_title && `• ${log.book_title}`}
                   </p>
                 </div>
               </div>
             ))}
+            {(!recentLogs || recentLogs.length === 0) && (
+              <p className="text-muted-foreground text-center py-4">
+                No reading logged yet. Tap "I Read Today!" to get started!
+              </p>
+            )}
           </div>
         </BookContainer>
       </main>
