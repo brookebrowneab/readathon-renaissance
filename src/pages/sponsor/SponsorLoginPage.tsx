@@ -5,6 +5,7 @@ import { BookContainer } from "@/components/legacy";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormField } from "@/components/ui/form-field";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Select,
   SelectContent,
@@ -56,16 +57,31 @@ const SponsorLoginPage = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [foundAccount, setFoundAccount] = useState<typeof mockSearchResult | null>(null);
 
+  const sendMagicLink = async (targetEmail: string) => {
+    const redirectTo = `${window.location.origin}/sponsor/dashboard`;
+    const { error } = await supabase.functions.invoke("send-sponsor-magic-link", {
+      body: { email: targetEmail, redirectTo },
+    });
+    if (error) {
+      console.error("Magic link error:", error);
+      throw error;
+    }
+  };
+
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
 
     setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsSubmitting(false);
-    
-    navigate("/sponsor/check-email", { state: { email } });
-    toast.success("Login link sent!");
+    try {
+      await sendMagicLink(email);
+      navigate("/sponsor/check-email", { state: { email } });
+      toast.success("Login link sent!");
+    } catch {
+      toast.error("Failed to send login link. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleFindAccount = async (e: React.FormEvent) => {
@@ -89,11 +105,15 @@ const SponsorLoginPage = () => {
     if (!foundAccount) return;
     
     setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsSubmitting(false);
-    
-    navigate("/sponsor/check-email", { state: { email: foundAccount.maskedEmail } });
-    toast.success("Login link sent!");
+    try {
+      await sendMagicLink(foundAccount.maskedEmail);
+      navigate("/sponsor/check-email", { state: { email: foundAccount.maskedEmail } });
+      toast.success("Login link sent!");
+    } catch {
+      toast.error("Failed to send login link. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Email Login View
