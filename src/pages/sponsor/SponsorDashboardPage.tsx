@@ -448,6 +448,50 @@ const SponsorDashboardPage = () => {
                 </div>
               )}
 
+              {/* Quick Pledge Again for returning sponsors */}
+              {isReturning && pledgesByChild.length > 0 && (
+                <div 
+                  className="p-6 bg-background shadow-md"
+                  style={handDrawnBorder}
+                >
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2 rounded-full bg-primary/10">
+                      <Plus className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <h2 className="font-serif text-xl text-foreground">Make Another Pledge</h2>
+                      <p className="text-sm text-muted-foreground">
+                        Choose a child you've supported before
+                      </p>
+                    </div>
+                  </div>
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    {pledgesByChild.map((childGroup) => (
+                      <Button
+                        key={childGroup.childId}
+                        variant="outline"
+                        className="h-auto py-3 px-4 justify-start gap-3"
+                        onClick={() => handleSponsorAgain(childGroup.childId)}
+                        style={handDrawnBorder}
+                      >
+                        <div className="p-1.5 rounded-full bg-accent/10">
+                          <User className="h-4 w-4 text-accent" />
+                        </div>
+                        <div className="text-left">
+                          <p className="font-medium text-foreground text-sm">
+                            {childGroup.childName}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {childGroup.child?.grade_info || `${childGroup.pledges.length} pledge${childGroup.pledges.length !== 1 ? "s" : ""}`}
+                          </p>
+                        </div>
+                        <ArrowRight className="h-4 w-4 ml-auto text-muted-foreground" />
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Welcome message for first-time sponsors */}
               {!isReturning && (
                 <div 
