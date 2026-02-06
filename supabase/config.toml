@@ -38,3 +38,6 @@ verify_jwt = false
 
 [functions.send-parent-welcome]
 verify_jwt = false
+
+[functions.send-sponsor-magic-link]
+verify_jwt = false

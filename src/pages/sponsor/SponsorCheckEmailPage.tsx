@@ -5,6 +5,7 @@ import { BookContainer } from "@/components/legacy";
 import { Button } from "@/components/ui/button";
 import { Mail, RefreshCw, ArrowLeft, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const SponsorCheckEmailPage = () => {
   const location = useLocation();
@@ -32,10 +33,18 @@ const SponsorCheckEmailPage = () => {
     if (resendCooldown > 0) return;
 
     setIsResending(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsResending(false);
-    setResendCooldown(60);
-    toast.success("Login link sent again!");
+    try {
+      const redirectTo = `${window.location.origin}/sponsor/dashboard`;
+      await supabase.functions.invoke("send-sponsor-magic-link", {
+        body: { email, redirectTo },
+      });
+      setResendCooldown(60);
+      toast.success("Login link sent again!");
+    } catch {
+      toast.error("Failed to resend. Please try again.");
+    } finally {
+      setIsResending(false);
+    }
   };
 
   if (!email) return null;
