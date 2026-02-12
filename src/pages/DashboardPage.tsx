@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { SponsorTab } from "@/components/layout/SponsorTab";
+import { DashboardMobileBar } from "@/components/layout/DashboardMobileBar";
 import { MainNav, Footer, BottomTabBar } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { ReadingGoalRing } from "@/components/legacy";
@@ -211,6 +212,12 @@ const DashboardPage = () => {
   return (
     <div className="flex min-h-screen flex-col">
       <MainNav />
+      
+      {/* Mobile/Tablet: Hamburger + Sponsor Banner */}
+      <DashboardMobileBar
+        isSponsorOnly={!!isSponsorOnly}
+        pendingSponsorRequests={mockPendingSponsorRequests}
+      />
       
       {/* Main Content */}
       <main className="flex-1 bg-background-warm shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
