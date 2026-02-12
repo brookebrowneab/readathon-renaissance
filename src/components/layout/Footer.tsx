@@ -1,9 +1,27 @@
 import { Link } from "react-router-dom";
 import { Facebook, Twitter, Instagram } from "lucide-react";
+import { useSiteContentMultiple } from "@/hooks/useSiteContent";
 
 const Footer = () => {
+  const { content } = useSiteContentMultiple(["home.sponsor_logo_url", "home.sponsor_name"]);
+  const sponsorLogoUrl = content["home.sponsor_logo_url"] || "";
+  const sponsorName = content["home.sponsor_name"] || "";
+
   return (
     <footer className="border-t border-slate-200 bg-white/80 backdrop-blur-sm">
+      {/* Sponsor logo row - only shown when configured */}
+      {sponsorLogoUrl && (
+        <div className="border-b border-slate-200 py-4">
+          <div className="container flex flex-col items-center gap-2">
+            <span className="text-xs text-muted-foreground tracking-wide uppercase">Presented by</span>
+            <img
+              src={sponsorLogoUrl}
+              alt={sponsorName || "Sponsor"}
+              className="h-10 md:h-12 w-auto object-contain"
+            />
+          </div>
+        </div>
+      )}
       <div className="container py-6 md:py-8">
         {/* Mobile: stacked layout */}
         <div className="flex flex-col items-center gap-4 md:hidden">
