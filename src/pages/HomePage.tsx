@@ -116,12 +116,12 @@ const HomePage = () => {
             <span className="text-sm text-muted-foreground">{countdown.label}</span>
           </div>
           {sponsorLogoUrl && (
-            <div className="flex items-center gap-2 opacity-70">
+            <div className="flex flex-col items-end gap-1 opacity-70">
               <span className="text-xs text-muted-foreground tracking-wide uppercase">Proudly supported by</span>
               <img
                 src={sponsorLogoUrl}
                 alt={sponsorName || "Sponsor"}
-                className="h-8 md:h-10 w-auto object-contain"
+                className="h-12 md:h-16 w-auto object-contain"
               />
             </div>
           )}
