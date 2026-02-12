@@ -122,7 +122,7 @@ const HomePage = () => {
       <div className="pt-4 md:pt-6 pb-4 md:pb-6 mt-[30px] relative">
         {/* Sponsor logo tab - absolute positioned, right edge */}
         {sponsorLogoUrl && (
-          <div className="absolute right-0 top-0 flex flex-col items-end gap-1 z-10">
+          <div className="absolute right-0 bottom-0 flex flex-col items-end gap-1 z-10">
             <span className="text-xs text-muted-foreground tracking-wide uppercase pr-1 mr-4 md:mr-6">Proudly supported by</span>
             <div
               className="bg-[hsl(220,50%,20%)] rounded-l-xl px-5 py-3 shadow-[0_4px_20px_rgba(0,0,0,0.3)]"
