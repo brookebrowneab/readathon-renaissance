@@ -32,6 +32,8 @@ const HomePage = () => {
     "home.making_difference_items",
     "home.cta_title",
     "home.cta_description",
+    "home.sponsor_logo_url",
+    "home.sponsor_name",
   ]);
 
   const debugFonts = useMemo(() => {
@@ -60,6 +62,8 @@ const HomePage = () => {
   );
   const ctaTitle = content["home.cta_title"] || DEFAULT_CONTENT["home.cta_title"];
   const ctaDescription = content["home.cta_description"] || DEFAULT_CONTENT["home.cta_description"];
+  const sponsorLogoUrl = content["home.sponsor_logo_url"] || "";
+  const sponsorName = content["home.sponsor_name"] || "";
 
   // Randomize hero text on page load (stable for component lifecycle)
   const heroHeadline = useMemo(() => {
@@ -92,9 +96,21 @@ const HomePage = () => {
 
   return (
     <PublicLayout>
-      {/* Countdown - Top right below header */}
+      {/* Countdown + Sponsor Logo row */}
       <div className="container pt-4 md:pt-6">
-        <div className="flex justify-end">
+        <div className={`flex items-center ${sponsorLogoUrl ? 'justify-between' : 'justify-end'}`}>
+          {/* Sponsor logo - left side */}
+          {sponsorLogoUrl && (
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground tracking-wide uppercase hidden sm:inline">Presented by</span>
+              <img
+                src={sponsorLogoUrl}
+                alt={sponsorName || "Sponsor"}
+                className="h-8 md:h-10 w-auto object-contain"
+              />
+            </div>
+          )}
+          {/* Countdown - right side */}
           <div 
             className="inline-flex items-baseline gap-1 bg-background px-4 py-2"
             style={{
