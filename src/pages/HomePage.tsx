@@ -189,18 +189,6 @@ const HomePage = () => {
                 </Button>
               </Link>
             </div>
-
-            {/* Sponsor logo - only shown when configured */}
-            {sponsorLogoUrl && (
-              <div className="mt-6 flex items-center gap-3 opacity-70">
-                <span className="text-xs text-muted-foreground tracking-wide uppercase">Proudly supported by</span>
-                <img
-                  src={sponsorLogoUrl}
-                  alt={sponsorName || "Sponsor"}
-                  className="h-8 md:h-10 w-auto object-contain"
-                />
-              </div>
-            )}
           </div>
         </div>
       </div>
@@ -390,6 +378,35 @@ const HomePage = () => {
         </div>
       </section>
 
+
+      {/* Our Sponsors Section - only shown when configured */}
+      {sponsorLogoUrl && (
+        <section className="py-10 md:py-14">
+          <div className="container">
+            <div className="max-w-4xl mx-auto text-center">
+              <h2 className="font-serif text-3xl md:text-4xl text-foreground mb-6">
+                Thank You to Our Sponsors
+              </h2>
+              <div
+                className="inline-flex items-center justify-center gap-4 bg-background px-8 py-6"
+                style={{
+                  border: 'solid 1px #41403E',
+                  borderTopLeftRadius: '255px 15px',
+                  borderTopRightRadius: '15px 225px',
+                  borderBottomRightRadius: '225px 15px',
+                  borderBottomLeftRadius: '15px 255px',
+                }}
+              >
+                <img
+                  src={sponsorLogoUrl}
+                  alt={sponsorName || "Sponsor"}
+                  className="h-12 md:h-16 w-auto object-contain"
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* CTA Section */}
       <section className="py-10 md:py-14 bg-primary relative overflow-hidden">
