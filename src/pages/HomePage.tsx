@@ -93,6 +93,11 @@ const HomePage = () => {
 
   return (
     <PublicLayout>
+      {/* Mobile: Sponsor tab flush under header */}
+      <div className="md:hidden flex justify-end">
+        <SponsorTab />
+      </div>
+
       {/* Countdown - Top right below header */}
       <div className="container pt-4 md:pt-6">
         <div className="flex justify-end">
@@ -117,8 +122,8 @@ const HomePage = () => {
 
       {/* Hero Section - Large left-aligned headline */}
       <div className="pt-4 md:pt-6 pb-4 md:pb-6 mt-[30px] relative">
-        {/* Sponsor logo tab - bottom right of hero */}
-        <SponsorTab className="absolute right-0 bottom-0 z-10" />
+        {/* Sponsor logo tab - desktop only, bottom right of hero */}
+        <SponsorTab className="hidden md:flex absolute right-0 bottom-0 z-10" />
         <div className="container">
           {/* Constrain hero content - equal padding on mobile, left-aligned indent on desktop */}
           <div className="max-w-4xl px-4 md:px-0 md:pl-14 lg:pl-20 md:ml-[30px] text-left">
