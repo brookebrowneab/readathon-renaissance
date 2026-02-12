@@ -212,11 +212,6 @@ const DashboardPage = () => {
     <div className="flex min-h-screen flex-col">
       <MainNav />
       
-      {/* Mobile: Sponsor tab flush under header */}
-      <div className="md:hidden flex justify-end bg-background-warm">
-        <SponsorTab />
-      </div>
-
       {/* Main Content */}
       <main className="flex-1 bg-background-warm shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
         <div className="container py-8">
@@ -225,6 +220,10 @@ const DashboardPage = () => {
             <div className="flex-1 space-y-8">
               {/* Header Section */}
               <div className="space-y-4">
+                {/* Mobile: Sponsor tab flush right */}
+                <div className="md:hidden flex justify-end -mx-4 -mt-8">
+                  <SponsorTab />
+                </div>
                 <div className="flex items-center justify-between">
                   <div>
                     <h1 className="font-serif text-3xl font-normal tracking-tight text-foreground md:text-4xl">
