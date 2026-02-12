@@ -118,25 +118,23 @@ const HomePage = () => {
         </div>
       </div>
 
-      {/* Sponsor logo tab - right edge */}
-      {sponsorLogoUrl && (
-        <div className="flex flex-col items-end gap-1 mt-4 md:mt-6 pr-4 md:pr-0">
-          <span className="text-xs text-muted-foreground tracking-wide uppercase pr-1">Proudly supported by</span>
-          <div
-            className="bg-[hsl(220,50%,20%)] rounded-l-xl px-5 py-3 shadow-[0_4px_20px_rgba(0,0,0,0.3)]"
-          >
-            <img
-              src={sponsorLogoUrl}
-              alt={sponsorName || "Sponsor"}
-              className="h-12 md:h-16 w-auto object-contain brightness-0 invert"
-            />
-          </div>
-        </div>
-      )}
-
-      {/* Hero Section - Large left-aligned headline with decorative background */}
       {/* Hero Section - Large left-aligned headline */}
-      <div className="pt-4 md:pt-6 pb-4 md:pb-6 mt-[30px]">
+      <div className="pt-4 md:pt-6 pb-4 md:pb-6 mt-[30px] relative">
+        {/* Sponsor logo tab - absolute positioned, right edge */}
+        {sponsorLogoUrl && (
+          <div className="absolute right-0 top-0 flex flex-col items-end gap-1 z-10">
+            <span className="text-xs text-muted-foreground tracking-wide uppercase pr-1 mr-4 md:mr-6">Proudly supported by</span>
+            <div
+              className="bg-[hsl(220,50%,20%)] rounded-l-xl px-5 py-3 shadow-[0_4px_20px_rgba(0,0,0,0.3)]"
+            >
+              <img
+                src={sponsorLogoUrl}
+                alt={sponsorName || "Sponsor"}
+                className="h-12 md:h-16 w-auto object-contain brightness-0 invert"
+              />
+            </div>
+          </div>
+        )}
         <div className="container">
           {/* Constrain hero content - equal padding on mobile, left-aligned indent on desktop */}
           <div className="max-w-4xl px-4 md:px-0 md:pl-14 lg:pl-20 md:ml-[30px] text-left">
