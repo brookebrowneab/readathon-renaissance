@@ -212,6 +212,11 @@ const DashboardPage = () => {
     <div className="flex min-h-screen flex-col">
       <MainNav />
       
+      {/* Mobile: Sponsor tab flush under header */}
+      <div className="md:hidden flex justify-end">
+        <SponsorTab />
+      </div>
+
       {/* Main Content */}
       <main className="flex-1 bg-background-warm shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
         <div className="container py-8">
