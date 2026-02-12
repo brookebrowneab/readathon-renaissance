@@ -32,8 +32,6 @@ const HomePage = () => {
     "home.making_difference_items",
     "home.cta_title",
     "home.cta_description",
-    "home.sponsor_logo_url",
-    "home.sponsor_name",
   ]);
 
   const debugFonts = useMemo(() => {
@@ -62,8 +60,6 @@ const HomePage = () => {
   );
   const ctaTitle = content["home.cta_title"] || DEFAULT_CONTENT["home.cta_title"];
   const ctaDescription = content["home.cta_description"] || DEFAULT_CONTENT["home.cta_description"];
-  const sponsorLogoUrl = content["home.sponsor_logo_url"] || "";
-  const sponsorName = content["home.sponsor_name"] || "";
 
   // Randomize hero text on page load (stable for component lifecycle)
   const heroHeadline = useMemo(() => {
@@ -189,18 +185,6 @@ const HomePage = () => {
                 </Button>
               </Link>
             </div>
-
-            {/* Sponsor logo - only shown when configured */}
-            {sponsorLogoUrl && (
-              <div className="mt-6 flex items-center gap-3 opacity-70">
-                <span className="text-xs text-muted-foreground tracking-wide uppercase">Proudly supported by</span>
-                <img
-                  src={sponsorLogoUrl}
-                  alt={sponsorName || "Sponsor"}
-                  className="h-8 md:h-10 w-auto object-contain"
-                />
-              </div>
-            )}
           </div>
         </div>
       </div>
