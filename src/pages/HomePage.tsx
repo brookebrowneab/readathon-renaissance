@@ -32,8 +32,6 @@ const HomePage = () => {
     "home.making_difference_items",
     "home.cta_title",
     "home.cta_description",
-    "home.sponsor_logo_url",
-    "home.sponsor_name",
   ]);
 
   const debugFonts = useMemo(() => {
@@ -62,8 +60,6 @@ const HomePage = () => {
   );
   const ctaTitle = content["home.cta_title"] || DEFAULT_CONTENT["home.cta_title"];
   const ctaDescription = content["home.cta_description"] || DEFAULT_CONTENT["home.cta_description"];
-  const sponsorLogoUrl = content["home.sponsor_logo_url"] || "";
-  const sponsorName = content["home.sponsor_name"] || "";
 
   // Randomize hero text on page load (stable for component lifecycle)
   const heroHeadline = useMemo(() => {
@@ -119,22 +115,7 @@ const HomePage = () => {
       </div>
 
       {/* Hero Section - Large left-aligned headline */}
-      <div className="pt-4 md:pt-6 pb-4 md:pb-6 mt-[30px] relative">
-        {/* Sponsor logo tab - absolute positioned, right edge */}
-        {sponsorLogoUrl && (
-          <div className="absolute right-0 bottom-0 flex flex-col items-end gap-1 z-10">
-            <span className="text-xs text-muted-foreground tracking-wide uppercase pr-1 mr-4 md:mr-6">Proudly supported by</span>
-            <div
-              className="bg-[hsl(220,50%,20%)] rounded-l-xl px-5 py-3 shadow-[0_4px_20px_rgba(0,0,0,0.3)]"
-            >
-              <img
-                src={sponsorLogoUrl}
-                alt={sponsorName || "Sponsor"}
-                className="h-12 md:h-16 w-auto object-contain brightness-0 invert"
-              />
-            </div>
-          </div>
-        )}
+      <div className="pt-4 md:pt-6 pb-4 md:pb-6 mt-[30px]">
         <div className="container">
           {/* Constrain hero content - equal padding on mobile, left-aligned indent on desktop */}
           <div className="max-w-4xl px-4 md:px-0 md:pl-14 lg:pl-20 md:ml-[30px] text-left">
