@@ -717,7 +717,7 @@ const DashboardPage = () => {
 
                 {/* Stats Summary */}
                 <div 
-                  className="bg-background p-6 shadow-md"
+                  className="bg-background px-4 py-3 shadow-md"
                   style={handDrawnBorder}
                 >
                   <h3 className="font-serif text-lg text-foreground mb-2">Stats</h3>
