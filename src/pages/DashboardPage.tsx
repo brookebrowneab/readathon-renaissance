@@ -1,4 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
+import { SponsorTab } from "@/components/layout/SponsorTab";
 import { MainNav, Footer, BottomTabBar } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { ReadingGoalRing } from "@/components/legacy";
@@ -738,6 +739,9 @@ const DashboardPage = () => {
                     </div>
                   </div>
                 </div>
+
+                {/* Sponsor Tab */}
+                <SponsorTab />
               </div>
             </aside>
           </div>
