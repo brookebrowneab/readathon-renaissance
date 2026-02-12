@@ -1,13 +1,9 @@
 import { Link } from "react-router-dom";
 import { Facebook, Twitter, Instagram } from "lucide-react";
-import { SponsorTab } from "./SponsorTab";
 
 const Footer = () => {
   return (
     <footer className="border-t border-slate-200 bg-white/80 backdrop-blur-sm">
-      {/* Sponsor tab - right aligned */}
-      <SponsorTab />
-
       <div className="container py-6 md:py-8">
         {/* Mobile: stacked layout */}
         <div className="flex flex-col items-center gap-4 md:hidden">
