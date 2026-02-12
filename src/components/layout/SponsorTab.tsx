@@ -1,6 +1,6 @@
 import { useSiteContentMultiple } from "@/hooks/useSiteContent";
 
-const SponsorTab = () => {
+const SponsorTab = ({ className = "" }: { className?: string }) => {
   const { content } = useSiteContentMultiple(["home.sponsor_logo_url", "home.sponsor_name"]);
   const sponsorLogoUrl = content["home.sponsor_logo_url"] || "";
   const sponsorName = content["home.sponsor_name"] || "";
@@ -8,7 +8,7 @@ const SponsorTab = () => {
   if (!sponsorLogoUrl) return null;
 
   return (
-    <div className="flex flex-col items-end gap-1 py-4">
+    <div className={`flex flex-col items-end gap-1 py-4 ${className}`}>
       <span className="text-xs text-muted-foreground tracking-wide uppercase pr-1 mr-4 md:mr-6">
         Proudly supported by
       </span>
