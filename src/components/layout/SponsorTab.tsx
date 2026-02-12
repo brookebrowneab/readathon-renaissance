@@ -1,11 +1,34 @@
 import { useSiteContentMultiple } from "@/hooks/useSiteContent";
+import { cn } from "@/lib/utils";
 
-const SponsorTab = ({ className = "" }: { className?: string }) => {
+interface SponsorTabProps {
+  className?: string;
+  variant?: "tab" | "banner";
+}
+
+const SponsorTab = ({ className = "", variant = "tab" }: SponsorTabProps) => {
   const { content } = useSiteContentMultiple(["home.sponsor_logo_url", "home.sponsor_name"]);
   const sponsorLogoUrl = content["home.sponsor_logo_url"] || "";
   const sponsorName = content["home.sponsor_name"] || "";
 
   if (!sponsorLogoUrl) return null;
+
+  if (variant === "banner") {
+    return (
+      <div className={cn("flex flex-col items-end gap-1", className)}>
+        <div className="bg-background rounded-b-xl shadow-md px-4 py-2">
+          <span className="text-[10px] text-muted-foreground tracking-wide uppercase block text-center mb-1">
+            Proudly supported by
+          </span>
+          <img
+            src={sponsorLogoUrl}
+            alt={sponsorName || "Sponsor"}
+            className="h-10 w-auto object-contain"
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`flex flex-col items-end gap-1 py-4 ${className}`}>
