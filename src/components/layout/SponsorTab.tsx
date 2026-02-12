@@ -12,7 +12,7 @@ const SponsorTab = ({ className = "" }: { className?: string }) => {
       <span className="hidden md:block text-xs text-muted-foreground tracking-wide uppercase pr-1 mr-4 md:mr-6">
         Proudly supported by
       </span>
-      <div className="bg-[hsl(220,50%,20%)] rounded-bl-xl md:rounded-bl-xl md:rounded-br-none md:rounded-tl-none px-3 py-2 md:px-5 md:py-3 shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
+      <div className="bg-[hsl(220,50%,20%)] rounded-bl-xl md:rounded-l-xl md:rounded-r-none px-3 py-2 md:px-5 md:py-3 shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
         <img
           src={sponsorLogoUrl}
           alt={sponsorName || "Sponsor"}
