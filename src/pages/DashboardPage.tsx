@@ -717,9 +717,6 @@ const DashboardPage = () => {
 
                 {/* Sponsor Tab */}
                 <SponsorTab />
-
-                {/* Sponsor Tab */}
-                <SponsorTab />
               </div>
             </aside>
           </div>
