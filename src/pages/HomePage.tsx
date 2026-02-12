@@ -96,9 +96,9 @@ const HomePage = () => {
 
   return (
     <PublicLayout>
-      {/* Countdown + Sponsor Logo - Top right below header */}
+      {/* Countdown - Top right below header */}
       <div className="container pt-4 md:pt-6">
-        <div className="flex flex-col items-end gap-2">
+        <div className="flex justify-end">
           <div 
             className="inline-flex items-baseline gap-1 bg-background px-4 py-2"
             style={{
@@ -115,22 +115,24 @@ const HomePage = () => {
             <span className="text-sm text-muted-foreground mr-2">hours</span>
             <span className="text-sm text-muted-foreground">{countdown.label}</span>
           </div>
-          {sponsorLogoUrl && (
-            <div className="flex flex-col items-end gap-1">
-              <span className="text-xs text-muted-foreground tracking-wide uppercase">Proudly supported by</span>
-              <div
-                className="bg-[hsl(220,50%,20%)] rounded-l-xl px-5 py-3 shadow-lg -mr-4 md:-mr-6 lg:-mr-8"
-              >
-                <img
-                  src={sponsorLogoUrl}
-                  alt={sponsorName || "Sponsor"}
-                  className="h-12 md:h-16 w-auto object-contain brightness-0 invert"
-                />
-              </div>
-            </div>
-          )}
         </div>
       </div>
+
+      {/* Sponsor logo tab - right edge */}
+      {sponsorLogoUrl && (
+        <div className="flex flex-col items-end gap-1 mt-4 md:mt-6 pr-4 md:pr-0">
+          <span className="text-xs text-muted-foreground tracking-wide uppercase pr-1">Proudly supported by</span>
+          <div
+            className="bg-[hsl(220,50%,20%)] rounded-l-xl px-5 py-3 shadow-[0_4px_20px_rgba(0,0,0,0.3)]"
+          >
+            <img
+              src={sponsorLogoUrl}
+              alt={sponsorName || "Sponsor"}
+              className="h-12 md:h-16 w-auto object-contain brightness-0 invert"
+            />
+          </div>
+        </div>
+      )}
 
       {/* Hero Section - Large left-aligned headline with decorative background */}
       {/* Hero Section - Large left-aligned headline */}
