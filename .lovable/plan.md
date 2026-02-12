@@ -1,80 +1,60 @@
 
 
-# Dashboard Mobile/Tablet Layout: Hamburger Menu + Sponsor Banner
+# Sponsor Logo on Home Page -- Design Options
 
-## What Changes
-
-On mobile and tablet (below `lg` breakpoint), the dashboard will get two new elements in the header area:
-
-1. **Hamburger menu (left)** -- Opens the Quick Actions as a dropdown/drawer
-2. **Sponsor logo banner (right)** -- Hangs down from the white header area with rounded bottom corners
-
-On desktop (`lg+`), everything stays as-is (sidebar with Quick Actions and SponsorTab).
+Here are five placement options for incorporating a sponsor logo into the home page, each fitting the existing visual language (hand-drawn borders, serif typography, warm palette). These are proposals only -- no changes will be made until you choose one.
 
 ---
 
-## Visual Layout (Mobile/Tablet)
+## Option A: "Sponsored By" Strip Between Stats and How It Works
 
-```text
-+--[ MainNav header (white) ]---------------------------+
-|  [Logo]                              [Nav] [Hamburger] |
-+--------------------------------------------------------+
-|  [=] Quick Actions          [ Sponsor Logo Banner ]    |
-|  hamburger (left)           drops from white area,     |
-|                             rounded bottom corners     |
-+--------------------------------------------------------+
-|                                                        |
-|  Dashboard content...                                  |
-```
+- A new horizontal section between the Stats bookshelf band and the "How It Works" section (where the hand-drawn divider line currently sits).
+- Layout: centered "Sponsored by" label in small muted text, followed by the sponsor logo image.
+- On mobile: stacks vertically, logo scales down.
+- Uses the existing hand-drawn border style around the logo or a subtle divider above/below.
+- Data: a new `site_content` key (e.g. `home.sponsor_logo_url`) or a field on the `events` table, admin-editable.
+
+## Option B: Inside the Hero Section (Beside or Below CTAs)
+
+- The sponsor logo appears below the CTA buttons in the hero area, with a small "Proudly supported by" caption.
+- Visually subordinate to the headline and buttons -- smaller size, muted opacity.
+- On mobile: centered below buttons with reduced size.
+- Advantage: high visibility without disrupting the hero hierarchy.
+
+## Option C: Footer "Presented By" Row
+
+- A new row added above the existing footer links, inside the Footer component.
+- Contains centered sponsor logo with "Presented by" or "Thanks to our sponsor" label.
+- Separated from footer links by a subtle border-top.
+- On mobile: same layout, logo scales proportionally.
+- Least intrusive -- doesn't affect above-the-fold content at all.
+
+## Option D: Alongside the Countdown Timer
+
+- The sponsor logo appears to the left of the existing countdown timer in the top-right area below the header.
+- Layout becomes: `[sponsor logo] ... [countdown]` using `justify-between` in the container.
+- On mobile: logo sits above or below the countdown, centered.
+- Gives the sponsor premium "presenting partner" positioning without touching the hero.
+
+## Option E: Dedicated "Our Sponsors" Section Before the CTA
+
+- A new full-width section between "Making a Difference" and the final CTA block.
+- Contains a heading ("Our Sponsors" or "Thank You to Our Sponsors"), one or more logo images in a centered flex row.
+- Uses the hand-drawn border card style consistent with the "Making a Difference" list.
+- Scales naturally to support multiple sponsors in the future.
+- On mobile: logos wrap or scroll horizontally.
 
 ---
 
-## Technical Details
+## Data Considerations (All Options)
 
-### 1. New Component: `DashboardMobileBar`
+- Sponsor logo URL would be stored as either:
+  - A new `site_content` key (e.g. `home.sponsor_logo_url`, `home.sponsor_name`) -- admin-editable via the existing Site Content Editor.
+  - Or a new column on the `events` table if it's event-specific (similar to `logo_url`).
+- The `useEventLogo` hook pattern could be replicated as `useSponsorLogo`.
+- A fallback (hide the section entirely) should apply when no sponsor logo is configured.
 
-A sub-header bar visible only on mobile/tablet (`lg:hidden`), placed just below the MainNav inside DashboardPage:
+## Next Step
 
-- **Left side**: Hamburger icon button that opens a sheet/drawer containing the Quick Actions buttons
-- **Right side**: Sponsor logo banner -- uses the same data (`home.sponsor_logo_url`, `home.sponsor_name`) but styled differently:
-  - White/light background (extending from the header)
-  - Rounded bottom corners (`rounded-b-xl`)
-  - No top rounding (flush with header)
-  - Shadow on bottom edge for depth
-  - Conditionally hidden if no sponsor logo URL
-
-### 2. Modify `SponsorTab.tsx`
-
-Add a `variant` prop to support two styles:
-- `"tab"` (default) -- current right-flush navy pill with rounded left corners (used on HomePage and desktop dashboard sidebar)
-- `"banner"` -- drops from header, white/light background, rounded bottom corners, right-aligned
-
-### 3. Modify `DashboardPage.tsx`
-
-- Extract the Quick Actions buttons into a shared list/component so they can be rendered both in the desktop sidebar and in the mobile hamburger drawer
-- Add the `DashboardMobileBar` below `<MainNav />`, visible only on `lg:hidden`
-- The existing `<aside>` sidebar remains `hidden lg:block`
-
-### 4. Files to Create/Modify
-
-| File | Action |
-|---|---|
-| `src/components/layout/SponsorTab.tsx` | Add `variant` prop (`"tab"` or `"banner"`) with corresponding styles |
-| `src/pages/DashboardPage.tsx` | Add mobile bar with hamburger + sponsor banner below MainNav; extract Quick Actions into reusable section |
-
-### 5. Sponsor Banner Styling (variant="banner")
-
-```text
-Container: bg-white rounded-b-xl shadow-md px-4 py-2
-Logo: h-10 w-auto object-contain (no invert -- displayed on light bg)
-Label: "Proudly supported by" in small text above logo
-Position: right side of the mobile sub-header bar
-```
-
-### 6. Hamburger Drawer
-
-Uses the existing `Sheet` component (from Radix/shadcn) opening from the left, containing:
-- "Quick Actions" heading
-- All the same action buttons currently in the desktop sidebar
-- Close button
+Let me know which option (or combination) you prefer and I will implement it.
 
