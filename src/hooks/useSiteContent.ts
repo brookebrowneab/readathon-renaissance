@@ -44,6 +44,8 @@ export const DEFAULT_CONTENT: Record<string, string> = {
   ]),
   "home.cta_title": "Ready to Join the Read-a-thon?",
   "home.cta_description": "Create your family account and start logging reading minutes today.",
+  "home.sponsor_logo_url": "",
+  "home.sponsor_name": "",
 
   // About Page
   "about.mission_title": "Our Mission",
@@ -140,6 +142,8 @@ export const CONTENT_DESCRIPTIONS: Record<string, string> = {
   "home.making_difference_items": "List of items that funds support (JSON array)",
   "home.cta_title": "Call-to-action section title",
   "home.cta_description": "Call-to-action section description",
+  "home.sponsor_logo_url": "URL of the sponsor logo image (leave empty to hide)",
+  "home.sponsor_name": "Sponsor name displayed as alt text and caption",
   "about.mission_title": "Mission section title",
   "about.mission_text": "Mission statement paragraphs (use \\n for line breaks)",
   "about.statistics": "Statistics grid items (JSON array)",
@@ -164,6 +168,8 @@ export const CONTENT_TYPES: Record<string, "text" | "json"> = {
   "home.making_difference_items": "json",
   "home.cta_title": "text",
   "home.cta_description": "text",
+  "home.sponsor_logo_url": "text",
+  "home.sponsor_name": "text",
   "about.mission_title": "text",
   "about.mission_text": "text",
   "about.statistics": "json",
