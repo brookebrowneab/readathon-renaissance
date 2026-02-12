@@ -720,20 +720,20 @@ const DashboardPage = () => {
                   className="bg-background p-6 shadow-md"
                   style={handDrawnBorder}
                 >
-                  <h3 className="font-serif text-xl text-foreground mb-4">Stats</h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="flex flex-col items-center rounded-lg bg-muted/30 p-3">
+                  <h3 className="font-serif text-lg text-foreground mb-2">Stats</h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="flex flex-col items-center rounded-lg bg-muted/30 p-2">
                       <span className="text-xs text-muted-foreground">Total Minutes</span>
-                      <span className="font-serif text-2xl text-primary">
+                      <span className="font-serif text-xl text-primary">
                         {totalMinutes.toLocaleString()}
                       </span>
                     </div>
-                    <div className="relative flex flex-col items-center rounded-lg bg-muted/30 p-3">
-                      <Star className="absolute -right-1 -top-1 h-4 w-4 fill-accent text-accent" />
+                    <div className="relative flex flex-col items-center rounded-lg bg-muted/30 p-2">
+                      <Star className="absolute -right-1 -top-1 h-3.5 w-3.5 fill-accent text-accent" />
                       <span className="text-xs text-muted-foreground">
                         {isSponsorOnly ? "Children" : "Sponsors"}
                       </span>
-                      <span className="font-serif text-2xl text-primary">
+                      <span className="font-serif text-xl text-primary">
                         {isSponsorOnly ? sponsorStats.childrenSupported : pledgesByChild.reduce((sum, c) => sum + c.sponsorCount, 0)}
                       </span>
                     </div>
