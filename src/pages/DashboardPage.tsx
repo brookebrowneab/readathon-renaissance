@@ -213,7 +213,7 @@ const DashboardPage = () => {
       <MainNav />
       
       {/* Mobile: Sponsor tab flush under header */}
-      <div className="md:hidden flex justify-end">
+      <div className="md:hidden flex justify-end bg-background-warm">
         <SponsorTab />
       </div>
 
