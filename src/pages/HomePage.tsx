@@ -96,21 +96,9 @@ const HomePage = () => {
 
   return (
     <PublicLayout>
-      {/* Countdown + Sponsor Logo row */}
+      {/* Countdown - Top right below header */}
       <div className="container pt-4 md:pt-6">
-        <div className={`flex items-center ${sponsorLogoUrl ? 'justify-between' : 'justify-end'}`}>
-          {/* Sponsor logo - left side */}
-          {sponsorLogoUrl && (
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground tracking-wide uppercase hidden sm:inline">Presented by</span>
-              <img
-                src={sponsorLogoUrl}
-                alt={sponsorName || "Sponsor"}
-                className="h-8 md:h-10 w-auto object-contain"
-              />
-            </div>
-          )}
-          {/* Countdown - right side */}
+        <div className="flex justify-end">
           <div 
             className="inline-flex items-baseline gap-1 bg-background px-4 py-2"
             style={{
@@ -201,6 +189,18 @@ const HomePage = () => {
                 </Button>
               </Link>
             </div>
+
+            {/* Sponsor logo - only shown when configured */}
+            {sponsorLogoUrl && (
+              <div className="mt-6 flex items-center gap-3 opacity-70">
+                <span className="text-xs text-muted-foreground tracking-wide uppercase">Proudly supported by</span>
+                <img
+                  src={sponsorLogoUrl}
+                  alt={sponsorName || "Sponsor"}
+                  className="h-8 md:h-10 w-auto object-contain"
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>
