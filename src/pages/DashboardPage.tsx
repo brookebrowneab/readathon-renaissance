@@ -719,8 +719,10 @@ const DashboardPage = () => {
                   </div>
                 </div>
 
-                {/* Sponsor Tab */}
-                <SponsorTab />
+                {/* Sponsor Tab - fixed to right edge */}
+                <div className="fixed right-0 z-10">
+                  <SponsorTab />
+                </div>
               </div>
             </aside>
           </div>
